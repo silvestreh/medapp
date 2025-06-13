@@ -1,0 +1,4 @@
+{
+  "port": 3033,
+  "postgres": "postgres://postgres:@localhost:5432/medapp_api_test"
+}

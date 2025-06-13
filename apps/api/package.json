@@ -1,0 +1,109 @@
+{
+  "name": "medapp-api",
+  "description": "",
+  "version": "0.0.0",
+  "homepage": "",
+  "private": true,
+  "main": "src",
+  "keywords": [
+    "feathers"
+  ],
+  "author": {
+    "name": "Silvestre Herrera",
+    "email": "hello@silvestre.io"
+  },
+  "contributors": [],
+  "bugs": {},
+  "directories": {
+    "lib": "src",
+    "test": "test/",
+    "config": "config/"
+  },
+  "engines": {
+    "node": "^18.0.0",
+    "npm": ">= 3.0.0"
+  },
+  "scripts": {
+    "compile": "shx rm -rf lib/ && tsc",
+    "coverage": "nyc report --reporter=text-lcov > coverage/lcov.info",
+    "db:drop": "ts-node scripts/drop-db.ts",
+    "db:init": "ts-node scripts/init-db.ts",
+    "db:reset": "ts-node scripts/reset-db.ts",
+    "dev": "ts-node-dev --no-notify src/",
+    "lint": "eslint src/. test/. --config .eslintrc.json --ext .ts --fix",
+    "mocha": "NODE_ENV=test nyc mocha",
+    "pretest": "NODE_ENV=test ts-node scripts/reset-db.ts",
+    "start": "npm run compile && node lib/",
+    "test": "npm run lint && npm run compile && npm run mocha"
+  },
+  "standard": {
+    "env": [
+      "mocha"
+    ],
+    "ignore": []
+  },
+  "types": "lib/",
+  "dependencies": {
+    "@feathersjs/authentication": "^4.5.18",
+    "@feathersjs/authentication-local": "^4.5.18",
+    "@feathersjs/authentication-oauth": "^4.5.18",
+    "@feathersjs/configuration": "^4.5.17",
+    "@feathersjs/errors": "^4.5.17",
+    "@feathersjs/express": "^4.5.18",
+    "@feathersjs/feathers": "^4.5.17",
+    "@feathersjs/transport-commons": "^5.0.31",
+    "compression": "^1.7.5",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.5",
+    "feathers-hooks-common": "^6.1.5",
+    "feathers-sequelize": "^6.4.0",
+    "helmet": "^5.1.1",
+    "lodash": "^4.17.21",
+    "pg": "^8.13.1",
+    "sequelize": "^6.37.5",
+    "serve-favicon": "^2.5.0",
+    "winston": "^3.16.0"
+  },
+  "devDependencies": {
+    "@feathersjs/authentication-client": "^4.5.18",
+    "@feathersjs/client": "^4.5.18",
+    "@feathersjs/rest-client": "^4.5.18",
+    "@types/bluebird": "^3.5.42",
+    "@types/cli-progress": "^3.11.6",
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.17",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/lodash": "^4.17.13",
+    "@types/mocha": "^10.0.9",
+    "@types/serve-favicon": "^2.5.7",
+    "@types/validator": "^13.12.2",
+    "@typescript-eslint/eslint-plugin": "^8.13.0",
+    "@typescript-eslint/parser": "^8.13.0",
+    "axios": "^1.7.7",
+    "cli-progress": "^3.12.0",
+    "country-code-lookup": "^0.1.3",
+    "eslint": "^8.57.1",
+    "mocha": "^10.8.2",
+    "nyc": "^15.1.0",
+    "ora": "^5.4.1",
+    "shx": "^0.3.4",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "test/**",
+      "lib/**"
+    ],
+    "reporter": [
+      "html",
+      "text"
+    ],
+    "all": true
+  }
+}

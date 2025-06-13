@@ -1,0 +1,140 @@
+import { Sequelize, Model, ModelStatic, ModelOptions, ModelAttributes } from 'sequelize';
+import { isObject } from 'lodash';
+import { Application } from './declarations';
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+interface CustomModel extends Model {
+  decryptedAttributes?: any[];
+}
+
+interface CustomModelStatic extends ModelStatic<CustomModel> {
+  decryptedAttributes?: any[];
+}
+
+interface EncryptedModelOptions extends ModelOptions {
+  encryptedFields?: string[];
+}
+
+export default function (app: Application): void {
+  const oldSetup = app.setup;
+  const connectionString = app.get('postgres');
+  const dbName = connectionString.split('/').pop();
+  const sequelize = new Sequelize(connectionString, {
+    dialect: 'postgres',
+    logging: false,
+    define: {
+      freezeTableName: true
+    }
+  });
+
+  if (!isProduction) {
+    const defaultConnection = new Sequelize(
+      connectionString.replace(/\/[^/]+$/, '/postgres'),
+      {
+        dialect: 'postgres',
+        logging: false
+      }
+    );
+
+    defaultConnection.query(`CREATE DATABASE ${dbName}`)
+      .then(() => {
+        console.log(`Database ${dbName} created.`);
+      })
+      .catch((error: any) => {
+        if (error.parent?.code !== '42P04') {
+          throw error;
+        }
+      })
+      .finally(() => {
+        defaultConnection.close();
+      });
+  }
+
+  app.set('sequelizeClient', sequelize);
+  app.setup = function (...args): Application {
+    const result = oldSetup.apply(this, args);
+    const models = sequelize.models;
+
+    Object.keys(models).forEach(name => {
+      if ('associate' in models[name]) {
+        (models[name] as any).associate(models);
+      }
+    });
+
+    app.set('sequelizeSync', sequelize.sync({ alter: !isProduction }));
+
+    return result;
+  };
+}
+
+export const makeDefine = (sequelize: Sequelize) => (
+  modelName: string,
+  attributes: ModelAttributes,
+  options: EncryptedModelOptions = {}
+) => {
+  const { encryptedFields = [], ...modelOptions } = options;
+  const encryptionKey = process.env.ENCRYPTION_KEY;
+
+  if (!encryptionKey) {
+    throw new Error('ENCRYPTION_KEY is not defined in environment variables');
+  }
+
+  const Model = sequelize.define(
+    modelName,
+    attributes,
+    modelOptions
+  ) as unknown as CustomModelStatic;
+
+  const encryptAttributes = async (record: any) => {
+    const { fn } = sequelize;
+    const PG_ENCRYPT_FN = 'PGP_SYM_ENCRYPT';
+
+    const handleValue = (value: any) => {
+      if (isObject(value)) {
+        return JSON.stringify(value).replace(/\$/g, '\\$');
+      }
+
+      return typeof value === 'string' ? value.replace(/\$/g, '\\$') : value;
+    };
+
+    const encryptField = (value: any) =>
+      fn(PG_ENCRYPT_FN, value, encryptionKey);
+
+    encryptedFields.forEach((field: string) => {
+      const isBulkUpdate = record.type === 'BULKUPDATE';
+
+      if (isBulkUpdate && record.attributes[field]) {
+        record.attributes[field] = encryptField(handleValue(record.attributes[field]));
+      }
+
+      if (record[field]) {
+        record[field] = encryptField(handleValue(record[field]));
+      }
+    });
+
+    return record;
+  };
+
+  if (encryptedFields.length > 0) {
+    Model.decryptedAttributes = [
+      ...Object.keys(Model.getAttributes()).filter(
+        (field) => !encryptedFields.includes(field)
+      ),
+      ...encryptedFields.map((field: string) => [
+        sequelize.fn(
+          'PGP_SYM_DECRYPT',
+          sequelize.cast(sequelize.col(field), 'bytea'),
+          encryptionKey
+        ),
+        field,
+      ]),
+    ];
+
+    Model.beforeCreate(encryptAttributes);
+    Model.beforeUpdate(encryptAttributes);
+    Model.beforeBulkUpdate(encryptAttributes);
+  }
+
+  return Model;
+};

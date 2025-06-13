@@ -1,0 +1,95 @@
+[
+  {
+    "id": "admin",
+    "permissions": [
+      "roles:create",
+      "roles:find",
+      "roles:get:all",
+      "roles:patch:all",
+      "roles:remove:all",
+      "users:create",
+      "users:find",
+      "users:get:all",
+      "users:patch:all",
+      "users:remove:all"
+    ]
+  },
+  {
+    "id": "receptionist",
+    "permissions": [
+      "appointments:create",
+      "appointments:find",
+      "appointments:get:all",
+      "appointments:patch:all",
+      "appointments:remove:all",
+      "md-settings:create",
+      "md-settings:find:all",
+      "md-settings:get:all",
+      "md-settings:patch:all",
+      "patients:create",
+      "patients:find",
+      "patients:get:all",
+      "patients:patch:all",
+      "patients:remove:all",
+      "users:find",
+      "users:get"
+    ]
+  },
+  {
+    "id": "medic",
+    "permissions": [
+      "appointments:create",
+      "appointments:find",
+      "appointments:get:all",
+      "appointments:patch:all",
+      "appointments:remove:all",
+      "encounters:create",
+      "encounters:find",
+      "encounters:get",
+      "md-settings:create",
+      "md-settings:find",
+      "md-settings:get",
+      "md-settings:patch",
+      "patients:create",
+      "patients:find",
+      "patients:get:all",
+      "patients:patch:all",
+      "patients:remove:all",
+      "studies:create",
+      "studies:find",
+      "studies:get:all",
+      "studies:patch:all",
+      "studies:remove:all",
+      "study-results:create",
+      "study-results:find",
+      "study-results:get:all",
+      "study-results:patch:all",
+      "study-results:remove:all"
+    ]
+  },
+  {
+    "id": "lab-tech",
+    "permissions": [
+      "appointments:create",
+      "appointments:find",
+      "appointments:get:all",
+      "appointments:patch:all",
+      "appointments:remove:all",
+      "patients:create",
+      "patients:find",
+      "patients:get:all",
+      "patients:patch:all",
+      "patients:remove:all",
+      "studies:create",
+      "studies:find",
+      "studies:get:all",
+      "studies:patch:all",
+      "studies:remove:all",
+      "study-results:create",
+      "study-results:find",
+      "study-results:get:all",
+      "study-results:patch:all",
+      "study-results:remove:all"
+    ]
+  }
+]
