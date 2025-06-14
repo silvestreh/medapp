@@ -1,12 +1,11 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import path from 'path';
-import favicon from 'serve-favicon';
-import compress from 'compression';
+// import path from 'path';
+// import favicon from 'serve-favicon';
+// import compress from 'compression';
 import helmet from 'helmet';
 import cors from 'cors';
-
 import feathers from '@feathersjs/feathers';
 import configuration from '@feathersjs/configuration';
 import express from '@feathersjs/express';
@@ -34,10 +33,10 @@ app.use(helmet({
   contentSecurityPolicy: false
 }));
 app.use(cors());
-app.use(compress());
+// app.use(compress());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(favicon(path.join(app.get('public'), 'favicon.ico')));
+// app.use(favicon(path.join(app.get('public'), 'favicon.ico')));
 // Host the public folder
 app.use('/', express.static(app.get('public')));
 
