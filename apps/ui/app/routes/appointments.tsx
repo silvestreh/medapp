@@ -12,7 +12,8 @@ export const meta: MetaFunction = () => {
 
 export const loader = authenticatedLoader(async ({ request, params }: LoaderFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
-  const { data: medics } = await client.service('users').find({ query: { roleId: 'medic' } });
+  const query = { roleId: 'medic', $skip: 0, $limit: 100 };
+  const { data: medics } = await client.service('users').find({ query });
 
   if (!params.medicId) {
     throw redirect(`/appointments/${medics[0].id}`);
