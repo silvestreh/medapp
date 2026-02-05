@@ -6,6 +6,8 @@ export default {
   before: {
     all: [
       (ctx: HookContext) => {
+        if (process.env.DEBUG !== 'true') return ctx;
+
         const { method, path } = ctx;
 
         console.log(`[BEFORE] ${path}:${method}`);
@@ -30,6 +32,8 @@ export default {
   after: {
     all: [
       (ctx: HookContext) => {
+        if (process.env.DEBUG !== 'true') return ctx;
+
         const { method, path } = ctx;
 
         console.log(`[AFTER] ${path}:${method}`);
