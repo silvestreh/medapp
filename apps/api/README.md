@@ -15,6 +15,10 @@ openssl rand -base64 32
 
 Keep this key in a secure location as it will be required to decrypt the data.
 
+## Debugging
+
+Set the `DEBUG` env to `true` to enable verbose logging for every service method (before and after)
+
 ## Data Migration Scripts
 
 This repository includes scripts for migrating data from legacy MongoDB databases to the new system.
