@@ -23,6 +23,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
+    "composite": true,
     "paths": {
       "~/*": ["./app/*"]
     },
