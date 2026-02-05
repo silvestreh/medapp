@@ -147,6 +147,7 @@ const SideNav: React.FC = () => {
               <Tooltip label={section.label} position="right">
                 <NavItem
                   component={NavLink}
+                  prefetch="intent"
                   to={isActive ? '#' : section.path}
                   variant="subtle"
                   className={isActive ? 'active' : ''}
