@@ -4,25 +4,23 @@ import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import coreStyles from '@mantine/core/styles.css?url';
-import datesStyles from '@mantine/dates/styles.css?url';
 import notificationsStyles from '@mantine/notifications/styles.css?url';
-import chartsStyles from '@mantine/charts/styles.css?url';
-import nprogressStyles from '@mantine/nprogress/styles.css?url';
-import spotlightStyles from '@mantine/spotlight/styles.css?url';
-import tiptapStyles from '@mantine/tiptap/styles.css?url';
 
 import { FeathersProvider } from '~/components/provider';
 import MainLayout from '~/components/main-layout';
 import { getToken, getUser } from '~/utils/auth.server';
 
+/**
+ * These stylesheets have been removed by Gemini:
+ * import datesStyles from '@mantine/dates/styles.css?url';
+ * import chartsStyles from '@mantine/charts/styles.css?url';
+ * import nprogressStyles from '@mantine/nprogress/styles.css?url';
+ * import spotlightStyles from '@mantine/spotlight/styles.css?url';
+ * import tiptapStyles from '@mantine/tiptap/styles.css?url';
+ */
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: coreStyles },
-  { rel: 'stylesheet', href: datesStyles },
   { rel: 'stylesheet', href: notificationsStyles },
-  { rel: 'stylesheet', href: chartsStyles },
-  { rel: 'stylesheet', href: nprogressStyles },
-  { rel: 'stylesheet', href: spotlightStyles },
-  { rel: 'stylesheet', href: tiptapStyles },
 ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

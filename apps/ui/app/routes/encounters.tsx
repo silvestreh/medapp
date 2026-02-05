@@ -1,9 +1,10 @@
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
+import { type LoaderFunctionArgs, type MetaFunction, type LinksFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { Flex } from '@mantine/core';
+import datesStyles from '@mantine/dates/styles.css?url';
 
 import { generateSlots } from '~/utils';
 import { styled } from '~/stitches';
@@ -12,6 +13,8 @@ import AppointmentsList from '~/components/appointments-list';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
+
+export const links: LinksFunction = () => [{ rel: 'stylesheet', href: datesStyles }];
 
 export const meta: MetaFunction = () => {
   return [{ title: 'MedApp / Encuentros' }];
