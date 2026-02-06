@@ -16,12 +16,12 @@ dayjs.extend(isSameOrBefore);
 
 const Container = styled(Flex, {
   '@sm': {
-    flexDirection: 'column',
+    flexDirection: 'column-reverse',
   },
   '@md': {
     flexDirection: 'row',
-    padding: '1rem',
   },
+  padding: '1rem',
   gap: '1rem',
 });
 
