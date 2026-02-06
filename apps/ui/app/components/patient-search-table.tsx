@@ -22,7 +22,7 @@ const PatientSearchTable: FC = () => {
       newParams.delete('q');
     }
     setSearchParams(newParams, { replace: true, preventScrollReset: true });
-  }, [debouncedInputValue, setSearchParams]);
+  }, [debouncedInputValue, setSearchParams, searchParams]);
 
   const query = useMemo(
     () => ({
