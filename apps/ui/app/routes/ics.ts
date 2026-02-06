@@ -1,3 +1,8 @@
+/**
+ * This route is used to fetch the holidays from the Google Calendar API and return them in a JSON format.
+ * Hitting /ics will return the holidays for the current year.
+ */
+
 import ICAL from 'ical.js';
 import dayjs from 'dayjs';
 
