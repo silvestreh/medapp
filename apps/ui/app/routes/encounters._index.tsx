@@ -4,9 +4,10 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { Flex } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 
 import { generateSlots } from '~/utils';
-import { styled } from '~/stitches';
+import { styled, media } from '~/stitches';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import AppointmentsList from '~/components/appointments-list';
 import PatientSearchTable from '~/components/patient-search-table';
@@ -18,15 +19,15 @@ const Container = styled(Flex, {
   '@sm': {
     flexDirection: 'column-reverse',
   },
-  '@md': {
+  '@lg': {
     flexDirection: 'row',
+    padding: '2rem',
+    gap: '1rem',
   },
-  padding: '1rem',
-  gap: '1rem',
 });
 
 const LeftColumn = styled(Flex, {
-  '@md': {
+  '@lg': {
     width: '40%',
   },
 });
@@ -54,11 +55,12 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
 
 export default function EncountersIndex() {
   const { slots } = useLoaderData<typeof loader>();
+  const isTablet = useMediaQuery(media.lg);
 
   return (
     <Container>
       <LeftColumn>
-        <AppointmentsList slots={slots} readonly onAppointmentClick={console.log} />
+        <AppointmentsList slots={slots} readonly onAppointmentClick={console.log} borderRadius={isTablet} />
       </LeftColumn>
       <MainColumn>
         <PatientSearchTable />

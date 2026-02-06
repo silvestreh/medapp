@@ -31,7 +31,7 @@ const Wrapper = styled('div', {
         '@sm': {
           display: 'none',
         },
-        '@md': {
+        '@lg': {
           display: 'flex',
         },
       },
