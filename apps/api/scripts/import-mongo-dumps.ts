@@ -217,6 +217,7 @@ async function importData() {
 
     const validUserIds = new Set<string>();
     const validPatientIds = new Set<string>();
+    const mongoToRealPatientId = new Map<string, string>();
     const validStudyIds = new Set<string>();
     const validStudyResultIds = new Set<string>();
     const invalidTimestamps = new Set<any>();
@@ -285,8 +286,33 @@ async function importData() {
     for (const patient of patients) {
       const birthDate = dayjs(`${patient.personal_data?.dob_year}-${patient.personal_data?.dob_month}-${patient.personal_data?.dob_day}`);
       const city = normalizeCity(patient.contact_data.city);
+      const documentValue = patient.personal_data.document_value || patient._id.$oid;
 
-      await patientsService.create({
+      // Check if we already have a patient with this personal data
+      const existingPersonalData = await personalDataService.find({
+        query: {
+          documentValue,
+          $limit: 1
+        },
+        paginate: false
+      }) as any[];
+
+      if (existingPersonalData.length > 0) {
+        const pdId = existingPersonalData[0].id;
+        const patientLink = await patientPersonalDataService.find({
+          query: { personalDataId: pdId, $limit: 1 },
+          paginate: false
+        }) as any[];
+
+        if (patientLink.length > 0) {
+          const existingPatientId = patientLink[0].ownerId;
+          mongoToRealPatientId.set(patient._id.$oid, existingPatientId);
+          patientBar.increment();
+          continue;
+        }
+      }
+
+      const newPatient = await patientsService.create({
         id: patient._id.$oid,
         medicare: patient.medicare,
         medicareNumber: patient.medicare_number,
@@ -298,7 +324,7 @@ async function importData() {
             lastName: startCase(patient.personal_data.last_name?.toLowerCase?.()),
             nationality: patient.personal_data.nationality ? getCountry(patient.personal_data.nationality) : 'AR',
             documentType: patient.personal_data.document_type,
-            documentValue: patient.personal_data.document_value || patient._id.$oid,
+            documentValue,
             maritalStatus: normalizeMaritalStatus(patient.personal_data.marital_status),
             birthDate: birthDate.isValid() ? birthDate.toDate() : null,
           }
@@ -313,9 +339,10 @@ async function importData() {
             email: patient.contact_data.email,
           }
           : undefined,
-      });
+      }) as any;
 
-      validPatientIds.add(patient._id.$oid);
+      validPatientIds.add(newPatient.id);
+      mongoToRealPatientId.set(patient._id.$oid, newPatient.id);
 
       patientBar.increment();
     }
@@ -328,7 +355,8 @@ async function importData() {
         continue;
       }
 
-      if (!validPatientIds.has(encounter.patient_id)) {
+      const realPatientId = mongoToRealPatientId.get(encounter.patient_id);
+      if (!realPatientId) {
         skippedEncounters.push({ ...encounter, reason: 'missing_patient_reference' });
         encounterBar.increment();
         continue;
@@ -348,10 +376,10 @@ async function importData() {
           data: omit(encounter.datas, '__class') || {},
           date: dayjs.unix(timestamp).toDate(),
           medicId: encounter.medic_id === weirdUserId ? juancaId : encounter.medic_id,
-          patientId: encounter.patient_id
+          patientId: realPatientId
         });
 
-        patientIdsWithEncounters.add(encounter.patient_id);
+        patientIdsWithEncounters.add(realPatientId);
       } catch (error: any) {
         skippedEncounters.push({ ...encounter, reason: error?.message });
       }
@@ -367,7 +395,8 @@ async function importData() {
         continue;
       }
 
-      if (!validPatientIds.has(appointment.patient_id)) {
+      const realPatientId = mongoToRealPatientId.get(appointment.patient_id);
+      if (!realPatientId) {
         skippedAppointments.push({ ...appointment, reason: 'missing_patient_reference' });
         appointmentBar.increment();
         continue;
@@ -382,7 +411,7 @@ async function importData() {
         continue;
       }
 
-      if (!patientIdsWithEncounters.has(appointment.patient_id)) {
+      if (!patientIdsWithEncounters.has(realPatientId)) {
         skippedAppointments.push({ ...appointment, reason: 'patient_without_encounters' });
         appointmentBar.increment();
         continue;
@@ -397,7 +426,7 @@ async function importData() {
       }
 
       await appointmentsService.create({
-        patientId: appointment.patient_id,
+        patientId: realPatientId,
         medicId: appointment.medic_id,
         startDate: startDate.toDate(),
         extra: Boolean(appointment.extra),
@@ -445,19 +474,41 @@ async function importData() {
       // Step 3: Create new patient if not found
       if (!patient) {
         try {
-          const newPatient = await patientsService.create({
-            medicare: study.patient.medicare || null,
-            deleted: false,
-            personalData: {
-              firstName: study.patient.first_name,
-              lastName: study.patient.last_name,
-              documentValue: study.patient.dni, // Add DNI if available
+          const documentValue = study.patient.dni;
+          const existingPersonalData = await personalDataService.find({
+            query: {
+              documentValue,
+              $limit: 1
+            },
+            paginate: false
+          }) as any[];
+
+          if (existingPersonalData.length > 0) {
+            const pdId = existingPersonalData[0].id;
+            const patientLink = await patientPersonalDataService.find({
+              query: { personalDataId: pdId, $limit: 1 },
+              paginate: false
+            }) as any[];
+
+            if (patientLink.length > 0) {
+              patientId = patientLink[0].ownerId;
             }
-          }) as any;
+          }
 
-          patientId = newPatient.id;
+          if (!patientId) {
+            const newPatient = await patientsService.create({
+              medicare: study.patient.medicare || null,
+              deleted: false,
+              personalData: {
+                firstName: study.patient.first_name,
+                lastName: study.patient.last_name,
+                documentValue: study.patient.dni, // Add DNI if available
+              }
+            }) as any;
 
-          validPatientIds.add(newPatient.id);
+            patientId = newPatient.id;
+            validPatientIds.add(newPatient.id);
+          }
         } catch (error: any) {
           console.error(`Failed to create new patient: ${error?.message}`);
           skippedStudies.push({ ...study, reason: 'failed_to_create_patient' });
