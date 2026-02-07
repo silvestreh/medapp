@@ -5,6 +5,13 @@ import countries from '../data/countries.json';
 export type CountryCode = keyof typeof countries;
 export type PhoneNumber = `tel:${string}` | `cel:${string}` | null;
 // A mapping of service names to types. Will be extended in service files.
+export interface Icd10 {
+  id: string;
+  name: string;
+  parent: string | null;
+  children: string[];
+}
+
 export interface ServiceTypes {}
 // The application instance type that will be used everywhere else
 export type Application = ExpressFeathers<ServiceTypes>;

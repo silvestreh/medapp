@@ -53,6 +53,9 @@ export async function resetDatabase() {
     await sequelize.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;');
     console.log('pgcrypto extension created successfully.');
 
+    await sequelize.query('CREATE EXTENSION IF NOT EXISTS unaccent;');
+    console.log('unaccent extension created successfully.');
+
     // Sync models
     await sequelize.sync({ force: true });
     console.log('All tables created successfully.');
