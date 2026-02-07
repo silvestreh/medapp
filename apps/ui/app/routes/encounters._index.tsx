@@ -20,6 +20,7 @@ const Container = styled(Flex, {
     flexDirection: 'column-reverse',
   },
   '@lg': {
+    alignItems: 'flex-start',
     flexDirection: 'row',
     padding: '2rem',
     gap: '1rem',
@@ -28,6 +29,8 @@ const Container = styled(Flex, {
 
 const LeftColumn = styled(Flex, {
   '@lg': {
+    position: 'sticky',
+    top: '7.65rem',
     width: '40%',
   },
 });
