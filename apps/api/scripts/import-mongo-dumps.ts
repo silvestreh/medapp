@@ -7,6 +7,7 @@ import { omit, startCase } from 'lodash';
 import app from '../src/app';
 import { normalizeCity, provinceToISO, normalizePhoneNumber, normalizeMaritalStatus, transformSchedule, getCountry } from './utils';
 import { resetDatabase } from './reset-db';
+import cie10 from './seeds/cie-10.json';
 
 interface MongoID {
   $oid: string;
@@ -153,7 +154,7 @@ interface SkippedStudyResult extends MongoStudyResult {
   reason: string;
 }
 
-async function seedData() {
+async function seedData(multibar?: cliProgress.MultiBar) {
   console.log('Seeding data...');
 
   const roles = JSON.parse(
@@ -165,9 +166,61 @@ async function seedData() {
   for (const role of roles) {
     await rolesService.create(role);
   }
+
+  // Seed ICD-10
+  console.log('Seeding ICD-10 data...');
+  const icd10Service = app.service('icd-10');
+  const nodesByCode = new Map<string, any>();
+
+  // First pass: create all nodes and map them
+  for (const item of cie10) {
+    const node = {
+      id: item.code,
+      name: item.description,
+      parent: null,
+      children: [] as string[],
+      level: item.level
+    };
+    nodesByCode.set(node.id, node);
+  }
+
+  // Second pass: establish parent-child relationships
+  const lastNodeAtLevel = new Map<number, string>();
+
+  for (const item of cie10) {
+    const node = nodesByCode.get(item.code);
+    const level = item.level;
+
+    if (level > 0) {
+      let parentCode = (item as any).code_0 || (item as any).code_1 || (item as any).code_2;
+
+      if (!parentCode) {
+        // Fallback to the last node seen at level - 1
+        parentCode = lastNodeAtLevel.get(level - 1);
+      }
+
+      if (parentCode && nodesByCode.has(parentCode)) {
+        node.parent = parentCode;
+        nodesByCode.get(parentCode).children.push(node.id);
+      }
+    }
+    lastNodeAtLevel.set(level, node.id);
+  }
+
+  // Convert map to array for bulk insert
+  const finalData = Array.from(nodesByCode.values()).map(({ ...rest }) => rest);
+
+  // Bulk create in chunks
+  const chunkSize = 500;
+  const icd10Bar = multibar?.create(finalData.length, 0, { title: 'ICD-10' });
+  for (let i = 0; i < finalData.length; i += chunkSize) {
+    const chunk = finalData.slice(i, i + chunkSize);
+    await icd10Service.create(chunk);
+    icd10Bar?.increment(chunk.length);
+  }
 }
 
-async function importData() {
+async function importData(multibar: cliProgress.MultiBar) {
   try {
     // Read and parse JSON files
     const users: MongoUser[] = JSON.parse(
@@ -189,12 +242,6 @@ async function importData() {
       await fs.readFile(path.join(__dirname, './dumps/results.json'), 'utf-8')
     );
 
-    const multibar = new cliProgress.MultiBar({
-      clearOnComplete: false,
-      hideCursor: true,
-      format: '{bar} | {percentage}% | {value}/{total} | {title}',
-    }, cliProgress.Presets.shades_classic);
-
     // Create progress bars for each entity type
     const userBar = multibar.create(users.length, 0, { title: 'Users' });
     const patientBar = multibar.create(patients.length, 0, { title: 'Patients' });
@@ -202,6 +249,7 @@ async function importData() {
     const appointmentBar = multibar.create(appointments.length, 0, { title: 'Appointments' });
     const studyBar = multibar.create(studies.length, 0, { title: 'Studies' });
     const studyResultBar = multibar.create(studyResults.length, 0, { title: 'Study Results' });
+    // const icd10Bar = multibar.create(cie10.length, 0, { title: 'ICD-10' });
 
     // Get services
     const usersService = app.service('users');
@@ -669,7 +717,13 @@ async function importData() {
 
 // Run the import
 (async () => {
+  const multibar = new cliProgress.MultiBar({
+    clearOnComplete: false,
+    hideCursor: true,
+    format: '{bar} | {percentage}% | {value}/{total} | {title}',
+  }, cliProgress.Presets.shades_classic);
+
   await resetDatabase();
-  await seedData();
-  await importData();
+  await seedData(multibar);
+  await importData(multibar);
 })();
