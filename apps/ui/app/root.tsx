@@ -5,6 +5,9 @@ import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import coreStyles from '@mantine/core/styles.css?url';
 import notificationsStyles from '@mantine/notifications/styles.css?url';
+import { useTranslation } from 'react-i18next';
+import { useChangeLanguage } from 'remix-i18next/react';
+import i18next from '~/i18n/i18next.server';
 
 import { FeathersProvider } from '~/components/provider';
 import MainLayout from '~/components/main-layout';
@@ -27,13 +30,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const initialToken = await getToken(request);
   const initialUser = await getUser(request);
   const apiUrl = process.env.API_URL;
+  const locale = await i18next.getLocale(request);
 
-  return { initialToken, initialUser, apiUrl };
+  return { initialToken, initialUser, apiUrl, locale };
 };
 
 function Document({ children }: { children: React.ReactNode }) {
+  const { locale } = useLoaderData<typeof loader>() || { locale: 'es' };
+
   return (
-    <html lang="en">
+    <html lang={locale} dir="ltr">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -76,6 +82,9 @@ export const ErrorBoundary = () => {
 };
 
 export default function App() {
+  const { locale } = useLoaderData<typeof loader>() || { locale: 'es' };
+  useChangeLanguage(locale);
+
   return (
     <Document>
       <AppLayout>
