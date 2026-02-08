@@ -4,6 +4,8 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import groupBy from 'lodash/groupBy';
 import mapValues from 'lodash/mapValues';
+import { useTranslation } from 'react-i18next';
+
 import { styled } from '~/stitches';
 
 dayjs.locale('es');
@@ -86,6 +88,8 @@ const EncounterDateText = styled(Text, {
 // });
 
 const EncounterTree: FC<EncounterTreeProps> = ({ encounters, onEncounterClick }) => {
+  const { t } = useTranslation();
+
   // Group encounters by Year -> Month using lodash
   const groupedEncounters = mapValues(
     groupBy(encounters, encounter => dayjs(encounter.date).format('YYYY')),
@@ -120,24 +124,9 @@ const EncounterTree: FC<EncounterTreeProps> = ({ encounters, onEncounterClick })
                           .map((encounter: Encounter) => (
                             <EncounterBox key={encounter.id} onClick={() => onEncounterClick?.(encounter)}>
                               <EncounterDateText>{dayjs(encounter.date).format('dddd D, HH:mm')}</EncounterDateText>
-                              {/* <Stack gap={12}>
-                                {encounter.reason && <EncounterDetailText>{encounter.reason}</EncounterDetailText>}
-                                {encounter.motivo && (
-                                  <EncounterDetailText>Motivo de consulta-internación</EncounterDetailText>
-                                )}
-                                {encounter.antecedentes && (
-                                  <EncounterDetailText>Antecedentes Personales</EncounterDetailText>
-                                )}
-                                {encounter.evolucion && (
-                                  <EncounterDetailText>Evolución/evaluación de consulta-inte...</EncounterDetailText>
-                                )}
-                                {!encounter.motivo &&
-                                  !encounter.antecedentes &&
-                                  !encounter.evolucion &&
-                                  !encounter.reason && (
-                                    <EncounterDetailText>Evolución/evaluación de consulta-inte...</EncounterDetailText>
-                                  )}
-                              </Stack> */}
+                              {Object.keys(encounter.data).map(key => (
+                                <Text key={key}>{t(`forms.${encounter.data[key].type}` as any)}</Text>
+                              ))}
                             </EncounterBox>
                           ))}
                       </Stack>
