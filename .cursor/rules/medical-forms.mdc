@@ -1,6 +1,10 @@
 ---
 alwaysApply: true
 ---
+# General rules
+
+1. NEVER, ever, ever, ever, clean the DB without conscent. In fact, never run any code that touches the database unless explicitely told.
+
 # Medical Forms Styling Rules
 
 Adhere to these styling rules when creating or modifying medical forms in the `apps/ui/app/components/forms/` directory.
