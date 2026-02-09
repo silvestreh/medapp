@@ -4,7 +4,7 @@ import { disallow, softDelete } from 'feathers-hooks-common';
 import createPersonalData from '../../hooks/create-personal-data';
 import createContactData from '../../hooks/create-contact-data';
 import { checkPermissions } from '../../hooks/check-permissions';
-import { findByPersonalData } from './hooks/find-by-personal-data';
+import { findByPersonalData, sortByPersonalDataRank } from './hooks/find-by-personal-data';
 import includeData from '../../hooks/include-data';
 import { encryptFields, decryptFields } from '../../hooks/encryption';
 // Don't remove this comment. It's needed to format import lines nicely.
@@ -37,7 +37,8 @@ export default {
     find: [
       includeData('personal'),
       includeData('contact'),
-      decryptFields('medicareNumber', 'mugshot', 'gender')
+      decryptFields('medicareNumber', 'mugshot', 'gender'),
+      sortByPersonalDataRank()
     ],
     get: [
       includeData('personal'),

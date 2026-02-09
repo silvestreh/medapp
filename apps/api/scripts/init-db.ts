@@ -57,6 +57,36 @@ async function initDatabase() {
 
     // Enable unaccent extension for search
     await sequelize.query('CREATE EXTENSION IF NOT EXISTS unaccent');
+    await sequelize.query('CREATE EXTENSION IF NOT EXISTS pg_trgm');
+
+    // Create an immutable wrapper for unaccent because generated columns 
+    // require immutable functions, and unaccent is not immutable by default.
+    await sequelize.query(`
+      CREATE OR REPLACE FUNCTION immutable_unaccent(text)
+      RETURNS text AS $$
+      BEGIN
+        RETURN unaccent($1);
+      END;
+      $$ LANGUAGE plpgsql IMMUTABLE;
+    `);
+
+    // Add generated columns for search if they don't exist
+    // We drop them first to ensure they are created as GENERATED ALWAYS
+    await sequelize.query(`
+      ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchFirstName";
+      ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchLastName";
+      
+      ALTER TABLE "personal_data" 
+      ADD COLUMN "searchFirstName" text 
+      GENERATED ALWAYS AS (immutable_unaccent(lower("firstName"))) STORED;
+      
+      ALTER TABLE "personal_data" 
+      ADD COLUMN "searchLastName" text 
+      GENERATED ALWAYS AS (immutable_unaccent(lower("lastName"))) STORED;
+
+      CREATE INDEX IF NOT EXISTS personal_data_search_first_name_idx ON "personal_data" USING gin ("searchFirstName" gin_trgm_ops);
+      CREATE INDEX IF NOT EXISTS personal_data_search_last_name_idx ON "personal_data" USING gin ("searchLastName" gin_trgm_ops);
+    `);
 
     // Seed roles if needed
     const rolesService = app.service('roles');
