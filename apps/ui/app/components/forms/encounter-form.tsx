@@ -15,9 +15,10 @@ interface EncounterFormProps {
   encounter: any;
   readOnly?: boolean;
   activeFormKey?: string;
+  onValuesChange?: (values: any) => void;
 }
 
-export function EncounterForm({ encounter, readOnly, activeFormKey }: EncounterFormProps) {
+export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChange }: EncounterFormProps) {
   const { t } = useTranslation();
 
   // We use Mantine form to manage the aggregate state of all sub-forms
@@ -27,12 +28,14 @@ export function EncounterForm({ encounter, readOnly, activeFormKey }: EncounterF
 
   const handleSubFormChange = useCallback(
     (formKey: string) => (data: any) => {
-      form.setValues(prev => ({
-        ...prev,
+      const newValues = {
+        ...form.values,
         [formKey]: data,
-      }));
+      };
+      form.setValues(newValues);
+      onValuesChange?.(newValues);
     },
-    [] // eslint-disable-line react-hooks/exhaustive-deps
+    [form, onValuesChange]
   );
 
   const shouldShow = (formKey: string) => {
@@ -43,7 +46,7 @@ export function EncounterForm({ encounter, readOnly, activeFormKey }: EncounterF
   return (
     <Form method="post">
       {/* Hidden inputs to pass the aggregate data to the Remix action */}
-      <input type="hidden" name="encounterId" value={encounter.id} />
+      <input type="hidden" name="patientId" value={encounter.patientId} />
       <input type="hidden" name="data" value={JSON.stringify(form.values)} />
 
       <FormContainer>

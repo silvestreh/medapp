@@ -1,3 +1,6 @@
+---
+alwaysApply: true
+---
 # Medical Forms Styling Rules
 
 Adhere to these styling rules when creating or modifying medical forms in the `apps/ui/app/components/forms/` directory.
@@ -10,6 +13,7 @@ Adhere to these styling rules when creating or modifying medical forms in the `a
 4.  **Auto-Saving (onChange)**: Forms should NOT have an `onSubmit` callback or a submit button. Instead, they must accept an `onChange` prop. This callback should be invoked whenever any field value changes, typically by using `useDebouncedValue` from `@mantine/hooks` (e.g., 500ms) on the form values and triggering the `onChange` in a `useEffect`.
 5. **Mobile first**: Every component must work on mobile and adapt to larger screens. There's a `media` object exported from `~/stitches` to help with that.
 6. **Re-use**: Don't reinvent the wheel, when possible rely on `lodash` or `@mantine/hooks`.
+7. **Icons**: If icons are needed, always use `lucide-react` and never attempt to install another icon library.
 
 ## Styling Components
 

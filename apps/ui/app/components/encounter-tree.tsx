@@ -172,7 +172,7 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                               <EncounterDateText as="div" onClick={() => onEncounterClick?.(encounter)}>
                                 {dayjs(encounter.date).format('dddd D, HH:mm')}
                               </EncounterDateText>
-                              {Object.keys(encounter.data).map(key => (
+                              {encounter.data && Object.keys(encounter.data).map(key => (
                                 <FormItem
                                   key={key}
                                   onClick={e => handleFormItemClick(e, encounter, key)}

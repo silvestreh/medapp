@@ -79,14 +79,17 @@ export function ReasonForConsultationForm({ initialData, onChange, readOnly }: R
       // Only trigger onChange if values have actually changed
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
-      if (hasChanged) {
+      // If we don't have initial data, only trigger if we have something meaningful to report
+      const hasData = debouncedValues.reasons.some(item => item.reason || item.description);
+
+      if (hasChanged && (initialData || hasData)) {
         onChange({
           type: 'general/consulta_internacion',
           values: resultValues,
         });
       }
     }
-  }, [debouncedValues, onChange, readOnly, initialData?.values]);
+  }, [debouncedValues, onChange, readOnly, initialData]);
 
   return (
     <FormContainer>

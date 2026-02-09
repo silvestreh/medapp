@@ -75,4 +75,10 @@ export const en: typeof es = {
     evolution_description_label: 'Description',
     evolution_placeholder: 'Type the evolution here...',
   },
+  encounters: {
+    new: 'New Encounter',
+    active_forms: 'Active Forms',
+    available_forms: 'Add Form',
+    select_form_instruction: 'Select a form from the list to start the encounter.',
+  },
 };

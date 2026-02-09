@@ -78,14 +78,17 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
 
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
-      if (hasChanged) {
+      // If we don't have initial data, only trigger if we have something meaningful to report
+      const hasData = debouncedValues.items.some(item => item.issueId || item.date || item.description);
+
+      if (hasChanged && (initialData || hasData)) {
         onChange({
           type: 'antecedentes/personales',
           values: resultValues,
         });
       }
     }
-  }, [debouncedValues, onChange, readOnly, initialData?.values]);
+  }, [debouncedValues, onChange, readOnly, initialData]);
 
   return (
     <FormContainer>

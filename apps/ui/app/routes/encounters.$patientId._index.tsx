@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
-import { Title, Stack } from '@mantine/core';
+import { Link, useLoaderData } from '@remix-run/react';
+import { useTranslation } from 'react-i18next';
+import { Group, Title, Stack, Button } from '@mantine/core';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import EncounterTree from '~/components/encounter-tree';
@@ -42,13 +43,21 @@ export const meta: MetaFunction = () => {
   return [{ title: 'MedApp / Detalle de Encuentro' }];
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const { client } = await getAuthenticatedClient(request);
+export const action = async ({ params, request }: ActionFunctionArgs) => {
+  const { patientId } = params;
+
+  if (!patientId) {
+    throw new Response('Patient ID is required', { status: 400 });
+  }
+
+  const { client, user } = await getAuthenticatedClient(request);
   const formData = await request.formData();
-  const encounterId = formData.get('encounterId') as string;
   const data = JSON.parse(formData.get('data') as string);
 
-  await client.service('encounters').patch(encounterId, {
+  await client.service('encounters').create({
+    patientId,
+    medicId: user.id,
+    date: new Date(),
     data,
   });
 
@@ -89,7 +98,13 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 });
 
 export default function PatientEncounterDetail() {
+  const { t } = useTranslation();
   const data = useLoaderData<typeof loader>();
+
+  if (!data) {
+    return null;
+  }
+
   const [selectedEncounter, setSelectedEncounter] = useState<any>(null);
   const [activeFormKey, setActiveFormKey] = useState<string | undefined>(undefined);
 
@@ -106,9 +121,14 @@ export default function PatientEncounterDetail() {
   return (
     <Container className="encounters-container">
       <Portal id="toolbar">
-        <Title order={2}>
-          {data.patient.personalData.firstName} {data.patient.personalData.lastName}
-        </Title>
+        <Group justify="space-between" align="center" style={{ width: '100%' }}>
+          <Title order={2}>
+            {data.patient.personalData.firstName} {data.patient.personalData.lastName}
+          </Title>
+          <Button component={Link} to={`/encounters/${data.patient.id}/new`}>
+            {t('encounters.new')}
+          </Button>
+        </Group>
       </Portal>
 
       <Sidebar>
@@ -126,7 +146,7 @@ export default function PatientEncounterDetail() {
           {selectedEncounter && (
             <EncounterForm
               encounter={selectedEncounter}
-              readOnly={false}
+              readOnly={!!selectedEncounter.id}
               activeFormKey={activeFormKey}
             />
           )}
