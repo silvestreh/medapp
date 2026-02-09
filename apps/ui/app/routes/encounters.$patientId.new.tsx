@@ -54,8 +54,6 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const data = JSON.parse(formData.get('data') as string);
 
-  console.log(data);
-
   await client.service('encounters').create({
     patientId,
     medicId: user.id,

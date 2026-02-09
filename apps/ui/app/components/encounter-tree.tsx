@@ -92,11 +92,7 @@ const EncounterDateText = styled(Text, {
   fontSize: '1rem', // md
   color: 'var(--mantine-color-gray-7)', // gray.7
   marginBottom: '1rem',
-  cursor: 'pointer',
-
-  '&:hover': {
-    color: 'var(--mantine-color-blue-6)',
-  },
+  cursor: 'default',
 });
 
 const FormItem = styled('div', {
@@ -169,7 +165,7 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                               key={encounter.id}
                               active={activeEncounterId === encounter.id && !activeFormKey}
                             >
-                              <EncounterDateText as="div" onClick={() => onEncounterClick?.(encounter)}>
+                              <EncounterDateText as="div">
                                 {dayjs(encounter.date).format('dddd D, HH:mm')}
                               </EncounterDateText>
                               {encounter.data && Object.keys(encounter.data).map(key => (

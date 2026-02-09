@@ -1,7 +1,7 @@
 import { Button, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
-import { Form } from '@remix-run/react';
+import { Form, useSubmit } from '@remix-run/react';
 import { useCallback } from 'react';
 
 import { ReasonForConsultationForm } from '~/components/forms/reason-for-consultation-form';
@@ -20,6 +20,7 @@ interface EncounterFormProps {
 
 export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChange }: EncounterFormProps) {
   const { t } = useTranslation();
+  const submit = useSubmit();
 
   // We use Mantine form to manage the aggregate state of all sub-forms
   const form = useForm({
@@ -43,8 +44,12 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
     return activeFormKey === formKey;
   };
 
+  const handleSave = useCallback(() => {
+    submit({ data: JSON.stringify(form.values) }, { method: 'post' });
+  }, [form.values, submit]);
+
   return (
-    <Form method="post">
+    <Form method="post" id="encounter-form">
       {/* Hidden inputs to pass the aggregate data to the Remix action */}
       <input type="hidden" name="patientId" value={encounter.patientId} />
       <input type="hidden" name="data" value={JSON.stringify(form.values)} />
@@ -85,7 +90,7 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
 
           {!readOnly && (
             <Portal id="form-actions">
-              <Button type="submit">{t('common.save')}</Button>
+              <Button onClick={handleSave}>{t('common.save')}</Button>
             </Portal>
           )}
         </Stack>
