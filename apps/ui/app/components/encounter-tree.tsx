@@ -19,9 +19,10 @@ interface Encounter {
 
 interface EncounterTreeProps {
   encounters: Encounter[];
+  onEncounterClick?: (encounter: Encounter) => void;
+  onFormClick?: (encounter: Encounter, formKey: string) => void;
   activeEncounterId?: string;
   activeFormKey?: string;
-  onFormClick?: (encounter: Encounter, formKey: string) => void;
 }
 
 const StyledAccordion = styled(Accordion, {
@@ -91,6 +92,11 @@ const EncounterDateText = styled(Text, {
   fontSize: '1rem', // md
   color: 'var(--mantine-color-gray-7)', // gray.7
   marginBottom: '1rem',
+  cursor: 'pointer',
+
+  '&:hover': {
+    color: 'var(--mantine-color-blue-6)',
+  },
 });
 
 const FormItem = styled('div', {
@@ -110,7 +116,13 @@ const FormItem = styled('div', {
   },
 });
 
-const EncounterTree: FC<EncounterTreeProps> = ({ encounters, activeEncounterId, activeFormKey, onFormClick }) => {
+const EncounterTree: FC<EncounterTreeProps> = ({
+  encounters,
+  activeEncounterId,
+  activeFormKey,
+  onFormClick,
+  onEncounterClick,
+}) => {
   const { t } = useTranslation();
 
   const handleFormItemClick = useCallback(
@@ -157,7 +169,9 @@ const EncounterTree: FC<EncounterTreeProps> = ({ encounters, activeEncounterId, 
                               key={encounter.id}
                               active={activeEncounterId === encounter.id && !activeFormKey}
                             >
-                              <EncounterDateText>{dayjs(encounter.date).format('dddd D, HH:mm')}</EncounterDateText>
+                              <EncounterDateText as="div" onClick={() => onEncounterClick?.(encounter)}>
+                                {dayjs(encounter.date).format('dddd D, HH:mm')}
+                              </EncounterDateText>
                               {Object.keys(encounter.data).map(key => (
                                 <FormItem
                                   key={key}
