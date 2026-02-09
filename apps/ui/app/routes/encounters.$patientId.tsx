@@ -38,9 +38,10 @@ const Sidebar = styled('div', {
 const Content = styled('div', {
   flex: 1,
   height: '100%',
-  padding: '2rem',
+  padding: '1rem',
 
   '@lg': {
+    padding: '2rem',
     position: 'sticky',
     top: '5rem',
   },

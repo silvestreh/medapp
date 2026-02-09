@@ -5,7 +5,7 @@ import { styled } from '~/stitches';
 export const FormContainer = styled('div', {
   display: 'flex',
   flexDirection: 'column',
-  gap: '2rem',
+  gap: '0.5rem',
   width: '100%',
 });
 
@@ -44,12 +44,14 @@ export const Label = styled(Text, {
 
 export const StyledTextInput = styled(TextInput, {
   flex: 1,
+
   '& .mantine-TextInput-input': {
     border: 'none',
     padding: 0,
     height: 'auto',
     minHeight: '1.5rem',
     lineHeight: 1.75,
+
     '&:focus': {
       boxShadow: 'none',
     },
@@ -58,12 +60,14 @@ export const StyledTextInput = styled(TextInput, {
 
 export const StyledTextarea = styled(Textarea, {
   flex: 1,
+
   '& .mantine-Textarea-input': {
     border: 'none',
     padding: 0,
     height: 'auto',
     minHeight: '1.5rem',
     lineHeight: 1.75,
+
     '&:focus': {
       boxShadow: 'none',
     },

@@ -2,6 +2,7 @@ import { ActionIcon, Button, Stack, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
 import {
   FormContainer,
   FormCard,
@@ -12,7 +13,7 @@ import {
   StyledTitle,
   FormHeader,
   ItemHeader,
-} from './styles';
+} from '~/components/forms/styles';
 
 interface ReasonValue {
   reason: string;

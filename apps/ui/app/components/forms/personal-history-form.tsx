@@ -14,7 +14,7 @@ import {
   StyledTitle,
   FormHeader,
   ItemHeader,
-} from './styles';
+} from '~/components/forms/styles';
 
 interface PersonalHistoryItem {
   issueId: string;
