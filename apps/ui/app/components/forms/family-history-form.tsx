@@ -1,54 +1,24 @@
-import { ActionIcon, Button, Checkbox, Select, Table, TextInput, Text, Group, Stack } from '@mantine/core';
+import { ActionIcon, Button, Checkbox, Select, Table, TextInput, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useMediaQuery } from '@mantine/hooks';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
-import { styled, media } from '~/stitches';
+import { useDebouncedValue } from '@mantine/hooks';
+import { useEffect } from 'react';
+import { styled } from '~/stitches';
 import { Icd10Selector } from '~/components/icd10-selector';
-import { StyledTitle, FormHeader, FormContainer } from '~/components/forms/styles';
+import { FormContainer, StyledTitle, FormHeader, FormCard } from './styles';
 
 const StyledTable = styled(Table, {
-  backgroundColor: 'white',
-  border: '1px solid var(--mantine-color-gray-2)',
-  borderRadius: 'var(--mantine-radius-md)',
-
   '& thead tr th': {
     color: 'var(--mantine-color-gray-6)',
     fontWeight: 600,
     fontSize: 'var(--mantine-font-size-sm)',
-    padding: '0.5rem 1rem',
+    padding: '0.5rem',
   },
-
   '& tbody tr td': {
-    padding: '0.25rem 1rem',
+    padding: '0.25rem',
     verticalAlign: 'middle',
   },
-});
-
-const MobileCard = styled('div', {
-  backgroundColor: 'white',
-  border: '1px solid var(--mantine-color-gray-2)',
-  borderRadius: 'var(--mantine-radius-md)',
-  padding: '1rem',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.75rem',
-  position: 'relative',
-});
-
-const MobileField = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.25rem',
-  flex: 1,
-});
-
-const MobileLabel = styled(Text, {
-  fontSize: 'var(--mantine-font-size-xs)',
-  fontWeight: 600,
-  color: 'var(--mantine-color-gray-6)',
-  textTransform: 'uppercase',
 });
 
 interface FamilyHistoryItem {
@@ -64,13 +34,12 @@ interface FamilyHistoryFormProps {
     type: string;
     values: Record<string, string>;
   };
-  onSubmit: (data: { type: string; values: Record<string, string> }) => void;
+  onChange: (data: { type: string; values: Record<string, string> }) => void;
   readOnly?: boolean;
 }
 
-export function FamilyHistoryForm({ initialData, onSubmit, readOnly }: FamilyHistoryFormProps) {
+export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHistoryFormProps) {
   const { t } = useTranslation();
-  const isDesktop = useMediaQuery(media.lg);
 
   const relationshipOptions = [
     {
@@ -132,7 +101,6 @@ export function FamilyHistoryForm({ initialData, onSubmit, readOnly }: FamilyHis
     const issuesJson = (initialData.values.fam_table_json_antecedentes as unknown as string[]) || [];
 
     const items: FamilyHistoryItem[] = relationships.map((rel, i) => {
-      // Find the value for the relationship label
       let relationshipValue = rel;
       for (const group of relationshipOptions) {
         const found = group.items.find(item => item.label === rel);
@@ -168,155 +136,82 @@ export function FamilyHistoryForm({ initialData, onSubmit, readOnly }: FamilyHis
     },
   });
 
-  const handleSubmit = (values: typeof form.values) => {
-    const resultValues: Record<string, string[]> = {
-      fam_table_parentesco: values.items.map(item => getRelationshipLabel(item.relationship)),
-      fam_table_nombre: values.items.map(item => item.firstName),
-      fam_table_apellido: values.items.map(item => item.lastName),
-      fam_table_vive: values.items.map(item =>
-        item.isAlive ? t('forms.family_history_yes') : t('forms.family_history_no')
-      ),
-      fam_table_json_antecedentes: values.items.map(item => JSON.stringify(item.issueId ? [item.issueId] : [])),
-    };
+  const [debouncedValues] = useDebouncedValue(form.values, 500);
 
-    onSubmit({
-      type: 'antecedentes/familiares',
-      values: resultValues as any,
-    });
-  };
+  useEffect(() => {
+    if (!readOnly) {
+      const resultValues = {
+        fam_table_parentesco: debouncedValues.items.map(item => getRelationshipLabel(item.relationship)),
+        fam_table_nombre: debouncedValues.items.map(item => item.firstName),
+        fam_table_apellido: debouncedValues.items.map(item => item.lastName),
+        fam_table_vive: debouncedValues.items.map(item =>
+          item.isAlive ? t('forms.family_history_yes') : t('forms.family_history_no')
+        ),
+        fam_table_json_antecedentes: debouncedValues.items.map(item =>
+          JSON.stringify(item.issueId ? [item.issueId] : [])
+        ),
+      };
+
+      const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
+
+      if (hasChanged) {
+        onChange({
+          type: 'antecedentes/familiares',
+          values: resultValues as any,
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedValues, onChange, readOnly, t, initialData?.values]);
 
   return (
-    <form onSubmit={form.onSubmit(handleSubmit)}>
-      <FormContainer>
-        <FormHeader>
-          <StyledTitle order={1}>{t('forms.family_history_title')}</StyledTitle>
-          {!readOnly && (
-            <Button
-              variant="light"
-              leftSection={<Plus size={16} />}
-              onClick={() =>
-                form.insertListItem('items', {
-                  relationship: '',
-                  isAlive: true,
-                  firstName: '',
-                  lastName: '',
-                  issueId: '',
-                })
-              }
-              radius="xl"
-              color="gray"
-              styles={{
-                root: {
-                  backgroundColor: 'var(--mantine-color-gray-1)',
-                  color: 'var(--mantine-color-gray-7)',
-                  border: '1px solid var(--mantine-color-gray-2)',
-                },
-              }}
-            >
-              {t('forms.family_history_add')}
-            </Button>
-          )}
-        </FormHeader>
+    <FormContainer>
+      <FormHeader>
+        <StyledTitle order={1}>{t('forms.family_history_title')}</StyledTitle>
+        {!readOnly && (
+          <Button
+            variant="light"
+            leftSection={<Plus size={16} />}
+            onClick={() =>
+              form.insertListItem('items', {
+                relationship: '',
+                isAlive: true,
+                firstName: '',
+                lastName: '',
+                issueId: '',
+              })
+            }
+            radius="xl"
+            color="gray"
+            styles={{
+              root: {
+                backgroundColor: 'var(--mantine-color-gray-1)',
+                color: 'var(--mantine-color-gray-7)',
+                border: '1px solid var(--mantine-color-gray-2)',
+              },
+            }}
+          >
+            {t('forms.family_history_add')}
+          </Button>
+        )}
+      </FormHeader>
 
-        {isDesktop ? (
-          <StyledTable verticalSpacing="xs">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th style={{ width: '200px' }}>{t('forms.family_history_relationship')}</Table.Th>
-                <Table.Th style={{ width: '80px' }}>{t('forms.family_history_alive')}</Table.Th>
-                <Table.Th>{t('forms.family_history_first_name')}</Table.Th>
-                <Table.Th>{t('forms.family_history_last_name')}</Table.Th>
-                <Table.Th style={{ width: '300px' }}>{t('forms.family_history_issue')}</Table.Th>
-                {!readOnly && <Table.Th style={{ width: '50px' }}></Table.Th>}
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {form.values.items.map((item, index) => (
-                <Table.Tr key={index}>
-                  <Table.Td>
-                    {readOnly ? (
-                      <Text size="sm">{getRelationshipLabel(item.relationship)}</Text>
-                    ) : (
-                      <Select
-                        data={relationshipOptions}
-                        placeholder={t('forms.family_history_relationship')}
-                        {...form.getInputProps(`items.${index}.relationship`)}
-                        variant="unstyled"
-                        styles={{ input: { paddingLeft: 0 } }}
-                      />
-                    )}
-                  </Table.Td>
-                  <Table.Td>
-                    {readOnly ? (
-                      <Text size="sm">
-                        {item.isAlive ? t('forms.family_history_yes') : t('forms.family_history_no')}
-                      </Text>
-                    ) : (
-                      <Checkbox
-                        {...form.getInputProps(`items.${index}.isAlive`, { type: 'checkbox' })}
-                        styles={{ input: { cursor: 'pointer' } }}
-                      />
-                    )}
-                  </Table.Td>
-                  <Table.Td>
-                    <TextInput
-                      placeholder={t('forms.family_history_first_name')}
-                      {...form.getInputProps(`items.${index}.firstName`)}
-                      variant="unstyled"
-                      readOnly={readOnly}
-                      styles={{ input: { paddingLeft: 0 } }}
-                    />
-                  </Table.Td>
-                  <Table.Td>
-                    <TextInput
-                      placeholder={t('forms.family_history_last_name')}
-                      {...form.getInputProps(`items.${index}.lastName`)}
-                      variant="unstyled"
-                      readOnly={readOnly}
-                      styles={{ input: { paddingLeft: 0 } }}
-                    />
-                  </Table.Td>
-                  <Table.Td>
-                    <Icd10Selector
-                      value={item.issueId}
-                      onChange={val => form.setFieldValue(`items.${index}.issueId`, val)}
-                      readOnly={readOnly}
-                    />
-                  </Table.Td>
-                  {!readOnly && (
-                    <Table.Td>
-                      <ActionIcon
-                        color="red"
-                        variant="subtle"
-                        onClick={() => form.removeListItem('items', index)}
-                        disabled={form.values.items.length === 1}
-                      >
-                        <Trash size={16} />
-                      </ActionIcon>
-                    </Table.Td>
-                  )}
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </StyledTable>
-        ) : (
-          <Stack gap="md">
+      <FormCard>
+        <StyledTable verticalSpacing="xs">
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th style={{ width: '180px' }}>{t('forms.family_history_relationship')}</Table.Th>
+              <Table.Th style={{ width: '50px' }}>{t('forms.family_history_alive')}</Table.Th>
+              <Table.Th>{t('forms.family_history_first_name')}</Table.Th>
+              <Table.Th>{t('forms.family_history_last_name')}</Table.Th>
+              <Table.Th style={{ width: '300px' }}>{t('forms.family_history_issue')}</Table.Th>
+              {!readOnly && <Table.Th style={{ width: '50px' }}></Table.Th>}
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
             {form.values.items.map((item, index) => (
-              <MobileCard key={index}>
-                {!readOnly && (
-                  <ActionIcon
-                    color="red"
-                    variant="subtle"
-                    onClick={() => form.removeListItem('items', index)}
-                    disabled={form.values.items.length === 1}
-                    style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}
-                  >
-                    <Trash size={16} />
-                  </ActionIcon>
-                )}
-
-                <MobileField>
-                  <MobileLabel>{t('forms.family_history_relationship')}</MobileLabel>
+              <Table.Tr key={index}>
+                <Table.Td pl="lg">
                   {readOnly ? (
                     <Text size="sm">{getRelationshipLabel(item.relationship)}</Text>
                   ) : (
@@ -324,58 +219,65 @@ export function FamilyHistoryForm({ initialData, onSubmit, readOnly }: FamilyHis
                       data={relationshipOptions}
                       placeholder={t('forms.family_history_relationship')}
                       {...form.getInputProps(`items.${index}.relationship`)}
-                      variant="filled"
+                      variant="unstyled"
+                      styles={{ input: { paddingLeft: 0 } }}
                     />
                   )}
-                </MobileField>
-
-                <MobileField>
-                  <MobileLabel>{t('forms.family_history_alive')}</MobileLabel>
+                </Table.Td>
+                <Table.Td ta={readOnly ? 'left' : 'center'}>
                   {readOnly ? (
                     <Text size="sm">{item.isAlive ? t('forms.family_history_yes') : t('forms.family_history_no')}</Text>
                   ) : (
                     <Checkbox
-                      label={t('forms.family_history_alive')}
                       {...form.getInputProps(`items.${index}.isAlive`, { type: 'checkbox' })}
                       styles={{ input: { cursor: 'pointer' } }}
+                      mx="auto"
+                      display="block"
                     />
                   )}
-                </MobileField>
-
-                <Group grow>
-                  <MobileField>
-                    <MobileLabel>{t('forms.family_history_first_name')}</MobileLabel>
-                    <TextInput
-                      placeholder={t('forms.family_history_first_name')}
-                      {...form.getInputProps(`items.${index}.firstName`)}
-                      variant={readOnly ? 'unstyled' : 'filled'}
-                      readOnly={readOnly}
-                    />
-                  </MobileField>
-                  <MobileField>
-                    <MobileLabel>{t('forms.family_history_last_name')}</MobileLabel>
-                    <TextInput
-                      placeholder={t('forms.family_history_last_name')}
-                      {...form.getInputProps(`items.${index}.lastName`)}
-                      variant={readOnly ? 'unstyled' : 'filled'}
-                      readOnly={readOnly}
-                    />
-                  </MobileField>
-                </Group>
-
-                <MobileField>
-                  <MobileLabel>{t('forms.family_history_issue')}</MobileLabel>
+                </Table.Td>
+                <Table.Td>
+                  <TextInput
+                    placeholder={t('forms.family_history_first_name')}
+                    {...form.getInputProps(`items.${index}.firstName`)}
+                    variant="unstyled"
+                    readOnly={readOnly}
+                    styles={{ input: { paddingLeft: 0 } }}
+                  />
+                </Table.Td>
+                <Table.Td>
+                  <TextInput
+                    placeholder={t('forms.family_history_last_name')}
+                    {...form.getInputProps(`items.${index}.lastName`)}
+                    variant="unstyled"
+                    readOnly={readOnly}
+                    styles={{ input: { paddingLeft: 0 } }}
+                  />
+                </Table.Td>
+                <Table.Td>
                   <Icd10Selector
                     value={item.issueId}
                     onChange={val => form.setFieldValue(`items.${index}.issueId`, val)}
                     readOnly={readOnly}
                   />
-                </MobileField>
-              </MobileCard>
+                </Table.Td>
+                {!readOnly && (
+                  <Table.Td>
+                    <ActionIcon
+                      color="red"
+                      variant="subtle"
+                      onClick={() => form.removeListItem('items', index)}
+                      disabled={form.values.items.length === 1}
+                    >
+                      <Trash size={16} />
+                    </ActionIcon>
+                  </Table.Td>
+                )}
+              </Table.Tr>
             ))}
-          </Stack>
-        )}
-      </FormContainer>
-    </form>
+          </Table.Tbody>
+        </StyledTable>
+      </FormCard>
+    </FormContainer>
   );
 }

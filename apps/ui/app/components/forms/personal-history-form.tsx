@@ -2,6 +2,8 @@ import { ActionIcon, Button, Stack, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useDebouncedValue } from '@mantine/hooks';
+import { useEffect } from 'react';
 import dayjs from 'dayjs';
 import { Icd10Selector } from '~/components/icd10-selector';
 import {
@@ -14,7 +16,7 @@ import {
   StyledTitle,
   FormHeader,
   ItemHeader,
-} from '~/components/forms/styles';
+} from './styles';
 
 interface PersonalHistoryItem {
   issueId: string;
@@ -27,11 +29,11 @@ interface PersonalHistoryFormProps {
     type: string;
     values: Record<string, string>;
   };
-  onSubmit: (data: { type: string; values: Record<string, string> }) => void;
+  onChange: (data: { type: string; values: Record<string, string> }) => void;
   readOnly?: boolean;
 }
 
-export function PersonalHistoryForm({ initialData, onSubmit, readOnly }: PersonalHistoryFormProps) {
+export function PersonalHistoryForm({ initialData, onChange, readOnly }: PersonalHistoryFormProps) {
   const { t } = useTranslation();
 
   const parseInitialValues = () => {
@@ -60,96 +62,102 @@ export function PersonalHistoryForm({ initialData, onSubmit, readOnly }: Persona
     },
   });
 
-  const handleSubmit = (values: typeof form.values) => {
-    const resultValues: Record<string, string> = {
-      antecedente_count: values.items.length.toString(),
-    };
+  const [debouncedValues] = useDebouncedValue(form.values, 500);
 
-    values.items.forEach((item, index) => {
-      resultValues[`antecedente_${index}`] = item.issueId;
-      resultValues[`fecha_antecedente_${index}`] = item.date ? dayjs(item.date).format('YYYY-MM-DD') : '';
-      resultValues[`antecedente_descripcion_${index}`] = item.description;
-    });
+  useEffect(() => {
+    if (!readOnly) {
+      const resultValues: Record<string, string> = {
+        antecedente_count: debouncedValues.items.length.toString(),
+      };
 
-    onSubmit({
-      type: 'antecedentes/personales',
-      values: resultValues,
-    });
-  };
+      debouncedValues.items.forEach((item, index) => {
+        resultValues[`antecedente_${index}`] = item.issueId;
+        resultValues[`fecha_antecedente_${index}`] = item.date ? dayjs(item.date).format('YYYY-MM-DD') : '';
+        resultValues[`antecedente_descripcion_${index}`] = item.description;
+      });
+
+      const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
+
+      if (hasChanged) {
+        onChange({
+          type: 'antecedentes/personales',
+          values: resultValues,
+        });
+      }
+    }
+  }, [debouncedValues, onChange, readOnly, initialData?.values]);
 
   return (
-    <form onSubmit={form.onSubmit(handleSubmit)}>
-      <FormContainer>
-        <FormHeader>
-          <StyledTitle order={1}>{t('forms.personal_history_title')}</StyledTitle>
-          {!readOnly && (
-            <Button
-              variant="light"
-              leftSection={<Plus size={16} />}
-              onClick={() => form.insertListItem('items', { issueId: '', date: null, description: '' })}
-              radius="xl"
-              color="gray"
-              styles={{
-                root: {
-                  backgroundColor: 'var(--mantine-color-gray-1)',
-                  color: 'var(--mantine-color-gray-7)',
-                  border: '1px solid var(--mantine-color-gray-2)',
-                },
-              }}
-            >
-              {t('forms.personal_history_add')}
-            </Button>
-          )}
-        </FormHeader>
+    <FormContainer>
+      <FormHeader>
+        <StyledTitle order={1}>{t('forms.personal_history_title')}</StyledTitle>
+        {!readOnly && (
+          <Button
+            variant="light"
+            leftSection={<Plus size={16} />}
+            onClick={() => form.insertListItem('items', { issueId: '', date: null, description: '' })}
+            radius="xl"
+            color="gray"
+            styles={{
+              root: {
+                backgroundColor: 'var(--mantine-color-gray-1)',
+                color: 'var(--mantine-color-gray-7)',
+                border: '1px solid var(--mantine-color-gray-2)',
+              },
+            }}
+          >
+            {t('forms.personal_history_add')}
+          </Button>
+        )}
+      </FormHeader>
 
-        <Stack gap="lg">
-          {form.values.items.map((_, index) => (
-            <div key={index}>
-              <ItemHeader>
-                <Text size="xl" c="dimmed" fw={500}>
-                  {t('forms.personal_history_item_title', { index: index + 1 })}
-                </Text>
-                {!readOnly && form.values.items.length > 1 && (
-                  <ActionIcon color="red" variant="subtle" onClick={() => form.removeListItem('items', index)}>
-                    <Trash size={16} />
-                  </ActionIcon>
-                )}
-              </ItemHeader>
-              <FormCard>
-                <FieldRow>
-                  <Label>{t('forms.personal_history_label')}:</Label>
-                  <Icd10Selector
-                    value={form.values.items[index].issueId}
-                    onChange={val => form.setFieldValue(`items.${index}.issueId`, val)}
-                    placeholder={t('forms.personal_history_placeholder_search')}
-                    readOnly={readOnly}
-                  />
-                </FieldRow>
-                <FieldRow>
-                  <Label>{t('forms.personal_history_date')}:</Label>
-                  <StyledDateInput
-                    placeholder={t('forms.personal_history_placeholder_date')}
-                    {...form.getInputProps(`items.${index}.date`)}
-                    readOnly={readOnly}
-                    valueFormat="DD/MM/YYYY"
-                    clearable={!readOnly}
-                  />
-                </FieldRow>
-                <FieldRow>
-                  <Label>{t('forms.personal_history_description')}:</Label>
-                  <StyledTextarea
-                    placeholder={t('forms.personal_history_placeholder_description')}
-                    {...form.getInputProps(`items.${index}.description`)}
-                    readOnly={readOnly}
-                    autosize
-                    minRows={1}
-                  />
-                </FieldRow>
-              </FormCard>
-            </div>
-          ))}
-        </Stack>
-      </FormContainer>
-    </form>
+      <Stack gap="lg">
+        {form.values.items.map((_, index) => (
+          <div key={index}>
+            <ItemHeader>
+              <Text size="xl" c="dimmed" fw={500}>
+                {t('forms.personal_history_item_title', { index: index + 1 })}
+              </Text>
+              {!readOnly && form.values.items.length > 1 && (
+                <ActionIcon color="red" variant="subtle" onClick={() => form.removeListItem('items', index)}>
+                  <Trash size={16} />
+                </ActionIcon>
+              )}
+            </ItemHeader>
+            <FormCard>
+              <FieldRow>
+                <Label>{t('forms.personal_history_label')}:</Label>
+                <Icd10Selector
+                  value={form.values.items[index].issueId}
+                  onChange={val => form.setFieldValue(`items.${index}.issueId`, val)}
+                  placeholder={t('forms.personal_history_placeholder_search')}
+                  readOnly={readOnly}
+                />
+              </FieldRow>
+              <FieldRow>
+                <Label>{t('forms.personal_history_date')}:</Label>
+                <StyledDateInput
+                  placeholder={t('forms.personal_history_placeholder_date')}
+                  {...form.getInputProps(`items.${index}.date`)}
+                  readOnly={readOnly}
+                  valueFormat="DD/MM/YYYY"
+                  clearable={!readOnly}
+                />
+              </FieldRow>
+              <FieldRow>
+                <Label>{t('forms.personal_history_description')}:</Label>
+                <StyledTextarea
+                  placeholder={t('forms.personal_history_placeholder_description')}
+                  {...form.getInputProps(`items.${index}.description`)}
+                  readOnly={readOnly}
+                  autosize
+                  minRows={1}
+                />
+              </FieldRow>
+            </FormCard>
+          </div>
+        ))}
+      </Stack>
+    </FormContainer>
   );
 }
