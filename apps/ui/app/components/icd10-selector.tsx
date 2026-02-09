@@ -1,6 +1,19 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { TextInput, Popover, ScrollArea, Box, Text, Loader, ActionIcon, Stack, Badge, Group } from '@mantine/core';
+import {
+  TextInput,
+  Popover,
+  ScrollArea,
+  Box,
+  Text,
+  Flex,
+  Loader,
+  ActionIcon,
+  Stack,
+  Badge,
+  Group,
+} from '@mantine/core';
 import { ChevronRight, ChevronDown, Search, X, Check } from 'lucide-react';
+
 import { useFeathers } from '~/components/provider';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/stitches';
@@ -405,7 +418,7 @@ export function Icd10Selector({
   }, [multiSelect, values, selectedNames]);
 
   return (
-    <Box>
+    <Flex direction="column" flex={1}>
       <Popover
         opened={opened && !readOnly}
         onChange={setOpened}
@@ -431,7 +444,7 @@ export function Icd10Selector({
                 flexWrap: 'wrap',
                 gap: '4px',
                 alignItems: 'center',
-                padding: '4px 0',
+                padding: '0',
               },
             }}
             onClick={() => !readOnly && setOpened(true)}
@@ -521,6 +534,6 @@ export function Icd10Selector({
           </Popover.Dropdown>
         )}
       </Popover>
-    </Box>
+    </Flex>
   );
 }
