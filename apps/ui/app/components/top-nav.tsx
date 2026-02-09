@@ -19,6 +19,18 @@ const Logo = styled(Image, {
 const Toolbar = styled(Group, {
   alignItems: 'center',
   flex: 1,
+
+  '&:empty': {
+    display: 'none',
+  },
+});
+
+const FormActions = styled(Group, {
+  alignItems: 'center',
+
+  '&:empty': {
+    display: 'none',
+  },
 });
 
 const Container = styled('div', {
@@ -55,6 +67,7 @@ export default function TopNav() {
     <Container>
       <Logo src="/logo.webp" alt="Logo" />
       <Toolbar id="toolbar" />
+      <FormActions id="form-actions" />
       <LogoutButton />
     </Container>
   );
