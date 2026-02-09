@@ -56,9 +56,41 @@ export async function resetDatabase() {
     await sequelize.query('CREATE EXTENSION IF NOT EXISTS unaccent;');
     console.log('unaccent extension created successfully.');
 
+    // Create an immutable wrapper for unaccent because generated columns 
+    // require immutable functions, and unaccent is not immutable by default.
+    await sequelize.query(`
+      CREATE OR REPLACE FUNCTION immutable_unaccent(text)
+      RETURNS text AS $$
+      BEGIN
+        RETURN unaccent($1);
+      END;
+      $$ LANGUAGE plpgsql IMMUTABLE;
+    `);
+    console.log('immutable_unaccent function created successfully.');
+
+    await sequelize.query('CREATE EXTENSION IF NOT EXISTS pg_trgm;');
+    console.log('pg_trgm extension created successfully.');
+
     // Sync models
     await sequelize.sync({ force: true });
     console.log('All tables created successfully.');
+
+    // Add generated columns for search
+    await sequelize.query(`
+      ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchFirstName";
+      ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchLastName";
+
+      ALTER TABLE "personal_data" 
+      ADD COLUMN "searchFirstName" text 
+      GENERATED ALWAYS AS (immutable_unaccent(lower("firstName"))) STORED;
+      
+      ALTER TABLE "personal_data" 
+      ADD COLUMN "searchLastName" text 
+      GENERATED ALWAYS AS (immutable_unaccent(lower("lastName"))) STORED;
+
+      CREATE INDEX IF NOT EXISTS personal_data_search_first_name_idx ON "personal_data" USING gin ("searchFirstName" gin_trgm_ops);
+      CREATE INDEX IF NOT EXISTS personal_data_search_last_name_idx ON "personal_data" USING gin ("searchLastName" gin_trgm_ops);
+    `);
 
     // Seed roles
     const rolesService = app.service('roles');

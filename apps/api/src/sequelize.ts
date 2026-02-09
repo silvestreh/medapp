@@ -62,7 +62,47 @@ export default function (app: Application): void {
       }
     });
 
-    app.set('sequelizeSync', sequelize.sync({ alter: !isProduction }));
+    const syncWithSearchColumns = async () => {
+      // Drop generated columns before sync to avoid conflicts with alter
+      try {
+        await sequelize.query('ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchFirstName"');
+        await sequelize.query('ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchLastName"');
+      } catch (e) {
+        // Table might not exist yet on first run, that's fine
+      }
+
+      await sequelize.sync({ alter: !isProduction });
+
+      // Re-add generated columns after sync
+      try {
+        await sequelize.query('CREATE EXTENSION IF NOT EXISTS unaccent');
+        await sequelize.query('CREATE EXTENSION IF NOT EXISTS pg_trgm');
+        await sequelize.query(`
+          CREATE OR REPLACE FUNCTION immutable_unaccent(text)
+          RETURNS text AS $$
+          BEGIN
+            RETURN unaccent($1);
+          END;
+          $$ LANGUAGE plpgsql IMMUTABLE;
+        `);
+        await sequelize.query(`
+          ALTER TABLE "personal_data" 
+          ADD COLUMN "searchFirstName" text 
+          GENERATED ALWAYS AS (immutable_unaccent(lower("firstName"))) STORED;
+          
+          ALTER TABLE "personal_data" 
+          ADD COLUMN "searchLastName" text 
+          GENERATED ALWAYS AS (immutable_unaccent(lower("lastName"))) STORED;
+
+          CREATE INDEX IF NOT EXISTS personal_data_search_first_name_idx ON "personal_data" USING gin ("searchFirstName" gin_trgm_ops);
+          CREATE INDEX IF NOT EXISTS personal_data_search_last_name_idx ON "personal_data" USING gin ("searchLastName" gin_trgm_ops);
+        `);
+      } catch (e: any) {
+        console.error('Error creating generated columns or indexes:', e?.message || e);
+      }
+    };
+
+    app.set('sequelizeSync', syncWithSearchColumns());
 
     return result;
   };
