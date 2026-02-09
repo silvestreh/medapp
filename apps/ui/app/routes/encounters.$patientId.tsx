@@ -9,6 +9,7 @@ import EncounterTree from '~/components/encounter-tree';
 import Portal from '~/components/portal';
 import { styled } from '~/stitches';
 import { ReasonForConsultationForm } from '~/components/forms/reason-for-consultation-form';
+import { FamilyHistoryForm } from '~/components/forms/family-history-form';
 
 const Container = styled('div', {
   padding: 0,
@@ -101,6 +102,7 @@ export default function PatientEncounterDetail() {
   const [selectedFormKey, setSelectedFormKey] = useState<string | null>(null);
 
   const handleFormClick = useCallback((encounter: any, formKey: string) => {
+    console.log('handleFormClick', encounter, formKey);
     setSelectedEncounter(encounter);
     setSelectedFormKey(formKey);
   }, []);
@@ -134,10 +136,6 @@ export default function PatientEncounterDetail() {
           encounters={data.encounters}
           activeEncounterId={selectedEncounter?.id}
           activeFormKey={selectedFormKey || undefined}
-          onEncounterClick={encounter => {
-            setSelectedEncounter(encounter);
-            setSelectedFormKey(null);
-          }}
           onFormClick={handleFormClick}
         />
       </Sidebar>
@@ -146,6 +144,14 @@ export default function PatientEncounterDetail() {
         <Stack>
           {selectedFormKey === 'general/consulta_internacion' && (
             <ReasonForConsultationForm
+              initialData={selectedEncounter.data[selectedFormKey]}
+              onSubmit={handleFormSubmit}
+              readOnly
+            />
+          )}
+
+          {selectedFormKey === 'antecedentes/familiares' && (
+            <FamilyHistoryForm
               initialData={selectedEncounter.data[selectedFormKey]}
               onSubmit={handleFormSubmit}
               readOnly

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { TextInput, Popover, ScrollArea, Box, Text, Loader, ActionIcon, Stack } from '@mantine/core';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { TextInput, Popover, ScrollArea, Box, Text, Loader, ActionIcon, Stack, Badge, Group } from '@mantine/core';
 import { ChevronRight, ChevronDown, Search, X, Check } from 'lucide-react';
 import { useFeathers } from '~/components/provider';
 import { useTranslation } from 'react-i18next';
@@ -60,15 +60,24 @@ interface Icd10Node {
 }
 
 interface Icd10SelectorProps {
-  value?: string;
-  onChange: (value: string) => void;
+  value?: string | string[];
+  onChange: (value: string | string[]) => void;
   placeholder?: string;
   label?: string;
   error?: string;
   readOnly?: boolean;
+  multiSelect?: boolean;
 }
 
-export function Icd10Selector({ value, onChange, placeholder, label, error, readOnly }: Icd10SelectorProps) {
+export function Icd10Selector({
+  value,
+  onChange,
+  placeholder,
+  label,
+  error,
+  readOnly,
+  multiSelect,
+}: Icd10SelectorProps) {
   const { t } = useTranslation();
   const client = useFeathers();
   const [opened, setOpened] = useState(false);
@@ -77,8 +86,13 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
   const [nodes, setNodes] = useState<Record<string, Icd10Node>>({});
   const [rootIds, setRootIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedName, setSelectedName] = useState('');
+  const [selectedNames, setSelectedNames] = useState<Record<string, string>>({});
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const values = useMemo(() => {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+  }, [value]);
 
   // Debounce search
   useEffect(() => {
@@ -137,27 +151,42 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
     fetchData();
   }, [client, opened, debouncedSearch, readOnly]);
 
-  // Fetch selected name if value changes
+  // Fetch selected names if value changes
   useEffect(() => {
-    const fetchSelectedName = async () => {
-      if (value && client) {
+    const fetchSelectedNames = async () => {
+      if (values.length > 0 && client) {
+        const missingIds = values.filter(id => !selectedNames[id]);
+        if (missingIds.length === 0) return;
+
         try {
-          const node = await client.service('icd-10').get(value);
-          if (node) {
-            setSelectedName(`${node.id} - ${node.name}`);
-          } else {
-            setSelectedName(value);
-          }
+          const results = await Promise.all(
+            missingIds.map(id =>
+              client
+                .service('icd-10')
+                .get(id)
+                .catch(() => null)
+            )
+          );
+
+          setSelectedNames(prev => {
+            const next = { ...prev };
+            results.forEach((node, index) => {
+              const id = missingIds[index];
+              if (node) {
+                next[id] = `${node.id} - ${node.name}`;
+              } else {
+                next[id] = id;
+              }
+            });
+            return next;
+          });
         } catch (err) {
-          console.error('Error fetching selected ICD-10 node:', err);
-          setSelectedName(value);
+          console.error('Error fetching selected ICD-10 nodes:', err);
         }
-      } else {
-        setSelectedName('');
       }
     };
-    fetchSelectedName();
-  }, [value, client]);
+    fetchSelectedNames();
+  }, [values, client, selectedNames]);
 
   const toggleExpand = async (nodeId: string) => {
     const isExpanded = expandedIds.has(nodeId);
@@ -199,9 +228,29 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
   };
 
   const handleSelect = (node: Icd10Node) => {
-    onChange(node.id);
-    setOpened(false);
+    if (multiSelect) {
+      const isSelected = values.includes(node.id);
+      if (isSelected) {
+        onChange(values.filter(id => id !== node.id));
+      } else {
+        onChange([...values, node.id]);
+      }
+    } else {
+      onChange(node.id);
+      setOpened(false);
+    }
   };
+
+  const removeValue = useCallback(
+    (idToRemove: string) => {
+      if (multiSelect) {
+        onChange(values.filter(id => id !== idToRemove));
+      } else {
+        onChange('');
+      }
+    },
+    [multiSelect, onChange, values]
+  );
 
   const highlightText = (text: string, search: string) => {
     if (!search.trim()) return text;
@@ -219,8 +268,6 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
 
     if (terms.length === 0) return text;
 
-    // Create a regex that matches any of the terms, but we need to handle accents in the source text
-    // A simpler way is to find all matches by normalizing the text for comparison
     const normalizedText = text
       .toLowerCase()
       .normalize('NFD')
@@ -238,7 +285,6 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
 
     if (matches.length === 0) return text;
 
-    // Merge overlapping matches
     const mergedMatches = matches
       .sort((a, b) => a.start - b.start)
       .reduce(
@@ -277,7 +323,7 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
     return (
       <Box key={nodeId}>
         <NodeContainer
-          selected={value === nodeId}
+          selected={values.includes(nodeId)}
           style={{ paddingLeft: level * 20 + 8 }}
           onClick={() => {
             if (hasChildren) {
@@ -291,13 +337,72 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
             {hasChildren ? isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} /> : null}
           </TreeIcon>
           <NodeText>{highlightText(`${node.id} - ${node.name}`, debouncedSearch)}</NodeText>
-          {value === nodeId && <Check size={14} color="var(--mantine-color-blue-6)" />}
+          {values.includes(nodeId) && <Check size={14} color="var(--mantine-color-blue-6)" />}
         </NodeContainer>
 
         {isExpanded && node.children && <Box>{node.children.map(childId => renderNode(childId, level + 1))}</Box>}
       </Box>
     );
   };
+
+  const selectedBadges = useMemo(() => {
+    if (!multiSelect) return null;
+    return values.map(id => (
+      <Badge
+        key={id}
+        variant="light"
+        color="blue"
+        rightSection={
+          !readOnly && (
+            <ActionIcon
+              size={18}
+              color="blue"
+              radius="xl"
+              variant="subtle"
+              onClick={e => {
+                e.stopPropagation();
+                removeValue(id);
+              }}
+            >
+              <X size={12} />
+            </ActionIcon>
+          )
+        }
+        styles={{
+          root: {
+            textTransform: 'none',
+            height: '24px',
+            padding: '0 4px 0 8px',
+            maxWidth: 'calc(100% - 32px)',
+            flexShrink: 0,
+          },
+          label: {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            paddingRight: '4px',
+          },
+          section: {
+            marginLeft: 0,
+          },
+        }}
+      >
+        {selectedNames[id] || id}
+      </Badge>
+    ));
+  }, [values, selectedNames, readOnly, removeValue, multiSelect]);
+
+  const displayValue = useMemo(() => {
+    if (multiSelect) return '';
+    if (opened && !readOnly) return searchValue;
+    return '';
+  }, [multiSelect, opened, readOnly, searchValue]);
+
+  const selectedSingleValue = useMemo(() => {
+    if (multiSelect) return '';
+    const firstId = values[0];
+    return firstId ? selectedNames[firstId] || firstId : '';
+  }, [multiSelect, values, selectedNames]);
 
   return (
     <Box>
@@ -313,13 +418,8 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
         <Popover.Target>
           <TextInput
             label={label}
-            placeholder={placeholder || t('forms.consulta_internacion_placeholder_reason')}
-            value={opened && !readOnly ? searchValue : selectedName}
-            onChange={e => {
-              if (readOnly) return;
-              setSearchValue(e.currentTarget.value);
-              if (!opened) setOpened(true);
-            }}
+            placeholder={values.length === 0 ? placeholder || t('common.search') : ''}
+            component="div"
             variant="unstyled"
             styles={{
               input: {
@@ -327,16 +427,21 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
                 height: 'auto',
                 lineHeight: 1.75,
                 cursor: readOnly ? 'default' : 'text',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '4px',
+                alignItems: 'center',
+                padding: '4px 0',
               },
             }}
-            onFocus={() => !readOnly && setOpened(true)}
+            onClick={() => !readOnly && setOpened(true)}
             readOnly={readOnly}
             tabIndex={readOnly ? -1 : 0}
             error={error}
             rightSection={
               loading ? (
                 <Loader size="xs" />
-              ) : value && !readOnly ? (
+              ) : values.length > 0 && !readOnly && !multiSelect ? (
                 <ActionIcon
                   variant="subtle"
                   color="gray"
@@ -345,6 +450,7 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
                     onChange('');
                     setSearchValue('');
                   }}
+                  style={{ pointerEvents: 'all' }}
                 >
                   <X size={16} />
                 </ActionIcon>
@@ -352,7 +458,53 @@ export function Icd10Selector({ value, onChange, placeholder, label, error, read
                 <Search size={16} color="gray" />
               ) : null
             }
-          />
+            rightSectionPointerEvents={loading || (values.length > 0 && !readOnly && !multiSelect) ? 'all' : 'none'}
+          >
+            <Group gap={4} style={{ flex: 1 }}>
+              {selectedBadges}
+              {!multiSelect && !opened && values.length > 0 ? (
+                <Text size="sm" style={{ flex: 1 }}>
+                  {selectedSingleValue}
+                </Text>
+              ) : null}
+              {(!readOnly && (multiSelect || opened || values.length === 0)) || (readOnly && !multiSelect) ? (
+                <input
+                  value={displayValue}
+                  onChange={e => {
+                    if (readOnly) return;
+                    setSearchValue(e.currentTarget.value);
+                    if (!opened) setOpened(true);
+                  }}
+                  onFocus={() => !readOnly && setOpened(true)}
+                  onKeyDown={e => {
+                    if (readOnly) return;
+                    if (e.key === 'Backspace' && searchValue === '' && multiSelect && values.length > 0) {
+                      const lastId = values[values.length - 1];
+                      removeValue(lastId);
+                    }
+                  }}
+                  placeholder={
+                    values.length === 0 || (opened && !multiSelect)
+                      ? placeholder || t('common.search')
+                      : multiSelect
+                        ? t('common.search')
+                        : ''
+                  }
+                  readOnly={readOnly && !multiSelect}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    flex: 1,
+                    minWidth: '60px',
+                    fontSize: 'var(--mantine-font-size-sm)',
+                    fontFamily: 'inherit',
+                    cursor: readOnly ? 'default' : 'text',
+                  }}
+                />
+              ) : null}
+            </Group>
+          </TextInput>
         </Popover.Target>
         {!readOnly && (
           <Popover.Dropdown>
