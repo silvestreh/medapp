@@ -154,7 +154,12 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
 
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
-      if (hasChanged) {
+      // If we don't have initial data, only trigger if we have something meaningful to report
+      const hasData = debouncedValues.items.some(
+        item => item.relationship || item.firstName || item.lastName || item.issueId
+      );
+
+      if (hasChanged && (initialData || hasData)) {
         onChange({
           type: 'antecedentes/familiares',
           values: resultValues as any,
@@ -162,7 +167,7 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedValues, onChange, readOnly, t, initialData?.values]);
+  }, [debouncedValues, onChange, readOnly, t, initialData]);
 
   return (
     <FormContainer>

@@ -73,4 +73,10 @@ export const es = {
     evolution_description_label: 'Descripción',
     evolution_placeholder: 'Escriba la evolución aquí...',
   },
+  encounters: {
+    new: 'Nuevo Encuentro',
+    active_forms: 'Formularios activos',
+    available_forms: 'Agregar formulario',
+    select_form_instruction: 'Seleccione un formulario de la lista para comenzar el encuentro.',
+  },
 };
