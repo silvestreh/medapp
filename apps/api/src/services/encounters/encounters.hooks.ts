@@ -7,6 +7,7 @@ import { checkPermissions } from '../../hooks/check-permissions';
 import { includeDecryptedAttributes } from '../../hooks/include-decrypted-attributes';
 import { parseDecryptedAttributes } from '../../hooks/parse-decrypted-attributes';
 import { sanitizeEncryptedData } from '../../hooks/sanitize-encrypted-data';
+import { validateEncounterData } from '../../hooks/validate-encounter-data';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -19,7 +20,7 @@ export default {
     ],
     find: [includeDecryptedAttributes()],
     get: [includeDecryptedAttributes()],
-    create: [sanitizeEncryptedData('data')],
+    create: [validateEncounterData(), sanitizeEncryptedData('data')],
     update: [disallow('external')],
     patch: [disallow('external')],
     remove: [disallow('external')]

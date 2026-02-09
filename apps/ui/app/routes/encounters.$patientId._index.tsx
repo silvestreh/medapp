@@ -25,7 +25,7 @@ const Container = styled('div', {
 
 const Sidebar = styled('div', {
   background: 'white',
-  borderRight: '1px solid var(--mantine-color-gray-1)',
+  borderRight: '1px solid var(--mantine-color-gray-2)',
 
   '@lg': {
     minHeight: 'calc(100vh - 5em)',
@@ -100,11 +100,6 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 export default function PatientEncounterDetail() {
   const { t } = useTranslation();
   const data = useLoaderData<typeof loader>();
-
-  if (!data) {
-    return null;
-  }
-
   const [selectedEncounter, setSelectedEncounter] = useState<any>(null);
   const [activeFormKey, setActiveFormKey] = useState<string | undefined>(undefined);
 
@@ -118,11 +113,15 @@ export default function PatientEncounterDetail() {
     setActiveFormKey(formKey);
   }, []);
 
+  if (!data) {
+    return null;
+  }
+
   return (
     <Container className="encounters-container">
       <Portal id="toolbar">
         <Group justify="space-between" align="center" style={{ width: '100%' }}>
-          <Title order={2}>
+          <Title order={2} fz="md">
             {data.patient.personalData.firstName} {data.patient.personalData.lastName}
           </Title>
           <Button component={Link} to={`/encounters/${data.patient.id}/new`}>

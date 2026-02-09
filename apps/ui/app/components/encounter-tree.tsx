@@ -76,7 +76,7 @@ const EncounterBox = styled('div', {
   padding: '1rem', // md
   paddingBottom: 0,
   cursor: 'pointer',
-  borderBottom: '1px solid #f1f3f5',
+  borderBottom: '1px solid var(--mantine-color-gray-2)',
 
   variants: {
     active: {
@@ -103,10 +103,19 @@ const FormItem = styled('div', {
   marginLeft: '-1rem',
   width: 'calc(100% + 2rem)',
 
+  '&:hover': {
+    backgroundColor: 'var(--mantine-color-blue-0)',
+  },
+
   variants: {
     active: {
       true: {
-        backgroundColor: 'var(--mantine-color-blue-0)',
+        backgroundColor: 'var(--mantine-color-blue-4)',
+        color: 'white',
+
+        '&:hover': {
+          backgroundColor: 'var(--mantine-color-blue-4)',
+        },
       },
     },
   },

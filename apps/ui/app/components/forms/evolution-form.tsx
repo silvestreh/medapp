@@ -55,7 +55,6 @@ export function EvolutionForm({ initialData, onChange, readOnly }: EvolutionForm
             {...form.getInputProps('description')}
             readOnly={readOnly}
             autosize
-            minRows={3}
           />
         </FieldRow>
       </FormCard>

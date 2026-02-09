@@ -1,5 +1,14 @@
 import { captureRemixErrorBoundaryError } from '@sentry/remix';
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, useRouteError } from '@remix-run/react';
+import {
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLoaderData,
+  useRouteError,
+  useRouteLoaderData,
+} from '@remix-run/react';
 import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
@@ -36,7 +45,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 function Document({ children }: { children: React.ReactNode }) {
-  const { locale } = useLoaderData<typeof loader>() || { locale: 'es' };
+  const data = useRouteLoaderData<typeof loader>('root');
+  const locale = data?.locale || 'es';
 
   return (
     <html lang={locale} dir="ltr">
@@ -57,7 +67,7 @@ function Document({ children }: { children: React.ReactNode }) {
 }
 
 function AppLayout({ children }: { children: React.ReactNode }) {
-  const data = useLoaderData<typeof loader>();
+  const data = useRouteLoaderData<typeof loader>('root');
   const { initialToken, initialUser, apiUrl } = data || {};
 
   return (
@@ -82,7 +92,8 @@ export const ErrorBoundary = () => {
 };
 
 export default function App() {
-  const { locale } = useLoaderData<typeof loader>() || { locale: 'es' };
+  const data = useRouteLoaderData<typeof loader>('root');
+  const locale = data?.locale || 'es';
   useChangeLanguage(locale);
 
   return (

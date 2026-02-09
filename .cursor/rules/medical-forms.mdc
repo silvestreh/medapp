@@ -15,6 +15,7 @@ Adhere to these styling rules when creating or modifying medical forms in the `a
 6. **Re-use**: Don't reinvent the wheel, when possible rely on `lodash` or `@mantine/hooks`.
 7. **Icons**: If icons are needed, always use `lucide-react` and never attempt to install another icon library.
 8. **Encounter Tree**: In the `encounter-tree.tsx`, clicking a date should do nothing. Navigation should only happen when clicking specific form items within an encounter.
+9. **Linting**: React hooks can't be called conditionally. The early exit pattern can't be used earlier than hook calls.
 
 ## Styling Components
 

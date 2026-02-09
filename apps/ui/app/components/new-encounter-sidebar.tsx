@@ -18,27 +18,26 @@ const SidebarContainer = styled('div', {
 
 const FormItem = styled('div', {
   cursor: 'pointer',
-  padding: '1rem',
+  color: 'var(--mantine-color-blue-6)',
   fontSize: 'var(--mantine-font-size-md)',
+  padding: '1rem',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
 
   '&:hover': {
-    backgroundColor: 'var(--mantine-color-gray-0)',
+    backgroundColor: 'var(--mantine-color-blue-0)',
   },
 
   variants: {
     active: {
       true: {
-        backgroundColor: 'var(--mantine-color-blue-0)',
-        color: 'var(--mantine-color-blue-6)',
-        fontWeight: 600,
-      },
-    },
-    isActiveForm: {
-      true: {
-        color: 'var(--mantine-color-blue-6)',
+        backgroundColor: 'var(--mantine-color-blue-4)',
+        color: 'white',
+
+        '&:hover': {
+          backgroundColor: 'var(--mantine-color-blue-4)',
+        },
       },
     },
   },
@@ -67,19 +66,14 @@ const NewEncounterSidebar: FC<NewEncounterSidebarProps> = ({
         {activeForms.length > 0 && (
           <>
             <SectionTitle>{t('encounters.active_forms')}</SectionTitle>
-            {activeForms.map((formKey) => (
-              <FormItem
-                key={formKey}
-                active={activeFormKey === formKey}
-                isActiveForm={true}
-                onClick={() => onFormClick(formKey)}
-              >
-                <Text size="sm">{t(`forms.${formKey}` as any)}</Text>
+            {activeForms.map(formKey => (
+              <FormItem key={formKey} active={activeFormKey === formKey} onClick={() => onFormClick(formKey)}>
+                {t(`forms.${formKey}` as any)}
                 <ActionIcon
                   variant="subtle"
                   color="gray"
                   size="sm"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     onRemoveForm(formKey);
                   }}
@@ -93,13 +87,9 @@ const NewEncounterSidebar: FC<NewEncounterSidebarProps> = ({
         )}
 
         <SectionTitle>{t('encounters.available_forms')}</SectionTitle>
-        {availableForms.map((formKey) => (
-          <FormItem
-            key={formKey}
-            active={activeFormKey === formKey}
-            onClick={() => onFormClick(formKey)}
-          >
-            <Text size="sm">{t(`forms.${formKey}` as any)}</Text>
+        {availableForms.map(formKey => (
+          <FormItem key={formKey} active={activeFormKey === formKey} onClick={() => onFormClick(formKey)}>
+            {t(`forms.${formKey}` as any)}
           </FormItem>
         ))}
       </Stack>

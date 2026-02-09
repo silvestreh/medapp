@@ -2,7 +2,7 @@ import { Button, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
 import { Form, useSubmit } from '@remix-run/react';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { ReasonForConsultationForm } from '~/components/forms/reason-for-consultation-form';
 import { FamilyHistoryForm } from '~/components/forms/family-history-form';
@@ -18,6 +18,24 @@ interface EncounterFormProps {
   onValuesChange?: (values: any) => void;
 }
 
+const isDataEmpty = (data: any): boolean => {
+  if (!data || typeof data !== 'object' || Object.keys(data).length === 0) return true;
+
+  return Object.values(data).every((form: any) => {
+    if (!form || !form.values || typeof form.values !== 'object') return true;
+
+    return Object.values(form.values).every((val: any) => {
+      if (Array.isArray(val)) {
+        return val.every(v => !v || (typeof v === 'string' && v.trim() === ''));
+      }
+      if (typeof val === 'string') {
+        return val.trim() === '';
+      }
+      return !val;
+    });
+  });
+};
+
 export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChange }: EncounterFormProps) {
   const { t } = useTranslation();
   const submit = useSubmit();
@@ -26,6 +44,8 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
   const form = useForm({
     initialValues: encounter.data || {},
   });
+
+  const isEmpty = useMemo(() => isDataEmpty(form.values), [form.values]);
 
   const handleSubFormChange = useCallback(
     (formKey: string) => (data: any) => {
@@ -45,8 +65,9 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
   };
 
   const handleSave = useCallback(() => {
+    if (isEmpty) return;
     submit({ data: JSON.stringify(form.values) }, { method: 'post' });
-  }, [form.values, submit]);
+  }, [form.values, submit, isEmpty]);
 
   return (
     <Form method="post" id="encounter-form">
@@ -90,7 +111,9 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
 
           {!readOnly && (
             <Portal id="form-actions">
-              <Button onClick={handleSave}>{t('common.save')}</Button>
+              <Button onClick={handleSave} disabled={isEmpty}>
+                {t('common.save')}
+              </Button>
             </Portal>
           )}
         </Stack>
