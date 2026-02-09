@@ -41,12 +41,29 @@ export const findByPersonalData = (): Hook => {
       if (uniqueTerms.length > 0) {
         const fullNameSearch = (q || `${firstName || ''} ${lastName || ''}`).trim().toLowerCase();
         const unaccentedFullName = sequelize.escape(fullNameSearch);
+        const fullSearchPattern = `('%' || immutable_unaccent(${unaccentedFullName}) || '%')`;
         
         let rankSql = '0';
         const whereConditions: string[] = [];
 
-        // 100 points for exact full name match
-        rankSql += ` + (CASE WHEN immutable_unaccent(lower(concat_ws(' ', "firstName", "lastName"))) = immutable_unaccent(${unaccentedFullName}) THEN 100 ELSE 0 END)`;
+        // 200 points for exact full name match (firstName + lastName = search), 150 for high similarity
+        rankSql += ` + (CASE 
+          WHEN immutable_unaccent(lower(concat_ws(' ', "firstName", "lastName"))) = immutable_unaccent(${unaccentedFullName}) THEN 200
+          WHEN similarity(immutable_unaccent(lower(concat_ws(' ', "firstName", "lastName"))), immutable_unaccent(${unaccentedFullName})) > 0.7 THEN 150
+          ELSE 0 
+        END)`;
+
+        // Multi-word contiguous match: rewards full query matching as a phrase within firstName or lastName
+        if (uniqueTerms.length > 1) {
+          const unaccentedFullNameExpr = `immutable_unaccent(${unaccentedFullName})`;
+          rankSql += ` + (CASE 
+            WHEN "searchFirstName" = ${unaccentedFullNameExpr} OR "searchLastName" = ${unaccentedFullNameExpr} THEN 120
+            WHEN "searchFirstName" LIKE ${fullSearchPattern} OR "searchLastName" LIKE ${fullSearchPattern} THEN 80
+            WHEN similarity("searchFirstName", ${unaccentedFullNameExpr}) > 0.7 OR similarity("searchLastName", ${unaccentedFullNameExpr}) > 0.7 THEN 70
+            WHEN similarity("searchFirstName", ${unaccentedFullNameExpr}) > 0.4 OR similarity("searchLastName", ${unaccentedFullNameExpr}) > 0.4 THEN 40
+            ELSE 0 
+          END)`;
+        }
         
         // 150 points for document value match (documentValue is encrypted in DB)
         if (q || documentValue) {
@@ -64,14 +81,20 @@ export const findByPersonalData = (): Hook => {
           const pattern = `('%' || ${unaccentedTerm} || '%')`;
           const startsWithPattern = `(${unaccentedTerm} || '%')`;
           
+          // Per-term scoring: each term can contribute points independently.
+          // A record matching ALL terms will accumulate more points than one matching just one.
+          // Includes fuzzy matching via pg_trgm word_similarity for typo tolerance.
           rankSql += ` + (CASE 
             WHEN "searchFirstName" = ${unaccentedTerm} OR "searchLastName" = ${unaccentedTerm} THEN 50
             WHEN "searchFirstName" LIKE ${startsWithPattern} OR "searchLastName" LIKE ${startsWithPattern} THEN 20
             WHEN "searchFirstName" LIKE ${pattern} OR "searchLastName" LIKE ${pattern} THEN 10
+            WHEN word_similarity(${unaccentedTerm}, "searchFirstName") > 0.6 OR word_similarity(${unaccentedTerm}, "searchLastName") > 0.6 THEN 35
+            WHEN word_similarity(${unaccentedTerm}, "searchFirstName") > 0.3 OR word_similarity(${unaccentedTerm}, "searchLastName") > 0.3 THEN 5
             ELSE 0 
           END)`;
 
-          whereConditions.push(`("searchFirstName" LIKE ${pattern} OR "searchLastName" LIKE ${pattern})`);
+          // WHERE: match by exact substring OR fuzzy similarity (uses GIN trigram index)
+          whereConditions.push(`("searchFirstName" LIKE ${pattern} OR "searchLastName" LIKE ${pattern} OR ${unaccentedTerm} <% "searchFirstName" OR ${unaccentedTerm} <% "searchLastName")`);
         });
 
         const query = `
@@ -81,9 +104,28 @@ export const findByPersonalData = (): Hook => {
           ORDER BY rank DESC, "lastName" ASC, "firstName" ASC
         `;
 
+        console.log('[SEARCH DEBUG] SQL query:', query);
         const results = await sequelize.query<{ id: string; rank: number }>(query, {
           type: QueryTypes.SELECT
         });
+
+        // Log top results with their ranks
+        console.log('[SEARCH DEBUG] Top 10 results:', results.slice(0, 10).map(r => ({ id: r.id, rank: r.rank })));
+
+        // Also fetch names for top results so we can see what matched
+        if (results.length > 0) {
+          const topIds = results.slice(0, 10).map(r => sequelize.escape(r.id)).join(',');
+          const nameResults = await sequelize.query<{ id: string; firstName: string; lastName: string }>(
+            `SELECT id, "firstName", "lastName" FROM "personal_data" WHERE id IN (${topIds})`,
+            { type: QueryTypes.SELECT }
+          );
+          const nameMap = new Map(nameResults.map(n => [n.id, `${n.firstName} ${n.lastName}`]));
+          console.log('[SEARCH DEBUG] Top 10 with names:', results.slice(0, 10).map(r => ({
+            id: r.id,
+            rank: r.rank,
+            name: nameMap.get(r.id)
+          })));
+        }
 
         personalDataIds = results.map(r => r.id);
       }
@@ -137,15 +179,23 @@ export const findByPersonalData = (): Hook => {
       return indexA - indexB;
     });
 
-    // Store the sorted order so the after hook can re-sort results
-    context.params._sortedPatientIds = sortedPatientIds;
+    // Handle pagination ourselves since $in doesn't preserve order
+    const $limit = parseInt(params.query.$limit) || 10;
+    const $skip = parseInt(params.query.$skip) || 0;
+    const pagePatientIds = sortedPatientIds.slice($skip, $skip + $limit);
 
-    // Update the query to filter by found patient IDs
+    // Store the sorted order so the after hook can re-sort results
+    context.params._sortedPatientIds = pagePatientIds;
+    context.params._totalPatients = sortedPatientIds.length;
+
+    // Update the query to filter by the current page's patient IDs only
     context.params.query = {
       ...omit(params.query, 'firstName', 'lastName', 'documentValue', 'birthDate', 'q'),
       id: {
-        $in: sortedPatientIds
-      }
+        $in: pagePatientIds.length > 0 ? pagePatientIds : ['none']
+      },
+      $skip: 0,
+      $limit: pagePatientIds.length || 1
     };
 
     return context;
@@ -155,6 +205,7 @@ export const findByPersonalData = (): Hook => {
 export const sortByPersonalDataRank = (): Hook => {
   return async (context: HookContext) => {
     const sortedPatientIds: string[] | undefined = context.params._sortedPatientIds;
+    const totalPatients: number | undefined = context.params._totalPatients;
 
     if (!sortedPatientIds || sortedPatientIds.length === 0) {
       return context;
@@ -163,12 +214,15 @@ export const sortByPersonalDataRank = (): Hook => {
     const orderMap = new Map(sortedPatientIds.map((id, index) => [id, index]));
 
     if (context.result.data) {
-      // Paginated result
+      // Paginated result - fix ordering and total count
       context.result.data.sort((a: any, b: any) => {
         const indexA = orderMap.get(a.id?.toString()) ?? Infinity;
         const indexB = orderMap.get(b.id?.toString()) ?? Infinity;
         return indexA - indexB;
       });
+      if (totalPatients !== undefined) {
+        context.result.total = totalPatients;
+      }
     } else if (Array.isArray(context.result)) {
       context.result.sort((a: any, b: any) => {
         const indexA = orderMap.get(a.id?.toString()) ?? Infinity;
