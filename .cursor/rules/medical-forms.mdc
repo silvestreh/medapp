@@ -1,0 +1,70 @@
+# Medical Forms Styling Rules
+
+Adhere to these styling rules when creating or modifying medical forms in the `apps/ui/app/components/forms/` directory.
+
+## Core Principles
+
+1.  **Shared Styles**: ALWAYS import styling components from `~/components/forms/styles`. DO NOT define local styled components for common form elements.
+2.  **Consistency**: All forms must share the same visual language: borderless inputs, specific label widths, and card-based layouts.
+3.  **Read-Only Support**: Every form component MUST accept a `readOnly` prop and handle it by disabling inputs or rendering alternative text.
+4.  **Auto-Saving (onChange)**: Forms should NOT have an `onSubmit` callback or a submit button. Instead, they must accept an `onChange` prop. This callback should be debounced (e.g., 500ms) and invoked whenever any field value changes.
+5. **Mobile first**: Every component must work on mobile and adapt to larger screens. There's a `media` object exported from `~/stitches` to help with that.
+6. **Re-use**: Don't reinvent the wheel, when possible rely on `lodash`.
+
+## Styling Components
+
+Use these exported components from `styles.tsx`:
+
+-   `FormContainer`: The main wrapper for the form (flex column, 2rem gap).
+-   `FormCard`: A white container with a light gray border and rounded corners.
+-   `FieldRow`: A flex row for each field (1rem padding, bottom border).
+-   `Label`: A text label (25% width, right-aligned, gray-6 color).
+-   `StyledTextInput`, `StyledTextarea`, `StyledDateInput`: Borderless Mantine inputs with specific line heights.
+-   `StyledTitle`: A blue-4 title with 400 font weight.
+-   `FormHeader`, `ItemHeader`: Flex containers for form/item titles and action buttons.
+
+Add new components as needed.
+
+## Implementation Example
+
+```tsx
+import { useForm } from '@mantine/form';
+import { useDebouncedCallback } from 'usehooks-ts';
+import { FormContainer, FormCard, FieldRow, Label, StyledTextarea, StyledTitle } from '~/components/forms/styles';
+
+export function MyNewForm({ initialData, onChange, readOnly }: Props) {
+  const form = useForm({
+    initialValues: parseInitialValues(initialData),
+  });
+
+  const debouncedOnChange = useDebouncedCallback((values) => {
+    onChange(transformToLegacyFormat(values));
+  }, 500);
+
+  useEffect(() => {
+    if (!readOnly) {
+      debouncedOnChange(form.values);
+    }
+  }, [form.values, debouncedOnChange, readOnly]);
+
+  return (
+    <FormContainer>
+      <StyledTitle order={1}>Form Title</StyledTitle>
+      <FormCard>
+        <FieldRow>
+          <Label>Field Label:</Label>
+          <StyledTextarea
+            readOnly={readOnly}
+            autosize
+            {...form.getInputProps('field')}
+          />
+        </FieldRow>
+      </FormCard>
+    </FormContainer>
+  );
+}
+```
+
+## Data Format
+
+Most forms follow a specific legacy structure where values are indexed strings (e.g., `field_0`, `field_1`) and include a `count` field. Always verify the requested JSON structure before implementing the `onChange` and `parseInitialValues` logic.
