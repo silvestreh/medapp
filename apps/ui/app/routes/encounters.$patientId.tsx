@@ -10,6 +10,7 @@ import Portal from '~/components/portal';
 import { styled } from '~/stitches';
 import { ReasonForConsultationForm } from '~/components/forms/reason-for-consultation-form';
 import { FamilyHistoryForm } from '~/components/forms/family-history-form';
+import { PersonalHistoryForm } from '~/components/forms/personal-history-form';
 
 const Container = styled('div', {
   padding: 0,
@@ -152,6 +153,14 @@ export default function PatientEncounterDetail() {
 
           {selectedFormKey === 'antecedentes/familiares' && (
             <FamilyHistoryForm
+              initialData={selectedEncounter.data[selectedFormKey]}
+              onSubmit={handleFormSubmit}
+              readOnly
+            />
+          )}
+
+          {selectedFormKey === 'antecedentes/personales' && (
+            <PersonalHistoryForm
               initialData={selectedEncounter.data[selectedFormKey]}
               onSubmit={handleFormSubmit}
               readOnly
