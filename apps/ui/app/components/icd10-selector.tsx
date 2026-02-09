@@ -64,6 +64,25 @@ const NodeText = styled('div', {
   },
 });
 
+const StyledInput = styled('input', {
+  border: 'none',
+  outline: 'none',
+  background: 'transparent',
+  flex: 1,
+  minWidth: '60px',
+  fontSize: 'var(--mantine-font-size-sm)',
+  fontFamily: 'inherit',
+  cursor: 'text',
+
+  variants: {
+    readOnly: {
+      true: {
+        cursor: 'default',
+      },
+    },
+  },
+});
+
 interface Icd10Node {
   id: string;
   name: string;
@@ -480,8 +499,8 @@ export function Icd10Selector({
                   {selectedSingleValue}
                 </Text>
               ) : null}
-              {(!readOnly && (multiSelect || opened || values.length === 0)) || (readOnly && !multiSelect) ? (
-                <input
+              {!readOnly && (multiSelect || opened || values.length === 0) ? (
+                <StyledInput
                   value={displayValue}
                   onChange={e => {
                     if (readOnly) return;
@@ -503,17 +522,7 @@ export function Icd10Selector({
                         ? t('common.search')
                         : ''
                   }
-                  readOnly={readOnly && !multiSelect}
-                  style={{
-                    border: 'none',
-                    outline: 'none',
-                    background: 'transparent',
-                    flex: 1,
-                    minWidth: '60px',
-                    fontSize: 'var(--mantine-font-size-sm)',
-                    fontFamily: 'inherit',
-                    cursor: readOnly ? 'default' : 'text',
-                  }}
+                  readOnly={readOnly}
                 />
               ) : null}
             </Group>
