@@ -63,5 +63,8 @@ export const en: typeof es = {
     personal_history_placeholder_search: 'Type to search...',
     personal_history_placeholder_date: 'Click to select a date',
     personal_history_placeholder_description: 'Type something... (Optional)',
+    evolution_title: 'Evolution/Evaluation of Consultation-Admission',
+    evolution_description_label: 'Description',
+    evolution_placeholder: 'Type the evolution here...',
   },
 };

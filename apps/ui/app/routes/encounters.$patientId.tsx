@@ -11,6 +11,7 @@ import { styled } from '~/stitches';
 import { ReasonForConsultationForm } from '~/components/forms/reason-for-consultation-form';
 import { FamilyHistoryForm } from '~/components/forms/family-history-form';
 import { PersonalHistoryForm } from '~/components/forms/personal-history-form';
+import { EvolutionForm } from '~/components/forms/evolution-form';
 
 const Container = styled('div', {
   padding: 0,
@@ -165,6 +166,10 @@ export default function PatientEncounterDetail() {
               onSubmit={handleFormSubmit}
               readOnly
             />
+          )}
+
+          {selectedFormKey === 'general/evolucion_consulta_internacion' && (
+            <EvolutionForm initialData={selectedEncounter.data[selectedFormKey]} onSubmit={handleFormSubmit} readOnly />
           )}
         </Stack>
       </Content>
