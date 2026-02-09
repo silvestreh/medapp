@@ -61,5 +61,8 @@ export const es = {
     personal_history_placeholder_search: 'Escriba para buscar...',
     personal_history_placeholder_date: 'Haga clic para seleccionar una fecha',
     personal_history_placeholder_description: 'Escriba algo... (Opcional)',
+    evolution_title: 'Evolución/Evaluación de la Consulta-internación',
+    evolution_description_label: 'Descripción',
+    evolution_placeholder: 'Escriba la evolución aquí...',
   },
 };
