@@ -1,11 +1,14 @@
-import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
-import { Title } from '@mantine/core';
+import { useState, useCallback } from 'react';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
+import { useLoaderData, useFetcher } from '@remix-run/react';
+import { Title, Stack } from '@mantine/core';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import EncounterTree from '~/components/encounter-tree';
 import Portal from '~/components/portal';
 import { styled } from '~/stitches';
+import { ReasonForConsultationForm } from '~/components/forms/reason-for-consultation-form';
 
 const Container = styled('div', {
   padding: 0,
@@ -32,10 +35,30 @@ const Sidebar = styled('div', {
 const Content = styled('div', {
   flex: 1,
   height: '100%',
+  padding: '2rem',
 });
 
 export const meta: MetaFunction = () => {
   return [{ title: 'MedApp / Detalle de Encuentro' }];
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const { client } = await getAuthenticatedClient(request);
+  const formData = await request.formData();
+  const encounterId = formData.get('encounterId') as string;
+  const formKey = formData.get('formKey') as string;
+  const data = JSON.parse(formData.get('data') as string);
+
+  const encounter = await client.service('encounters').get(encounterId);
+
+  await client.service('encounters').patch(encounterId, {
+    data: {
+      ...encounter.data,
+      [formKey]: data,
+    },
+  });
+
+  return json({ success: true });
 };
 
 export const loader = authenticatedLoader(async ({ params, request }: LoaderFunctionArgs) => {
@@ -73,6 +96,30 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 
 export default function PatientEncounterDetail() {
   const data = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
+  const [selectedEncounter, setSelectedEncounter] = useState<any>(null);
+  const [selectedFormKey, setSelectedFormKey] = useState<string | null>(null);
+
+  const handleFormClick = useCallback((encounter: any, formKey: string) => {
+    setSelectedEncounter(encounter);
+    setSelectedFormKey(formKey);
+  }, []);
+
+  const handleFormSubmit = async (formData: any) => {
+    if (!selectedEncounter || !selectedFormKey) return;
+
+    fetcher.submit(
+      {
+        encounterId: selectedEncounter.id,
+        formKey: selectedFormKey,
+        data: JSON.stringify(formData),
+      },
+      { method: 'post' }
+    );
+
+    setSelectedEncounter(null);
+    setSelectedFormKey(null);
+  };
 
   return (
     <Container className="encounters-container">
@@ -85,11 +132,27 @@ export default function PatientEncounterDetail() {
       <Sidebar>
         <EncounterTree
           encounters={data.encounters}
-          onEncounterClick={encounter => console.log('Encounter clicked', encounter)}
+          activeEncounterId={selectedEncounter?.id}
+          activeFormKey={selectedFormKey || undefined}
+          onEncounterClick={encounter => {
+            setSelectedEncounter(encounter);
+            setSelectedFormKey(null);
+          }}
+          onFormClick={handleFormClick}
         />
       </Sidebar>
 
-      <Content>{/* <Code block>{JSON.stringify(data, null, 2)}</Code> */}</Content>
+      <Content>
+        <Stack>
+          {selectedFormKey === 'general/consulta_internacion' && (
+            <ReasonForConsultationForm
+              initialData={selectedEncounter.data[selectedFormKey]}
+              onSubmit={handleFormSubmit}
+              // readOnly
+            />
+          )}
+        </Stack>
+      </Content>
     </Container>
   );
 }
