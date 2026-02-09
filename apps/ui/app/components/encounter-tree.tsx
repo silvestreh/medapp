@@ -112,13 +112,7 @@ const FormItem = styled('div', {
   },
 });
 
-const EncounterTree: FC<EncounterTreeProps> = ({
-  encounters,
-  activeEncounterId,
-  activeFormKey,
-  onFormClick,
-  onEncounterClick,
-}) => {
+const EncounterTree: FC<EncounterTreeProps> = ({ encounters, activeEncounterId, activeFormKey, onFormClick }) => {
   const { t } = useTranslation();
 
   const handleFormItemClick = useCallback(
@@ -168,15 +162,16 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                               <EncounterDateText as="div">
                                 {dayjs(encounter.date).format('dddd D, HH:mm')}
                               </EncounterDateText>
-                              {encounter.data && Object.keys(encounter.data).map(key => (
-                                <FormItem
-                                  key={key}
-                                  onClick={e => handleFormItemClick(e, encounter, key)}
-                                  active={activeEncounterId === encounter.id && activeFormKey === key}
-                                >
-                                  {t(`forms.${encounter.data[key].type}` as any)}
-                                </FormItem>
-                              ))}
+                              {encounter.data &&
+                                Object.keys(encounter.data).map(key => (
+                                  <FormItem
+                                    key={key}
+                                    onClick={e => handleFormItemClick(e, encounter, key)}
+                                    active={activeEncounterId === encounter.id && activeFormKey === key}
+                                  >
+                                    {t(`forms.${encounter.data[key].type}` as any)}
+                                  </FormItem>
+                                ))}
                             </EncounterBox>
                           ))}
                       </Stack>
