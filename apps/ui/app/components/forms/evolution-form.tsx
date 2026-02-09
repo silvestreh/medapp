@@ -1,17 +1,19 @@
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
-import { FormContainer, FormCard, FieldRow, Label, StyledTextarea, StyledTitle } from '~/components/forms/styles';
+import { useDebouncedValue } from '@mantine/hooks';
+import { useEffect } from 'react';
+import { FormContainer, FormCard, FieldRow, Label, StyledTextarea, StyledTitle } from './styles';
 
 interface EvolutionFormProps {
   initialData?: {
     type: string;
     values: Record<string, string>;
   };
-  onSubmit: (data: { type: string; values: Record<string, string> }) => void;
+  onChange: (data: { type: string; values: Record<string, string> }) => void;
   readOnly?: boolean;
 }
 
-export function EvolutionForm({ initialData, onSubmit, readOnly }: EvolutionFormProps) {
+export function EvolutionForm({ initialData, onChange, readOnly }: EvolutionFormProps) {
   const { t } = useTranslation();
 
   const form = useForm({
@@ -20,32 +22,40 @@ export function EvolutionForm({ initialData, onSubmit, readOnly }: EvolutionForm
     },
   });
 
-  const handleSubmit = (values: typeof form.values) => {
-    onSubmit({
-      type: 'general/evolucion_consulta_internacion',
-      values: {
-        evo_descripcion: values.description,
-      },
-    });
-  };
+  const [debouncedValues] = useDebouncedValue(form.values, 500);
+
+  useEffect(() => {
+    if (!readOnly) {
+      const resultValues = {
+        evo_descripcion: debouncedValues.description,
+      };
+
+      const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
+
+      if (hasChanged) {
+        onChange({
+          type: 'general/evolucion_consulta_internacion',
+          values: resultValues,
+        });
+      }
+    }
+  }, [debouncedValues, onChange, readOnly, initialData?.values]);
 
   return (
-    <form onSubmit={form.onSubmit(handleSubmit)}>
-      <FormContainer>
-        <StyledTitle order={1}>{t('forms.evolution_title')}</StyledTitle>
-        <FormCard>
-          <FieldRow>
-            <Label>{t('forms.evolution_description_label')}:</Label>
-            <StyledTextarea
-              placeholder={t('forms.evolution_placeholder')}
-              {...form.getInputProps('description')}
-              readOnly={readOnly}
-              autosize
-              minRows={3}
-            />
-          </FieldRow>
-        </FormCard>
-      </FormContainer>
-    </form>
+    <FormContainer>
+      <StyledTitle order={1}>{t('forms.evolution_title')}</StyledTitle>
+      <FormCard>
+        <FieldRow>
+          <Label>{t('forms.evolution_description_label')}:</Label>
+          <StyledTextarea
+            placeholder={t('forms.evolution_placeholder')}
+            {...form.getInputProps('description')}
+            readOnly={readOnly}
+            autosize
+            minRows={3}
+          />
+        </FieldRow>
+      </FormCard>
+    </FormContainer>
   );
 }

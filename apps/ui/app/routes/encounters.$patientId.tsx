@@ -1,17 +1,14 @@
 import { useState, useCallback } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useLoaderData, useFetcher } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { Title, Stack } from '@mantine/core';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import EncounterTree from '~/components/encounter-tree';
 import Portal from '~/components/portal';
 import { styled } from '~/stitches';
-import { ReasonForConsultationForm } from '~/components/forms/reason-for-consultation-form';
-import { FamilyHistoryForm } from '~/components/forms/family-history-form';
-import { PersonalHistoryForm } from '~/components/forms/personal-history-form';
-import { EvolutionForm } from '~/components/forms/evolution-form';
+import { EncounterForm } from '~/components/forms/encounter-form';
 
 const Container = styled('div', {
   padding: 0,
@@ -38,13 +35,7 @@ const Sidebar = styled('div', {
 const Content = styled('div', {
   flex: 1,
   height: '100%',
-  padding: '1rem',
-
-  '@lg': {
-    padding: '2rem',
-    position: 'sticky',
-    top: '5rem',
-  },
+  padding: '2rem',
 });
 
 export const meta: MetaFunction = () => {
@@ -55,16 +46,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
   const formData = await request.formData();
   const encounterId = formData.get('encounterId') as string;
-  const formKey = formData.get('formKey') as string;
   const data = JSON.parse(formData.get('data') as string);
 
-  const encounter = await client.service('encounters').get(encounterId);
-
   await client.service('encounters').patch(encounterId, {
-    data: {
-      ...encounter.data,
-      [formKey]: data,
-    },
+    data,
   });
 
   return json({ success: true });
@@ -105,31 +90,18 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 
 export default function PatientEncounterDetail() {
   const data = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
   const [selectedEncounter, setSelectedEncounter] = useState<any>(null);
-  const [selectedFormKey, setSelectedFormKey] = useState<string | null>(null);
+  const [activeFormKey, setActiveFormKey] = useState<string | undefined>(undefined);
 
-  const handleFormClick = useCallback((encounter: any, formKey: string) => {
-    console.log('handleFormClick', encounter, formKey);
+  const handleEncounterClick = useCallback((encounter: any) => {
     setSelectedEncounter(encounter);
-    setSelectedFormKey(formKey);
+    setActiveFormKey(undefined);
   }, []);
 
-  const handleFormSubmit = async (formData: any) => {
-    if (!selectedEncounter || !selectedFormKey) return;
-
-    fetcher.submit(
-      {
-        encounterId: selectedEncounter.id,
-        formKey: selectedFormKey,
-        data: JSON.stringify(formData),
-      },
-      { method: 'post' }
-    );
-
-    setSelectedEncounter(null);
-    setSelectedFormKey(null);
-  };
+  const handleFormClick = useCallback((encounter: any, formKey: string) => {
+    setSelectedEncounter(encounter);
+    setActiveFormKey(formKey);
+  }, []);
 
   return (
     <Container className="encounters-container">
@@ -143,39 +115,20 @@ export default function PatientEncounterDetail() {
         <EncounterTree
           encounters={data.encounters}
           activeEncounterId={selectedEncounter?.id}
-          activeFormKey={selectedFormKey || undefined}
+          activeFormKey={activeFormKey}
+          onEncounterClick={handleEncounterClick}
           onFormClick={handleFormClick}
         />
       </Sidebar>
 
       <Content>
-        <Stack key={`${selectedEncounter?.id}-${selectedFormKey}`}>
-          {selectedFormKey === 'general/consulta_internacion' && (
-            <ReasonForConsultationForm
-              initialData={selectedEncounter.data[selectedFormKey]}
-              onSubmit={handleFormSubmit}
-              readOnly
+        <Stack key={`${selectedEncounter?.id}-${activeFormKey}`}>
+          {selectedEncounter && (
+            <EncounterForm
+              encounter={selectedEncounter}
+              readOnly={false}
+              activeFormKey={activeFormKey}
             />
-          )}
-
-          {selectedFormKey === 'antecedentes/familiares' && (
-            <FamilyHistoryForm
-              initialData={selectedEncounter.data[selectedFormKey]}
-              onSubmit={handleFormSubmit}
-              readOnly
-            />
-          )}
-
-          {selectedFormKey === 'antecedentes/personales' && (
-            <PersonalHistoryForm
-              initialData={selectedEncounter.data[selectedFormKey]}
-              onSubmit={handleFormSubmit}
-              readOnly
-            />
-          )}
-
-          {selectedFormKey === 'general/evolucion_consulta_internacion' && (
-            <EvolutionForm initialData={selectedEncounter.data[selectedFormKey]} onSubmit={handleFormSubmit} readOnly />
           )}
         </Stack>
       </Content>
