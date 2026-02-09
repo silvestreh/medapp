@@ -1,96 +1,18 @@
-import { ActionIcon, Button, Stack, Text, Textarea, TextInput, Title } from '@mantine/core';
+import { ActionIcon, Button, Stack, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { styled } from '~/stitches';
-
-const FormContainer = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '2rem',
-  width: '100%',
-});
-
-const ReasonItem = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1rem',
-});
-
-const ReasonCard = styled('div', {
-  background: 'White',
-  border: '1px solid var(--mantine-color-gray-2)',
-  borderRadius: 'var(--mantine-radius-md)',
-  overflow: 'hidden',
-});
-
-const FieldRow = styled('div', {
-  display: 'flex',
-  alignItems: 'flex-start',
-  padding: '1rem',
-  borderBottom: '1px solid var(--mantine-color-gray-2)',
-  '&:last-child': {
-    borderBottom: 'none',
-  },
-});
-
-const Label = styled(Text, {
-  width: '25%',
-  color: 'var(--mantine-color-gray-6)',
-  textAlign: 'right',
-  marginRight: '1rem',
-});
-
-const StyledTextInput = styled(TextInput, {
-  flex: 1,
-
-  '& .mantine-TextInput-input': {
-    border: 'none',
-    padding: 0,
-    height: 'auto',
-    minHeight: '1.5rem',
-    lineHeight: 1.75,
-
-    '&:focus': {
-      boxShadow: 'none',
-    },
-  },
-});
-
-const StyledTitle = styled(Title, {
-  color: 'var(--mantine-color-blue-4)',
-  fontWeight: 400,
-});
-
-const StyledTextarea = styled(Textarea, {
-  flex: 1,
-
-  '& .mantine-Textarea-input': {
-    border: 'none',
-    padding: 0,
-    height: 'auto',
-    minHeight: '1.5rem',
-    lineHeight: 1.75,
-
-    '&:focus': {
-      boxShadow: 'none',
-    },
-  },
-});
-
-const ItemHeader = styled('div', {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '0.5rem',
-});
-
-const FormHeader = styled('div', {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '1rem',
-});
+import {
+  FormContainer,
+  FormCard,
+  FieldRow,
+  Label,
+  StyledTextInput,
+  StyledTextarea,
+  StyledTitle,
+  FormHeader,
+  ItemHeader,
+} from './styles';
 
 interface ReasonValue {
   reason: string;
@@ -182,7 +104,7 @@ export function ReasonForConsultationForm({ initialData, onSubmit, readOnly }: R
 
         <Stack gap="lg">
           {form.values.reasons.map((_, index) => (
-            <ReasonItem key={index}>
+            <div key={index}>
               <ItemHeader>
                 <Text size="xl" c="dimmed" fw={500}>
                   {t('forms.consulta_internacion_title_item', { index: index + 1 })}
@@ -193,7 +115,7 @@ export function ReasonForConsultationForm({ initialData, onSubmit, readOnly }: R
                   </ActionIcon>
                 )}
               </ItemHeader>
-              <ReasonCard>
+              <FormCard>
                 <FieldRow>
                   <Label>{t('forms.consulta_internacion_reason')}:</Label>
                   <StyledTextInput
@@ -212,8 +134,8 @@ export function ReasonForConsultationForm({ initialData, onSubmit, readOnly }: R
                     minRows={1}
                   />
                 </FieldRow>
-              </ReasonCard>
-            </ReasonItem>
+              </FormCard>
+            </div>
           ))}
         </Stack>
       </FormContainer>

@@ -1,95 +1,20 @@
-import { ActionIcon, Button, Stack, Text, Textarea, Title } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
+import { ActionIcon, Button, Stack, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { styled } from '~/stitches';
 import { Icd10Selector } from '~/components/icd10-selector';
-
-const FormContainer = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '2rem',
-  width: '100%',
-});
-
-const HistoryItem = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1rem',
-});
-
-const HistoryCard = styled('div', {
-  background: 'White',
-  border: '1px solid var(--mantine-color-gray-2)',
-  borderRadius: 'var(--mantine-radius-md)',
-  overflow: 'hidden',
-});
-
-const FieldRow = styled('div', {
-  display: 'flex',
-  alignItems: 'flex-start',
-  padding: '1rem',
-  borderBottom: '1px solid var(--mantine-color-gray-2)',
-  '&:last-child': {
-    borderBottom: 'none',
-  },
-});
-
-const Label = styled(Text, {
-  width: '25%',
-  color: 'var(--mantine-color-gray-6)',
-  textAlign: 'right',
-  marginRight: '1rem',
-});
-
-const StyledTextarea = styled(Textarea, {
-  flex: 1,
-  '& .mantine-Textarea-input': {
-    border: 'none',
-    padding: 0,
-    height: 'auto',
-    minHeight: '1.5rem',
-    lineHeight: 1.75,
-    '&:focus': {
-      boxShadow: 'none',
-    },
-  },
-});
-
-const StyledDateInput = styled(DateInput, {
-  flex: 1,
-  '& .mantine-DateInput-input': {
-    border: 'none',
-    padding: 0,
-    height: 'auto',
-    minHeight: '1.5rem',
-    lineHeight: 1.75,
-    '&:focus': {
-      boxShadow: 'none',
-    },
-  },
-});
-
-const ItemHeader = styled('div', {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '0.5rem',
-});
-
-const StyledTitle = styled(Title, {
-  color: 'var(--mantine-color-blue-4)',
-  fontWeight: 400,
-});
-
-const FormHeader = styled('div', {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '1rem',
-});
+import {
+  FormContainer,
+  FormCard,
+  FieldRow,
+  Label,
+  StyledTextarea,
+  StyledDateInput,
+  StyledTitle,
+  FormHeader,
+  ItemHeader,
+} from './styles';
 
 interface PersonalHistoryItem {
   issueId: string;
@@ -179,7 +104,7 @@ export function PersonalHistoryForm({ initialData, onSubmit, readOnly }: Persona
 
         <Stack gap="lg">
           {form.values.items.map((_, index) => (
-            <HistoryItem key={index}>
+            <div key={index}>
               <ItemHeader>
                 <Text size="xl" c="dimmed" fw={500}>
                   {t('forms.personal_history_item_title', { index: index + 1 })}
@@ -190,7 +115,7 @@ export function PersonalHistoryForm({ initialData, onSubmit, readOnly }: Persona
                   </ActionIcon>
                 )}
               </ItemHeader>
-              <HistoryCard>
+              <FormCard>
                 <FieldRow>
                   <Label>{t('forms.personal_history_label')}:</Label>
                   <Icd10Selector
@@ -220,8 +145,8 @@ export function PersonalHistoryForm({ initialData, onSubmit, readOnly }: Persona
                     minRows={1}
                   />
                 </FieldRow>
-              </HistoryCard>
-            </HistoryItem>
+              </FormCard>
+            </div>
           ))}
         </Stack>
       </FormContainer>
