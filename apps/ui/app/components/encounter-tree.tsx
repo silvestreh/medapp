@@ -21,7 +21,6 @@ interface EncounterTreeProps {
   encounters: Encounter[];
   activeEncounterId?: string;
   activeFormKey?: string;
-  onEncounterClick?: (encounter: Encounter) => void;
   onFormClick?: (encounter: Encounter, formKey: string) => void;
 }
 
@@ -111,21 +110,8 @@ const FormItem = styled('div', {
   },
 });
 
-const EncounterTree: FC<EncounterTreeProps> = ({
-  encounters,
-  activeEncounterId,
-  activeFormKey,
-  onEncounterClick,
-  onFormClick,
-}) => {
+const EncounterTree: FC<EncounterTreeProps> = ({ encounters, activeEncounterId, activeFormKey, onFormClick }) => {
   const { t } = useTranslation();
-
-  const handleEncounterClick = useCallback(
-    (encounter: Encounter) => {
-      onEncounterClick?.(encounter);
-    },
-    [onEncounterClick]
-  );
 
   const handleFormItemClick = useCallback(
     (e: React.MouseEvent, encounter: Encounter, key: string) => {
@@ -144,14 +130,14 @@ const EncounterTree: FC<EncounterTreeProps> = ({
   const years = Object.keys(groupedEncounters).sort((a, b) => b.localeCompare(a));
 
   return (
-    <StyledAccordion variant="default">
+    <StyledAccordion variant="default" multiple>
       {years.map(year => (
         <Accordion.Item key={year} value={year}>
           <Accordion.Control>
             <YearText>{year}</YearText>
           </Accordion.Control>
           <Accordion.Panel>
-            <StyledAccordion variant="default">
+            <StyledAccordion variant="default" multiple>
               {Object.keys(groupedEncounters[year])
                 .sort((a, b) => {
                   // Sort months chronologically (newest first)
@@ -169,7 +155,6 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                           .map((encounter: Encounter) => (
                             <EncounterBox
                               key={encounter.id}
-                              onClick={() => handleEncounterClick(encounter)}
                               active={activeEncounterId === encounter.id && !activeFormKey}
                             >
                               <EncounterDateText>{dayjs(encounter.date).format('dddd D, HH:mm')}</EncounterDateText>
