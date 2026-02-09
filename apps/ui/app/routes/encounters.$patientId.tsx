@@ -39,6 +39,11 @@ const Content = styled('div', {
   flex: 1,
   height: '100%',
   padding: '2rem',
+
+  '@lg': {
+    position: 'sticky',
+    top: '5rem',
+  },
 });
 
 export const meta: MetaFunction = () => {
@@ -143,7 +148,7 @@ export default function PatientEncounterDetail() {
       </Sidebar>
 
       <Content>
-        <Stack>
+        <Stack key={`${selectedEncounter?.id}-${selectedFormKey}`}>
           {selectedFormKey === 'general/consulta_internacion' && (
             <ReasonForConsultationForm
               initialData={selectedEncounter.data[selectedFormKey]}
