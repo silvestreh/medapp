@@ -1,4 +1,4 @@
-import { ActionIcon, Button, Stack, Text, TextInput, Textarea, Title } from '@mantine/core';
+import { ActionIcon, Button, Stack, Text, Textarea, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -57,6 +57,11 @@ const StyledTextInput = styled(TextInput, {
   },
 });
 
+const StyledTitle = styled(Title, {
+  color: 'var(--mantine-color-blue-4)',
+  fontWeight: 400,
+});
+
 const StyledTextarea = styled(Textarea, {
   flex: 1,
 
@@ -78,11 +83,6 @@ const ItemHeader = styled('div', {
   justifyContent: 'space-between',
   alignItems: 'center',
   marginBottom: '0.5rem',
-});
-
-const StyledTitle = styled(Title, {
-  color: 'var(--mantine-color-blue-4)',
-  fontWeight: 400,
 });
 
 const FormHeader = styled('div', {

@@ -5,6 +5,7 @@ export const en: typeof es = {
     welcome: 'Welcome',
     required: 'Required',
     optional: 'Optional',
+    no_results: 'No results found',
   },
   forms: {
     'general/consulta_internacion': 'Reason for Consultation/Admission',

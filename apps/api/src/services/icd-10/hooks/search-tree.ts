@@ -14,29 +14,36 @@ export const searchTree = () => {
     delete query.$search;
 
     const Model = app.service('icd-10').Model;
-    const sequelize: Sequelize = app.get('sequelizeClient');
 
-    // Normalize search term: lowercase and remove accents
-    const normalizedSearch = searchTerm
+    // Split search term into words and normalize each
+    const searchWords = searchTerm
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+      .replace(/[\u0300-\u036f]/g, '')
+      .split(/\s+/)
+      .filter((word: string) => word.length > 0);
 
-    // We use unaccent in Postgres if available, or ILIKE with wildcards
-    // For simplicity and robustness across environments, we'll use ILIKE with normalized search if we had a searchable column,
-    // but since we want to handle accents, we'll use a more complex query or assume unaccent extension exists.
-    // Let's use a query that handles both code and name.
-    
-    // Find matching nodes
-    const matches = await Model.findAll({
-      where: {
+    if (searchWords.length === 0) {
+      return context;
+    }
+
+    // Build a query where EACH word must match either the ID or the unaccented Name
+    const wordConditions = searchWords.map((word: string) => {
+      return {
         [Op.or]: [
-          { id: { [Op.iLike]: `%${searchTerm}%` } },
+          { id: { [Op.iLike]: `%${word}%` } },
           Sequelize.where(
             Sequelize.fn('unaccent', Sequelize.col('name')),
-            { [Op.iLike]: `%${normalizedSearch}%` }
+            { [Op.iLike]: `%${word}%` }
           )
         ]
+      };
+    });
+
+    // Find matching nodes that satisfy ALL word conditions
+    const matches = await Model.findAll({
+      where: {
+        [Op.and]: wordConditions
       },
       raw: true
     });

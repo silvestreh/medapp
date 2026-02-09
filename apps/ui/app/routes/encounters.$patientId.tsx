@@ -148,7 +148,7 @@ export default function PatientEncounterDetail() {
             <ReasonForConsultationForm
               initialData={selectedEncounter.data[selectedFormKey]}
               onSubmit={handleFormSubmit}
-              // readOnly
+              readOnly
             />
           )}
         </Stack>

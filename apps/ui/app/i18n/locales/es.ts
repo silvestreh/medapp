@@ -3,6 +3,7 @@ export const es = {
     welcome: 'Bienvenido',
     required: 'Requerido',
     optional: 'Opcional',
+    no_results: 'No se encontraron resultados',
   },
   forms: {
     'general/consulta_internacion': 'Motivo de consulta-internación',
