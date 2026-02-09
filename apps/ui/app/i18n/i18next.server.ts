@@ -3,11 +3,10 @@ import i18n, { resources } from './i18n';
 
 const i18next = new RemixI18Next({
   detection: {
-    supportedLanguages: [...i18n.supportedLngs],
+    supportedLanguages: i18n.supportedLngs.slice(),
     fallbackLanguage: i18n.fallbackLng,
+    order: ['searchParams', 'cookie'],
   },
-  // This is the configuration for i18next used
-  // when translating messages server-side only
   i18next: {
     ...i18n,
     resources,

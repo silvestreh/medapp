@@ -5,7 +5,6 @@ import { startTransition, StrictMode, useEffect } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import i18next from 'i18next';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 import i18n, { resources } from '~/i18n/i18n';
 
 import { ClientCacheProvider } from '~/stitches';
@@ -31,24 +30,15 @@ Sentry.init({
 });
 
 async function main() {
-  await i18next
+  const i18nInstance = i18next;
+  await i18nInstance
     .use(initReactI18next) // Tell i18next to use the react-i18next plugin
-    .use(LanguageDetector) // Setup a client-side language detector
     .init({
       ...i18n, // spread the configuration
       resources,
       // This function detects the namespaces your routes rendered for i18next
       // to know what to load
       ns: i18n.defaultNS,
-      detection: {
-        // Here only enable htmlTag detection, we'll detect the language only
-        // server-side with remix-i18next, then the server will pass the detected
-        // locale to the client
-        order: ['htmlTag'],
-        // Because we only use htmlTag, there's no need to cache the language on
-        // the browser, so we disable it
-        caches: [],
-      },
     });
 
   startTransition(() => {
