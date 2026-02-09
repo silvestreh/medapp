@@ -1,6 +1,8 @@
 export const es = {
   common: {
     welcome: 'Bienvenido',
+    required: 'Requerido',
+    optional: 'Opcional',
   },
   forms: {
     'general/consulta_internacion': 'Motivo de consulta-internación',
@@ -16,5 +18,11 @@ export const es = {
     'cardiologia/general': 'Cardiología (general)',
     'general/enfermedad_actual': 'Enfermedad actual',
     'general/evolucion_consulta_internacion': 'Evolución/evaluación de consulta-internación',
+    consulta_internacion_reason: 'Motivo',
+    consulta_internacion_description: 'Descripción',
+    consulta_internacion_add: 'Agregar motivo',
+    consulta_internacion_placeholder_reason: 'Escriba para seleccionar un motivo',
+    consulta_internacion_placeholder_description: 'Descripción (opcional)',
+    consulta_internacion_title_item: 'Motivo #{{index}}',
   },
 };

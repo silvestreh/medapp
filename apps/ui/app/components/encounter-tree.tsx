@@ -1,4 +1,4 @@
-import { type FC } from 'react';
+import { type FC, useCallback } from 'react';
 import { Accordion, Text, Stack } from '@mantine/core';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
@@ -19,7 +19,10 @@ interface Encounter {
 
 interface EncounterTreeProps {
   encounters: Encounter[];
+  activeEncounterId?: string;
+  activeFormKey?: string;
   onEncounterClick?: (encounter: Encounter) => void;
+  onFormClick?: (encounter: Encounter, formKey: string) => void;
 }
 
 const StyledAccordion = styled(Accordion, {
@@ -71,8 +74,17 @@ const MonthText = styled(Text, {
 
 const EncounterBox = styled('div', {
   padding: '1rem', // md
+  paddingBottom: 0,
   cursor: 'pointer',
   borderBottom: '1px solid #f1f3f5',
+
+  variants: {
+    active: {
+      true: {
+        backgroundColor: 'var(--mantine-color-blue-0)',
+      },
+    },
+  },
 });
 
 const EncounterDateText = styled(Text, {
@@ -82,13 +94,46 @@ const EncounterDateText = styled(Text, {
   marginBottom: '1rem',
 });
 
-// const EncounterDetailText = styled(Text, {
-//   fontSize: '0.875rem', // sm
-//   color: 'var(--mantine-color-gray-5)', // gray.5
-// });
+const FormItem = styled('div', {
+  cursor: 'pointer',
+  color: 'var(--mantine-color-blue-6)',
+  fontSize: 'var(--mantine-font-size-md)',
+  padding: '1rem',
+  marginLeft: '-1rem',
+  width: 'calc(100% + 2rem)',
 
-const EncounterTree: FC<EncounterTreeProps> = ({ encounters, onEncounterClick }) => {
+  variants: {
+    active: {
+      true: {
+        backgroundColor: 'var(--mantine-color-blue-0)',
+      },
+    },
+  },
+});
+
+const EncounterTree: FC<EncounterTreeProps> = ({
+  encounters,
+  activeEncounterId,
+  activeFormKey,
+  onEncounterClick,
+  onFormClick,
+}) => {
   const { t } = useTranslation();
+
+  const handleEncounterClick = useCallback(
+    (encounter: Encounter) => {
+      onEncounterClick?.(encounter);
+    },
+    [onEncounterClick]
+  );
+
+  const handleFormItemClick = useCallback(
+    (e: React.MouseEvent, encounter: Encounter, key: string) => {
+      e.stopPropagation();
+      onFormClick?.(encounter, key);
+    },
+    [onFormClick]
+  );
 
   // Group encounters by Year -> Month using lodash
   const groupedEncounters = mapValues(
@@ -122,10 +167,20 @@ const EncounterTree: FC<EncounterTreeProps> = ({ encounters, onEncounterClick })
                         {groupedEncounters[year][monthYear]
                           .sort((a: Encounter, b: Encounter) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf())
                           .map((encounter: Encounter) => (
-                            <EncounterBox key={encounter.id} onClick={() => onEncounterClick?.(encounter)}>
+                            <EncounterBox
+                              key={encounter.id}
+                              onClick={() => handleEncounterClick(encounter)}
+                              active={activeEncounterId === encounter.id && !activeFormKey}
+                            >
                               <EncounterDateText>{dayjs(encounter.date).format('dddd D, HH:mm')}</EncounterDateText>
                               {Object.keys(encounter.data).map(key => (
-                                <Text key={key}>{t(`forms.${encounter.data[key].type}` as any)}</Text>
+                                <FormItem
+                                  key={key}
+                                  onClick={e => handleFormItemClick(e, encounter, key)}
+                                  active={activeEncounterId === encounter.id && activeFormKey === key}
+                                >
+                                  {t(`forms.${encounter.data[key].type}` as any)}
+                                </FormItem>
                               ))}
                             </EncounterBox>
                           ))}
