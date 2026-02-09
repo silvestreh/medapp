@@ -1,6 +1,6 @@
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
-import { FormContainer, FormCard, FieldRow, Label, StyledTextarea, StyledTitle } from './styles';
+import { FormContainer, FormCard, FieldRow, Label, StyledTextarea, StyledTitle } from '~/components/forms/styles';
 
 interface EvolutionFormProps {
   initialData?: {
