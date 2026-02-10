@@ -4,7 +4,7 @@ import { useLoaderData, useNavigate, useLocation } from '@remix-run/react';
 import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { Drawer, Title, DrawerProps } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import datesStyles from '@mantine/dates/styles.css?url';
+import '@mantine/dates/styles.css';
 
 import AppointmentsList from '~/components/appointments-list';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
@@ -12,7 +12,7 @@ import { generateSlots } from '~/utils';
 import { styled, media } from '~/stitches';
 import type { Account } from '~/declarations';
 
-export const links: LinksFunction = () => [{ rel: 'stylesheet', href: datesStyles }];
+export const links: LinksFunction = () => [];
 
 const Container = styled('div', {
   display: 'flex',
