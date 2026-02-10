@@ -4,7 +4,7 @@ import { useDebouncedValue, useDisclosure, useClickOutside } from '@mantine/hook
 import { Search } from 'lucide-react';
 
 import { useFind } from '~/components/provider';
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 import type { Patient } from '~/declarations';
 import { displayDocumentValue } from '~/utils';
 
@@ -16,18 +16,20 @@ interface PatientSearchProps {
 }
 
 const Button = styled('button', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 2,
-  alignItems: 'flex-start',
-  appearance: 'none',
-  border: 'none',
-  background: 'transparent',
-  padding: '0.5em 1em',
-  borderRadius: 'var(--mantine-radius-sm)',
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+    alignItems: 'flex-start',
+    appearance: 'none',
+    border: 'none',
+    background: 'transparent',
+    padding: '0.5em 1em',
+    borderRadius: 'var(--mantine-radius-sm)',
 
-  '&:hover': {
-    backgroundColor: 'var(--mantine-color-blue-0)',
+    '&:hover': {
+      backgroundColor: 'var(--mantine-color-blue-0)',
+    },
   },
 });
 

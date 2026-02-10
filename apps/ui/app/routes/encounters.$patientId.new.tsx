@@ -7,36 +7,42 @@ import { Title, Stack, Center, Text } from '@mantine/core';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import Portal from '~/components/portal';
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 import { EncounterForm } from '~/components/forms/encounter-form';
 import NewEncounterSidebar from '~/components/new-encounter-sidebar';
 
 const Container = styled('div', {
-  padding: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  flex: 1,
-  width: '100%',
+  base: {
+    padding: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    width: '100%',
 
-  '@lg': {
-    flexDirection: 'row',
+    lg: {
+      flexDirection: 'row',
+    },
   },
 });
 
 const Sidebar = styled('div', {
-  background: 'white',
-  borderRight: '1px solid var(--mantine-color-gray-1)',
+  base: {
+    background: 'white',
+    borderRight: '1px solid var(--mantine-color-gray-1)',
 
-  '@lg': {
-    minHeight: 'calc(100vh - 5em)',
-    minWidth: '300px',
+    lg: {
+      minHeight: 'calc(100vh - 5em)',
+      minWidth: '300px',
+    },
   },
 });
 
 const Content = styled('div', {
-  flex: 1,
-  height: '100%',
-  padding: '2rem',
+  base: {
+    flex: 1,
+    height: '100%',
+    padding: '2rem',
+  },
 });
 
 export const meta: MetaFunction = () => {

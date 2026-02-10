@@ -7,7 +7,8 @@ import { Flex } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 
 import { generateSlots } from '~/utils';
-import { styled, media } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
+import { media } from '~/media';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import AppointmentsList from '~/components/appointments-list';
 import PatientSearchTable from '~/components/patient-search-table';
@@ -16,27 +17,33 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 const Container = styled(Flex, {
-  '@sm': {
-    flexDirection: 'column-reverse',
-  },
-  '@lg': {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    padding: '2rem',
-    gap: '1rem',
+  base: {
+    sm: {
+      flexDirection: 'column-reverse',
+    },
+    lg: {
+      alignItems: 'flex-start',
+      flexDirection: 'row',
+      padding: '2rem',
+      gap: '1rem',
+    },
   },
 });
 
 const LeftColumn = styled(Flex, {
-  '@lg': {
-    position: 'sticky',
-    top: '7.65rem',
-    width: '40%',
+  base: {
+    lg: {
+      position: 'sticky',
+      top: '7.65rem',
+      width: '40%',
+    },
   },
 });
 
 const MainColumn = styled(Flex, {
-  flex: 1,
+  base: {
+    flex: 1,
+  },
 });
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {

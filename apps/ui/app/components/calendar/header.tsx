@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Settings, Calendar } from 'lucide-react';
 import dayjs from 'dayjs';
 import startCase from 'lodash/startCase';
 
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 
 interface HeaderProps {
   date: dayjs.Dayjs;
@@ -14,32 +14,36 @@ interface HeaderProps {
 }
 
 const HeaderContainer = styled('div', {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  backgroundColor: '#FAFBFB',
+  base: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FAFBFB',
 
-  '@sm': {
-    padding: '1em',
-  },
-  '@md': {
-    padding: '2em 2em 1em',
+    sm: {
+      padding: '1em',
+    },
+    md: {
+      padding: '2em 2em 1em',
+    },
   },
 });
 
 const Title = styled('h1', {
-  fontSize: '1.5rem',
-  lineHeight: 1,
-  fontWeight: 700,
-  flex: 1,
-  margin: 0,
+  base: {
+    fontSize: '1.5rem',
+    lineHeight: 1,
+    fontWeight: 700,
+    flex: 1,
+    margin: 0,
 
-  '@md': {
-    fontSize: '2rem',
-  },
+    md: {
+      fontSize: '2rem',
+    },
 
-  '@lg': {
-    fontSize: '2.25rem',
+    lg: {
+      fontSize: '2.25rem',
+    },
   },
 });
 

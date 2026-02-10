@@ -1,7 +1,9 @@
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 
 export const Title = styled('h1', {
-  '&:first-child': {
-    marginTop: 0,
+  base: {
+    '&:first-child': {
+      marginTop: 0,
+    },
   },
 });

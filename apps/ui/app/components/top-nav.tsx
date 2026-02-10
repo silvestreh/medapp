@@ -1,60 +1,68 @@
 import { Group, Image } from '@mantine/core';
 
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 import { useAccount } from '~/components/provider';
 import LogoutButton from '~/components/logout-button';
 
 const Logo = styled(Image, {
-  aspectRatio: '1',
-  width: '2.25em',
+  base: {
+    aspectRatio: '1',
+    width: '2.25em',
 
-  '@sm': {
-    display: 'block !important',
-  },
-  '@md': {
-    display: 'none !important',
+    sm: {
+      display: 'block !important',
+    },
+    md: {
+      display: 'none !important',
+    },
   },
 }) as unknown as typeof Image;
 
 const Toolbar = styled(Group, {
-  alignItems: 'center',
-  flex: 1,
+  base: {
+    alignItems: 'center',
+    flex: 1,
 
-  '&:empty': {
-    display: 'none',
+    '&:empty': {
+      display: 'none',
+    },
   },
 });
 
 const FormActions = styled(Group, {
-  alignItems: 'center',
+  base: {
+    alignItems: 'center',
 
-  '&:empty': {
-    display: 'none',
+    '&:empty': {
+      display: 'none',
+    },
   },
 });
 
 const Container = styled('div', {
-  alignItems: 'center',
-  display: 'flex',
-  justifyContent: 'flex-end',
-  gap: '1em',
-  backgroundColor: 'var(--mantine-color-body)',
-  borderBottom: '1px solid var(--mantine-color-gray-2)',
-  width: '100%',
-  position: 'sticky',
-  padding: '1em',
-  top: 0,
-  zIndex: 10,
-
-  '&:empty': {
-    display: 'none',
-  },
-
-  '@md': {
+  base: {
+    alignItems: 'center',
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '1em',
+    backgroundColor: 'var(--mantine-color-body)',
+    borderBottom: '1px solid var(--mantine-color-gray-2)',
+    width: '100%',
+    position: 'sticky',
     padding: '1em',
-  },
-  '@lg': {
-    padding: '1.25em',
+    top: 0,
+    zIndex: 10,
+
+    '&:empty': {
+      display: 'none',
+    },
+
+    md: {
+      padding: '1em',
+    },
+    lg: {
+      padding: '1.25em',
+    },
   },
 });
 

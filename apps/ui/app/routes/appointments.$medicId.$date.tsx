@@ -9,23 +9,26 @@ import '@mantine/dates/styles.css';
 import AppointmentsList from '~/components/appointments-list';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import { generateSlots } from '~/utils';
-import { styled, media } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
+import { media } from '~/media';
 import type { Account } from '~/declarations';
 
 export const links: LinksFunction = () => [];
 
 const Container = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
 
-  '@sm': {
-    maxWidth: 'unset',
-  },
-  '@md': {
-    maxWidth: 'calc(100vw - 5.25em)',
-  },
-  '@lg': {
-    maxWidth: 'unset',
+    sm: {
+      maxWidth: 'unset',
+    },
+    md: {
+      maxWidth: 'calc(100vw - 5.25em)',
+    },
+    lg: {
+      maxWidth: 'unset',
+    },
   },
 });
 

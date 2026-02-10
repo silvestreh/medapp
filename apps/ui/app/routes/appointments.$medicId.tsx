@@ -5,7 +5,7 @@ import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Drawer, Skeleton } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 
-import { media } from '~/stitches';
+import { media } from '~/media';
 import { generateEmptySlots } from '~/utils';
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { useFind } from '~/components/provider';

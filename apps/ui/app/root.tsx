@@ -6,6 +6,7 @@ import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
+import './panda.css';
 
 import i18next from '~/i18n/i18next.server';
 import { FeathersProvider } from '~/components/provider';

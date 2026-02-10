@@ -30,6 +30,9 @@ pnpm-debug.log*
 # Testing
 coverage
 
+# Panda CSS generated
+apps/ui/app/styled-system
+
 # Misc
 .DS_Store
 *.pem

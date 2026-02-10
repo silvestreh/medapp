@@ -12,7 +12,7 @@ import 'dayjs/locale/es';
 
 import { Header } from '~/components/calendar/header';
 import { Day } from '~/components/calendar/day';
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 
 export type EventVariant = 'blue' | 'green' | 'pink' | 'yellow';
 
@@ -45,30 +45,34 @@ dayjs.locale('es');
 const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 const MainContainer = styled('div', {
-  minHeight: 'fit-content',
-  zIndex: 1,
+  base: {
+    minHeight: 'fit-content',
+    zIndex: 1,
 
-  '@sm': {
-    position: 'sticky',
-    top: '4.25em',
-    boxShadow: '0 0 2px rgba(0, 0, 0, 0.1), 0 0.25em 0.5em rgba(0, 0, 0, 0.05)',
-  },
-  '@lg': {
-    position: 'static',
-    boxShadow: 'none',
+    sm: {
+      position: 'sticky',
+      top: '4.25em',
+      boxShadow: '0 0 2px rgba(0, 0, 0, 0.1), 0 0.25em 0.5em rgba(0, 0, 0, 0.05)',
+    },
+    lg: {
+      position: 'static',
+      boxShadow: 'none',
+    },
   },
 });
 
 const WeekdayHeader = styled('div', {
-  padding: '0.5em',
-  fontWeight: 500,
-  backgroundColor: 'var(--mantine-color-blue-0)',
-  borderBottom: '1px solid var(--mantine-color-blue-1)',
-  borderRight: '1px solid var(--mantine-color-blue-1)',
-  fontSize: '0.875rem',
+  base: {
+    padding: '0.5em',
+    fontWeight: 500,
+    backgroundColor: 'var(--mantine-color-blue-0)',
+    borderBottom: '1px solid var(--mantine-color-blue-1)',
+    borderRight: '1px solid var(--mantine-color-blue-1)',
+    fontSize: '0.875rem',
 
-  '@lg': {
-    fontSize: '1em',
+    lg: {
+      fontSize: '1em',
+    },
   },
 
   variants: {
@@ -87,8 +91,10 @@ const WeekdayHeader = styled('div', {
 });
 
 const GridContainer = styled('div', {
-  borderTop: '1px solid var(--mantine-color-blue-1)',
-  borderBottom: '1px solid var(--mantine-color-gray-1)',
+  base: {
+    borderTop: '1px solid var(--mantine-color-blue-1)',
+    borderBottom: '1px solid var(--mantine-color-gray-1)',
+  },
 });
 
 function Calendar({

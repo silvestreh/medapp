@@ -4,7 +4,8 @@ import { useMediaQuery } from '@mantine/hooks';
 import { NavLink, useMatches } from '@remix-run/react';
 import { Calendar, User, Stethoscope, FlaskConical, Shield, type LucideProps } from 'lucide-react';
 
-import { styled, media } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
+import { media } from '~/media';
 import HasPermission from '~/components/has-permission';
 
 type Section = {
@@ -16,80 +17,143 @@ type Section = {
 };
 
 const Container = styled(Flex, {
-  backgroundColor: 'var(--mantine-color-body)',
+  base: {
+    backgroundColor: 'var(--mantine-color-body)',
 
-  '&:empty': {
-    display: 'none',
-  },
-  '@sm': {
-    justifyContent: 'space-around',
-    borderTop: '1px solid var(--mantine-color-gray-2)',
-    borderRight: 'none',
-    position: 'sticky',
-    bottom: 0,
-    zIndex: 1,
-  },
-  '@md': {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    borderRight: '1px solid var(--mantine-color-gray-2)',
-    borderTop: 'none',
+    '&:empty': {
+      display: 'none',
+    },
+    sm: {
+      justifyContent: 'space-around',
+      borderTop: '1px solid var(--mantine-color-gray-2)',
+      borderRight: 'none',
+      position: 'sticky',
+      bottom: 0,
+      zIndex: 1,
+    },
+    md: {
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      borderRight: '1px solid var(--mantine-color-gray-2)',
+      borderTop: 'none',
+    },
   },
 });
 
 const StickyContent = styled(Flex, {
-  gap: '1em',
+  base: {
+    gap: '1em',
 
-  '&:empty': {
-    display: 'none',
-  },
-  '@sm': {
-    justifyContent: 'space-around',
-    position: 'sticky',
-    padding: '0.75em',
-    bottom: 0,
-    zIndex: 1,
-    flexGrow: 1,
-  },
-  '@md': {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    padding: '1em',
-    bottom: 'unset',
-    top: 0,
-    flexGrow: 0,
+    '&:empty': {
+      display: 'none',
+    },
+    sm: {
+      justifyContent: 'space-around',
+      position: 'sticky',
+      padding: '0.75em',
+      bottom: 0,
+      zIndex: 1,
+      flexGrow: 1,
+    },
+    md: {
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      padding: '1em',
+      bottom: 'unset',
+      top: 0,
+      flexGrow: 0,
+    },
   },
 });
 
 const NavItem = styled(Button, {
-  '&.mantine-Button-root': {
-    borderRadius: 8,
-    textAlign: 'left',
-    justifyContent: 'flex-start',
-    width: '3.5em',
-    height: '3.5em',
-    padding: 0,
+  base: {
+    '&.mantine-Button-root': {
+      borderRadius: '8px',
+      textAlign: 'left',
+      justifyContent: 'flex-start',
+      width: '3.5em',
+      height: '3.5em',
+      padding: 0,
 
-    '@sm': {
-      width: '2.75em',
-      height: '2.75em',
+      sm: {
+        width: '2.75em',
+        height: '2.75em',
+      },
+    },
+    '&:not(.active):hover': {
+      backgroundColor: 'var(--mantine-color-blue-0) !important',
     },
   },
-  '&:not(.active):hover': {
-    backgroundColor: 'var(--mantine-color-blue-0) !important',
+  variants: {
+    tone: {
+      lime: {},
+      indigo: {},
+      pink: {},
+      yellow: {},
+      red: {},
+    },
+    active: {
+      true: {},
+      false: {},
+    },
   },
+  compoundVariants: [
+    {
+      tone: 'lime',
+      active: true,
+      css: {
+        backgroundColor: 'var(--mantine-color-lime-6) !important',
+        color: 'white !important',
+      },
+    },
+    {
+      tone: 'indigo',
+      active: true,
+      css: {
+        backgroundColor: 'var(--mantine-color-indigo-6) !important',
+        color: 'white !important',
+      },
+    },
+    {
+      tone: 'pink',
+      active: true,
+      css: {
+        backgroundColor: 'var(--mantine-color-pink-6) !important',
+        color: 'white !important',
+      },
+    },
+    {
+      tone: 'yellow',
+      active: true,
+      css: {
+        backgroundColor: 'var(--mantine-color-yellow-5) !important',
+        color: 'var(--mantine-color-dark-7) !important',
+      },
+    },
+    {
+      tone: 'red',
+      active: true,
+      css: {
+        backgroundColor: 'var(--mantine-color-red-6) !important',
+        color: 'white !important',
+      },
+    },
+  ],
 }) as unknown as typeof Button;
 
 const Logo = styled(Image, {
-  aspectRatio: '1',
-  maxWidth: '3em',
-  '@sm': {
-    display: 'none !important',
-  },
-  '@md': {
-    display: 'block !important',
+  base: {
+    aspectRatio: '1',
+    maxWidth: '3em',
+    sm: {
+      display: 'none !important',
+    },
+    md: {
+      display: 'block !important',
+    },
   },
 }) as unknown as typeof Image;
 
@@ -146,6 +210,8 @@ const SideNav: React.FC = () => {
             <HasPermission key={section.label} permissions={section.permissions}>
               <Tooltip label={section.label} position="right">
                 <NavItem
+                  tone={section.color}
+                  active={isActive}
                   component={NavLink}
                   prefetch="intent"
                   to={isActive ? '#' : section.path}

@@ -52,8 +52,8 @@ export default function (app: Application): void {
   }
 
   app.set('sequelizeClient', sequelize);
-  app.setup = function (...args): Application {
-    const result = oldSetup.apply(this, args);
+  (app as any).setup = function (server?: any): Application {
+    const result = (oldSetup as any).call(this, server) as Application;
     const models = sequelize.models;
 
     Object.keys(models).forEach(name => {
@@ -67,7 +67,7 @@ export default function (app: Application): void {
       try {
         await sequelize.query('ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchFirstName"');
         await sequelize.query('ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchLastName"');
-      } catch (e) {
+      } catch (e) { // eslint-disable-line @typescript-eslint/no-unused-vars
         // Table might not exist yet on first run, that's fine
       }
 
@@ -86,12 +86,12 @@ export default function (app: Application): void {
           $$ LANGUAGE plpgsql IMMUTABLE;
         `);
         await sequelize.query(`
-          ALTER TABLE "personal_data" 
-          ADD COLUMN "searchFirstName" text 
+          ALTER TABLE "personal_data"
+          ADD COLUMN "searchFirstName" text
           GENERATED ALWAYS AS (immutable_unaccent(lower("firstName"))) STORED;
-          
-          ALTER TABLE "personal_data" 
-          ADD COLUMN "searchLastName" text 
+
+          ALTER TABLE "personal_data"
+          ADD COLUMN "searchLastName" text
           GENERATED ALWAYS AS (immutable_unaccent(lower("lastName"))) STORED;
 
           CREATE INDEX IF NOT EXISTS personal_data_search_first_name_idx ON "personal_data" USING gin ("searchFirstName" gin_trgm_ops);

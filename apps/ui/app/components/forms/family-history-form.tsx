@@ -1,23 +1,25 @@
-import { ActionIcon, Button, Checkbox, Select, Table, TextInput, Text } from '@mantine/core';
+import { ActionIcon, Button, Checkbox, Select, Table, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect } from 'react';
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 import { Icd10Selector } from '~/components/icd10-selector';
-import { FormContainer, StyledTitle, FormHeader, FormCard } from './styles';
+import { FormContainer, StyledTitle, FormHeader, FormCard, StyledTextInput } from './styles';
 
 const StyledTable = styled(Table, {
-  '& thead tr th': {
-    color: 'var(--mantine-color-gray-6)',
-    fontWeight: 600,
-    fontSize: 'var(--mantine-font-size-sm)',
-    padding: '0.5rem',
-  },
-  '& tbody tr td': {
-    padding: '0.25rem',
-    verticalAlign: 'middle',
+  base: {
+    '& thead tr th': {
+      color: 'var(--mantine-color-gray-6)',
+      fontWeight: 600,
+      fontSize: 'var(--mantine-font-size-sm)',
+      padding: '0.5rem',
+    },
+    '& tbody tr td': {
+      padding: '0.25rem',
+      verticalAlign: 'middle',
+    },
   },
 });
 
@@ -242,19 +244,17 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                   )}
                 </Table.Td>
                 <Table.Td>
-                  <TextInput
+                  <StyledTextInput
                     placeholder={t('forms.family_history_first_name')}
                     {...form.getInputProps(`items.${index}.firstName`)}
-                    variant="unstyled"
                     readOnly={readOnly}
                     styles={{ input: { paddingLeft: 0 } }}
                   />
                 </Table.Td>
                 <Table.Td>
-                  <TextInput
+                  <StyledTextInput
                     placeholder={t('forms.family_history_last_name')}
                     {...form.getInputProps(`items.${index}.lastName`)}
-                    variant="unstyled"
                     readOnly={readOnly}
                     styles={{ input: { paddingLeft: 0 } }}
                   />

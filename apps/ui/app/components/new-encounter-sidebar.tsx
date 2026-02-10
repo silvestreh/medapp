@@ -2,7 +2,7 @@ import { type FC } from 'react';
 import { Text, Stack, Divider, ActionIcon } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 
 interface NewEncounterSidebarProps {
   availableForms: string[];
@@ -13,20 +13,24 @@ interface NewEncounterSidebarProps {
 }
 
 const SidebarContainer = styled('div', {
-  width: '100%',
+  base: {
+    width: '100%',
+  },
 });
 
 const FormItem = styled('div', {
-  cursor: 'pointer',
-  color: 'var(--mantine-color-blue-6)',
-  fontSize: 'var(--mantine-font-size-md)',
-  padding: '1rem',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
+  base: {
+    cursor: 'pointer',
+    color: 'var(--mantine-color-blue-6)',
+    fontSize: 'var(--mantine-font-size-md)',
+    padding: '1rem',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
 
-  '&:hover': {
-    backgroundColor: 'var(--mantine-color-blue-0)',
+    '&:hover': {
+      backgroundColor: 'var(--mantine-color-blue-0)',
+    },
   },
 
   variants: {
@@ -44,11 +48,13 @@ const FormItem = styled('div', {
 });
 
 const SectionTitle = styled(Text, {
-  padding: '1rem',
-  fontWeight: 600,
-  color: 'var(--mantine-color-gray-6)',
-  textTransform: 'uppercase',
-  fontSize: 'var(--mantine-font-size-xs)',
+  base: {
+    padding: '1rem',
+    fontWeight: 600,
+    color: 'var(--mantine-color-gray-6)',
+    textTransform: 'uppercase',
+    fontSize: 'var(--mantine-font-size-xs)',
+  },
 });
 
 const NewEncounterSidebar: FC<NewEncounterSidebarProps> = ({
