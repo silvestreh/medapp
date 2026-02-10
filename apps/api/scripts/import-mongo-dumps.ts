@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { omit, startCase } from 'lodash';
 
 import app from '../src/app';
-import { normalizeCity, provinceToISO, normalizePhoneNumber, normalizeMaritalStatus, transformSchedule, getCountry } from './utils';
+import { normalizeCity, provinceToISO, normalizePhoneNumber, normalizeMaritalStatus, transformSchedule, getCountry, normalizeNameWithLLM, cleanedNames } from './utils';
 import { resetDatabase } from './reset-db';
 import cie10 from './seeds/cie-10.json';
 
@@ -293,8 +293,8 @@ async function importData(multibar: cliProgress.MultiBar) {
         roleId: user.__class === 'SuperUser' ? 'admin' : user.__class === 'Receptionist' ? 'receptionist' : 'medic',
         personalData: Object.keys(user.personal_data || {}).length > 0
           ? {
-            firstName: startCase(user.personal_data?.first_name?.toLowerCase?.()),
-            lastName: startCase(user.personal_data?.last_name?.toLowerCase?.()),
+            firstName: startCase((await normalizeNameWithLLM(user.personal_data?.first_name))?.toLowerCase?.()),
+            lastName: startCase((await normalizeNameWithLLM(user.personal_data?.last_name))?.toLowerCase?.()),
             nationality: user.personal_data?.nationality ? getCountry(user.personal_data.nationality) : 'AR',
             documentType: user.personal_data?.document_type,
             documentValue: user.personal_data?.document_value || user._id.$oid,
@@ -368,8 +368,8 @@ async function importData(multibar: cliProgress.MultiBar) {
         deleted: Boolean(patient.deleted),
         personalData: Object.keys(patient.personal_data || {}).length > 0
           ? {
-            firstName: startCase(patient.personal_data.first_name?.toLowerCase?.()),
-            lastName: startCase(patient.personal_data.last_name?.toLowerCase?.()),
+            firstName: startCase((await normalizeNameWithLLM(patient.personal_data.first_name))?.toLowerCase?.()),
+            lastName: startCase((await normalizeNameWithLLM(patient.personal_data.last_name))?.toLowerCase?.()),
             nationality: patient.personal_data.nationality ? getCountry(patient.personal_data.nationality) : 'AR',
             documentType: patient.personal_data.document_type,
             documentValue,
@@ -548,8 +548,8 @@ async function importData(multibar: cliProgress.MultiBar) {
               medicare: study.patient.medicare || null,
               deleted: false,
               personalData: {
-                firstName: study.patient.first_name,
-                lastName: study.patient.last_name,
+                firstName: await normalizeNameWithLLM(study.patient.first_name),
+                lastName: await normalizeNameWithLLM(study.patient.last_name),
                 documentValue: study.patient.dni, // Add DNI if available
               }
             }) as any;
@@ -677,6 +677,9 @@ async function importData(multibar: cliProgress.MultiBar) {
     console.log('Imported studies:', validStudyIds.size, 'out of', studies.length);
     console.log('Imported study results:', validStudyResultIds.size, 'out of', studyResults.length);
     console.log('Cleaned up patients:', cleanedUpPatients.size, 'out of', validPatientIds.size);
+    if (cleanedNames.length > 0) {
+      console.log(`Cleaned ${cleanedNames.length} names via LLM`);
+    }
 
     // Write skipped data to error files
     await fs.mkdir(path.join(__dirname, './errors'), { recursive: true });
@@ -706,6 +709,13 @@ async function importData(multibar: cliProgress.MultiBar) {
       await fs.writeFile(
         path.join(__dirname, './errors/study-results.json'),
         JSON.stringify(skippedStudyResults, null, 2)
+      );
+    }
+
+    if (cleanedNames.length > 0) {
+      await fs.writeFile(
+        path.join(__dirname, './errors/cleaned-names.json'),
+        JSON.stringify(cleanedNames, null, 2)
       );
     }
   } catch (error) {

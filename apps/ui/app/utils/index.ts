@@ -1,4 +1,19 @@
 import dayjs, { Dayjs } from 'dayjs';
+
+const MONGO_OBJECT_ID_RE = /^[a-f\d]{24}$/i;
+const UUID_RE = /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i;
+
+/**
+ * Returns the display value for a national ID / document value.
+ * If the value looks like an internal ID (MongoDB ObjectID or UUID) rather
+ * than a real document number, returns '—' so we don't leak implementation
+ * details to the UI.
+ */
+export function displayDocumentValue(value: string | null | undefined): string {
+  if (!value) return '—';
+  if (MONGO_OBJECT_ID_RE.test(value) || UUID_RE.test(value)) return '—';
+  return value;
+}
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 import type { Slot, Account } from '~/declarations';
