@@ -4,7 +4,6 @@ import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect } from 'react';
-import dayjs from 'dayjs';
 import { Icd10Selector } from '~/components/icd10-selector';
 import {
   FormContainer,
@@ -20,7 +19,7 @@ import {
 
 interface PersonalHistoryItem {
   issueId: string;
-  date: Date | null;
+  date: string | null;
   description: string;
 }
 
@@ -45,10 +44,9 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
     const items: PersonalHistoryItem[] = [];
 
     for (let i = 0; i < count; i++) {
-      const dateStr = initialData.values[`fecha_antecedente_${i}`];
       items.push({
         issueId: initialData.values[`antecedente_${i}`] || '',
-        date: dateStr ? dayjs(dateStr).toDate() : null,
+        date: initialData.values[`fecha_antecedente_${i}`] || null,
         description: initialData.values[`antecedente_descripcion_${i}`] || '',
       });
     }
@@ -72,7 +70,7 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
 
       debouncedValues.items.forEach((item, index) => {
         resultValues[`antecedente_${index}`] = item.issueId;
-        resultValues[`fecha_antecedente_${index}`] = item.date ? dayjs(item.date).format('YYYY-MM-DD') : '';
+        resultValues[`fecha_antecedente_${index}`] = item.date || '';
         resultValues[`antecedente_descripcion_${index}`] = item.description;
       });
 
@@ -132,7 +130,7 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
                 <Label>{t('forms.personal_history_label')}:</Label>
                 <Icd10Selector
                   value={form.values.items[index].issueId}
-                  onChange={val => form.setFieldValue(`items.${index}.issueId`, val)}
+                  onChange={val => form.setFieldValue(`items.${index}.issueId`, val as string)}
                   placeholder={t('forms.personal_history_placeholder_search')}
                   readOnly={readOnly}
                 />

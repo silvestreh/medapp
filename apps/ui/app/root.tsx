@@ -1,39 +1,18 @@
 import { captureRemixErrorBoundaryError } from '@sentry/remix';
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useLoaderData,
-  useRouteError,
-  useRouteLoaderData,
-} from '@remix-run/react';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError, useRouteLoaderData } from '@remix-run/react';
 import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
-import coreStyles from '@mantine/core/styles.css?url';
-import notificationsStyles from '@mantine/notifications/styles.css?url';
-import { useTranslation } from 'react-i18next';
 import { useChangeLanguage } from 'remix-i18next/react';
-import i18next from '~/i18n/i18next.server';
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 
+import i18next from '~/i18n/i18next.server';
 import { FeathersProvider } from '~/components/provider';
 import MainLayout from '~/components/main-layout';
 import { getToken, getUser } from '~/utils/auth.server';
 
-/**
- * These stylesheets have been removed by Gemini:
- * import datesStyles from '@mantine/dates/styles.css?url';
- * import chartsStyles from '@mantine/charts/styles.css?url';
- * import nprogressStyles from '@mantine/nprogress/styles.css?url';
- * import spotlightStyles from '@mantine/spotlight/styles.css?url';
- * import tiptapStyles from '@mantine/tiptap/styles.css?url';
- */
-export const links: LinksFunction = () => [
-  { rel: 'stylesheet', href: coreStyles },
-  { rel: 'stylesheet', href: notificationsStyles },
-];
+export const links: LinksFunction = () => [];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const initialToken = await getToken(request);
