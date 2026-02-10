@@ -3,7 +3,7 @@ import { Select, Group, Text, type SelectProps } from '@mantine/core';
 import { User } from 'lucide-react';
 import { useParams } from '@remix-run/react';
 
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 
 interface MedicListProps {
   onChange: (value: string | null) => void;
@@ -11,10 +11,12 @@ interface MedicListProps {
 }
 
 const Option = styled(Group, {
-  minWidth: 'fit-content',
-  flex: '1',
-  gap: 2,
-  wrap: 'nowrap',
+  base: {
+    minWidth: 'fit-content',
+    flex: '1',
+    gap: '2px',
+    flexWrap: 'nowrap',
+  },
 });
 
 const MedicList: FC<MedicListProps> = ({ onChange, medics = [] }) => {

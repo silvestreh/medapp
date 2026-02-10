@@ -7,21 +7,23 @@ import { useNavigate, useSearchParams } from '@remix-run/react';
 import { useFind } from '~/components/provider';
 import type { Patient } from '~/declarations';
 import Portal from '~/components/portal';
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 import { displayDocumentValue } from '~/utils';
 
 const Wrapper = styled('div', {
-  background: 'White',
-  display: 'flex',
-  flexDirection: 'column',
-  border: '1px solid var(--mantine-color-gray-2)',
-  width: '100%',
+  base: {
+    background: 'white',
+    display: 'flex',
+    flexDirection: 'column',
+    border: '1px solid var(--mantine-color-gray-2)',
+    width: '100%',
+  },
 
   variants: {
     borderRadius: {
       true: {
         borderRadius: 'var(--mantine-radius-md)',
-        borderWidth: 1,
+        borderWidth: '1px',
       },
       false: {
         borderWidth: 0,
@@ -29,10 +31,10 @@ const Wrapper = styled('div', {
     },
     hideOnMobileIfEmpty: {
       true: {
-        '@sm': {
+        sm: {
           display: 'none',
         },
-        '@lg': {
+        lg: {
           display: 'flex',
         },
       },
@@ -45,21 +47,25 @@ const Wrapper = styled('div', {
 });
 
 const Text = styled(BaseText, {
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  display: 'block',
-  padding: 'var(--mantine-spacing-xs)',
+  base: {
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    display: 'block',
+    padding: 'var(--mantine-spacing-xs)',
+  },
 });
 
 const EmptyState = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '100%',
-  gap: 4,
-  padding: 'var(--mantine-spacing-xl)',
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    gap: '4px',
+    padding: 'var(--mantine-spacing-xl)',
+  },
 });
 
 const PatientSearchTable: FC = () => {

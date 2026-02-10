@@ -8,35 +8,41 @@ import { Group, Title, Stack, Button } from '@mantine/core';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import EncounterTree from '~/components/encounter-tree';
 import Portal from '~/components/portal';
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 import { EncounterForm } from '~/components/forms/encounter-form';
 
 const Container = styled('div', {
-  padding: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  flex: 1,
-  width: '100%',
+  base: {
+    padding: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    width: '100%',
 
-  '@lg': {
-    flexDirection: 'row',
+    lg: {
+      flexDirection: 'row',
+    },
   },
 });
 
 const Sidebar = styled('div', {
-  background: 'white',
-  borderRight: '1px solid var(--mantine-color-gray-2)',
+  base: {
+    background: 'white',
+    borderRight: '1px solid var(--mantine-color-gray-2)',
 
-  '@lg': {
-    minHeight: 'calc(100vh - 5em)',
-    minWidth: '300px',
+    lg: {
+      minHeight: 'calc(100vh - 5em)',
+      minWidth: '300px',
+    },
   },
 });
 
 const Content = styled('div', {
-  flex: 1,
-  height: '100%',
-  padding: '2rem',
+  base: {
+    flex: 1,
+    height: '100%',
+    padding: '2rem',
+  },
 });
 
 export const meta: MetaFunction = () => {

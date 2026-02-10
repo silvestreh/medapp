@@ -1,7 +1,7 @@
 import { Drawer, Title } from '@mantine/core';
 import { useLocation, useNavigate } from '@remix-run/react';
 import { useMediaQuery } from '@mantine/hooks';
-import { media } from '~/stitches';
+import { media } from '~/media';
 
 const AppointmentsSettings = () => {
   const location = useLocation();

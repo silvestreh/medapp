@@ -6,7 +6,7 @@ import groupBy from 'lodash/groupBy';
 import mapValues from 'lodash/mapValues';
 import { useTranslation } from 'react-i18next';
 
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 
 dayjs.locale('es');
 
@@ -26,57 +26,65 @@ interface EncounterTreeProps {
 }
 
 const StyledAccordion = styled(Accordion, {
-  position: 'sticky',
-  top: 0,
-  width: '100%',
+  base: {
+    position: 'sticky',
+    top: 0,
+    width: '100%',
 
-  '& .mantine-Accordion-item': {
-    border: 'none',
+    '& .mantine-Accordion-item': {
+      border: 'none',
 
-    '& + &': {
-      borderTop: '1px solid var(--mantine-color-gray-1)',
+      '& + &': {
+        borderTop: '1px solid var(--mantine-color-gray-1)',
+      },
+
+      '&[data-active="true"]': {
+        backgroundColor: '#FAFBFB',
+      },
     },
+    '& .mantine-Accordion-control': {
+      padding: '1em',
 
-    '&[data-active="true"]': {
-      backgroundColor: '#FAFBFB',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
     },
-  },
-  '& .mantine-Accordion-control': {
-    padding: '1em',
-
-    '&:hover': {
-      backgroundColor: 'transparent',
+    '& .mantine-Accordion-label': {
+      padding: 0,
     },
-  },
-  '& .mantine-Accordion-label': {
-    padding: 0,
-  },
-  '& .mantine-Accordion-content': {
-    padding: 0,
-  },
-  '& .mantine-Accordion-chevron': {
-    color: 'var(--mantine-color-blue-6)',
+    '& .mantine-Accordion-content': {
+      padding: 0,
+    },
+    '& .mantine-Accordion-chevron': {
+      color: 'var(--mantine-color-blue-6)',
+    },
   },
 });
 
 const YearText = styled(Text, {
-  fontWeight: 600,
-  fontSize: '1.125rem', // lg
-  color: 'var(--mantine-color-blue-6)', // blue.6
+  base: {
+    fontWeight: 600,
+    fontSize: '1.125rem',
+    color: 'var(--mantine-color-blue-6)',
+  },
 });
 
 const MonthText = styled(Text, {
-  fontWeight: 400,
-  fontSize: '1rem', // md
-  color: 'var(--mantine-color-blue-4)', // blue.4
-  textTransform: 'capitalize',
+  base: {
+    fontWeight: 400,
+    fontSize: '1rem',
+    color: 'var(--mantine-color-blue-4)',
+    textTransform: 'capitalize',
+  },
 });
 
 const EncounterBox = styled('div', {
-  padding: '1rem', // md
-  paddingBottom: 0,
-  cursor: 'pointer',
-  borderBottom: '1px solid var(--mantine-color-gray-2)',
+  base: {
+    padding: '1rem',
+    paddingBottom: 0,
+    cursor: 'pointer',
+    borderBottom: '1px solid var(--mantine-color-gray-2)',
+  },
 
   variants: {
     active: {
@@ -88,23 +96,27 @@ const EncounterBox = styled('div', {
 });
 
 const EncounterDateText = styled(Text, {
-  fontWeight: 600,
-  fontSize: '1rem', // md
-  color: 'var(--mantine-color-gray-7)', // gray.7
-  marginBottom: '1rem',
-  cursor: 'default',
+  base: {
+    fontWeight: 600,
+    fontSize: '1rem',
+    color: 'var(--mantine-color-gray-7)',
+    marginBottom: '1rem',
+    cursor: 'default',
+  },
 });
 
 const FormItem = styled('div', {
-  cursor: 'pointer',
-  color: 'var(--mantine-color-blue-6)',
-  fontSize: 'var(--mantine-font-size-md)',
-  padding: '1rem',
-  marginLeft: '-1rem',
-  width: 'calc(100% + 2rem)',
+  base: {
+    cursor: 'pointer',
+    color: 'var(--mantine-color-blue-6)',
+    fontSize: 'var(--mantine-font-size-md)',
+    padding: '1rem',
+    marginLeft: '-1rem',
+    width: 'calc(100% + 2rem)',
 
-  '&:hover': {
-    backgroundColor: 'var(--mantine-color-blue-0)',
+    '&:hover': {
+      backgroundColor: 'var(--mantine-color-blue-0)',
+    },
   },
 
   variants: {

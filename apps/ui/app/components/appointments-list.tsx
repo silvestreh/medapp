@@ -4,7 +4,7 @@ import { ActionIcon, Popover, Group, Button, Stack } from '@mantine/core';
 import { useClickOutside } from '@mantine/hooks';
 import { Trash } from 'lucide-react';
 
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 import { useMutation } from '~/components/provider';
 import PatientSearch from '~/components/patient-search';
 import type { Appointment, Slot as SlotType } from '~/declarations';
@@ -19,17 +19,19 @@ interface AppointmentsListProps {
 }
 
 const Container = styled('div', {
-  background: 'White',
-  display: 'flex',
-  flexDirection: 'column',
-  border: '1px solid var(--mantine-color-gray-2)',
-  width: '100%',
+  base: {
+    background: 'white',
+    display: 'flex',
+    flexDirection: 'column',
+    border: '1px solid var(--mantine-color-gray-2)',
+    width: '100%',
+  },
 
   variants: {
     borderRadius: {
       true: {
         borderRadius: 'var(--mantine-radius-md)',
-        borderWidth: 1,
+        borderWidth: '1px',
       },
       false: {
         borderWidth: 0,
@@ -43,14 +45,16 @@ const Container = styled('div', {
 });
 
 const Slot = styled('div', {
-  alignItems: 'center',
-  display: 'flex',
-  gap: 4,
-  color: 'var(--mantine-color-gray-8)',
-  height: '4em',
+  base: {
+    alignItems: 'center',
+    display: 'flex',
+    gap: '4px',
+    color: 'var(--mantine-color-gray-8)',
+    height: '4em',
 
-  '& + &': {
-    borderTop: '1px solid var(--mantine-color-gray-2)',
+    '& + &': {
+      borderTop: '1px solid var(--mantine-color-gray-2)',
+    },
   },
 
   variants: {
@@ -85,14 +89,16 @@ const Slot = styled('div', {
 });
 
 const Time = styled('span', {
-  padding: 'var(--mantine-spacing-sm) var(--mantine-spacing-md)',
-  background: 'var(--mantine-color-blue-0)',
-  fontFamily: 'monospace',
-  color: 'rgba(0, 0, 0, 0.5)',
-  flexShrink: 0,
-  height: '100%',
-  display: 'inline-flex',
-  alignItems: 'center',
+  base: {
+    padding: 'var(--mantine-spacing-sm) var(--mantine-spacing-md)',
+    background: 'var(--mantine-color-blue-0)',
+    fontFamily: 'monospace',
+    color: 'rgba(0, 0, 0, 0.5)',
+    flexShrink: 0,
+    height: '100%',
+    display: 'inline-flex',
+    alignItems: 'center',
+  },
 
   variants: {
     isExtra: {
@@ -104,26 +110,30 @@ const Time = styled('span', {
 });
 
 const MainContent = styled('div', {
-  flex: 1,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: 'var(--mantine-spacing-sm) var(--mantine-spacing-md)',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
+  base: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 'var(--mantine-spacing-sm) var(--mantine-spacing-md)',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 });
 
 const Text = styled('span', {
-  flex: 1,
-  paddingRight: '1em',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  display: 'block',
-  lineHeight: 1,
+  base: {
+    flex: 1,
+    paddingRight: '1em',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: 'block',
+    lineHeight: 1,
 
-  '& + &': {
-    marginTop: '0.5em',
+    '& + &': {
+      marginTop: '0.5em',
+    },
   },
 
   variants: {
@@ -141,7 +151,9 @@ const Text = styled('span', {
 });
 
 const TextContent = styled('div', {
-  width: 'calc(100% - 2em)',
+  base: {
+    width: 'calc(100% - 2em)',
+  },
 });
 
 const AppointmentsList: FC<AppointmentsListProps> = ({

@@ -16,20 +16,22 @@ import { ChevronRight, ChevronDown, Search, X, Check } from 'lucide-react';
 
 import { useFeathers } from '~/components/provider';
 import { useTranslation } from 'react-i18next';
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 
 const NodeContainer = styled('div', {
-  padding: '4px 8px',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  transition: 'background-color 0.2s ease',
-  userSelect: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
+  base: {
+    padding: '4px 8px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s ease',
+    userSelect: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
 
-  '&:hover': {
-    backgroundColor: 'var(--mantine-color-gray-0)',
+    '&:hover': {
+      backgroundColor: 'var(--mantine-color-gray-0)',
+    },
   },
 
   variants: {
@@ -43,36 +45,42 @@ const NodeContainer = styled('div', {
 });
 
 const TreeIcon = styled('div', {
-  color: 'var(--mantine-color-gray-5)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '16px',
-  flexShrink: 0,
+  base: {
+    color: 'var(--mantine-color-gray-5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '16px',
+    flexShrink: 0,
+  },
 });
 
 const NodeText = styled('div', {
-  flex: 1,
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  fontSize: 'var(--mantine-font-size-sm)',
+  base: {
+    flex: 1,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    fontSize: 'var(--mantine-font-size-sm)',
 
-  '& b': {
-    color: 'var(--mantine-color-black)',
-    fontWeight: 700,
+    '& b': {
+      color: 'var(--mantine-color-black)',
+      fontWeight: 700,
+    },
   },
 });
 
 const StyledInput = styled('input', {
-  border: 'none',
-  outline: 'none',
-  background: 'transparent',
-  flex: 1,
-  minWidth: '60px',
-  fontSize: 'var(--mantine-font-size-sm)',
-  fontFamily: 'inherit',
-  cursor: 'text',
+  base: {
+    border: 'none',
+    outline: 'none',
+    background: 'transparent',
+    flex: 1,
+    minWidth: '60px',
+    fontSize: 'var(--mantine-font-size-sm)',
+    fontFamily: 'inherit',
+    cursor: 'text',
+  },
 
   variants: {
     readOnly: {

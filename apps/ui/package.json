@@ -4,6 +4,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
+    "prepare": "panda codegen",
     "build": "remix vite:build",
     "dev": "remix vite:dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
@@ -31,7 +32,6 @@
     "@remix-run/serve": "^2.16.5",
     "@sentry/remix": "^9.14.0",
     "@sentry/vite-plugin": "^3.3.1",
-    "@stitches/react": "^1.2.8",
     "@tiptap/extension-link": "^2.11.7",
     "@tiptap/pm": "^2.11.7",
     "@tiptap/react": "^2.11.7",
@@ -54,6 +54,7 @@
     "usehooks-ts": "^3.1.1"
   },
   "devDependencies": {
+    "@pandacss/dev": "^1.8.1",
     "@remix-run/dev": "^2.16.5",
     "@types/lodash": "^4.17.16",
     "@types/react": "^19.1.2",

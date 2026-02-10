@@ -10,8 +10,6 @@ import { I18nextProvider, initReactI18next } from 'react-i18next';
 import i18n, { resources } from '~/i18n/i18n';
 import i18next from '~/i18n/i18next.server';
 
-import { getCssText } from '~/stitches';
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const handleError = Sentry.wrapHandleErrorWithSentry((error, { request }) => {
   // Custom handleError implementation
@@ -64,7 +62,6 @@ function handleBotRequest(
     let shellRendered = false;
     const { pipe, abort } = renderToPipeableStream(
       <I18nextProvider i18n={i18nextInstance}>
-        <style id="stitches" dangerouslySetInnerHTML={{ __html: getCssText() }} />
         <RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />
       </I18nextProvider>,
       {

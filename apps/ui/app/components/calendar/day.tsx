@@ -6,7 +6,8 @@ import { useEffect, useRef } from 'react';
 
 import { CalendarEvent } from '~/components/calendar';
 import { Event } from '~/components/calendar/event';
-import { styled, media } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
+import { media } from '~/media';
 
 interface DayProps {
   date: dayjs.Dayjs;
@@ -24,37 +25,39 @@ interface DayProps {
 }
 
 const DayCell = styled(Link, {
-  height: '100%',
-  cursor: 'pointer',
-  display: 'flex',
-  flexDirection: 'column',
-  border: '0.5px solid var(--mantine-color-gray-1)',
-  position: 'relative',
-  textDecoration: 'none',
-
-  '&::before': {
-    content: '',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0,
-    transition: 'opacity 250ms ease-in-out',
-    zIndex: 0,
-  },
-
-  '> *': {
+  base: {
+    height: '100%',
+    cursor: 'pointer',
+    display: 'flex',
+    flexDirection: 'column',
+    border: '0.5px solid var(--mantine-color-gray-1)',
     position: 'relative',
-    zIndex: 1,
-  },
+    textDecoration: 'none',
 
-  '&:hover': {
-    backgroundColor: 'var(--mantine-color-blue-0)',
-  },
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      opacity: 0,
+      transition: 'opacity 250ms ease-in-out',
+      zIndex: 0,
+    },
 
-  '@lg': {
-    minHeight: '10em',
+    '& > *': {
+      position: 'relative',
+      zIndex: 1,
+    },
+
+    '&:hover': {
+      backgroundColor: 'var(--mantine-color-blue-0)',
+    },
+
+    lg: {
+      minHeight: '10em',
+    },
   },
 
   variants: {
@@ -145,31 +148,33 @@ const DayCell = styled(Link, {
 });
 
 const EventsContainer = styled('div', {
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  padding: '0.125em 0.5em 0.5em',
-  gap: '0.25em',
-  overflowX: 'hidden',
-  overflowY: 'auto',
-  maxHeight: '9.5em',
-  scrollbarColor: 'rgba(0, 0, 0, 0.25) #f0f0f0',
-  scrollbarWidth: 'thin',
+  base: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '0.125em 0.5em 0.5em',
+    gap: '0.25em',
+    overflowX: 'hidden',
+    overflowY: 'auto',
+    maxHeight: '9.5em',
+    scrollbarColor: 'rgba(0, 0, 0, 0.25) #f0f0f0',
+    scrollbarWidth: 'thin',
 
-  '&::-webkit-scrollbar': {
-    width: '12px',
-    height: '12px',
-  },
-  '&::-webkit-scrollbar-track': {
-    backgroundColor: '#f0f0f0',
-    borderRadius: '10px',
-  },
-  '&::-webkit-scrollbar-thumb': {
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
-    borderRadius: '10px',
-  },
-  '&::-webkit-scrollbar-thumb:hover': {
-    backgroundColor: '#555',
+    '&::-webkit-scrollbar': {
+      width: '12px',
+      height: '12px',
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: '#f0f0f0',
+      borderRadius: '10px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: 'rgba(0, 0, 0, 0.25)',
+      borderRadius: '10px',
+    },
+    '&::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: '#555',
+    },
   },
 });
 

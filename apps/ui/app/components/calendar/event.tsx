@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
-import { styled } from '~/stitches';
+import { styled } from '~/styled-system/jsx';
 
 import { CalendarEvent, EventVariant } from '~/components/calendar';
 
@@ -14,30 +14,32 @@ interface EventProps {
 }
 
 export const EventBox = styled('div', {
-  alignItems: 'center',
-  borderRadius: '0.5em',
-  display: 'none',
-  height: '1.5em',
-  flexShrink: 0,
-  fontSize: '12px',
-  gap: '0.25em',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-  color: 'var(--mantine-color-gray-8)',
-
-  '&::before': {
-    content: '""',
-    display: 'block',
-    width: '0.5em',
-    height: '0.5em',
-    borderRadius: '50%',
+  base: {
+    alignItems: 'center',
+    borderRadius: '0.5em',
+    display: 'none',
+    height: '1.5em',
     flexShrink: 0,
-    marginRight: '0.25em',
-  },
+    fontSize: '12px',
+    gap: '0.25em',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    color: 'var(--mantine-color-gray-8)',
 
-  '@lg': {
-    display: 'flex',
+    '&::before': {
+      content: '""',
+      display: 'block',
+      width: '0.5em',
+      height: '0.5em',
+      borderRadius: '50%',
+      flexShrink: 0,
+      marginRight: '0.25em',
+    },
+
+    lg: {
+      display: 'flex',
+    },
   },
 
   variants: {
@@ -102,16 +104,20 @@ export const EventBox = styled('div', {
 });
 
 const Time = styled('span', {
-  padding: '1px 4px',
-  height: '100%',
-  fontFamily: 'ui-monospace, monospace',
-  color: 'var(--mantine-color-gray-5)',
+  base: {
+    padding: '1px 4px',
+    height: '100%',
+    fontFamily: 'ui-monospace, monospace',
+    color: 'var(--mantine-color-gray-5)',
+  },
 });
 
-const Title = styled('span', {
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  flexGrow: 1,
+const EventTitle = styled('span', {
+  base: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    flexGrow: 1,
+  },
 });
 
 export function Event({ event, date, isFirstInRow, isLastInRow, style }: EventProps) {
@@ -137,8 +143,8 @@ export function Event({ event, date, isFirstInRow, isLastInRow, style }: EventPr
         marginRight: isLastDay && isMultiDay ? '0.5em' : -1,
       }}
     >
-      {isFirstDay && <Title>{event.title}</Title>}
-      {isMultiDay && isFirstInRow && <Title style={{ paddingLeft: '2em' }}>{event.title} (continúa)</Title>}
+      {isFirstDay && <EventTitle>{event.title}</EventTitle>}
+      {isMultiDay && isFirstInRow && <EventTitle style={{ paddingLeft: '2em' }}>{event.title} (continúa)</EventTitle>}
       {!isMultiDay && !event.extra && <Time>{startDate.format('HH:mm')}</Time>}
       {event.extra && <Time>(ST)</Time>}
     </EventBox>
