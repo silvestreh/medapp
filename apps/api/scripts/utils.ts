@@ -1,3 +1,4 @@
+import axios from 'axios';
 import areaCodes from '../data/area-codes';
 import type { PhoneNumber } from '../src/declarations';
 import lookup, { type Country } from 'country-code-lookup';
@@ -328,4 +329,107 @@ export const transformSchedule = (oldData: OldData): NewSchedule => {
   }
 
   return newSchedule;
+};
+
+// --- LLM-based name cleaning ---
+
+const nameCache = new Map<string, string>();
+
+export const cleanedNames: { original: string; cleaned: string }[] = [];
+
+const LM_STUDIO_URL = 'http://localhost:1234/v1/chat/completions';
+
+const NAME_SYSTEM_PROMPT = `You are a data-cleaning assistant for an Argentine medical records system. You will receive a text that was entered as a person's first name or last name. Previous users often appended reminders, insurance company names, payment notes, numbers, or other non-name text after the actual name.
+
+Your task: extract ONLY the valid person's name from the input. Strip everything that is not part of the name.
+
+Rules:
+- Return ONLY the cleaned name, nothing else. No quotes, no explanation.
+- If the entire input is a valid name, return it as-is.
+- Argentine/Hispanic names can be 1-3 words (e.g. "De La Cruz", "San Martin").
+- Common junk patterns: numbers, "a favor", "abona", "poder judicial", insurance companies ("uno salud", "osde", "swiss medical"), doctor references ("dra", "dr"), addresses, dates.
+- If in doubt, keep fewer words rather than more — false negatives (keeping junk) are worse than trimming a bit.
+- If the input is empty or entirely junk, return it as-is.
+- You can also come across words like Estomatologia, or other medical specialties, and practices. Ignore them.
+- Never return a long string, this is stored as a varchar(255) in the database.
+- Some other examples of junk: "Debe Cons Dra Hernandez", "Terceros Estom", "Estomatologia 2000", "Estomatologia", "Eco Obst", "Jerarquicos", "Btx", "Orden De Con Dra Hernand", "Particular", "Consulta", "Eco Obstetrica", "Eco Trans", "Supera Tope Anual", "Dado De Baja", "Ecg", "Partic", "Uno Salud", "Ya Pago", "Debe Orden Del Dr Ramirez 03 09", "Debe Orden", "Ospatrones", "Generar", "Prevencion", "Union Personal Debe 100 Dr Lanzani", "Tope Anual", "Partic Eco", "S T 18 Hs", "Osdop", "Tv Salud", "Paciente Complicado"
+- Numbers are always junk.`;
+
+const NAME_SIMPLE_PROMPT = `Extract ONLY the person's name. Remove everything else. Reply with just the name.
+
+Cortes 15 A Favor De La Paciente Dra Andrian -> Cortes
+Lecito Pereyra Poder Judicial -> Lecito Pereyra
+Olivares Uno Salud -> Olivares
+Gonzalez 12 12 Abona 1215 -> Gonzalez
+Vidal Radiof A Favor 20 -> Vidal Radiof
+Martinez Osde 310 -> Martinez
+De Los Santos -> De Los Santos
+San Martin Swiss Medical -> San Martin
+Perez Estomatologia -> Perez
+Gomez Debe Cons Dra Hernandez -> Gomez
+Lopez Terceros Estom -> Lopez
+Fernandez Particular -> Fernandez`;
+
+export const normalizeNameWithLLM = async (name?: string): Promise<string | undefined> => {
+  if (!name) return name;
+
+  const trimmed = name.trim();
+  if (!trimmed) return trimmed;
+
+  // Short-circuit: if 1-3 words and no digits, it's likely already clean
+  const words = trimmed.split(/\s+/);
+  if (words.length <= 3 && !/\d/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Check cache
+  if (nameCache.has(trimmed)) {
+    return nameCache.get(trimmed)!;
+  }
+
+  const callLLM = async (model: string, content: string, prompt: string): Promise<string> => {
+    const response = await axios.post(LM_STUDIO_URL, {
+      model,
+      messages: [
+        { role: 'system', content: prompt },
+        { role: 'user', content }
+      ],
+      temperature: 0,
+      max_tokens: 100,
+    }, { timeout: 10000 });
+    return response.data?.choices?.[0]?.message?.content?.trim() || trimmed;
+  };
+
+  let cleaned = trimmed;
+
+  // Pass 1: big model
+  try {
+    cleaned = await callLLM('openai/gpt-oss-20b', trimmed, NAME_SYSTEM_PROMPT);
+    // If response is longer than input, it's likely reasoning -- retry once
+    if (cleaned.length > trimmed.length) {
+      cleaned = await callLLM('openai/gpt-oss-20b', trimmed, NAME_SYSTEM_PROMPT);
+    }
+  } catch {
+    cleaned = trimmed;
+  }
+
+  // Pass 2: small model verifier (always runs)
+  try {
+    cleaned = await callLLM('liquid/lfm2.5-1.2b', `${cleaned} ->`, NAME_SIMPLE_PROMPT);
+  } catch {
+    // keep cleaned from pass 1
+  }
+
+  // Hard safety net: if still too long, fall back to original
+  if (cleaned.length > trimmed.length || cleaned.length > 255) {
+    cleaned = trimmed;
+  }
+
+  nameCache.set(trimmed, cleaned);
+
+  if (cleaned !== trimmed) {
+    cleanedNames.push({ original: trimmed, cleaned });
+  }
+
+  return cleaned;
 };

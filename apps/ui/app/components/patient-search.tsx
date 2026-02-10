@@ -6,6 +6,7 @@ import { Search } from 'lucide-react';
 import { useFind } from '~/components/provider';
 import { styled } from '~/stitches';
 import type { Patient } from '~/declarations';
+import { displayDocumentValue } from '~/utils';
 
 interface PatientSearchProps {
   onChange?: (patientId: Patient['id']) => void;
@@ -91,7 +92,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
             <Button key={patient.id} onClick={() => onChange?.(patient.id)}>
               <Text>
                 {patient.personalData.firstName} {patient.personalData.lastName}
-                {patient.personalData.documentValue && ` (${patient.personalData.documentValue})`}
+                {displayDocumentValue(patient.personalData.documentValue) !== '—' && ` (${patient.personalData.documentValue})`}
               </Text>
               <Text size="xs" c="dimmed">
                 {patient.medicare} {patient.medicareNumber}

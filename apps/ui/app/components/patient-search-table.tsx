@@ -8,6 +8,7 @@ import { useFind } from '~/components/provider';
 import type { Patient } from '~/declarations';
 import Portal from '~/components/portal';
 import { styled } from '~/stitches';
+import { displayDocumentValue } from '~/utils';
 
 const Wrapper = styled('div', {
   background: 'White',
@@ -125,7 +126,7 @@ const PatientSearchTable: FC = () => {
         <Text>{patient.personalData.lastName || '—'}</Text>
       </Table.Td>
       <Table.Td>
-        <Text>{patient.personalData.documentValue || '—'}</Text>
+        <Text>{displayDocumentValue(patient.personalData.documentValue)}</Text>
       </Table.Td>
     </Table.Tr>
   ));
