@@ -3,6 +3,8 @@ import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { Icd10Selector } from '~/components/icd10-selector';
 import {
   FormContainer,
@@ -16,9 +18,11 @@ import {
   ItemHeader,
 } from './styles';
 
+dayjs.extend(customParseFormat);
+
 interface PersonalHistoryItem {
   issueId: string;
-  date: string | null;
+  date: Date | null;
   description: string;
 }
 
@@ -43,9 +47,11 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
     const items: PersonalHistoryItem[] = [];
 
     for (let i = 0; i < count; i++) {
+      const dateStr = initialData.values[`fecha_antecedente_${i}`];
+      const parsed = dateStr ? dayjs(dateStr, 'DD/MM/YYYY') : null;
       items.push({
         issueId: initialData.values[`antecedente_${i}`] || '',
-        date: initialData.values[`fecha_antecedente_${i}`] || null,
+        date: parsed?.isValid() ? parsed.toDate() : null,
         description: initialData.values[`antecedente_descripcion_${i}`] || '',
       });
     }
@@ -67,7 +73,7 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
 
       form.values.items.forEach((item, index) => {
         resultValues[`antecedente_${index}`] = item.issueId;
-        resultValues[`fecha_antecedente_${index}`] = item.date || '';
+        resultValues[`fecha_antecedente_${index}`] = item.date ? dayjs(item.date).format('DD/MM/YYYY') : '';
         resultValues[`antecedente_descripcion_${index}`] = item.description;
       });
 
@@ -138,6 +144,7 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
                   placeholder={t('forms.personal_history_placeholder_date')}
                   {...form.getInputProps(`items.${index}.date`)}
                   readOnly={readOnly}
+                  rawValue={initialData?.values?.[`fecha_antecedente_${index}`]}
                   valueFormat="DD/MM/YYYY"
                   clearable={!readOnly}
                 />

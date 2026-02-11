@@ -176,6 +176,7 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
                 <Label>{t('forms.medication_history_date')}:</Label>
                 <StyledDateInput
                   readOnly={readOnly}
+                  rawValue={initialData?.values?.[`ant_fecha_${index}`]}
                   placeholder={t('forms.medication_history_date_placeholder')}
                   {...form.getInputProps(`medications.${index}.ant_fecha`)}
                   clearable
