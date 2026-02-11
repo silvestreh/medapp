@@ -89,6 +89,7 @@ const ALL_FORMS = [
   'general/consulta_internacion',
   'antecedentes/familiares',
   'antecedentes/personales',
+  'antecedentes/habitos',
   'general/evolucion_consulta_internacion',
 ];
 

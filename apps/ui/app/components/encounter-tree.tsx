@@ -3,6 +3,7 @@ import { Accordion, Text, Stack } from '@mantine/core';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import groupBy from 'lodash/groupBy';
+import omit from 'lodash/omit';
 import mapValues from 'lodash/mapValues';
 import { useTranslation } from 'react-i18next';
 
@@ -137,8 +138,9 @@ const EncounterTree: FC<EncounterTreeProps> = ({ encounters, activeEncounterId, 
   const { t } = useTranslation();
 
   const handleFormItemClick = useCallback(
-    (e: React.MouseEvent, encounter: Encounter, key: string) => {
+    (e: React.MouseEvent<HTMLDivElement>, encounter: Encounter, key: string) => {
       e.stopPropagation();
+      console.log(JSON.stringify(omit(encounter.data[key], '__class'), null, 2));
       onFormClick?.(encounter, key);
     },
     [onFormClick]
@@ -180,9 +182,7 @@ const EncounterTree: FC<EncounterTreeProps> = ({ encounters, activeEncounterId, 
                               key={encounter.id}
                               active={activeEncounterId === encounter.id && !activeFormKey}
                             >
-                              <EncounterDateText as="div">
-                                {dayjs(encounter.date).format('dddd D, HH:mm')}
-                              </EncounterDateText>
+                              <EncounterDateText>{dayjs(encounter.date).format('dddd D, HH:mm')}</EncounterDateText>
                               {encounter.data &&
                                 Object.keys(encounter.data).map(key => (
                                   <FormItem
