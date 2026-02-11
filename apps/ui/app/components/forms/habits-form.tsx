@@ -1,6 +1,5 @@
 import { Stack, Tabs } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -91,8 +90,6 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
     initialValues: parseInitialValues(initialData),
   });
 
-  const [debouncedValues] = useDebouncedValue(form.values, 500);
-
   useEffect(() => {
     if (!readOnly) {
       const transformToLegacyFormat = (vals: typeof form.values) => {
@@ -111,10 +108,17 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
         return legacy;
       };
 
-      const resultValues = transformToLegacyFormat(debouncedValues);
+      const resultValues = transformToLegacyFormat(form.values);
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
-      if (hasChanged) {
+      const hasData = Object.values(form.values).some(val => {
+        if (typeof val === 'string') return val !== '';
+        if (val instanceof Date) return true;
+        if (val === true || val === false) return true;
+        return false;
+      });
+
+      if (hasChanged && (initialData || hasData)) {
         onChange({
           type: 'antecedentes/habitos',
           values: resultValues,
@@ -122,7 +126,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedValues, onChange, readOnly, initialData]);
+  }, [form.values, onChange, readOnly, initialData]);
 
   const selectData = {
     quantity: [
