@@ -263,7 +263,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
 
       <FormCard>
         {/* Inhalation of inorganic dusts */}
-        <FieldRow checkbox>
+        <FieldRow checkbox noOffset>
           <TriStateCheckbox
             label={t('forms.occ_inhalation_inorganic_dusts')}
             {...form.getInputProps('toggle_inha_polvos')}
@@ -348,7 +348,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
         )}
 
         {/* Asbestos */}
-        <FieldRow checkbox>
+        <FieldRow checkbox noOffset>
           <TriStateCheckbox
             label={t('forms.occ_asbestos')}
             {...form.getInputProps('toggle_asbesto')}
@@ -450,7 +450,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
           'gases_comments'
         ).props.children.map((child: any, i: number) =>
           i === 0 ? (
-            <FieldRow checkbox key="gases-row">
+            <FieldRow checkbox noOffset key="gases-row">
               <TriStateCheckbox
                 label={t('forms.occ_irritating_gases')}
                 {...form.getInputProps('toggle_gases')}
@@ -470,7 +470,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
           'polvos_comments'
         ).props.children.map((child: any, i: number) =>
           i === 0 ? (
-            <FieldRow checkbox key="polvos-row">
+            <FieldRow checkbox noOffset key="polvos-row">
               <TriStateCheckbox
                 label={t('forms.occ_organic_dusts')}
                 {...form.getInputProps('toggle_polvos')}
@@ -490,7 +490,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
           'rurales_comments'
         ).props.children.map((child: any, i: number) =>
           i === 0 ? (
-            <FieldRow checkbox key="rurales-row">
+            <FieldRow checkbox noOffset key="rurales-row">
               <TriStateCheckbox
                 label={t('forms.occ_rural_tasks')}
                 {...form.getInputProps('toggle_rurales')}
@@ -510,7 +510,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
           'asma_comments'
         ).props.children.map((child: any, i: number) =>
           i === 0 ? (
-            <FieldRow checkbox key="asma-row">
+            <FieldRow checkbox noOffset key="asma-row">
               <TriStateCheckbox
                 label={t('forms.occ_occupational_asthma')}
                 {...form.getInputProps('toggle_asma')}
@@ -530,7 +530,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
           'otras_comments'
         ).props.children.map((child: any, i: number) =>
           i === 0 ? (
-            <FieldRow checkbox key="otras-row">
+            <FieldRow checkbox noOffset key="otras-row">
               <TriStateCheckbox
                 label={t('forms.occ_other_diseases')}
                 {...form.getInputProps('toggle_otras')}
