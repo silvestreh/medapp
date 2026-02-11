@@ -37,6 +37,15 @@ const Sidebar = styled('div', {
   },
 });
 
+const Patient = styled('p', {
+  base: {
+    fontSize: 'var(--mantine-font-size-md)',
+    color: 'var(--mantine-color-gray-6)',
+    margin: 0,
+    lineHeight: 1,
+  },
+});
+
 const Content = styled('div', {
   base: {
     flex: 1,
@@ -87,6 +96,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 
 const ALL_FORMS = [
   'general/consulta_internacion',
+  'general/enfermedad_actual',
   'antecedentes/familiares',
   'antecedentes/personales',
   'antecedentes/habitos',
@@ -139,9 +149,14 @@ export default function NewEncounter() {
   return (
     <Container className="encounters-container">
       <Portal id="toolbar">
-        <Title order={2}>
-          {t('encounters.new')}: {patient.personalData.firstName} {patient.personalData.lastName}
-        </Title>
+        <Stack gap={5}>
+          <Title order={2} m={0} lh={1}>
+            {t('encounters.new')}
+          </Title>
+          <Patient>
+            {patient.personalData.firstName} {patient.personalData.lastName}
+          </Patient>
+        </Stack>
       </Portal>
 
       <Sidebar>
