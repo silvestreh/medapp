@@ -1,11 +1,9 @@
-import { Text, TextInput, Textarea, Title } from '@mantine/core';
+import { Text, TextInput, Textarea, Title, Stack } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { styled } from '~/styled-system/jsx';
 
-export const FormContainer = styled('div', {
+export const FormContainer = styled(Stack, {
   base: {
-    display: 'flex',
-    flexDirection: 'column',
     gap: '0.5rem',
     width: '100%',
   },

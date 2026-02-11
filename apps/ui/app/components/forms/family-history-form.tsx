@@ -262,7 +262,7 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                 <Table.Td>
                   <Icd10Selector
                     value={item.issueId}
-                    onChange={val => form.setFieldValue(`items.${index}.issueId`, val)}
+                    onChange={val => form.setFieldValue(`items.${index}.issueId`, val as string)}
                     readOnly={readOnly}
                   />
                 </Table.Td>
