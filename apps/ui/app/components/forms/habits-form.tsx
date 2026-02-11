@@ -112,7 +112,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
       const hasData = Object.values(form.values).some(val => {
-        if (typeof val === 'string') return val !== '';
+        if (typeof val === 'string') return val !== '' && val !== 'indeterminate';
         if (val instanceof Date) return true;
         if (val === true || val === false) return true;
         return false;

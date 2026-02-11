@@ -142,7 +142,14 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
       const resultValues = transformToLegacyFormat(form.values);
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
-      if (hasChanged) {
+      const hasData = Object.entries(form.values).some(([key, val]) => {
+        if (key === 'murmurs') {
+          return (val as Murmur[]).some(m => m.characteristic || m.location || m.intensity);
+        }
+        return typeof val === 'string' && val.trim() !== '';
+      });
+
+      if (hasChanged && (initialData || hasData)) {
         onChange({
           type: 'cardiologia/general',
           values: resultValues,
@@ -159,7 +166,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
       </FormHeader>
 
       <Tabs defaultValue="tension" variant="pills">
-        <Tabs.List grow mb="md">
+        <Tabs.List grow mb="md" bd="1px solid var(--mantine-color-gray-2)" bdrs={4}>
           <Tabs.Tab value="tension">{t('forms.cardiology_tab_tension')}</Tabs.Tab>
           <Tabs.Tab value="pulsos">{t('forms.cardiology_tab_pulsos')}</Tabs.Tab>
           <Tabs.Tab value="palpacion">{t('forms.cardiology_tab_palpacion')}</Tabs.Tab>
