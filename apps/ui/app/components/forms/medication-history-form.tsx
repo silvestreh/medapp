@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useForm } from '@mantine/form';
 import { useDebouncedValue } from '@mantine/hooks';
-import { Button, ActionIcon, Stack, Checkbox, Text as MantineText } from '@mantine/core';
+import { Button, ActionIcon, Stack, Text as MantineText } from '@mantine/core';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,13 +15,14 @@ import {
   ItemHeader,
   StyledDateInput,
   StyledSelect,
+  TriStateCheckbox,
 } from './styles';
 import { MedicationSelector } from '~/components/medication-selector';
 
 interface MedicationHistoryEntry {
   droga: string;
   ant_fecha: Date | null;
-  efectivo: boolean;
+  efectivo: boolean | 'indeterminate';
   efecto_adverso: string;
   ant_comments: string;
 }
@@ -43,12 +44,18 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
     const count = parseInt(values.ant_med_count || '0', 10);
     const medications: MedicationHistoryEntry[] = [];
 
+    const parseTriState = (val?: string): boolean | 'indeterminate' => {
+      if (val === 'si' || val === 'on') return true;
+      if (val === 'no' || val === 'off') return false;
+      return 'indeterminate';
+    };
+
     for (let i = 0; i < count; i++) {
       const dateStr = values[`ant_fecha_${i}`];
       medications.push({
         droga: values[`droga_${i}`] || '',
         ant_fecha: dateStr ? new Date(dateStr) : null,
-        efectivo: values[`efectivo_${i}`] === 'on' || values[`efectivo_${i}`] === 'true',
+        efectivo: parseTriState(values[`efectivo_${i}`]),
         efecto_adverso: values[`efecto_adverso_${i}`] || '',
         ant_comments: values[`ant_comments_${i}`] || '',
       });
@@ -74,7 +81,9 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
       debouncedValues.medications.forEach((med, i) => {
         resultValues[`droga_${i}`] = med.droga;
         resultValues[`ant_fecha_${i}`] = med.ant_fecha ? med.ant_fecha.toISOString() : '';
-        resultValues[`efectivo_${i}`] = med.efectivo ? 'on' : '';
+        if (med.efectivo === true) resultValues[`efectivo_${i}`] = 'si';
+        else if (med.efectivo === false) resultValues[`efectivo_${i}`] = 'no';
+        else resultValues[`efectivo_${i}`] = '';
         resultValues[`efecto_adverso_${i}`] = med.efecto_adverso;
         resultValues[`ant_comments_${i}`] = med.ant_comments;
       });
@@ -95,7 +104,7 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
     form.insertListItem('medications', {
       droga: '',
       ant_fecha: null,
-      efectivo: false,
+      efectivo: 'indeterminate',
       efecto_adverso: '',
       ant_comments: '',
     });
@@ -159,13 +168,7 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
 
               <FieldRow>
                 <Label>{t('forms.medication_history_effective')}:</Label>
-                <Checkbox
-                  readOnly={readOnly}
-                  {...form.getInputProps(`medications.${index}.efectivo`, { type: 'checkbox' })}
-                  styles={{
-                    input: { cursor: readOnly ? 'default' : 'pointer' },
-                  }}
-                />
+                <TriStateCheckbox readOnly={readOnly} {...form.getInputProps(`medications.${index}.efectivo`)} />
               </FieldRow>
 
               <FieldRow>

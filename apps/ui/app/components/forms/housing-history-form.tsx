@@ -12,6 +12,7 @@ import {
   StyledTextInput,
   StyledTitle,
   StyledSelect,
+  TriStateCheckbox,
 } from './styles';
 
 interface HousingHistoryFormProps {
@@ -28,47 +29,53 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
 
   const parseInitialValues = (data?: HousingHistoryFormProps['initialData']) => {
     const values = data?.values || {};
+    const parseTriState = (val?: string): boolean | 'indeterminate' => {
+      if (val === 'si' || val === 'on') return true;
+      if (val === 'no' || val === 'off') return false;
+      return 'indeterminate';
+    };
+
     return {
       cohabita_con: values.cohabita_con || '',
       ambientes: values.ambientes || '',
       tipo_piso: values.tipo_piso || '',
       tipo_pared: values.tipo_pared || '',
       tipo_techo: values.tipo_techo || '',
-      aberturas_puertas: values.aberturas_puertas === 'on',
-      aberturas_ventanas: values.aberturas_ventanas === 'on',
+      aberturas_puertas: parseTriState(values.aberturas_puertas),
+      aberturas_ventanas: parseTriState(values.aberturas_ventanas),
       humedad: values.humedad || '',
       ventilacion: values.ventilacion || '',
       tipo_agua: values.tipo_agua || '',
       canerias: values.canerias || '',
       tipo_cloacas: values.tipo_cloacas || '',
-      sanitarios: values.sanitarios === 'on',
+      sanitarios: parseTriState(values.sanitarios),
       tipo_gas: values.tipo_gas || '',
       estufas: values.estufas || '',
-      electricidad: values.electricidad === 'on',
-      electricidad_segura: values.electricidad_segura === 'on',
-      electricidad_legal: values.electricidad_legal === 'on',
-      equip_cocina: values.equip_cocina === 'on',
-      equip_tel_linea: values.equip_tel_linea === 'on',
-      equip_tel_celular: values.equip_tel_celular === 'on',
+      electricidad: parseTriState(values.electricidad),
+      electricidad_segura: parseTriState(values.electricidad_segura),
+      electricidad_legal: parseTriState(values.electricidad_legal),
+      equip_cocina: parseTriState(values.equip_cocina),
+      equip_tel_linea: parseTriState(values.equip_tel_linea),
+      equip_tel_celular: parseTriState(values.equip_tel_celular),
       equip_heladera: values.equip_heladera || '',
-      equip_lavarropas: values.equip_lavarropas === 'on',
+      equip_lavarropas: parseTriState(values.equip_lavarropas),
       equip_televisor: values.equip_televisor || '',
-      equip_antena_satelital: values.equip_antena_satelital === 'on',
-      equip_internet: values.equip_internet === 'on',
-      equip_automovil: values.equip_automovil === 'on',
-      equip_moto: values.equip_moto === 'on',
-      alfombras: values.alfombras === 'on',
-      colchonlanamas4: values.colchonlanamas4 === 'on',
-      almohadamas2: values.almohadamas2 === 'on',
-      cortinadosgruesos: values.cortinadosgruesos === 'on',
-      empapelado: values.empapelado === 'on',
-      biblioteca: values.biblioteca === 'on',
-      peluche: values.peluche === 'on',
-      rellenos: values.rellenos === 'on',
-      frazadas: values.frazadas === 'on',
-      mascotas: values.mascotas === 'on',
-      cucarachas: values.cucarachas === 'on',
-      zona_chagas: values.zona_chagas === 'on',
+      equip_antena_satelital: parseTriState(values.equip_antena_satelital),
+      equip_internet: parseTriState(values.equip_internet),
+      equip_automovil: parseTriState(values.equip_automovil),
+      equip_moto: parseTriState(values.equip_moto),
+      alfombras: parseTriState(values.alfombras),
+      colchonlanamas4: parseTriState(values.colchonlanamas4),
+      almohadamas2: parseTriState(values.almohadamas2),
+      cortinadosgruesos: parseTriState(values.cortinadosgruesos),
+      empapelado: parseTriState(values.empapelado),
+      biblioteca: parseTriState(values.biblioteca),
+      peluche: parseTriState(values.peluche),
+      rellenos: parseTriState(values.rellenos),
+      frazadas: parseTriState(values.frazadas),
+      mascotas: parseTriState(values.mascotas),
+      cucarachas: parseTriState(values.cucarachas),
+      zona_chagas: parseTriState(values.zona_chagas),
     };
   };
 
@@ -84,7 +91,9 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
         const legacy: Record<string, string> = {};
         Object.entries(vals).forEach(([key, value]) => {
           if (typeof value === 'boolean') {
-            if (value) legacy[key] = 'on';
+            legacy[key] = value ? 'si' : 'no';
+          } else if (value === 'indeterminate') {
+            legacy[key] = '';
           } else if (value !== undefined && value !== null && value !== '') {
             legacy[key] = value.toString();
           }
@@ -235,11 +244,11 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_door_openings')}:</Label>
-              <Checkbox {...form.getInputProps('aberturas_puertas', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('aberturas_puertas')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_window_openings')}:</Label>
-              <Checkbox {...form.getInputProps('aberturas_ventanas', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('aberturas_ventanas')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_humidity')}:</Label>
@@ -317,7 +326,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
               </FieldRow>
               <FieldRow>
                 <Label>{t('forms.housing_sanitaries')}:</Label>
-                <Checkbox {...form.getInputProps('sanitarios', { type: 'checkbox' })} disabled={readOnly} />
+                <TriStateCheckbox {...form.getInputProps('sanitarios')} readOnly={readOnly} />
               </FieldRow>
             </FormCard>
 
@@ -357,18 +366,18 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
               </StyledTitle>
             </FormHeader>
             <FormCard>
-              <FieldRow>
-                <Label>{t('forms.housing_electric')}:</Label>
-                <Checkbox {...form.getInputProps('electricidad', { type: 'checkbox' })} disabled={readOnly} />
-              </FieldRow>
-              <FieldRow>
-                <Label>{t('forms.housing_electric_safe')}:</Label>
-                <Checkbox {...form.getInputProps('electricidad_segura', { type: 'checkbox' })} disabled={readOnly} />
-              </FieldRow>
-              <FieldRow>
-                <Label>{t('forms.housing_electric_legal')}:</Label>
-                <Checkbox {...form.getInputProps('electricidad_legal', { type: 'checkbox' })} disabled={readOnly} />
-              </FieldRow>
+            <FieldRow>
+              <Label>{t('forms.housing_electric')}:</Label>
+              <TriStateCheckbox {...form.getInputProps('electricidad')} readOnly={readOnly} />
+            </FieldRow>
+            <FieldRow>
+              <Label>{t('forms.housing_electric_safe')}:</Label>
+              <TriStateCheckbox {...form.getInputProps('electricidad_segura')} readOnly={readOnly} />
+            </FieldRow>
+            <FieldRow>
+              <Label>{t('forms.housing_electric_legal')}:</Label>
+              <TriStateCheckbox {...form.getInputProps('electricidad_legal')} readOnly={readOnly} />
+            </FieldRow>
             </FormCard>
           </Stack>
         </Tabs.Panel>
@@ -377,15 +386,15 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
           <FormCard>
             <FieldRow>
               <Label>{t('forms.housing_equip_kitchen')}:</Label>
-              <Checkbox {...form.getInputProps('equip_cocina', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('equip_cocina')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_equip_phone')}:</Label>
-              <Checkbox {...form.getInputProps('equip_tel_linea', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('equip_tel_linea')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_equip_cellphone')}:</Label>
-              <Checkbox {...form.getInputProps('equip_tel_celular', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('equip_tel_celular')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_equip_fridge')}:</Label>
@@ -400,7 +409,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_equip_washer')}:</Label>
-              <Checkbox {...form.getInputProps('equip_lavarropas', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('equip_lavarropas')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_equip_tv')}:</Label>
@@ -415,19 +424,19 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_equip_satellite')}:</Label>
-              <Checkbox {...form.getInputProps('equip_antena_satelital', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('equip_antena_satelital')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_equip_internet')}:</Label>
-              <Checkbox {...form.getInputProps('equip_internet', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('equip_internet')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_equip_car')}:</Label>
-              <Checkbox {...form.getInputProps('equip_automovil', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('equip_automovil')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_equip_moto')}:</Label>
-              <Checkbox {...form.getInputProps('equip_moto', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('equip_moto')} readOnly={readOnly} />
             </FieldRow>
           </FormCard>
         </Tabs.Panel>
@@ -436,51 +445,51 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
           <FormCard>
             <FieldRow>
               <Label>{t('forms.housing_med_carpets')}:</Label>
-              <Checkbox {...form.getInputProps('alfombras', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('alfombras')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_mattress')}:</Label>
-              <Checkbox {...form.getInputProps('colchonlanamas4', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('colchonlanamas4')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_pillow')}:</Label>
-              <Checkbox {...form.getInputProps('almohadamas2', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('almohadamas2')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_curtains')}:</Label>
-              <Checkbox {...form.getInputProps('cortinadosgruesos', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('cortinadosgruesos')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_wallpaper')}:</Label>
-              <Checkbox {...form.getInputProps('empapelado', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('empapelado')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_library')}:</Label>
-              <Checkbox {...form.getInputProps('biblioteca', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('biblioteca')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_stuffed_animal')}:</Label>
-              <Checkbox {...form.getInputProps('peluche', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('peluche')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_fillings')}:</Label>
-              <Checkbox {...form.getInputProps('rellenos', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('rellenos')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_blankets')}:</Label>
-              <Checkbox {...form.getInputProps('frazadas', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('frazadas')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_pets')}:</Label>
-              <Checkbox {...form.getInputProps('mascotas', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('mascotas')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_cockroaches')}:</Label>
-              <Checkbox {...form.getInputProps('cucarachas', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('cucarachas')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.housing_med_chagas')}:</Label>
-              <Checkbox {...form.getInputProps('zona_chagas', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('zona_chagas')} readOnly={readOnly} />
             </FieldRow>
           </FormCard>
         </Tabs.Panel>

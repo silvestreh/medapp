@@ -1,4 +1,4 @@
-import { ActionIcon, Button, Checkbox, Select, Table, Text } from '@mantine/core';
+import { ActionIcon, Button, Select, Table, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,14 @@ import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect } from 'react';
 import { styled } from '~/styled-system/jsx';
 import { Icd10Selector } from '~/components/icd10-selector';
-import { FormContainer, StyledTitle, FormHeader, FormCard, StyledTextInput } from './styles';
+import {
+  FormContainer,
+  StyledTitle,
+  FormHeader,
+  FormCard,
+  StyledTextInput,
+  TriStateCheckbox,
+} from './styles';
 
 const StyledTable = styled(Table, {
   base: {
@@ -25,7 +32,7 @@ const StyledTable = styled(Table, {
 
 interface FamilyHistoryItem {
   relationship: string;
-  isAlive: boolean;
+  isAlive: boolean | 'indeterminate';
   firstName: string;
   lastName: string;
   issueId: string;
@@ -93,7 +100,7 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
 
   const parseInitialValues = () => {
     if (!initialData || !initialData.values) {
-      return [{ relationship: '', isAlive: true, firstName: '', lastName: '', issueId: '' }];
+      return [{ relationship: '', isAlive: 'indeterminate', firstName: '', lastName: '', issueId: '' }];
     }
 
     const relationships = (initialData.values.fam_table_parentesco as unknown as string[]) || [];
@@ -120,16 +127,25 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
         console.error('Error parsing ICD-10 JSON', e);
       }
 
+      let isAlive: boolean | 'indeterminate' = 'indeterminate';
+      if (aliveStatuses[i] === t('forms.family_history_yes') || aliveStatuses[i] === 'Si' || aliveStatuses[i] === 'si') {
+        isAlive = true;
+      } else if (aliveStatuses[i] === t('forms.family_history_no') || aliveStatuses[i] === 'No' || aliveStatuses[i] === 'no') {
+        isAlive = false;
+      }
+
       return {
         relationship: relationshipValue,
-        isAlive: aliveStatuses[i] === t('forms.family_history_yes') || aliveStatuses[i] === 'Si',
+        isAlive,
         firstName: firstNames[i] || '',
         lastName: lastNames[i] || '',
         issueId,
       };
     });
 
-    return items.length > 0 ? items : [{ relationship: '', isAlive: true, firstName: '', lastName: '', issueId: '' }];
+    return items.length > 0
+      ? items
+      : [{ relationship: '', isAlive: 'indeterminate', firstName: '', lastName: '', issueId: '' }];
   };
 
   const form = useForm({
@@ -146,9 +162,11 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
         fam_table_parentesco: debouncedValues.items.map(item => getRelationshipLabel(item.relationship)),
         fam_table_nombre: debouncedValues.items.map(item => item.firstName),
         fam_table_apellido: debouncedValues.items.map(item => item.lastName),
-        fam_table_vive: debouncedValues.items.map(item =>
-          item.isAlive ? t('forms.family_history_yes') : t('forms.family_history_no')
-        ),
+        fam_table_vive: debouncedValues.items.map(item => {
+          if (item.isAlive === true) return 'si';
+          if (item.isAlive === false) return 'no';
+          return '';
+        }),
         fam_table_json_antecedentes: debouncedValues.items.map(item =>
           JSON.stringify(item.issueId ? [item.issueId] : [])
         ),
@@ -182,7 +200,7 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
             onClick={() =>
               form.insertListItem('items', {
                 relationship: '',
-                isAlive: true,
+                isAlive: 'indeterminate',
                 firstName: '',
                 lastName: '',
                 issueId: '',
@@ -232,16 +250,11 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                   )}
                 </Table.Td>
                 <Table.Td ta={readOnly ? 'left' : 'center'}>
-                  {readOnly ? (
-                    <Text size="sm">{item.isAlive ? t('forms.family_history_yes') : t('forms.family_history_no')}</Text>
-                  ) : (
-                    <Checkbox
-                      {...form.getInputProps(`items.${index}.isAlive`, { type: 'checkbox' })}
-                      styles={{ input: { cursor: 'pointer' } }}
-                      mx="auto"
-                      display="block"
-                    />
-                  )}
+                  <TriStateCheckbox
+                    {...form.getInputProps(`items.${index}.isAlive`)}
+                    readOnly={readOnly}
+                    disabled={readOnly}
+                  />
                 </Table.Td>
                 <Table.Td>
                   <StyledTextInput

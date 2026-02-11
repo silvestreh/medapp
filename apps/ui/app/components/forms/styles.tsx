@@ -1,6 +1,61 @@
-import { TextInput, Textarea, Title, Stack, Select } from '@mantine/core';
+import { TextInput, Textarea, Title, Stack, Select, Checkbox, Text } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { styled } from '~/styled-system/jsx';
+
+export interface TriStateCheckboxProps {
+  value?: boolean | 'indeterminate';
+  onChange?: (value: boolean | 'indeterminate') => void;
+  label?: React.ReactNode;
+  readOnly?: boolean;
+  disabled?: boolean;
+}
+
+export function TriStateCheckbox({ value, onChange, label, readOnly, disabled }: TriStateCheckboxProps) {
+  if (readOnly) {
+    let text = '—';
+    if (value === true) text = 'Yes';
+    if (value === false) text = 'No';
+
+    return (
+      <Stack gap={4}>
+        {label && (
+          <Text size="sm" c="gray.6">
+            {label}
+          </Text>
+        )}
+        <Text size="sm">{text}</Text>
+      </Stack>
+    );
+  }
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (disabled || readOnly) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (value === 'indeterminate' || value === undefined) {
+      onChange?.(true);
+    } else if (value === true) {
+      onChange?.(false);
+    } else {
+      onChange?.('indeterminate');
+    }
+  };
+
+  return (
+    <Checkbox
+      label={label}
+      checked={value === true}
+      indeterminate={value === 'indeterminate' || value === undefined}
+      onChange={() => {}}
+      onClick={handleClick}
+      disabled={disabled}
+      styles={{
+        input: { cursor: disabled ? 'not-allowed' : 'pointer' },
+      }}
+    />
+  );
+}
 
 export const FormContainer = styled(Stack, {
   base: {
