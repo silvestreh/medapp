@@ -17,6 +17,7 @@ import { OccupationalHistoryForm } from './occupational-history-form';
 import { CardiologyForm } from './cardiology-form';
 import { DrugAllergyForm } from './drug-allergy-form';
 import { GeneralAllergyForm } from './general-allergy-form';
+import { AsthmaForm } from './asthma-form';
 import { FormContainer } from './styles';
 import Portal from '~/components/portal';
 
@@ -162,6 +163,14 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
             <DrugAllergyForm
               initialData={form.values['alergias/medicamentos']}
               onChange={handleSubFormChange('alergias/medicamentos')}
+              readOnly={readOnly}
+            />
+          )}
+
+          {shouldShow('alergias/asma') && (
+            <AsthmaForm
+              initialData={form.values['alergias/asma']}
+              onChange={handleSubFormChange('alergias/asma')}
               readOnly={readOnly}
             />
           )}
