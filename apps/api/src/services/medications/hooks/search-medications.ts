@@ -1,5 +1,5 @@
 import { HookContext } from '@feathersjs/feathers';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 export const searchMedications = () => {
   return async (context: HookContext) => {
@@ -25,17 +25,27 @@ export const searchMedications = () => {
       return context;
     }
 
+    console.log('Searching medications for:', searchWords);
+
     // Build a query where EACH word must match the unaccented searchText column
+    // We use Sequelize.where with unaccent on the concatenated columns as a fallback
+    // or just search the searchText column if it's populated.
     const wordConditions = searchWords.map((word: string) => {
       return {
-        searchText: { [Op.iLike]: `%${word}%` }
+        [Op.or]: [
+          { searchText: { [Op.iLike]: `%${word}%` } },
+          Sequelize.where(
+            Sequelize.fn('immutable_unaccent', Sequelize.fn('lower', Sequelize.literal('"commercialNamePresentation" || \' \' || "genericDrug"'))),
+            { [Op.iLike]: `%${word}%` }
+          )
+        ]
       };
     });
 
     // Merge with existing query
     const existingAnd = (query as any)[Op.and] || [];
 
-    context.params.query = {
+    (context.params.query as any) = {
       ...query,
       [Op.and]: [
         ...existingAnd,

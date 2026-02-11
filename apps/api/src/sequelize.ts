@@ -94,8 +94,14 @@ export default function (app: Application): void {
           ADD COLUMN "searchLastName" text
           GENERATED ALWAYS AS (immutable_unaccent(lower("lastName"))) STORED;
 
+          ALTER TABLE "medications" DROP COLUMN IF EXISTS "searchText";
+          ALTER TABLE "medications"
+          ADD COLUMN "searchText" text
+          GENERATED ALWAYS AS (immutable_unaccent(lower("commercialNamePresentation" || ' ' || "genericDrug"))) STORED;
+
           CREATE INDEX IF NOT EXISTS personal_data_search_first_name_idx ON "personal_data" USING gin ("searchFirstName" gin_trgm_ops);
           CREATE INDEX IF NOT EXISTS personal_data_search_last_name_idx ON "personal_data" USING gin ("searchLastName" gin_trgm_ops);
+          CREATE INDEX IF NOT EXISTS medications_search_text_idx ON "medications" USING gin ("searchText" gin_trgm_ops);
         `);
       } catch (e: any) {
         console.error('Error creating generated columns or indexes:', e?.message || e);
