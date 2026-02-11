@@ -77,7 +77,7 @@ const NewEncounterSidebar: FC<NewEncounterSidebarProps> = ({
                 {t(`forms.${formKey}` as any)}
                 <ActionIcon
                   variant="subtle"
-                  color="gray"
+                  color={activeFormKey === formKey ? 'white' : 'gray'}
                   size="sm"
                   onClick={e => {
                     e.stopPropagation();

@@ -8,6 +8,7 @@ import { ReasonForConsultationForm } from '~/components/forms/reason-for-consult
 import { FamilyHistoryForm } from '~/components/forms/family-history-form';
 import { PersonalHistoryForm } from '~/components/forms/personal-history-form';
 import { EvolutionForm } from '~/components/forms/evolution-form';
+import { HabitsForm } from '~/components/forms/habits-form';
 import { FormContainer } from '~/components/forms/styles';
 import Portal from '~/components/portal';
 
@@ -97,6 +98,14 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
             <PersonalHistoryForm
               initialData={form.values['antecedentes/personales']}
               onChange={handleSubFormChange('antecedentes/personales')}
+              readOnly={readOnly}
+            />
+          )}
+
+          {shouldShow('antecedentes/habitos') && (
+            <HabitsForm
+              initialData={form.values['antecedentes/habitos']}
+              onChange={handleSubFormChange('antecedentes/habitos')}
               readOnly={readOnly}
             />
           )}
