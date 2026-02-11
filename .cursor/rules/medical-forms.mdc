@@ -4,6 +4,7 @@ alwaysApply: true
 # General rules
 
 1. NEVER, ever, ever, ever, clean the DB without conscent. In fact, never run any code that touches the database unless explicitely told.
+2. When interacting with the API, use the hooks defined in `~/components/provider.tsx`.
 
 # Medical Forms Styling Rules
 

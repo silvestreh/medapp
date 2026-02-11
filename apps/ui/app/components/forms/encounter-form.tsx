@@ -12,6 +12,7 @@ import { HousingHistoryForm } from './housing-history-form';
 import { PersonalHistoryForm } from './personal-history-form';
 import { EvolutionForm } from './evolution-form';
 import { HabitsForm } from './habits-form';
+import { MedicationHistoryForm } from './medication-history-form';
 import { FormContainer } from './styles';
 import Portal from '~/components/portal';
 
@@ -125,6 +126,14 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
             <HabitsForm
               initialData={form.values['antecedentes/habitos']}
               onChange={handleSubFormChange('antecedentes/habitos')}
+              readOnly={readOnly}
+            />
+          )}
+
+          {shouldShow('antecedentes/medicamentosos') && (
+            <MedicationHistoryForm
+              initialData={form.values['antecedentes/medicamentosos']}
+              onChange={handleSubFormChange('antecedentes/medicamentosos')}
               readOnly={readOnly}
             />
           )}

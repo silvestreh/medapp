@@ -108,7 +108,7 @@ const PatientSearchTable: FC = () => {
     setSearchParams(newParams, { replace: true, preventScrollReset: true });
   };
 
-    const query = useMemo(
+  const query = useMemo(
     () => ({
       q: debouncedInputValue,
       $limit: 10,

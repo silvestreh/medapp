@@ -134,13 +134,20 @@ export const useFind = (
     data,
     error,
     mutate: swrMutate,
-  } = useSWR([serviceName, 'find' as keyof ServiceMethods<any>, { query: stableQuery, ...stableParams }], args =>
-    fetcher(args, feathersClient)
+  } = useSWR(
+    stableParams.enabled !== false
+      ? [serviceName, 'find' as keyof ServiceMethods<any>, { query: stableQuery, ...stableParams }]
+      : null,
+    args => fetcher(args, feathersClient)
   );
 
   const [status, setStatus] = useState<Status>('idle');
 
   useEffect(() => {
+    if (stableParams.enabled === false) {
+      setStatus('idle');
+      return;
+    }
     if (!data && !error) {
       setStatus('loading');
     } else if (error) {
@@ -148,7 +155,7 @@ export const useFind = (
     } else {
       setStatus('success');
     }
-  }, [data, error]);
+  }, [data, error, stableParams.enabled]);
 
   useEffect(() => {
     if (!feathersClient) return;
@@ -217,17 +224,26 @@ export const useFind = (
   };
 };
 
-export const useGet = (serviceName: string, id: string, params?: Params) => {
+export const useGet = (serviceName: string, id: string, params?: Params & { enabled?: boolean }) => {
   const feathersClient = useFeathers();
   const {
     data,
     error,
     mutate: swrMutate,
-  } = useSWR([serviceName, 'get' as keyof ServiceMethods<any>, id, params], args => fetcher(args, feathersClient));
+  } = useSWR(
+    params?.enabled !== false && id
+      ? [serviceName, 'get' as keyof ServiceMethods<any>, id, params]
+      : null,
+    args => fetcher(args, feathersClient)
+  );
 
   const [status, setStatus] = useState<Status>('idle');
 
   useEffect(() => {
+    if (params?.enabled === false || !id) {
+      setStatus('idle');
+      return;
+    }
     if (!data && !error) {
       setStatus('loading');
     } else if (error) {
@@ -235,7 +251,7 @@ export const useGet = (serviceName: string, id: string, params?: Params) => {
     } else {
       setStatus('success');
     }
-  }, [data, error]);
+  }, [data, error, params?.enabled, id]);
 
   useEffect(() => {
     if (!feathersClient) return;
