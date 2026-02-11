@@ -52,6 +52,12 @@ export function TriStateCheckbox({ value, onChange, label, readOnly, disabled }:
       disabled={disabled}
       styles={{
         input: { cursor: disabled ? 'not-allowed' : 'pointer' },
+        label: {
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          color: 'var(--mantine-color-gray-6)',
+          fontSize: 'var(--mantine-font-size-md)',
+          paddingLeft: '0.5rem',
+        },
       }}
     />
   );
@@ -98,6 +104,21 @@ export const FieldRow = styled('div', {
         },
       },
     },
+    checkbox: {
+      true: {
+        lg: {
+          alignItems: 'center',
+          paddingLeft: 'calc(25% + 1rem)',
+        },
+      },
+    },
+    nested: {
+      true: {
+        lg: {
+          paddingLeft: '1rem!',
+        },
+      },
+    },
   },
 });
 
@@ -120,6 +141,16 @@ export const Label = styled('div', {
           textAlign: 'left!',
           marginBottom: '0.5rem',
           marginRight: '0!',
+        },
+      },
+    },
+    checkbox: {
+      true: {
+        lg: {
+          width: 'auto',
+          textAlign: 'left',
+          marginRight: 0,
+          marginLeft: '0.5rem',
         },
       },
     },
@@ -154,6 +185,7 @@ export const StyledTextarea = styled(Textarea, {
       height: 'auto',
       minHeight: '1.5rem',
       lineHeight: 1.75,
+      backgroundColor: 'transparent',
 
       '&:focus': {
         boxShadow: 'none',
