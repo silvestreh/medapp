@@ -112,6 +112,13 @@ export const FieldRow = styled('div', {
         },
       },
     },
+    noOffset: {
+      true: {
+        lg: {
+          paddingLeft: '1rem!',
+        },
+      },
+    },
     nested: {
       true: {
         lg: {
