@@ -201,7 +201,7 @@ export const StyledTextarea = styled(Textarea, {
   },
 });
 
-export const StyledDateInput = styled(DateInput, {
+const StyledDateInputBase = styled(DateInput, {
   base: {
     backgroundColor: 'transparent',
     flex: 1,
@@ -220,6 +220,25 @@ export const StyledDateInput = styled(DateInput, {
     },
   },
 });
+
+type StyledDateInputProps = React.ComponentProps<typeof StyledDateInputBase> & {
+  rawValue?: string;
+};
+
+export function StyledDateInput({ rawValue, ...props }: StyledDateInputProps) {
+  const isInvalidDate = props.value instanceof Date && isNaN(props.value.getTime());
+  const isUnparsedString = typeof props.value === 'string' && props.value !== '';
+
+  if (props.readOnly && (isInvalidDate || isUnparsedString)) {
+    return (
+      <Text style={{ flex: 1, lineHeight: 1.75, minHeight: '1.5rem' }}>
+        {rawValue || (isUnparsedString ? (props.value as string) : '—')}
+      </Text>
+    );
+  }
+
+  return <StyledDateInputBase {...props} />;
+}
 
 export const StyledTitle = styled(Title, {
   base: {

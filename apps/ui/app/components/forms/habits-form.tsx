@@ -346,6 +346,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                     placeholder="YYYY"
                     {...form.getInputProps('fuma_desde')}
                     readOnly={readOnly}
+                    rawValue={initialData?.values?.fuma_desde}
                     valueFormat="YYYY"
                     clearable={!readOnly}
                   />
@@ -356,6 +357,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                     placeholder="DD/MM/YYYY"
                     {...form.getInputProps('fuma_hasta')}
                     readOnly={readOnly}
+                    rawValue={initialData?.values?.fuma_hasta}
                     valueFormat="DD/MM/YYYY"
                     clearable={!readOnly}
                   />

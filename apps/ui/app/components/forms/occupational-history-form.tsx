@@ -226,6 +226,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
               <StyledDateInput
                 {...form.getInputProps(desdeName)}
                 readOnly={readOnly}
+                rawValue={initialData?.values?.[desdeName]}
                 placeholder={t('common.date_placeholder')}
                 clearable
               />
@@ -235,6 +236,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
               <StyledDateInput
                 {...form.getInputProps(hastaName)}
                 readOnly={readOnly}
+                rawValue={initialData?.values?.[hastaName]}
                 placeholder={t('common.date_placeholder')}
                 clearable
               />
