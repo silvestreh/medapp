@@ -1,4 +1,4 @@
-import { Checkbox, Stack, Tabs } from '@mantine/core';
+import { Stack, Tabs } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -102,7 +102,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
       const hasData = Object.values(form.values).some(val => {
-        if (typeof val === 'string') return val !== '';
+        if (typeof val === 'string') return val !== '' && val !== 'indeterminate';
         if (val === true || val === false) return true;
         return false;
       });
@@ -114,6 +114,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
         });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.values, onChange, readOnly, initialData]);
 
   const selectData = {
@@ -378,27 +379,27 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
               </StyledTitle>
             </FormHeader>
             <FormCard>
-            <FieldRow checkbox>
-              <TriStateCheckbox
-                label={t('forms.housing_electric')}
-                {...form.getInputProps('electricidad')}
-                readOnly={readOnly}
-              />
-            </FieldRow>
-            <FieldRow checkbox>
-              <TriStateCheckbox
-                label={t('forms.housing_electric_safe')}
-                {...form.getInputProps('electricidad_segura')}
-                readOnly={readOnly}
-              />
-            </FieldRow>
-            <FieldRow checkbox>
-              <TriStateCheckbox
-                label={t('forms.housing_electric_legal')}
-                {...form.getInputProps('electricidad_legal')}
-                readOnly={readOnly}
-              />
-            </FieldRow>
+              <FieldRow checkbox>
+                <TriStateCheckbox
+                  label={t('forms.housing_electric')}
+                  {...form.getInputProps('electricidad')}
+                  readOnly={readOnly}
+                />
+              </FieldRow>
+              <FieldRow checkbox>
+                <TriStateCheckbox
+                  label={t('forms.housing_electric_safe')}
+                  {...form.getInputProps('electricidad_segura')}
+                  readOnly={readOnly}
+                />
+              </FieldRow>
+              <FieldRow checkbox>
+                <TriStateCheckbox
+                  label={t('forms.housing_electric_legal')}
+                  {...form.getInputProps('electricidad_legal')}
+                  readOnly={readOnly}
+                />
+              </FieldRow>
             </FormCard>
           </Stack>
         </Tabs.Panel>

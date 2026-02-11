@@ -96,16 +96,28 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 
 const ALL_FORMS = [
   'general/consulta_internacion',
-  'general/enfermedad_actual',
+  null,
   'antecedentes/habitacionales',
   'antecedentes/familiares',
   'antecedentes/personales',
   'antecedentes/habitos',
   'antecedentes/medicamentosos',
   'antecedentes/ocupacionales',
+  null,
+  'alergias/general',
+  'alergias/medicamentos',
+  null,
   'cardiologia/general',
+  null,
+  'general/enfermedad_actual',
   'general/evolucion_consulta_internacion',
 ];
+
+function cleanSeparators(list: (string | null)[]): (string | null)[] {
+  return list
+    .filter((item, i) => item !== null || list[i - 1] !== null) // no consecutive nulls
+    .filter((item, i, arr) => item !== null || (i !== 0 && i !== arr.length - 1)); // no leading/trailing nulls
+}
 
 export default function NewEncounter() {
   const { t } = useTranslation();
@@ -117,11 +129,13 @@ export default function NewEncounter() {
   const [activeFormKey, setActiveFormKey] = useState<string | undefined>(undefined);
 
   const activeForms = useMemo(() => {
-    return ALL_FORMS.filter(key => formValues[key] !== undefined);
+    const filtered = ALL_FORMS.filter(key => key === null || formValues[key] !== undefined);
+    return cleanSeparators(filtered);
   }, [formValues]);
 
   const availableForms = useMemo(() => {
-    return ALL_FORMS.filter(key => formValues[key] === undefined);
+    const filtered = ALL_FORMS.filter(key => key === null || formValues[key] === undefined);
+    return cleanSeparators(filtered);
   }, [formValues]);
 
   const handleFormClick = useCallback((formKey: string) => {

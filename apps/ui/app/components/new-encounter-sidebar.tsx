@@ -5,8 +5,8 @@ import { X } from 'lucide-react';
 import { styled } from '~/styled-system/jsx';
 
 interface NewEncounterSidebarProps {
-  availableForms: string[];
-  activeForms: string[];
+  availableForms: (string | null)[];
+  activeForms: (string | null)[];
   activeFormKey?: string;
   onFormClick: (formKey: string) => void;
   onRemoveForm: (formKey: string) => void;
@@ -69,35 +69,43 @@ const NewEncounterSidebar: FC<NewEncounterSidebarProps> = ({
   return (
     <SidebarContainer>
       <Stack gap={0}>
-        {activeForms.length > 0 && (
+        {activeForms.some(f => f !== null) && (
           <>
             <SectionTitle>{t('encounters.active_forms')}</SectionTitle>
-            {activeForms.map(formKey => (
-              <FormItem key={formKey} active={activeFormKey === formKey} onClick={() => onFormClick(formKey)}>
-                {t(`forms.${formKey}` as any)}
-                <ActionIcon
-                  variant="subtle"
-                  color={activeFormKey === formKey ? 'white' : 'gray'}
-                  size="sm"
-                  onClick={e => {
-                    e.stopPropagation();
-                    onRemoveForm(formKey);
-                  }}
-                >
-                  <X size={14} />
-                </ActionIcon>
-              </FormItem>
-            ))}
+            {activeForms.map((formKey, index) =>
+              formKey === null ? (
+                <Divider key={`sep-active-${index}`} my="xs" />
+              ) : (
+                <FormItem key={formKey} active={activeFormKey === formKey} onClick={() => onFormClick(formKey)}>
+                  {t(`forms.${formKey}` as any)}
+                  <ActionIcon
+                    variant="subtle"
+                    color={activeFormKey === formKey ? 'white' : 'gray'}
+                    size="sm"
+                    onClick={e => {
+                      e.stopPropagation();
+                      onRemoveForm(formKey);
+                    }}
+                  >
+                    <X size={14} />
+                  </ActionIcon>
+                </FormItem>
+              )
+            )}
             <Divider my="sm" />
           </>
         )}
 
         <SectionTitle>{t('encounters.available_forms')}</SectionTitle>
-        {availableForms.map(formKey => (
-          <FormItem key={formKey} active={activeFormKey === formKey} onClick={() => onFormClick(formKey)}>
-            {t(`forms.${formKey}` as any)}
-          </FormItem>
-        ))}
+        {availableForms.map((formKey, index) =>
+          formKey === null ? (
+            <Divider key={`sep-available-${index}`} my="xs" />
+          ) : (
+            <FormItem key={formKey} active={activeFormKey === formKey} onClick={() => onFormClick(formKey)}>
+              {t(`forms.${formKey}` as any)}
+            </FormItem>
+          )
+        )}
       </Stack>
     </SidebarContainer>
   );
