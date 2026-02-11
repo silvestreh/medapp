@@ -107,7 +107,7 @@ export function GeneralAllergyForm({ initialData, onChange, readOnly }: GeneralA
       const hasChanged = JSON.stringify(legacy) !== JSON.stringify(initialData?.values);
 
       const hasData = Object.values(form.values).some(val => {
-        if (typeof val === 'string') return val !== '';
+        if (typeof val === 'string') return val !== '' && val !== 'indeterminate';
         if (val === true || val === false) return true;
         return false;
       });
