@@ -14,6 +14,7 @@ import { EvolutionForm } from './evolution-form';
 import { HabitsForm } from './habits-form';
 import { MedicationHistoryForm } from './medication-history-form';
 import { OccupationalHistoryForm } from './occupational-history-form';
+import { CardiologyForm } from './cardiology-form';
 import { FormContainer } from './styles';
 import Portal from '~/components/portal';
 
@@ -143,6 +144,14 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
             <OccupationalHistoryForm
               initialData={form.values['antecedentes/ocupacionales']}
               onChange={handleSubFormChange('antecedentes/ocupacionales')}
+              readOnly={readOnly}
+            />
+          )}
+
+          {shouldShow('cardiologia/general') && (
+            <CardiologyForm
+              initialData={form.values['cardiologia/general']}
+              onChange={handleSubFormChange('cardiologia/general')}
               readOnly={readOnly}
             />
           )}
