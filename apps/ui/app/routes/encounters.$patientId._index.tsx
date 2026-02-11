@@ -42,6 +42,8 @@ const Content = styled('div', {
     flex: 1,
     height: '100%',
     padding: '2rem',
+    position: 'sticky',
+    top: '4.5rem',
   },
 });
 
