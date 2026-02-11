@@ -12,6 +12,23 @@ export interface Icd10 {
   children: string[];
 }
 
+export interface Laboratory {
+  id: string;
+  name: string;
+}
+
+export interface Medication {
+  id: string;
+  commercialNamePresentation: string;
+  genericDrug: string;
+  laboratoryId: string;
+  pharmaceuticalForm?: string;
+  certificateNumber?: string;
+  gtin?: string;
+  availability?: string;
+  searchText?: string;
+}
+
 export interface ServiceTypes {}
 // The application instance type that will be used everywhere else
 export type Application = ExpressFeathers<ServiceTypes>;
