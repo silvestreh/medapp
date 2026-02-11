@@ -29,7 +29,7 @@ export default function (app: Application): typeof Model {
         options.raw = true;
       }
     },
-    underscored: true
+    underscored: false
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

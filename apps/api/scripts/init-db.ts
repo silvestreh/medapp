@@ -2,6 +2,7 @@ import app from '../src/app';
 import { Sequelize } from 'sequelize';
 import roles from './seeds/roles.json';
 import cie10 from './seeds/cie-10.json';
+import { seedMedications } from './seed-medications';
 
 async function waitForConnection(sequelize: Sequelize, maxAttempts = 10): Promise<void> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -88,6 +89,16 @@ async function initDatabase() {
       CREATE INDEX IF NOT EXISTS personal_data_search_last_name_idx ON "personal_data" USING gin ("searchLastName" gin_trgm_ops);
     `);
 
+    // Add generated column and index for medications
+    await sequelize.query(`
+      ALTER TABLE "medications" DROP COLUMN IF EXISTS "searchText";
+      ALTER TABLE "medications" 
+      ADD COLUMN "searchText" text 
+      GENERATED ALWAYS AS (immutable_unaccent(lower("commercialNamePresentation" || ' ' || "genericDrug"))) STORED;
+
+      CREATE INDEX IF NOT EXISTS medications_search_text_idx ON "medications" USING gin ("searchText" gin_trgm_ops);
+    `);
+
     // Seed roles if needed
     const rolesService = app.service('roles');
 
@@ -157,6 +168,9 @@ async function initDatabase() {
       await icd10Service.create(chunk);
       if (i % 1000 === 0) console.log(`Seeded ${i} / ${finalData.length} ICD-10 entries`);
     }
+
+    // Seed medications
+    await seedMedications();
 
     console.log('Database initialization completed successfully.');
     process.exit(0);

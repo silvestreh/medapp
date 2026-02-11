@@ -8,6 +8,7 @@ import app from '../src/app';
 import { normalizeCity, provinceToISO, normalizePhoneNumber, normalizeMaritalStatus, transformSchedule, getCountry, normalizeNameWithLLM, cleanedNames } from './utils';
 import { resetDatabase } from './reset-db';
 import cie10 from './seeds/cie-10.json';
+import { seedMedications } from './seed-medications';
 
 interface MongoID {
   $oid: string;
@@ -218,6 +219,9 @@ async function seedData(multibar?: cliProgress.MultiBar) {
     await icd10Service.create(chunk);
     icd10Bar?.increment(chunk.length);
   }
+
+  // Seed medications
+  await seedMedications();
 }
 
 async function importData(multibar: cliProgress.MultiBar) {
