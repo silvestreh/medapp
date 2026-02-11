@@ -195,12 +195,12 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
             <Portal id="form-actions">
               <Group>
                 <Box visibleFrom="lg">
-                  <Button onClick={handleSave} disabled={isEmpty} leftSection={<Save size={16} />}>
+                  <Button onClick={handleSave} disabled={isEmpty} leftSection={<Save size={16} />} color="green">
                     {t('common.save')}
                   </Button>
                 </Box>
                 <Box hiddenFrom="lg">
-                  <ActionIcon onClick={handleSave} disabled={isEmpty} size="lg" radius="xl">
+                  <ActionIcon onClick={handleSave} disabled={isEmpty} size="lg" radius="xl" color="green">
                     <Save size={20} />
                   </ActionIcon>
                 </Box>

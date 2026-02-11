@@ -3,13 +3,15 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Group, Title, Stack, Button } from '@mantine/core';
+import { Group, Title, Stack, Button, ActionIcon, Tooltip } from '@mantine/core';
+import { X } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import EncounterTree from '~/components/encounter-tree';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { EncounterForm } from '~/components/forms/encounter-form';
+import { PatientOverview } from '~/components/patient-overview';
 
 const Container = styled('div', {
   base: {
@@ -149,15 +151,29 @@ export default function PatientEncounterDetail() {
       </Sidebar>
 
       <Content>
-        <Stack key={`${selectedEncounter?.id}-${activeFormKey}`}>
-          {selectedEncounter && (
+        {selectedEncounter ? (
+          <Stack key={`${selectedEncounter.id}-${activeFormKey}`} pos="relative">
             <EncounterForm
               encounter={selectedEncounter}
               readOnly={!!selectedEncounter.id}
               activeFormKey={activeFormKey}
             />
-          )}
-        </Stack>
+            <Tooltip label={t('common.close')} position="left">
+              <ActionIcon
+                variant="filled"
+                color="gray"
+                onClick={() => setSelectedEncounter(null)}
+                pos="absolute"
+                top={0}
+                right={0}
+              >
+                <X size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Stack>
+        ) : (
+          <PatientOverview patient={data.patient} encounters={data.encounters} />
+        )}
       </Content>
     </Container>
   );

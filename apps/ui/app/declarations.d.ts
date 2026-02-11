@@ -48,6 +48,7 @@ export type Patient = {
     lastName: string;
     maritalStatus: string;
     nationality: string;
+    birthDate: string | null;
   };
 };
 
