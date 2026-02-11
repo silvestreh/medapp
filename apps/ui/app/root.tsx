@@ -4,8 +4,9 @@ import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
-import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
+import './global.css';
+import '@mantine/core/styles.layer.css';
+import '@mantine/notifications/styles.layer.css';
 import './panda.css';
 
 import i18next from '~/i18n/i18next.server';
