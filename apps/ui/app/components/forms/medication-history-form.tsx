@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useForm } from '@mantine/form';
-import { useDebouncedValue } from '@mantine/hooks';
 import { Button, ActionIcon, Stack, Text as MantineText } from '@mantine/core';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -61,8 +60,19 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
       });
     }
 
+    const initialMedications = medications.length > 0 ? medications : [];
+    if (initialMedications.length === 0 && !readOnly) {
+      initialMedications.push({
+        droga: '',
+        ant_fecha: null,
+        efectivo: 'indeterminate',
+        efecto_adverso: '',
+        ant_comments: '',
+      });
+    }
+
     return {
-      medications: medications.length > 0 ? medications : [],
+      medications: initialMedications,
     };
   };
 
@@ -70,15 +80,13 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
     initialValues: parseInitialValues(),
   });
 
-  const [debouncedValues] = useDebouncedValue(form.values, 500);
-
   useEffect(() => {
     if (!readOnly) {
       const resultValues: Record<string, string> = {
-        ant_med_count: debouncedValues.medications.length.toString(),
+        ant_med_count: form.values.medications.length.toString(),
       };
 
-      debouncedValues.medications.forEach((med, i) => {
+      form.values.medications.forEach((med, i) => {
         resultValues[`droga_${i}`] = med.droga;
         resultValues[`ant_fecha_${i}`] = med.ant_fecha ? med.ant_fecha.toISOString() : '';
         if (med.efectivo === true) resultValues[`efectivo_${i}`] = 'si';
@@ -89,16 +97,24 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
       });
 
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
-      const hasData = debouncedValues.medications.length > 0;
 
-      if (hasChanged && (initialData || hasData)) {
+      // Treat as "blank" if there's only one item and it's empty
+      const isBlank =
+        form.values.medications.length === 1 &&
+        !form.values.medications[0].droga &&
+        !form.values.medications[0].ant_fecha &&
+        form.values.medications[0].efectivo === 'indeterminate' &&
+        !form.values.medications[0].efecto_adverso &&
+        !form.values.medications[0].ant_comments;
+
+      if (hasChanged && (initialData || !isBlank)) {
         onChange({
           type: 'antecedentes/medicamentosos',
           values: resultValues,
         });
       }
     }
-  }, [debouncedValues, onChange, readOnly, initialData]);
+  }, [form.values, onChange, readOnly, initialData]);
 
   const addMedication = () => {
     form.insertListItem('medications', {

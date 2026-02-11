@@ -1,6 +1,5 @@
 import { Button, Stack, ActionIcon } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useDebouncedValue } from '@mantine/hooks';
 import { Plus, Trash } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -43,33 +42,31 @@ export function CurrentIllnessForm({ initialData, onChange, readOnly }: Enfermed
     initialValues: parseInitialValues(),
   });
 
-  const [debouncedValues] = useDebouncedValue(form.values, 500);
-
   useEffect(() => {
     if (!readOnly) {
       const resultValues: Record<string, string> = {
-        sintoma_count: debouncedValues.symptoms.length.toString(),
-        notas_ap_resp: debouncedValues.notas_ap_resp,
-        notas_ap_cardio: debouncedValues.notas_ap_cardio,
-        notas_ap_digest: debouncedValues.notas_ap_digest,
-        notas_ap_uro: debouncedValues.notas_ap_uro,
-        notas_ap_loco: debouncedValues.notas_ap_loco,
-        notas_piel: debouncedValues.notas_piel,
-        notas_otro: debouncedValues.notas_otro,
+        sintoma_count: form.values.symptoms.length.toString(),
+        notas_ap_resp: form.values.notas_ap_resp,
+        notas_ap_cardio: form.values.notas_ap_cardio,
+        notas_ap_digest: form.values.notas_ap_digest,
+        notas_ap_uro: form.values.notas_ap_uro,
+        notas_ap_loco: form.values.notas_ap_loco,
+        notas_piel: form.values.notas_piel,
+        notas_otro: form.values.notas_otro,
       };
 
-      debouncedValues.symptoms.forEach((s, i) => {
+      form.values.symptoms.forEach((s, i) => {
         resultValues[`sintoma_${i}`] = s;
       });
 
       // The user specifically asked for "sintoma": "" in the output.
       // I'll include it as the first symptom or empty string to match their requirement exactly,
       // while also keeping the indexed ones for legacy compatibility if needed.
-      resultValues['sintoma'] = debouncedValues.symptoms[0] || '';
+      resultValues['sintoma'] = form.values.symptoms[0] || '';
 
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
       const hasData =
-        debouncedValues.symptoms.some(s => s) || Object.values(debouncedValues).some(v => typeof v === 'string' && v);
+        form.values.symptoms.some(s => s) || Object.values(form.values).some(v => typeof v === 'string' && v);
 
       if (hasChanged && (initialData || hasData)) {
         onChange({
@@ -78,7 +75,7 @@ export function CurrentIllnessForm({ initialData, onChange, readOnly }: Enfermed
         });
       }
     }
-  }, [debouncedValues, onChange, readOnly, initialData]);
+  }, [form.values, onChange, readOnly, initialData]);
 
   return (
     <FormContainer>

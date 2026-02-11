@@ -2,7 +2,6 @@ import { ActionIcon, Button, Stack, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect } from 'react';
 import { Icd10Selector } from '~/components/icd10-selector';
 import {
@@ -60,15 +59,13 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
     },
   });
 
-  const [debouncedValues] = useDebouncedValue(form.values, 500);
-
   useEffect(() => {
     if (!readOnly) {
       const resultValues: Record<string, string> = {
-        antecedente_count: debouncedValues.items.length.toString(),
+        antecedente_count: form.values.items.length.toString(),
       };
 
-      debouncedValues.items.forEach((item, index) => {
+      form.values.items.forEach((item, index) => {
         resultValues[`antecedente_${index}`] = item.issueId;
         resultValues[`fecha_antecedente_${index}`] = item.date || '';
         resultValues[`antecedente_descripcion_${index}`] = item.description;
@@ -77,7 +74,7 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
       // If we don't have initial data, only trigger if we have something meaningful to report
-      const hasData = debouncedValues.items.some(item => item.issueId || item.date || item.description);
+      const hasData = form.values.items.some(item => item.issueId || item.date || item.description);
 
       if (hasChanged && (initialData || hasData)) {
         onChange({
@@ -86,12 +83,12 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
         });
       }
     }
-  }, [debouncedValues, onChange, readOnly, initialData]);
+  }, [form.values, onChange, readOnly, initialData]);
 
   return (
     <FormContainer>
       <FormHeader>
-        <StyledTitle order={1}>{t('forms.personal_history_title')}</StyledTitle>
+        <StyledTitle>{t('forms.personal_history_title')}</StyledTitle>
         {!readOnly && (
           <Button
             variant="light"

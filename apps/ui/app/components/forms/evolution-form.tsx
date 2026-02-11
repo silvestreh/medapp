@@ -1,6 +1,5 @@
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
-import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect } from 'react';
 import { FormContainer, FormCard, FormHeader, FieldRow, Label, StyledTextarea, StyledTitle } from './styles';
 
@@ -22,18 +21,16 @@ export function EvolutionForm({ initialData, onChange, readOnly }: EvolutionForm
     },
   });
 
-  const [debouncedValues] = useDebouncedValue(form.values, 500);
-
   useEffect(() => {
     if (!readOnly) {
       const resultValues = {
-        evo_descripcion: debouncedValues.description,
+        evo_descripcion: form.values.description,
       };
 
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
       // If we don't have initial data, only trigger if we have something meaningful to report
-      const hasData = !!debouncedValues.description;
+      const hasData = !!form.values.description;
 
       if (hasChanged && (initialData || hasData)) {
         onChange({
@@ -42,7 +39,7 @@ export function EvolutionForm({ initialData, onChange, readOnly }: EvolutionForm
         });
       }
     }
-  }, [debouncedValues, onChange, readOnly, initialData]);
+  }, [form.values, onChange, readOnly, initialData]);
 
   return (
     <FormContainer>

@@ -2,7 +2,6 @@ import { ActionIcon, Button, Stack, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect } from 'react';
 import {
   FormContainer,
@@ -63,15 +62,13 @@ export function ReasonForConsultationForm({ initialData, onChange, readOnly }: R
     },
   });
 
-  const [debouncedValues] = useDebouncedValue(form.values, 500);
-
   useEffect(() => {
     if (!readOnly) {
       const resultValues: Record<string, string> = {
-        consulta_intern_count: debouncedValues.reasons.length.toString(),
+        consulta_intern_count: form.values.reasons.length.toString(),
       };
 
-      debouncedValues.reasons.forEach((item, index) => {
+      form.values.reasons.forEach((item, index) => {
         resultValues[`motivo_text_${index}`] = item.reason;
         resultValues[`motivo_descripcion_${index}`] = item.description;
       });
@@ -80,7 +77,7 @@ export function ReasonForConsultationForm({ initialData, onChange, readOnly }: R
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
       // If we don't have initial data, only trigger if we have something meaningful to report
-      const hasData = debouncedValues.reasons.some(item => item.reason || item.description);
+      const hasData = form.values.reasons.some(item => item.reason || item.description);
 
       if (hasChanged && (initialData || hasData)) {
         onChange({
@@ -89,12 +86,12 @@ export function ReasonForConsultationForm({ initialData, onChange, readOnly }: R
         });
       }
     }
-  }, [debouncedValues, onChange, readOnly, initialData]);
+  }, [form.values, onChange, readOnly, initialData]);
 
   return (
     <FormContainer>
       <FormHeader>
-        <StyledTitle order={1}>{t('forms.general/consulta_internacion')}</StyledTitle>
+        <StyledTitle>{t('forms.general/consulta_internacion')}</StyledTitle>
         {!readOnly && (
           <Button
             variant="light"

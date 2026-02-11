@@ -2,18 +2,10 @@ import { ActionIcon, Button, Select, Table, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, Trash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect } from 'react';
 import { styled } from '~/styled-system/jsx';
 import { Icd10Selector } from '~/components/icd10-selector';
-import {
-  FormContainer,
-  StyledTitle,
-  FormHeader,
-  FormCard,
-  StyledTextInput,
-  TriStateCheckbox,
-} from './styles';
+import { FormContainer, StyledTitle, FormHeader, FormCard, StyledTextInput, TriStateCheckbox } from './styles';
 
 const StyledTable = styled(Table, {
   base: {
@@ -128,9 +120,17 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
       }
 
       let isAlive: boolean | 'indeterminate' = 'indeterminate';
-      if (aliveStatuses[i] === t('forms.family_history_yes') || aliveStatuses[i] === 'Si' || aliveStatuses[i] === 'si') {
+      if (
+        aliveStatuses[i] === t('forms.family_history_yes') ||
+        aliveStatuses[i] === 'Si' ||
+        aliveStatuses[i] === 'si'
+      ) {
         isAlive = true;
-      } else if (aliveStatuses[i] === t('forms.family_history_no') || aliveStatuses[i] === 'No' || aliveStatuses[i] === 'no') {
+      } else if (
+        aliveStatuses[i] === t('forms.family_history_no') ||
+        aliveStatuses[i] === 'No' ||
+        aliveStatuses[i] === 'no'
+      ) {
         isAlive = false;
       }
 
@@ -154,28 +154,24 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
     },
   });
 
-  const [debouncedValues] = useDebouncedValue(form.values, 500);
-
   useEffect(() => {
     if (!readOnly) {
       const resultValues = {
-        fam_table_parentesco: debouncedValues.items.map(item => getRelationshipLabel(item.relationship)),
-        fam_table_nombre: debouncedValues.items.map(item => item.firstName),
-        fam_table_apellido: debouncedValues.items.map(item => item.lastName),
-        fam_table_vive: debouncedValues.items.map(item => {
+        fam_table_parentesco: form.values.items.map(item => getRelationshipLabel(item.relationship)),
+        fam_table_nombre: form.values.items.map(item => item.firstName),
+        fam_table_apellido: form.values.items.map(item => item.lastName),
+        fam_table_vive: form.values.items.map(item => {
           if (item.isAlive === true) return 'si';
           if (item.isAlive === false) return 'no';
           return '';
         }),
-        fam_table_json_antecedentes: debouncedValues.items.map(item =>
-          JSON.stringify(item.issueId ? [item.issueId] : [])
-        ),
+        fam_table_json_antecedentes: form.values.items.map(item => JSON.stringify(item.issueId ? [item.issueId] : [])),
       };
 
       const hasChanged = JSON.stringify(resultValues) !== JSON.stringify(initialData?.values);
 
       // If we don't have initial data, only trigger if we have something meaningful to report
-      const hasData = debouncedValues.items.some(
+      const hasData = form.values.items.some(
         item => item.relationship || item.firstName || item.lastName || item.issueId
       );
 
@@ -187,12 +183,12 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedValues, onChange, readOnly, t, initialData]);
+  }, [form.values, onChange, readOnly, t, initialData]);
 
   return (
     <FormContainer>
       <FormHeader>
-        <StyledTitle order={1}>{t('forms.family_history_title')}</StyledTitle>
+        <StyledTitle>{t('forms.family_history_title')}</StyledTitle>
         {!readOnly && (
           <Button
             variant="light"
