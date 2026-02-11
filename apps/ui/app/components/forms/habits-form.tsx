@@ -1,4 +1,4 @@
-import { Checkbox, Stack, Tabs } from '@mantine/core';
+import { Stack, Tabs } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useEffect } from 'react';
@@ -15,6 +15,7 @@ import {
   StyledSelect,
   StyledDateInput,
   IndentedSection,
+  TriStateCheckbox,
 } from './styles';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -35,30 +36,36 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
 
   const parseInitialValues = (data?: HabitsFormProps['initialData']) => {
     const values = data?.values || {};
+    const parseTriState = (val?: string): boolean | 'indeterminate' => {
+      if (val === 'si' || val === 'on') return true;
+      if (val === 'no' || val === 'off') return false;
+      return 'indeterminate';
+    };
+
     return {
       alimentacion_cantidad: values.alimentacion_cantidad || '',
       alimentacion_calidad: values.alimentacion_calidad || '',
-      dieta_toggle: values.dieta_toggle === 'on',
+      dieta_toggle: parseTriState(values.dieta_toggle),
       dieta_cumple: values.dieta_cumple || '',
-      dieta_baja_sodio: values.dieta_baja_sodio === 'on',
-      dieta_baja_calorias: values.dieta_baja_calorias === 'on',
-      dieta_baja_hidratos: values.dieta_baja_hidratos === 'on',
-      dieta_baja_grasas: values.dieta_baja_grasas === 'on',
+      dieta_baja_sodio: parseTriState(values.dieta_baja_sodio),
+      dieta_baja_calorias: parseTriState(values.dieta_baja_calorias),
+      dieta_baja_hidratos: parseTriState(values.dieta_baja_hidratos),
+      dieta_baja_grasas: parseTriState(values.dieta_baja_grasas),
       alcohol: values.alcohol || '',
-      alcohol_cerveza: values.alcohol_cerveza === 'on',
-      alcohol_vino: values.alcohol_vino === 'on',
-      alcohol_whisky: values.alcohol_whisky === 'on',
-      alcohol_otras: values.alcohol_otras === 'on',
-      fuma_toggle: values.fuma_toggle === 'on',
+      alcohol_cerveza: parseTriState(values.alcohol_cerveza),
+      alcohol_vino: parseTriState(values.alcohol_vino),
+      alcohol_whisky: parseTriState(values.alcohol_whisky),
+      alcohol_otras: parseTriState(values.alcohol_otras),
+      fuma_toggle: parseTriState(values.fuma_toggle),
       fuma_desde: values.fuma_desde ? dayjs(values.fuma_desde, ['YYYY', 'DD/MM/YYYY']).toDate() : null,
       fuma_hasta: values.fuma_hasta ? dayjs(values.fuma_hasta, ['YYYY', 'DD/MM/YYYY']).toDate() : null,
       fuma_cantidad: values.fuma_cantidad || '',
       infusiones: values.infusiones || '',
-      infusiones_te: values.infusiones_te === 'on',
-      infusiones_cafe: values.infusiones_cafe === 'on',
-      infusiones_mate: values.infusiones_mate === 'on',
-      infusiones_hierbas: values.infusiones_hierbas === 'on',
-      infusiones_otras: values.infusiones_otras === 'on',
+      infusiones_te: parseTriState(values.infusiones_te),
+      infusiones_cafe: parseTriState(values.infusiones_cafe),
+      infusiones_mate: parseTriState(values.infusiones_mate),
+      infusiones_hierbas: parseTriState(values.infusiones_hierbas),
+      infusiones_otras: parseTriState(values.infusiones_otras),
       sal: values.sal || '',
       actividad_fisica: values.actividad_fisica || '',
       trabajo_tipo: values.trabajo_tipo || '',
@@ -71,12 +78,12 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
       adicciones_cocaina_endovenosas: values.adicciones_cocaina_endovenosas || '',
       adicciones_marihuana: values.adicciones_marihuana || '',
       adicciones_notas_adicionales: values.adicciones_notas_adicionales || '',
-      exposolar_laboral: values.exposolar_laboral === 'on',
+      exposolar_laboral: parseTriState(values.exposolar_laboral),
       exposolar_recreacional: values.exposolar_recreacional || '',
-      exposolar_proteccion_toggle: values.exposolar_proteccion_toggle === 'on',
-      exposolar_proteccion_horario: values.exposolar_proteccion_horario === 'on',
-      exposolar_proteccion_sombraropa: values.exposolar_proteccion_sombraropa === 'on',
-      exposolar_proteccion_cremas: values.exposolar_proteccion_cremas === 'on',
+      exposolar_proteccion_toggle: parseTriState(values.exposolar_proteccion_toggle),
+      exposolar_proteccion_horario: parseTriState(values.exposolar_proteccion_horario),
+      exposolar_proteccion_sombraropa: parseTriState(values.exposolar_proteccion_sombraropa),
+      exposolar_proteccion_cremas: parseTriState(values.exposolar_proteccion_cremas),
     };
   };
 
@@ -92,7 +99,9 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
         const legacy: Record<string, string> = {};
         Object.entries(vals).forEach(([key, value]) => {
           if (typeof value === 'boolean') {
-            if (value) legacy[key] = 'on';
+            legacy[key] = value ? 'si' : 'no';
+          } else if (value === 'indeterminate') {
+            legacy[key] = ''; // Explicitly set to empty/null for indeterminate
           } else if (value instanceof Date) {
             legacy[key] = dayjs(value).format(key === 'fuma_desde' ? 'YYYY' : 'DD/MM/YYYY');
           } else if (value !== undefined && value !== null && value !== '') {
@@ -233,9 +242,9 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.habits_food_diet')}:</Label>
-              <Checkbox {...form.getInputProps('dieta_toggle', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('dieta_toggle')} readOnly={readOnly} />
             </FieldRow>
-            {form.values.dieta_toggle && (
+            {form.values.dieta_toggle === true && (
               <IndentedSection>
                 <FieldRow stacked>
                   <Label stacked>{t('forms.habits_food_diet_compliance')}:</Label>
@@ -251,25 +260,25 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 <FieldRow stacked>
                   <Label stacked>{''}</Label>
                   <Stack gap="xs">
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_diet_low_sodium')}
-                      {...form.getInputProps('dieta_baja_sodio', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('dieta_baja_sodio')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_diet_low_calories')}
-                      {...form.getInputProps('dieta_baja_calorias', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('dieta_baja_calorias')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_diet_low_carbs')}
-                      {...form.getInputProps('dieta_baja_hidratos', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('dieta_baja_hidratos')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_diet_low_fat')}
-                      {...form.getInputProps('dieta_baja_grasas', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('dieta_baja_grasas')}
+                      readOnly={readOnly}
                     />
                   </Stack>
                 </FieldRow>
@@ -285,37 +294,41 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                   readOnly={readOnly}
                   variant="unstyled"
                 />
-                {form.values.alcohol && form.values.alcohol !== 'no' && (
+                {form.values.alcohol === 'si' ||
+                form.values.alcohol === 'on' ||
+                (typeof form.values.alcohol === 'string' &&
+                  form.values.alcohol !== 'no' &&
+                  form.values.alcohol !== '') ? (
                   <Stack gap="xs" pl="md">
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_alcohol_beer')}
-                      {...form.getInputProps('alcohol_cerveza', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('alcohol_cerveza')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_alcohol_wine')}
-                      {...form.getInputProps('alcohol_vino', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('alcohol_vino')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_alcohol_whisky')}
-                      {...form.getInputProps('alcohol_whisky', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('alcohol_whisky')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_alcohol_others')}
-                      {...form.getInputProps('alcohol_otras', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('alcohol_otras')}
+                      readOnly={readOnly}
                     />
                   </Stack>
-                )}
+                ) : null}
               </Stack>
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.habits_food_smoke')}:</Label>
-              <Checkbox {...form.getInputProps('fuma_toggle', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('fuma_toggle')} readOnly={readOnly} />
             </FieldRow>
-            {form.values.fuma_toggle && (
+            {form.values.fuma_toggle === true && (
               <IndentedSection>
                 <FieldRow stacked>
                   <Label stacked>{t('forms.habits_food_smoke_from')}:</Label>
@@ -360,35 +373,39 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                   readOnly={readOnly}
                   variant="unstyled"
                 />
-                {form.values.infusiones && form.values.infusiones !== 'no' && (
+                {form.values.infusiones === 'si' ||
+                form.values.infusiones === 'on' ||
+                (typeof form.values.infusiones === 'string' &&
+                  form.values.infusiones !== 'no' &&
+                  form.values.infusiones !== '') ? (
                   <Stack gap="xs" pl="md">
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_infusions_tea')}
-                      {...form.getInputProps('infusiones_te', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('infusiones_te')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_infusions_coffee')}
-                      {...form.getInputProps('infusiones_cafe', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('infusiones_cafe')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_infusions_mate')}
-                      {...form.getInputProps('infusiones_mate', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('infusiones_mate')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_infusions_herbs')}
-                      {...form.getInputProps('infusiones_hierbas', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('infusiones_hierbas')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_food_infusions_others')}
-                      {...form.getInputProps('infusiones_otras', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('infusiones_otras')}
+                      readOnly={readOnly}
                     />
                   </Stack>
-                )}
+                ) : null}
               </Stack>
             </FieldRow>
             <FieldRow>
@@ -542,7 +559,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
           <FormCard>
             <FieldRow>
               <Label>{t('forms.habits_solar_laboral')}:</Label>
-              <Checkbox {...form.getInputProps('exposolar_laboral', { type: 'checkbox' })} disabled={readOnly} />
+              <TriStateCheckbox {...form.getInputProps('exposolar_laboral')} readOnly={readOnly} />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.habits_solar_recreational')}:</Label>
@@ -557,30 +574,27 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.habits_solar_protection')}:</Label>
-              <Checkbox
-                {...form.getInputProps('exposolar_proteccion_toggle', { type: 'checkbox' })}
-                disabled={readOnly}
-              />
+              <TriStateCheckbox {...form.getInputProps('exposolar_proteccion_toggle')} readOnly={readOnly} />
             </FieldRow>
-            {form.values.exposolar_proteccion_toggle && (
+            {form.values.exposolar_proteccion_toggle === true && (
               <IndentedSection>
                 <FieldRow stacked>
                   <Label stacked>{''}</Label>
                   <Stack gap="xs">
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_solar_protection_low_uv')}
-                      {...form.getInputProps('exposolar_proteccion_horario', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('exposolar_proteccion_horario')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_solar_protection_shade')}
-                      {...form.getInputProps('exposolar_proteccion_sombraropa', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('exposolar_proteccion_sombraropa')}
+                      readOnly={readOnly}
                     />
-                    <Checkbox
+                    <TriStateCheckbox
                       label={t('forms.habits_solar_protection_creams')}
-                      {...form.getInputProps('exposolar_proteccion_cremas', { type: 'checkbox' })}
-                      disabled={readOnly}
+                      {...form.getInputProps('exposolar_proteccion_cremas')}
+                      readOnly={readOnly}
                     />
                   </Stack>
                 </FieldRow>
