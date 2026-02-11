@@ -1,5 +1,5 @@
 import React, { cloneElement, isValidElement, type ReactElement } from 'react';
-import { Button, Flex, Tooltip, Image, type DefaultMantineColor } from '@mantine/core';
+import { ActionIcon, Flex, Tooltip, Image, type DefaultMantineColor } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { NavLink, useMatches } from '@remix-run/react';
 import { Calendar, User, Stethoscope, FlaskConical, Shield, type LucideProps } from 'lucide-react';
@@ -68,23 +68,13 @@ const StickyContent = styled(Flex, {
   },
 });
 
-const NavItem = styled(Button, {
+const NavItem = styled(ActionIcon, {
   base: {
-    '&.mantine-Button-root': {
-      borderRadius: '8px',
-      textAlign: 'left',
-      justifyContent: 'flex-start',
-      width: '3.5em',
-      height: '3.5em',
-      padding: 0,
+    borderRadius: '8px',
+    color: 'var(--mantine-color-gray-6)',
 
-      sm: {
-        width: '2.75em',
-        height: '2.75em',
-      },
-    },
     '&:not(.active):hover': {
-      backgroundColor: 'var(--mantine-color-blue-0) !important',
+      backgroundColor: 'var(--mantine-color-blue-0)',
     },
   },
   variants: {
@@ -105,54 +95,54 @@ const NavItem = styled(Button, {
       tone: 'lime',
       active: true,
       css: {
-        backgroundColor: 'var(--mantine-color-lime-6) !important',
-        color: 'white !important',
+        backgroundColor: 'var(--mantine-color-lime-6)',
+        color: 'white',
       },
     },
     {
       tone: 'indigo',
       active: true,
       css: {
-        backgroundColor: 'var(--mantine-color-indigo-6) !important',
-        color: 'white !important',
+        backgroundColor: 'var(--mantine-color-indigo-6)',
+        color: 'white',
       },
     },
     {
       tone: 'pink',
       active: true,
       css: {
-        backgroundColor: 'var(--mantine-color-pink-6) !important',
-        color: 'white !important',
+        backgroundColor: 'var(--mantine-color-pink-6)',
+        color: 'white',
       },
     },
     {
       tone: 'yellow',
       active: true,
       css: {
-        backgroundColor: 'var(--mantine-color-yellow-5) !important',
-        color: 'var(--mantine-color-dark-7) !important',
+        backgroundColor: 'var(--mantine-color-yellow-5)',
+        color: 'var(--mantine-color-dark-7)',
       },
     },
     {
       tone: 'red',
       active: true,
       css: {
-        backgroundColor: 'var(--mantine-color-red-6) !important',
-        color: 'white !important',
+        backgroundColor: 'var(--mantine-color-red-6)',
+        color: 'white',
       },
     },
   ],
-}) as unknown as typeof Button;
+}) as any;
 
 const Logo = styled(Image, {
   base: {
     aspectRatio: '1',
     maxWidth: '3em',
     sm: {
-      display: 'none !important',
+      display: 'none',
     },
     md: {
-      display: 'block !important',
+      display: 'block',
     },
   },
 }) as unknown as typeof Image;
@@ -216,9 +206,8 @@ const SideNav: React.FC = () => {
                   prefetch="intent"
                   to={isActive ? '#' : section.path}
                   variant="subtle"
+                  size={isMobile ? '3.5em' : '2.75em'}
                   className={isActive ? 'active' : ''}
-                  bg={isActive ? section.color : 'transparent'}
-                  color={isActive ? 'white' : 'gray'}
                 >
                   {isValidElement(section.icon) &&
                     cloneElement(section.icon as ReactElement<LucideProps>, { size: isMobile ? 18 : 22 })}
