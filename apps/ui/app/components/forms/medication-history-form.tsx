@@ -182,9 +182,12 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
                 />
               </FieldRow>
 
-              <FieldRow>
-                <Label>{t('forms.medication_history_effective')}:</Label>
-                <TriStateCheckbox readOnly={readOnly} {...form.getInputProps(`medications.${index}.efectivo`)} />
+              <FieldRow checkbox>
+                <TriStateCheckbox
+                  label={t('forms.medication_history_effective')}
+                  readOnly={readOnly}
+                  {...form.getInputProps(`medications.${index}.efectivo`)}
+                />
               </FieldRow>
 
               <FieldRow>

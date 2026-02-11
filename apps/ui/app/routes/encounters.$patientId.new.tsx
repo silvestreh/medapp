@@ -102,6 +102,7 @@ const ALL_FORMS = [
   'antecedentes/personales',
   'antecedentes/habitos',
   'antecedentes/medicamentosos',
+  'antecedentes/ocupacionales',
   'general/evolucion_consulta_internacion',
 ];
 

@@ -244,9 +244,12 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_food_diet')}:</Label>
-              <TriStateCheckbox {...form.getInputProps('dieta_toggle')} readOnly={readOnly} />
+            <FieldRow checkbox>
+              <TriStateCheckbox
+                label={t('forms.habits_food_diet')}
+                {...form.getInputProps('dieta_toggle')}
+                readOnly={readOnly}
+              />
             </FieldRow>
             {form.values.dieta_toggle === true && (
               <IndentedSection>
@@ -328,9 +331,12 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 ) : null}
               </Stack>
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_food_smoke')}:</Label>
-              <TriStateCheckbox {...form.getInputProps('fuma_toggle')} readOnly={readOnly} />
+            <FieldRow checkbox>
+              <TriStateCheckbox
+                label={t('forms.habits_food_smoke')}
+                {...form.getInputProps('fuma_toggle')}
+                readOnly={readOnly}
+              />
             </FieldRow>
             {form.values.fuma_toggle === true && (
               <IndentedSection>
@@ -561,9 +567,12 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
 
         <Tabs.Panel value="solar">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.habits_solar_laboral')}:</Label>
-              <TriStateCheckbox {...form.getInputProps('exposolar_laboral')} readOnly={readOnly} />
+            <FieldRow checkbox>
+              <TriStateCheckbox
+                label={t('forms.habits_solar_laboral')}
+                {...form.getInputProps('exposolar_laboral')}
+                readOnly={readOnly}
+              />
             </FieldRow>
             <FieldRow>
               <Label>{t('forms.habits_solar_recreational')}:</Label>
@@ -576,9 +585,12 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_solar_protection')}:</Label>
-              <TriStateCheckbox {...form.getInputProps('exposolar_proteccion_toggle')} readOnly={readOnly} />
+            <FieldRow checkbox>
+              <TriStateCheckbox
+                label={t('forms.habits_solar_protection')}
+                {...form.getInputProps('exposolar_proteccion_toggle')}
+                readOnly={readOnly}
+              />
             </FieldRow>
             {form.values.exposolar_proteccion_toggle === true && (
               <IndentedSection>
