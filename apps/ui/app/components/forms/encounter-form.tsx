@@ -1,15 +1,17 @@
-import { Button, Stack } from '@mantine/core';
+import { Button, Stack, ActionIcon, Group, Box } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
 import { Form, useSubmit } from '@remix-run/react';
 import { useCallback, useMemo } from 'react';
+import { Save } from 'lucide-react';
 
-import { ReasonForConsultationForm } from '~/components/forms/reason-for-consultation-form';
-import { FamilyHistoryForm } from '~/components/forms/family-history-form';
-import { PersonalHistoryForm } from '~/components/forms/personal-history-form';
-import { EvolutionForm } from '~/components/forms/evolution-form';
-import { HabitsForm } from '~/components/forms/habits-form';
-import { FormContainer } from '~/components/forms/styles';
+import { ReasonForConsultationForm } from './reason-for-consultation-form';
+import { CurrentIllnessForm } from './current-illness-form';
+import { FamilyHistoryForm } from './family-history-form';
+import { PersonalHistoryForm } from './personal-history-form';
+import { EvolutionForm } from './evolution-form';
+import { HabitsForm } from './habits-form';
+import { FormContainer } from './styles';
 import Portal from '~/components/portal';
 
 interface EncounterFormProps {
@@ -86,6 +88,14 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
             />
           )}
 
+          {shouldShow('general/enfermedad_actual') && (
+            <CurrentIllnessForm
+              initialData={form.values['general/enfermedad_actual']}
+              onChange={handleSubFormChange('general/enfermedad_actual')}
+              readOnly={readOnly}
+            />
+          )}
+
           {shouldShow('antecedentes/familiares') && (
             <FamilyHistoryForm
               initialData={form.values['antecedentes/familiares']}
@@ -120,9 +130,18 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
 
           {!readOnly && (
             <Portal id="form-actions">
-              <Button onClick={handleSave} disabled={isEmpty}>
-                {t('common.save')}
-              </Button>
+              <Group>
+                <Box visibleFrom="lg">
+                  <Button onClick={handleSave} disabled={isEmpty} leftSection={<Save size={16} />}>
+                    {t('common.save')}
+                  </Button>
+                </Box>
+                <Box hiddenFrom="lg">
+                  <ActionIcon onClick={handleSave} disabled={isEmpty} size="lg" radius="xl">
+                    <Save size={20} />
+                  </ActionIcon>
+                </Box>
+              </Group>
             </Portal>
           )}
         </Stack>

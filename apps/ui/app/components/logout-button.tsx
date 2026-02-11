@@ -8,7 +8,7 @@ const LogoutButton: React.FC = () => {
   const { logout } = useAccount();
 
   return (
-    <Button onClick={logout} variant="subtle">
+    <Button onClick={logout} variant="subtle" style={{ flexShrink: 0 }}>
       <LogOut size={16} />
     </Button>
   );
