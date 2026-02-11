@@ -8,6 +8,7 @@ import { Save } from 'lucide-react';
 import { ReasonForConsultationForm } from './reason-for-consultation-form';
 import { CurrentIllnessForm } from './current-illness-form';
 import { FamilyHistoryForm } from './family-history-form';
+import { HousingHistoryForm } from './housing-history-form';
 import { PersonalHistoryForm } from './personal-history-form';
 import { EvolutionForm } from './evolution-form';
 import { HabitsForm } from './habits-form';
@@ -100,6 +101,14 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
             <FamilyHistoryForm
               initialData={form.values['antecedentes/familiares']}
               onChange={handleSubFormChange('antecedentes/familiares')}
+              readOnly={readOnly}
+            />
+          )}
+
+          {shouldShow('antecedentes/habitacionales') && (
+            <HousingHistoryForm
+              initialData={form.values['antecedentes/habitacionales']}
+              onChange={handleSubFormChange('antecedentes/habitacionales')}
               readOnly={readOnly}
             />
           )}

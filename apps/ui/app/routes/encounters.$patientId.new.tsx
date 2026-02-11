@@ -97,6 +97,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 const ALL_FORMS = [
   'general/consulta_internacion',
   'general/enfermedad_actual',
+  'antecedentes/habitacionales',
   'antecedentes/familiares',
   'antecedentes/personales',
   'antecedentes/habitos',
