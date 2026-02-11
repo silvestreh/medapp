@@ -275,8 +275,11 @@ export const ItemHeader = styled('div', {
 export const StyledSelect = styled(Select, {
   base: {
     backgroundColor: 'transparent',
+    border: 'none',
+    flex: 1,
 
     '& .mantine-Select-input': {
+      border: 'none',
       backgroundColor: 'transparent',
       flex: 1,
       height: 'auto',
