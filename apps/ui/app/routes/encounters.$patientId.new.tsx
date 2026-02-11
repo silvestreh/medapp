@@ -106,6 +106,7 @@ const ALL_FORMS = [
   null,
   'alergias/general',
   'alergias/medicamentos',
+  'alergias/asma',
   null,
   'cardiologia/general',
   null,
