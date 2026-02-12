@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Table, TextInput, Stack, Loader, Text as BaseText, Pagination, Group, Badge, Button } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
+import { useTranslation } from 'react-i18next';
 import { Search, FlaskConical, Plus } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from '@remix-run/react';
 import dayjs from 'dayjs';
@@ -41,13 +42,14 @@ const Wrapper = styled('div', {
   },
 });
 
-const CellText = styled(BaseText, {
+const CellText = styled('span', {
   base: {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     display: 'block',
     padding: 'var(--mantine-spacing-xs)',
+    fontSize: 'var(--mantine-font-size-sm)',
   },
 });
 
@@ -70,6 +72,7 @@ const PAGE_SIZE = 15;
 // ---------------------------------------------------------------------------
 
 export default function StudiesIndex() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('q') || '';
   const [inputValue, setInputValue] = useState(initialSearch);
@@ -109,65 +112,20 @@ export default function StudiesIndex() {
   };
 
   // -------------------------------------------------------------------------
-  // Search: protocol (numeric) vs patient (text)
+  // Studies query — search is handled entirely server-side
   // -------------------------------------------------------------------------
 
-  const isNumericSearch = /^\d+$/.test(debouncedInputValue);
-  const hasSearch = debouncedInputValue.length > 0;
-  const isPatientSearch = hasSearch && !isNumericSearch && debouncedInputValue.length >= 2;
-
-  // Step 1: search patients when input is text
-  const patientQuery = useMemo(
+  const query = useMemo(
     () => ({
-      q: debouncedInputValue,
-      $limit: 50,
-    }),
-    [debouncedInputValue]
-  );
-
-  const { response: patientResponse, isLoading: patientsLoading } = useFind(
-    'patients',
-    patientQuery,
-    { enabled: isPatientSearch }
-  );
-
-  const patientIds: string[] = useMemo(() => {
-    if (!isPatientSearch) return [];
-    const data = (patientResponse as any)?.data || [];
-    return data.map((p: any) => p.id);
-  }, [isPatientSearch, patientResponse]);
-
-  // Step 2: build studies query based on search type
-  const studiesQuery = useMemo(() => {
-    const base: Record<string, any> = {
       $sort: { createdAt: -1 },
       $limit: PAGE_SIZE,
       $skip: (page - 1) * PAGE_SIZE,
-    };
+      ...(debouncedInputValue ? { q: debouncedInputValue } : {}),
+    }),
+    [debouncedInputValue, page]
+  );
 
-    if (!hasSearch) return base;
-
-    if (isNumericSearch) {
-      return { ...base, protocol: parseInt(debouncedInputValue, 10) };
-    }
-
-    // Patient search: use matched IDs or sentinel to get empty results
-    if (patientIds.length > 0) {
-      return { ...base, patientId: { $in: patientIds } };
-    }
-
-    // Still loading patients or no matches — use impossible filter
-    return { ...base, patientId: 'none' };
-  }, [hasSearch, isNumericSearch, debouncedInputValue, page, patientIds]);
-
-  // Don't query studies while patient search is still loading
-  const studiesEnabled = !isPatientSearch || !patientsLoading;
-
-  const { response, isLoading: studiesLoading } = useFind('studies', studiesQuery, {
-    enabled: studiesEnabled,
-  });
-
-  const isLoading = patientsLoading || studiesLoading;
+  const { response, isLoading } = useFind('studies', query);
   const studies = (response as any).data || [];
   const total = (response as any).total || 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -191,13 +149,15 @@ export default function StudiesIndex() {
         }}
       >
         <Table.Td>
-          <CellText fw={600} size="sm">#{study.protocol}</CellText>
+          <CellText style={{ fontWeight: 600 }}>#{study.protocol}</CellText>
         </Table.Td>
         <Table.Td>
-          <CellText size="sm">{firstName} {lastName}</CellText>
+          <CellText>
+            {firstName} {lastName}
+          </CellText>
         </Table.Td>
         <Table.Td>
-          <CellText size="sm">{displayDocumentValue(dni)}</CellText>
+          <CellText>{displayDocumentValue(dni)}</CellText>
         </Table.Td>
         <Table.Td>
           <Group gap={4} wrap="wrap">
@@ -213,10 +173,10 @@ export default function StudiesIndex() {
           </Group>
         </Table.Td>
         <Table.Td>
-          <CellText size="sm">{medicare}</CellText>
+          <CellText>{medicare}</CellText>
         </Table.Td>
         <Table.Td>
-          <CellText size="sm">{study.date ? dayjs(study.date).format('DD/MM/YYYY') : '—'}</CellText>
+          <CellText>{study.date ? dayjs(study.date).format('DD/MM/YYYY') : '—'}</CellText>
         </Table.Td>
       </Table.Tr>
     );
@@ -229,7 +189,7 @@ export default function StudiesIndex() {
           <TextInput
             ref={inputRef}
             autoFocus
-            placeholder="Buscar por protocolo o paciente..."
+            placeholder={t('studies.search_placeholder')}
             value={inputValue}
             onChange={event => setInputValue(event.currentTarget.value)}
             leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
@@ -237,7 +197,7 @@ export default function StudiesIndex() {
             style={{ flex: 1 }}
           />
           <Button component={Link} to="/studies/new" leftSection={<Plus size={16} />}>
-            Nuevo Estudio
+            {t('studies.new_study')}
           </Button>
         </Group>
       </Portal>
@@ -247,12 +207,12 @@ export default function StudiesIndex() {
           {rows.length > 0 && (
             <Table.Thead>
               <Table.Tr>
-                <Table.Th w={100}>Protocolo</Table.Th>
-                <Table.Th>Paciente</Table.Th>
-                <Table.Th w={120}>DNI</Table.Th>
-                <Table.Th w={180}>Estudios</Table.Th>
-                <Table.Th w={140}>Obra Social</Table.Th>
-                <Table.Th w={110}>Fecha</Table.Th>
+                <Table.Th w={100}>{t('studies.col_protocol')}</Table.Th>
+                <Table.Th>{t('studies.col_patient')}</Table.Th>
+                <Table.Th w={120}>{t('studies.col_dni')}</Table.Th>
+                <Table.Th w={180}>{t('studies.col_studies')}</Table.Th>
+                <Table.Th w={140}>{t('studies.col_insurance')}</Table.Th>
+                <Table.Th w={110}>{t('studies.col_date')}</Table.Th>
               </Table.Tr>
             </Table.Thead>
           )}
@@ -268,7 +228,7 @@ export default function StudiesIndex() {
                       <Search size={48} color="var(--mantine-color-dimmed)" />
                     )}
                     <BaseText c="dimmed" ta="center">
-                      {inputValue && !isLoading ? 'No se encontraron estudios' : 'Buscar estudios...'}
+                      {inputValue && !isLoading ? t('studies.no_results') : t('studies.search_prompt')}
                     </BaseText>
                   </EmptyState>
                 </Table.Td>

@@ -2,14 +2,8 @@ import { useState, useCallback, useRef } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useNavigate, useParams } from '@remix-run/react';
-import {
-  Group,
-  Button,
-  Checkbox,
-  Tabs,
-  Text,
-  Loader,
-} from '@mantine/core';
+import { Group, Button, Checkbox, Tabs, Text, Loader } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import { Save } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
@@ -52,14 +46,14 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 // Study type definitions
 // ---------------------------------------------------------------------------
 
-const STUDY_TYPES: { key: string; label: string }[] = [
-  { key: 'anemia', label: 'Estudio de Anemia' },
-  { key: 'anticoagulation', label: 'Anticoagulación' },
-  { key: 'compatibility', label: 'Compatibilidad Matrimonial' },
-  { key: 'hemostasis', label: 'Hemostasia' },
-  { key: 'myelogram', label: 'Mielograma Descriptivo' },
-  { key: 'thrombophilia', label: 'Estudio de Trombofilia' },
-];
+const STUDY_TYPE_KEYS = [
+  'anemia',
+  'anticoagulation',
+  'compatibility',
+  'hemostasis',
+  'myelogram',
+  'thrombophilia',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Page-level layout
@@ -102,6 +96,7 @@ const TypeGrid = styled('div', {
 // ---------------------------------------------------------------------------
 
 export default function StudyDetail() {
+  const { t } = useTranslation();
   const { studyId } = useParams();
   const navigate = useNavigate();
   const fetcher = useFetcher();
@@ -147,10 +142,7 @@ export default function StudyDetail() {
     if (selectedStudies !== undefined) payload.studies = selectedStudies;
     if (date !== undefined) payload.date = date?.toISOString();
 
-    fetcher.submit(
-      { data: JSON.stringify(payload) },
-      { method: 'post' }
-    );
+    fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
     setMetaDirty(false);
   }, [studyId, comment, noOrder, selectedStudies, date, fetcher]);
 
@@ -191,67 +183,66 @@ export default function StudyDetail() {
       <Portal id="toolbar">
         <Group justify="space-between" align="center" w="100%">
           <Group gap="sm" align="baseline">
-            <StyledTitle order={2}>Estudio</StyledTitle>
+            <StyledTitle order={2}>{t('studies.study_title')}</StyledTitle>
             <Text c="dimmed" size="lg">
               #{study.protocol}
             </Text>
           </Group>
           <Button variant="subtle" onClick={() => navigate('/studies')}>
-            Volver a la lista
+            {t('studies.back_to_list')}
           </Button>
         </Group>
       </Portal>
 
       {/* Metadata section */}
-      <StyledTitle order={3}>Datos del estudio</StyledTitle>
+      <StyledTitle order={3}>{t('studies.study_data')}</StyledTitle>
       <FormCard>
         <FieldRow>
-          <Label>Paciente</Label>
+          <Label>{t('studies.patient')}</Label>
           <StyledTextInput
-            value={
-              patient
-                ? `${patient.personalData?.firstName || ''} ${patient.personalData?.lastName || ''}`
-                : '—'
-            }
+            value={patient ? `${patient.personalData?.firstName || ''} ${patient.personalData?.lastName || ''}` : '—'}
             readOnly
           />
         </FieldRow>
         <FieldRow>
-          <Label>Obra Social</Label>
-          <StyledTextInput
-            value={patient?.medicare || '—'}
-            readOnly
-          />
+          <Label>{t('studies.insurance')}</Label>
+          <StyledTextInput value={patient?.medicare || '—'} readOnly />
         </FieldRow>
         <FieldRow>
-          <Label>Fecha de extracción</Label>
+          <Label>{t('studies.extraction_date')}</Label>
           <StyledDateInput
             value={date ?? (study.date ? new Date(study.date) : null)}
-            onChange={(v: Date | null) => { setDate(v); setMetaDirty(true); }}
+            onChange={v => {
+              setDate(v ? new Date(v) : null);
+              setMetaDirty(true);
+            }}
             valueFormat="DD/MM/YYYY"
           />
         </FieldRow>
         <FieldRow>
-          <Label>DNI</Label>
-          <StyledTextInput
-            value={patient?.personalData?.documentValue || '—'}
-            readOnly
-          />
+          <Label>{t('studies.col_dni')}</Label>
+          <StyledTextInput value={patient?.personalData?.documentValue || '—'} readOnly />
         </FieldRow>
         <FieldRow checkbox>
           <Checkbox
-            label="Falta orden / Particular no pago"
+            label={t('studies.no_order')}
             checked={noOrder ?? study.noOrder ?? false}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setNoOrder(e.currentTarget.checked); setMetaDirty(true); }}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setNoOrder(e.currentTarget.checked);
+              setMetaDirty(true);
+            }}
             color="blue"
           />
         </FieldRow>
         <FieldRow>
-          <Label>Observaciones</Label>
+          <Label>{t('studies.observations')}</Label>
           <StyledTextarea
-            placeholder="Comentarios u observaciones..."
+            placeholder={t('studies.observations_placeholder')}
             value={comment ?? study.comment ?? ''}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => { setComment(e.currentTarget.value); setMetaDirty(true); }}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+              setComment(e.currentTarget.value);
+              setMetaDirty(true);
+            }}
             autosize
             minRows={2}
           />
@@ -259,14 +250,14 @@ export default function StudyDetail() {
       </FormCard>
 
       {/* Study types */}
-      <StyledTitle order={3}>Estudios solicitados</StyledTitle>
+      <StyledTitle order={3}>{t('studies.requested_studies')}</StyledTitle>
       <FormCard>
         <FieldRow stacked>
           <TypeGrid>
-            {STUDY_TYPES.map(({ key, label }) => (
+            {STUDY_TYPE_KEYS.map(key => (
               <Checkbox
                 key={key}
-                label={label}
+                label={t(`studies.type_${key}`)}
                 checked={currentStudies.includes(key)}
                 onChange={() => toggleStudy(key)}
                 color="blue"
@@ -278,12 +269,8 @@ export default function StudyDetail() {
 
       {metaDirty && (
         <Group justify="flex-end">
-          <Button
-            onClick={handleSaveMeta}
-            loading={isSavingMeta}
-            leftSection={<Save size={16} />}
-          >
-            Guardar cambios
+          <Button onClick={handleSaveMeta} loading={isSavingMeta} leftSection={<Save size={16} />}>
+            {t('studies.save_changes')}
           </Button>
         </Group>
       )}
@@ -291,7 +278,7 @@ export default function StudyDetail() {
       {/* Results section */}
       {currentStudies.length > 0 && (
         <>
-          <StyledTitle order={3}>Resultados</StyledTitle>
+          <StyledTitle order={3}>{t('studies.results')}</StyledTitle>
           <FormCard>
             <Tabs defaultValue={currentStudies[0]}>
               <Tabs.List>

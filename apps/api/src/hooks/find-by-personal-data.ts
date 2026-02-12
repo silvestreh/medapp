@@ -2,13 +2,21 @@ import { Hook, HookContext } from '@feathersjs/feathers';
 import { intersection, omit } from 'lodash';
 import { Sequelize, QueryTypes } from 'sequelize';
 
-import type { PersonalData, PatientPersonalData } from '../../../declarations';
-import { encryptValue } from '../../../hooks/encryption';
+import type { PersonalData } from '../declarations';
+import { encryptValue } from './encryption';
 
-export const findByPersonalData = (): Hook => {
+interface FindByPersonalDataOptions {
+  junctionService: string;  // e.g. 'patient-personal-data' or 'user-personal-data'
+  foreignKey: string;       // e.g. 'id' for patients/users, 'patientId' for studies
+}
+
+const searchableFields = ['firstName', 'lastName', 'documentValue', 'birthDate', 'q'];
+
+export const findByPersonalData = (options: FindByPersonalDataOptions): Hook => {
+  const { junctionService, foreignKey } = options;
+
   return async (context: HookContext) => {
     const { app, params } = context;
-    const searchableFields = ['firstName', 'lastName', 'documentValue', 'birthDate', 'q'];
 
     if (!params.query) {
       return context;
@@ -127,89 +135,97 @@ export const findByPersonalData = (): Hook => {
 
     if (personalDataIds.length === 0) {
       context.params.query = {
-        ...omit(params.query, 'firstName', 'lastName', 'documentValue', 'birthDate', 'q'),
-        id: 'none'
+        ...omit(params.query, ...searchableFields),
+        [foreignKey]: 'none'
       };
       return context;
     }
 
-    // For each personal data record, find associated patients
-    const patientPersonalDataResults = await app.service('patient-personal-data').find({
+    // Resolve personal data IDs to owner IDs via the junction table
+    const junctionResults = await app.service(junctionService).find({
       query: {
         personalDataId: {
           $in: personalDataIds
         }
       },
       paginate: false
-    }) as PatientPersonalData[];
+    }) as any[];
 
-    // Extract unique patient IDs, preserving order from personalDataIds
-    const patientIdsMap = new Map<string, string>();
-    patientPersonalDataResults.forEach(ppd => {
-      const ownerId = ppd.ownerId.toString();
-      const personalDataId = ppd.personalDataId.toString();
-      if (!patientIdsMap.has(ownerId)) {
-        patientIdsMap.set(ownerId, personalDataId);
+    // Extract unique owner IDs, preserving order from personalDataIds
+    const ownerIdsMap = new Map<string, string>();
+    junctionResults.forEach((jr: any) => {
+      const ownerId = jr.ownerId.toString();
+      const personalDataId = jr.personalDataId.toString();
+      if (!ownerIdsMap.has(ownerId)) {
+        ownerIdsMap.set(ownerId, personalDataId);
       }
     });
 
-    // Sort patientIds based on the order of personalDataIds (ranked order)
-    const sortedPatientIds = [...patientIdsMap.keys()].sort((a, b) => {
-      const indexA = personalDataIds.indexOf(patientIdsMap.get(a)!);
-      const indexB = personalDataIds.indexOf(patientIdsMap.get(b)!);
+    // Sort owner IDs based on the order of personalDataIds (ranked order)
+    const sortedOwnerIds = [...ownerIdsMap.keys()].sort((a, b) => {
+      const indexA = personalDataIds.indexOf(ownerIdsMap.get(a)!);
+      const indexB = personalDataIds.indexOf(ownerIdsMap.get(b)!);
       return indexA - indexB;
     });
+
+    if (sortedOwnerIds.length === 0) {
+      context.params.query = {
+        ...omit(params.query, ...searchableFields),
+        [foreignKey]: 'none'
+      };
+      return context;
+    }
 
     // Handle pagination ourselves since $in doesn't preserve order
     const $limit = parseInt(params.query.$limit) || 10;
     const $skip = parseInt(params.query.$skip) || 0;
-    const pagePatientIds = sortedPatientIds.slice($skip, $skip + $limit);
+    const pageOwnerIds = sortedOwnerIds.slice($skip, $skip + $limit);
 
     // Store the sorted order so the after hook can re-sort results
-    context.params._sortedPatientIds = pagePatientIds;
-    context.params._totalPatients = sortedPatientIds.length;
+    context.params._sortedOwnerIds = pageOwnerIds;
+    context.params._totalOwners = sortedOwnerIds.length;
+    context.params._ownerForeignKey = foreignKey;
 
-    // Update the query to filter by the current page's patient IDs only
+    // Update the query to filter by the current page's owner IDs only
     context.params.query = {
-      ...omit(params.query, 'firstName', 'lastName', 'documentValue', 'birthDate', 'q'),
-      id: {
-        $in: pagePatientIds.length > 0 ? pagePatientIds : ['none']
+      ...omit(params.query, ...searchableFields),
+      [foreignKey]: {
+        $in: pageOwnerIds.length > 0 ? pageOwnerIds : ['none']
       },
       $skip: 0,
-      $limit: pagePatientIds.length || 1
+      $limit: pageOwnerIds.length || 1
     };
 
     return context;
   };
 };
 
-export const sortByPersonalDataRank = (): Hook => {
+export const sortByPersonalDataRank = (options?: { foreignKey?: string }): Hook => {
   return async (context: HookContext) => {
-    const sortedPatientIds: string[] | undefined = context.params._sortedPatientIds;
-    const totalPatients: number | undefined = context.params._totalPatients;
+    const sortedOwnerIds: string[] | undefined = context.params._sortedOwnerIds;
+    const totalOwners: number | undefined = context.params._totalOwners;
+    const fk = options?.foreignKey || context.params._ownerForeignKey || 'id';
 
-    if (!sortedPatientIds || sortedPatientIds.length === 0) {
+    if (!sortedOwnerIds || sortedOwnerIds.length === 0) {
       return context;
     }
 
-    const orderMap = new Map(sortedPatientIds.map((id, index) => [id, index]));
+    const orderMap = new Map(sortedOwnerIds.map((id, index) => [id, index]));
+
+    const sortFn = (a: any, b: any) => {
+      const indexA = orderMap.get(a[fk]?.toString()) ?? Infinity;
+      const indexB = orderMap.get(b[fk]?.toString()) ?? Infinity;
+      return indexA - indexB;
+    };
 
     if (context.result.data) {
       // Paginated result - fix ordering and total count
-      context.result.data.sort((a: any, b: any) => {
-        const indexA = orderMap.get(a.id?.toString()) ?? Infinity;
-        const indexB = orderMap.get(b.id?.toString()) ?? Infinity;
-        return indexA - indexB;
-      });
-      if (totalPatients !== undefined) {
-        context.result.total = totalPatients;
+      context.result.data.sort(sortFn);
+      if (totalOwners !== undefined) {
+        context.result.total = totalOwners;
       }
     } else if (Array.isArray(context.result)) {
-      context.result.sort((a: any, b: any) => {
-        const indexA = orderMap.get(a.id?.toString()) ?? Infinity;
-        const indexB = orderMap.get(b.id?.toString()) ?? Infinity;
-        return indexA - indexB;
-      });
+      context.result.sort(sortFn);
     }
 
     return context;

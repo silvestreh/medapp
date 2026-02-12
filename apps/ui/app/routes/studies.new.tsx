@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 import { useFetcher, useNavigate } from '@remix-run/react';
-import { Stack, Group, Button, Checkbox, Text } from '@mantine/core';
+import { Group, Button, Checkbox, Text } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import { FlaskConical } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
@@ -43,14 +44,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 // Study type definitions
 // ---------------------------------------------------------------------------
 
-const STUDY_TYPES: { key: string; label: string }[] = [
-  { key: 'anemia', label: 'Estudio de Anemia' },
-  { key: 'anticoagulation', label: 'Anticoagulación' },
-  { key: 'compatibility', label: 'Compatibilidad Matrimonial' },
-  { key: 'hemostasis', label: 'Hemostasia' },
-  { key: 'myelogram', label: 'Mielograma Descriptivo' },
-  { key: 'thrombophilia', label: 'Estudio de Trombofilia' },
-];
+const STUDY_TYPE_KEYS = [
+  'anemia',
+  'anticoagulation',
+  'compatibility',
+  'hemostasis',
+  'myelogram',
+  'thrombophilia',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Page-level layout
@@ -93,6 +94,7 @@ const TypeGrid = styled('div', {
 // ---------------------------------------------------------------------------
 
 export default function NewStudy() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const fetcher = useFetcher();
 
@@ -106,9 +108,7 @@ export default function NewStudy() {
   const { data: patient } = useGet('patients', patientId!, { enabled: !!patientId });
 
   const toggleStudy = useCallback((key: string) => {
-    setSelectedStudies(prev =>
-      prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]
-    );
+    setSelectedStudies(prev => (prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]));
   }, []);
 
   const canSave = patientId && selectedStudies.length > 0 && date;
@@ -125,68 +125,61 @@ export default function NewStudy() {
       comment: comment || undefined,
     };
 
-    fetcher.submit(
-      { data: JSON.stringify(payload) },
-      { method: 'post' }
-    );
+    fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
   }, [canSave, patientId, date, selectedStudies, noOrder, comment, fetcher]);
 
   return (
     <PageContainer>
       <Portal id="toolbar">
         <Group justify="space-between" align="center" w="100%">
-          <StyledTitle order={2}>Nuevo Estudio</StyledTitle>
+          <StyledTitle order={2}>{t('studies.new_study')}</StyledTitle>
         </Group>
       </Portal>
 
-      <StyledTitle order={3}>Datos del estudio</StyledTitle>
+      <StyledTitle order={3}>{t('studies.study_data')}</StyledTitle>
       <FormCard>
         <FieldRow>
-          <Label>Paciente *</Label>
+          <Label>{t('studies.patient_required')}</Label>
           <PatientSearch
             onChange={id => setPatientId(id)}
             onBlur={() => {}}
-            placeholder="Buscar por nombre, apellido o documento..."
+            placeholder={t('studies.patient_search_placeholder')}
             autoFocus
           />
         </FieldRow>
         <FieldRow>
-          <Label>Médico derivante</Label>
+          <Label>{t('studies.referring_doctor')}</Label>
           <StyledTextInput
-            placeholder="Nombre del médico"
+            placeholder={t('studies.referring_doctor_placeholder')}
             value={medic}
             onChange={e => setMedic(e.currentTarget.value)}
           />
         </FieldRow>
         <FieldRow>
-          <Label>Obra Social</Label>
+          <Label>{t('studies.insurance')}</Label>
           <StyledTextInput
-            placeholder="Obra social del paciente"
+            placeholder={t('studies.insurance_placeholder')}
             value={(patient as any)?.medicare || ''}
             readOnly
             disabled={!patientId}
           />
         </FieldRow>
         <FieldRow>
-          <Label>Fecha de extracción</Label>
-          <StyledDateInput
-            value={date}
-            onChange={setDate}
-            valueFormat="DD/MM/YYYY"
-          />
+          <Label>{t('studies.extraction_date')}</Label>
+          <StyledDateInput value={date} onChange={v => setDate(v ? new Date(v) : null)} valueFormat="DD/MM/YYYY" />
         </FieldRow>
         <FieldRow checkbox>
           <Checkbox
-            label="Falta orden / Particular no pago"
+            label={t('studies.no_order')}
             checked={noOrder}
             onChange={e => setNoOrder(e.currentTarget.checked)}
             color="blue"
           />
         </FieldRow>
         <FieldRow>
-          <Label>Observaciones</Label>
+          <Label>{t('studies.observations')}</Label>
           <StyledTextarea
-            placeholder="Comentarios u observaciones..."
+            placeholder={t('studies.observations_placeholder')}
             value={comment}
             onChange={e => setComment(e.currentTarget.value)}
             autosize
@@ -195,14 +188,14 @@ export default function NewStudy() {
         </FieldRow>
       </FormCard>
 
-      <StyledTitle order={3}>Estudios solicitados</StyledTitle>
+      <StyledTitle order={3}>{t('studies.requested_studies')}</StyledTitle>
       <FormCard>
         <FieldRow stacked>
           <TypeGrid>
-            {STUDY_TYPES.map(({ key, label }) => (
+            {STUDY_TYPE_KEYS.map(key => (
               <Checkbox
                 key={key}
-                label={label}
+                label={t(`studies.type_${key}`)}
                 checked={selectedStudies.includes(key)}
                 onChange={() => toggleStudy(key)}
                 color="blue"
@@ -212,7 +205,7 @@ export default function NewStudy() {
 
           {selectedStudies.length === 0 && (
             <Text size="sm" c="dimmed" ta="center" mt="sm">
-              Seleccione al menos un tipo de estudio.
+              {t('studies.select_at_least_one')}
             </Text>
           )}
         </FieldRow>
@@ -220,15 +213,10 @@ export default function NewStudy() {
 
       <Group justify="flex-end">
         <Button variant="subtle" color="gray" onClick={() => navigate('/studies')}>
-          Cancelar
+          {t('common.cancel')}
         </Button>
-        <Button
-          onClick={handleSave}
-          disabled={!canSave}
-          loading={isSaving}
-          leftSection={<FlaskConical size={16} />}
-        >
-          Guardar
+        <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<FlaskConical size={16} />}>
+          {t('studies.save')}
         </Button>
       </Group>
     </PageContainer>
