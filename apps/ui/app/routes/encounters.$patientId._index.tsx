@@ -155,7 +155,7 @@ export default function PatientEncounterDetail() {
     <Container className="encounters-container">
       <Portal id="toolbar">
         <Group justify="space-between" align="center" style={{ width: '100%' }}>
-          <Title order={2} fz="md">
+          <Title order={2} m={0} lh={1}>
             {data.patient.personalData.firstName} {data.patient.personalData.lastName}
           </Title>
           <Button component={Link} to={`/encounters/${data.patient.id}/new`}>
@@ -189,14 +189,23 @@ export default function PatientEncounterDetail() {
               />
             )}
 
-            {/* Study forms (read-only) — tabbed by result type */}
-            {selectedStudy?.results?.length > 0 && (
+            {/* Study forms (read-only) */}
+            {selectedStudy?.results?.length === 1 && studySchemas[selectedStudy.results[0].type] && (
+              <StudyForm
+                schema={studySchemas[selectedStudy.results[0].type]}
+                initialData={selectedStudy.results[0].data as StudyResultData}
+                onChange={() => {}}
+                readOnly
+              />
+            )}
+
+            {selectedStudy?.results?.length > 1 && (
               <>
-                <Text c="gray.5" size="xl" mb="sm">
+                <Text c="gray.5" size="xl">
                   Protocolo #{selectedStudy.protocol}
                 </Text>
-                <Tabs defaultValue={selectedStudy.results[0].type} variant="pills">
-                  <Tabs.List bd="1px solid var(--mantine-color-gray-2)" bdrs={4}>
+                <Tabs defaultValue={selectedStudy.results[0].type}>
+                  <Tabs.List>
                     {selectedStudy.results.map((result: any) => (
                       <Tabs.Tab key={result.type} value={result.type}>
                         {studySchemas[result.type]?.label ?? result.type}
