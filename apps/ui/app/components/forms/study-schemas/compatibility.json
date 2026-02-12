@@ -1,0 +1,105 @@
+{
+  "name": "compatibility",
+  "label": "Compatibilidad Matrimonial",
+  "fields": [{
+    "type": "title",
+    "label": "Mujer"
+  }, {
+    "name": "female_blood_type",
+    "label": "Grupo sanguíneo",
+    "type": "select",
+    "placeholder": "Seleccione un valor",
+    "options": [{
+      "value": "a",
+      "label": "A"
+    }, {
+      "value": "b",
+      "label": "B"
+    }, {
+      "value": "ab",
+      "label": "AB"
+    }, {
+      "value": "o",
+      "label": "0"
+    }]
+  }, {
+    "name": "female_rh0_d_factor",
+    "label": "Factor Rh<sub>0</sub> D",
+    "type": "select",
+    "placeholder": "Seleccione un valor",
+    "options": [{
+      "value": "positive",
+      "label": "Positivo"
+    }, {
+      "value": "negative",
+      "label": "Negativo"
+    }]
+  }, {
+    "name": "female_genotype",
+    "label": "Genotipo más probable",
+    "type": "input",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "female_indirect_coombs",
+    "label": "Coombs Indirecta",
+    "type": "select",
+    "placeholder": "Seleccione un valor",
+    "options": [{
+      "value": "positive",
+      "label": "Positiva"
+    }, {
+      "value": "negative",
+      "label": "Negativa"
+    }]
+  }, {
+    "type": "title",
+    "label": "Hombre"
+  }, {
+    "name": "male_blood_type",
+    "label": "Grupo sanguíneo",
+    "type": "select",
+    "placeholder": "Seleccione un valor",
+    "options": [{
+      "value": "a",
+      "label": "A"
+    }, {
+      "value": "b",
+      "label": "B"
+    }, {
+      "value": "ab",
+      "label": "AB"
+    }, {
+      "value": "o",
+      "label": "0"
+    }]
+  }, {
+    "name": "male_rh0_d_factor",
+    "label": "Factor Rh<sub>0</sub> D",
+    "type": "select",
+    "placeholder": "Seleccione un valor",
+    "options": [{
+      "value": "positive",
+      "label": "Positivo"
+    }, {
+      "value": "negative",
+      "label": "Negativo"
+    }]
+  }, {
+    "name": "male_genotype",
+    "label": "Genotipo más probable",
+    "type": "input",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "type": "separator"
+  }, {
+    "name": "heterozygosity",
+    "label": "Heterocigosidad %",
+    "type": "input",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "homozygosity",
+    "label": "Homocigosidad %",
+    "type": "input",
+    "placeholder": "Ingrese un valor"
+  }]
+}

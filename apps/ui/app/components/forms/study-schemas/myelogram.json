@@ -1,0 +1,63 @@
+{
+  "name": "myelogram",
+  "label": "Mielograma Descriptivo",
+  "fields": [{
+    "name": "procedure",
+    "label": "Procedimiento",
+    "type": "textarea",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "microscopy",
+    "label": "Microscopía",
+    "type": "textarea",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "myelopoietic_series",
+    "label": "Serie Mielopoyética",
+    "type": "textarea",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "erythropoietic_series",
+    "label": "Serie Eritropoyética",
+    "type": "textarea",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "thrombopoietic_series",
+    "label": "Serie Trombopoyética",
+    "type": "textarea",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "reticular_lymphocytic_plasma_series",
+    "label": "Series Reticular, Linfocitaria y Plasmática",
+    "type": "textarea",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "mieloerythroid_ratio",
+    "label": "Relación Mielo-eritroide",
+    "type": "textarea",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "label": "Citoquímica",
+    "type": "title"
+  }, {
+    "name": "hemosiderina",
+    "label": "Hemosiderina",
+    "type": "input",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "sideroblasts",
+    "label": "Sideroblastos",
+    "type": "input",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "peroxidase",
+    "label": "Peroxidasa",
+    "type": "input",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "pas",
+    "label": "PAS",
+    "type": "input",
+    "placeholder": "Ingrese un valor"
+  }]
+}

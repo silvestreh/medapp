@@ -1,0 +1,33 @@
+{
+  "name": "anticoagulation",
+  "label": "Anticoagulación",
+  "fields": [{
+    "name": "quick",
+    "label": "Tiempo de Protrombina (Quick) seg.",
+    "reference": "10 – 15",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "rin",
+    "label": "R.I.N.",
+    "reference": "0.8 – 1.2",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "aptt",
+    "label": "aPTT seg.",
+    "reference": "28 – 42",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor"
+  }, {
+    "name": "complex_2_7_9_10",
+    "label": "Complejo II, VII, IX, X",
+    "reference": "70 – 120",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor"
+  }]
+}

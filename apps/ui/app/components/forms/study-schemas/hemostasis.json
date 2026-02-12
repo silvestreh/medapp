@@ -1,0 +1,175 @@
+{
+  "name": "hemostasis",
+  "label": "Hemostasia",
+  "fields": [{
+    "name": "quick",
+    "label": "Tiempo de Protrombina (Quick) seg.",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "10 – 15"
+  }, {
+    "name": "prothrombin_concentration",
+    "label": "Concentración de Protrombina %",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "70 – 120"
+  }, {
+    "name": "rin",
+    "label": "R.I.N.",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "0.80 – 1.2"
+  }, {
+    "name": "aptt",
+    "label": "aPTT seg.",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "28 – 42"
+  }, {
+    "name": "ttd",
+    "label": "T.T.D seg.",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "10 – 14"
+  }, {
+    "name": "fibrinogen",
+    "label": "Fibrinógeno gr/L.",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "1,8 – 4.2"
+  }, {
+    "name": "ff5",
+    "label": "Factor V Funcional %",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "70 – 120"
+  }, {
+    "name": "dimer_d",
+    "label": "Dímero D ng UEF/mL",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 500"
+  }, {
+    "name": "pdf",
+    "label": "P.D.F. µg/dL",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 5"
+  }, {
+    "name": "ff8",
+    "label": "Factor VIII Funcional %",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "75 – 120"
+  }, {
+    "name": "VW_fa",
+    "label": "Factor Von Willebrand antigénico %",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": {
+      "o": "40 – 130",
+      "other": "60 – 150"
+    }
+  }, {
+    "name": "co_factor_ristocetin",
+    "label": "Co Factor de Ristocetina %",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": {
+      "o": "50 – 140",
+      "other": "65 – 180"
+    }
+  }, {
+    "name": "complex_2_7_9_10",
+    "label": "Complejo II, VII, IX, X",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "75 – 120"
+  }, {
+    "name": "hematocrit",
+    "label": "Hematócrito %",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": {
+      "male": "42 – 48",
+      "female": "37 – 44"
+    }
+  }, {
+    "name": "hemoglobin",
+    "label": "Hemoglobina grs/dL",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": {
+      "male": "13,5 – 16,5",
+      "female": "12 – 15"
+    }
+  }, {
+    "name": "yield_platelets",
+    "label": "Rto. Plaquetas x 10<sup>3</sup>/µL",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "170 – 420"
+  }, {
+    "name": "euglobulins_lysis_time",
+    "label": "Tiempo de lisis de euglobulinas",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "> 2 hrs"
+  }, {
+    "type": "title",
+    "name": "regular_blood_plasma_correction",
+    "label": "Corrección con plasma normal"
+  }, {
+    "name": "regular_blood_plasma_correction_quick",
+    "label": "Tiempo de Protrombina (Quick) seg.",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "10 – 15"
+  }, {
+    "name": "regular_blood_plasma_correction_aptt",
+    "label": "aPTT seg.",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "28 – 42"
+  }, {
+    "name": "regular_blood_plasma_correction_ttd",
+    "label": "T.T.D seg.",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "10 – 14"
+  }, {
+    "name": "regular_blood_plasma_correction_ff5",
+    "label": "Factor V Funcional %",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "70 – 120"
+  }, {
+    "name": "regular_blood_plasma_correction_complex_2_7_9_10",
+    "label": "Complejo II, VII, IX, X",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "75 – 120"
+  }]
+}
