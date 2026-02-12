@@ -5,6 +5,8 @@ import populateResults from './hooks/populate-results';
 import populatePatient from './hooks/populate-patient';
 import autoProtocol from './hooks/auto-protocol';
 import { omitForDeleted } from '../../hooks/omit-for-deleted';
+import { sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
+import searchStudies from './hooks/search-studies';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -15,7 +17,7 @@ export default {
       authenticate('jwt'),
       checkPermissions({ foreignKey: 'medicId' })
     ],
-    find: [],
+    find: [searchStudies()],
     get: [],
     create: [autoProtocol()],
     update: [],
@@ -28,7 +30,8 @@ export default {
     find: [
       populateResults(),
       populatePatient(),
-      omitForDeleted({ service: 'patients', fkey: 'patientId' })
+      omitForDeleted({ service: 'patients', fkey: 'patientId' }),
+      sortByPersonalDataRank({ foreignKey: 'patientId' })
     ],
     get: [
       populateResults(),
