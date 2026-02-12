@@ -8,12 +8,12 @@ import { sanitizeEncryptedData } from '../../hooks/sanitize-encrypted-data';
 
 export default {
   before: {
-    all: [ disallow('external') ],
+    all: [],
     find: [ includeDecryptedAttributes() ],
     get: [ includeDecryptedAttributes() ],
     create: [ sanitizeEncryptedData('data') ],
     update: [ disallow('external') ],
-    patch: [ disallow('external') ],
+    patch: [ sanitizeEncryptedData('data') ],
     remove: [ disallow('external') ]
   },
 
