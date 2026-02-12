@@ -1,0 +1,237 @@
+{
+  "name": "thrombophilia",
+  "label": "Estudio de Trombofilia",
+  "showMethod": true,
+  "fields": [{
+    "name": "quick",
+    "label": "Tiempo de Protrombina (Quick)",
+    "type": "input",
+    "unit": "seg",
+    "method": "Quick",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "10 – 15"
+  }, {
+    "name": "percentage",
+    "label": "Porcentaje",
+    "type": "input",
+    "unit": "%",
+    "method": "Quick",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "70 – 130"
+  }, {
+    "name": "rin",
+    "label": "R.I.N.",
+    "type": "input",
+    "unit": "seg",
+    "method": "Quick",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "0.8 – 1.2"
+  }, {
+    "name": "aptt",
+    "label": "aPTT",
+    "type": "input",
+    "unit": "seg",
+    "method": "Coagulométrico",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "26 – 40"
+  }, {
+    "name": "fibrinogen",
+    "label": "Fibrinógeno",
+    "type": "input",
+    "unit": "g/l",
+    "method": "Clauss",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "1.8 – 4"
+  }, {
+    "name": "overall_protein_C_system",
+    "label": "Resistencia a la Proteína C Activada",
+    "type": "input",
+    "method": "Dhalback Modificado",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "Razón normalizada > 0.80"
+  }, {
+    "name": "factor5_protein_C_system",
+    "label": "Sistema de la Proteína C, Factor V",
+    "type": "input",
+    "method": "Coagulométrico",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "Razón normalizada > 0.70"
+  }, {
+    "name": "normalized_protein_C",
+    "label": "Proteína C, Razón Normalizada",
+    "type": "input",
+    "unit": "%",
+    "method": "Cromogénico",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "70 – 140"
+  }, {
+    "name": "functional_protein_C",
+    "label": "Proteína C Funcional",
+    "type": "input",
+    "unit": "%",
+    "method": "Cromogénico",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "70 – 140"
+  }, {
+    "name": "free_protein_S",
+    "label": "Proteína S Libre",
+    "type": "input",
+    "unit": "%",
+    "method": "Turbidimétrico",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": {
+      "male": "65 – 125",
+      "female": "60 – 110",
+      "child": "–"
+    }
+  }, {
+    "name": "antithrombin_3",
+    "label": "Antitrombina III",
+    "type": "input",
+    "unit": "%",
+    "method": "Cromogénico",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "90 – 128"
+  }, {
+    "name": "lupus_anticoagulant_APTT",
+    "label": "Antic. Lúpico, APTT",
+    "type": "input",
+    "unit": "seg",
+    "method": "Coagulométrico",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "26 – 38"
+  }, {
+    "name": "lupus_anticoagulant_screening",
+    "label": "Antic. Lúpico Screening",
+    "type": "input",
+    "unit": "seg",
+    "method": "dRVVT",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 44"
+  }, {
+    "name": "lupus_anticoagulant_confirmatory",
+    "label": "Antic. Lúpico Confirmatorio",
+    "type": "input",
+    "unit": "seg",
+    "method": "dRVVT",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 39"
+  }, {
+    "name": "lupus_anticoagulant_normalized",
+    "label": "Antic. Lúpico, Razón Normalizada",
+    "type": "input",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 1.20"
+  }, {
+    "name": "lupus_anticoagulant_TTI",
+    "label": "Antic. Lúpico, Índice de TTI",
+    "type": "input",
+    "method": "TTI",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 1.30"
+  }, {
+    "name": "class_IgM_gpi_antibeta2_antibodies",
+    "label": "Anticuerpos Anti beta2 GPI Clase IgM",
+    "type": "input",
+    "unit": "U/ml",
+    "method": "ELISA",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 20"
+  }, {
+    "name": "class_IgG_gpi_antibeta2_antibodies",
+    "label": "Anticuerpos Anti beta2 GPI Clase IgG",
+    "type": "input",
+    "unit": "U/ml",
+    "method": "ELISA",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 20"
+  }, {
+    "name": "class_IgM_anticardiolipin_antibodies",
+    "label": "Anticuerpos Anticardiolipina Clase IgM",
+    "type": "input",
+    "unit": "U/ml",
+    "method": "ELISA",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 12.5"
+  }, {
+    "name": "class_IgG_anticardiolipin_antibodies",
+    "label": "Anticuerpos Anticardiolipina Clase IgG",
+    "type": "input",
+    "unit": "U/ml",
+    "method": "ELISA",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 15"
+  }, {
+    "name": "pai_4g-5g",
+    "label": "PAI 4G/5G",
+    "type": "input",
+    "unit": "µmol/l",
+    "method": "PCR",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 16"
+  }, {
+    "name": "homocysteine",
+    "label": "Homocisteína",
+    "type": "input",
+    "unit": "µmol/l",
+    "method": "Fluorescencia",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "< 16"
+  }, {
+    "name": "factor8",
+    "label": "Factor VIII",
+    "type": "input",
+    "method": "Coagulométrico",
+    "pattern": "^(?:[1-9]\\d*|0)?(?:\\.\\d+)?$",
+    "placeholder": "Ingrese un valor",
+    "reference": "70 – 140"
+  }, {
+    "name": "leiden_factor",
+    "label": "Factor V. Leiden",
+    "type": "select",
+    "method": "PCR",
+    "placeholder": "Seleccione un valor",
+    "options": [{
+      "value": "presents",
+      "label": "Presenta"
+    }, {
+      "value": "not_present",
+      "label": "No presenta"
+    }]
+  }, {
+    "name": "20210ga_prothrombin",
+    "label": "Protrombina 20210 G-A",
+    "type": "select",
+    "method": "PCR",
+    "placeholder": "Seleccione un valor",
+    "options": [{
+      "value": "presents",
+      "label": "Presenta"
+    }, {
+      "value": "not_present",
+      "label": "No presenta"
+    }]
+  }]
+}

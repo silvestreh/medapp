@@ -32,6 +32,7 @@ coverage
 
 # Panda CSS generated
 apps/ui/app/styled-system
+apps/studies-book
 
 # Misc
 .DS_Store

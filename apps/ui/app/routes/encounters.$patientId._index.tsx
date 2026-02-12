@@ -3,7 +3,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Group, Title, Stack, Button, ActionIcon, Tooltip } from '@mantine/core';
+import { Group, Title, Stack, Button, ActionIcon, Tooltip, Tabs, Text } from '@mantine/core';
 import { X } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
@@ -11,7 +11,10 @@ import EncounterTree from '~/components/encounter-tree';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { EncounterForm } from '~/components/forms/encounter-form';
+import { StudyForm } from '~/components/forms/study-form';
+import { studySchemas } from '~/components/forms/study-schemas';
 import { PatientOverview } from '~/components/patient-overview';
+import type { StudyResultData } from '~/components/forms/study-form-types';
 
 const Container = styled('div', {
   base: {
@@ -110,18 +113,39 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 export default function PatientEncounterDetail() {
   const { t } = useTranslation();
   const data = useLoaderData<typeof loader>();
+
+  // Encounter selection
   const [selectedEncounter, setSelectedEncounter] = useState<any>(null);
   const [activeFormKey, setActiveFormKey] = useState<string | undefined>(undefined);
 
+  // Study selection
+  const [selectedStudy, setSelectedStudy] = useState<any>(null);
+
+  const clearSelection = useCallback(() => {
+    setSelectedEncounter(null);
+    setActiveFormKey(undefined);
+    setSelectedStudy(null);
+  }, []);
+
   const handleEncounterClick = useCallback((encounter: any) => {
+    setSelectedStudy(null);
     setSelectedEncounter(encounter);
     setActiveFormKey(undefined);
   }, []);
 
   const handleFormClick = useCallback((encounter: any, formKey: string) => {
+    setSelectedStudy(null);
     setSelectedEncounter(encounter);
     setActiveFormKey(formKey);
   }, []);
+
+  const handleStudyClick = useCallback((study: any) => {
+    setSelectedEncounter(null);
+    setActiveFormKey(undefined);
+    setSelectedStudy(study);
+  }, []);
+
+  const hasSelection = selectedEncounter || selectedStudy;
 
   if (!data) {
     return null;
@@ -143,30 +167,63 @@ export default function PatientEncounterDetail() {
       <Sidebar>
         <EncounterTree
           encounters={data.encounters}
+          studies={data.studies}
           activeEncounterId={selectedEncounter?.id}
           activeFormKey={activeFormKey}
+          activeStudyId={selectedStudy?.id}
           onEncounterClick={handleEncounterClick}
           onFormClick={handleFormClick}
+          onStudyClick={handleStudyClick}
         />
       </Sidebar>
 
       <Content>
-        {selectedEncounter ? (
-          <Stack key={`${selectedEncounter.id}-${activeFormKey}`} pos="relative">
-            <EncounterForm
-              encounter={selectedEncounter}
-              readOnly={!!selectedEncounter.id}
-              activeFormKey={activeFormKey}
-            />
+        {hasSelection ? (
+          <Stack key={`${selectedEncounter?.id ?? selectedStudy?.id}-${activeFormKey ?? 'study'}`} pos="relative">
+            {/* Encounter form */}
+            {selectedEncounter && (
+              <EncounterForm
+                encounter={selectedEncounter}
+                readOnly={!!selectedEncounter.id}
+                activeFormKey={activeFormKey}
+              />
+            )}
+
+            {/* Study forms (read-only) — tabbed by result type */}
+            {selectedStudy?.results?.length > 0 && (
+              <>
+                <Text c="gray.5" size="xl" mb="sm">
+                  Protocolo #{selectedStudy.protocol}
+                </Text>
+                <Tabs defaultValue={selectedStudy.results[0].type} variant="pills">
+                  <Tabs.List bd="1px solid var(--mantine-color-gray-2)" bdrs={4}>
+                    {selectedStudy.results.map((result: any) => (
+                      <Tabs.Tab key={result.type} value={result.type}>
+                        {studySchemas[result.type]?.label ?? result.type}
+                      </Tabs.Tab>
+                    ))}
+                  </Tabs.List>
+
+                  {selectedStudy.results.map((result: any) => {
+                    const schema = studySchemas[result.type];
+                    if (!schema) return null;
+                    return (
+                      <Tabs.Panel key={result.type} value={result.type} pt="md">
+                        <StudyForm
+                          schema={schema}
+                          initialData={result.data as StudyResultData}
+                          onChange={() => {}}
+                          readOnly
+                        />
+                      </Tabs.Panel>
+                    );
+                  })}
+                </Tabs>
+              </>
+            )}
+
             <Tooltip label={t('common.close')} position="left">
-              <ActionIcon
-                variant="filled"
-                color="gray"
-                onClick={() => setSelectedEncounter(null)}
-                pos="absolute"
-                top={0}
-                right={0}
-              >
+              <ActionIcon variant="filled" color="gray" onClick={clearSelection} pos="absolute" top={0} right={0}>
                 <X size={16} />
               </ActionIcon>
             </Tooltip>
