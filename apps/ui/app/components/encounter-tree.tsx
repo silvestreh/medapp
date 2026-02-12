@@ -152,21 +152,6 @@ const FormItem = styled('div', {
   },
 });
 
-const StudyBadge = styled('span', {
-  base: {
-    display: 'inline-block',
-    fontSize: 'var(--mantine-font-size-xs)',
-    color: 'var(--mantine-color-teal-6)',
-    backgroundColor: 'var(--mantine-color-teal-0)',
-    borderRadius: 'var(--mantine-radius-sm)',
-    padding: '0 0.4rem',
-    marginLeft: '0.5rem',
-    fontWeight: 600,
-    lineHeight: 1.6,
-    verticalAlign: 'middle',
-  },
-});
-
 const EncounterTree: FC<EncounterTreeProps> = ({
   encounters,
   studies = [],
@@ -192,16 +177,16 @@ const EncounterTree: FC<EncounterTreeProps> = ({
       e.stopPropagation();
       onStudyClick?.(study);
     },
-    [onStudyClick],
+    [onStudyClick]
   );
 
   // Merge encounters and studies into a unified timeline, filtering out empty studies
   const timeline: TimelineEntry[] = useMemo(() => {
-    const nonEmptyStudies = studies.filter((study) => {
+    const nonEmptyStudies = studies.filter(study => {
       if (!study.results || study.results.length === 0) return false;
-      return study.results.some((result) => {
+      return study.results.some(result => {
         if (!result.data || typeof result.data !== 'object') return false;
-        return Object.values(result.data).some((v) => {
+        return Object.values(result.data).some(v => {
           if (v === null || v === undefined || v === '') return false;
           if (typeof v === 'object' && 'value' in v) return !!v.value;
           return true;
@@ -246,7 +231,7 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                       <Stack gap={0}>
                         {groupedEntries[year][monthYear]
                           .sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf())
-                          .map((entry) => {
+                          .map(entry => {
                             if (entry.kind === 'encounter') {
                               const encounter = entry.data;
                               return (
@@ -254,9 +239,7 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                   key={`enc-${encounter.id}`}
                                   active={activeEncounterId === encounter.id && !activeFormKey}
                                 >
-                                  <EncounterDateText>
-                                    {dayjs(encounter.date).format('dddd D, HH:mm')}
-                                  </EncounterDateText>
+                                  <EncounterDateText>{dayjs(encounter.date).format('dddd D, HH:mm')}</EncounterDateText>
                                   {encounter.data &&
                                     Object.keys(encounter.data).map(key => (
                                       <FormItem
@@ -274,23 +257,15 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                             // Study entry — single clickable item
                             const study = entry.data;
                             const studyTypes = study.results
-                              ? study.results.map((r) => studySchemas[r.type]?.label ?? r.type)
+                              ? study.results.map(r => studySchemas[r.type]?.label ?? r.type)
                               : Object.keys(study.studies ?? {})
-                                  .filter((k) => study.studies[k])
-                                  .map((k) => studySchemas[k]?.label ?? k);
+                                  .filter(k => study.studies[k])
+                                  .map(k => studySchemas[k]?.label ?? k);
 
                             return (
-                              <EncounterBox
-                                key={`study-${study.id}`}
-                                active={activeStudyId === study.id}
-                              >
-                                <EncounterDateText>
-                                  {dayjs(study.date).format('dddd D, HH:mm')}
-                                </EncounterDateText>
-                                <FormItem
-                                  onClick={e => handleStudyClick(e, study)}
-                                  active={activeStudyId === study.id}
-                                >
+                              <EncounterBox key={`study-${study.id}`}>
+                                <EncounterDateText>{dayjs(study.date).format('dddd D, HH:mm')}</EncounterDateText>
+                                <FormItem onClick={e => handleStudyClick(e, study)} active={activeStudyId === study.id}>
                                   Protocolo #{study.protocol}
                                   <Text size="xs" c={activeStudyId === study.id ? 'white' : 'gray.5'} mt={2}>
                                     {studyTypes.join(', ')}
