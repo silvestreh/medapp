@@ -67,6 +67,7 @@ export default function (app: Application): void {
       try {
         await sequelize.query('ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchFirstName"');
         await sequelize.query('ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchLastName"');
+        await sequelize.query('ALTER TABLE "medications" DROP COLUMN IF EXISTS "searchText"');
       } catch (e) { // eslint-disable-line @typescript-eslint/no-unused-vars
         // Table might not exist yet on first run, that's fine
       }
