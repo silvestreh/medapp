@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Table, TextInput, Stack, Loader, Text as BaseText, Pagination, Group, Badge, Button } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
+import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Search, FlaskConical, Plus } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from '@remix-run/react';
@@ -11,8 +11,67 @@ import { authenticatedLoader } from '~/utils/auth.server';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { displayDocumentValue } from '~/utils';
+import { media } from '~/media';
 
 export const loader = authenticatedLoader();
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface PersonalData {
+  firstName?: string;
+  lastName?: string;
+  documentType?: string;
+  documentValue?: string;
+  nationality?: string;
+  maritalStatus?: string;
+  birthDate?: string;
+  gender?: string;
+}
+
+interface Patient {
+  id: string;
+  medicare?: string;
+  medicareNumber?: string;
+  medicarePlan?: string;
+  personalData?: PersonalData;
+}
+
+interface StudyResult {
+  id: string;
+  data?: unknown;
+  studyId: string;
+  type: string;
+}
+
+interface Study {
+  id: string;
+  date?: string;
+  protocol: number;
+  studies: string[];
+  noOrder: boolean;
+  medicId: string;
+  patientId: string;
+  patient?: Patient;
+  results?: StudyResult[];
+}
+
+interface PaginatedResponse {
+  data: Study[];
+  total: number;
+  limit: number;
+  skip: number;
+}
+
+interface StudyItem {
+  study: Study;
+  firstName: string;
+  lastName: string;
+  dni?: string;
+  medicare: string;
+  hasResults: boolean;
+}
 
 // ---------------------------------------------------------------------------
 // Study type badge config
@@ -65,6 +124,28 @@ const EmptyState = styled('div', {
   },
 });
 
+const Card = styled('div', {
+  base: {
+    background: 'white',
+    border: '1px solid var(--mantine-color-gray-2)',
+    borderRadius: 'var(--mantine-radius-md)',
+    padding: 'var(--mantine-spacing-sm)',
+    cursor: 'pointer',
+    '&:active': {
+      background: 'var(--mantine-color-gray-0)',
+    },
+  },
+});
+
+const CardRow = styled('div', {
+  base: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '8px',
+  },
+});
+
 const PAGE_SIZE = 15;
 
 // ---------------------------------------------------------------------------
@@ -79,6 +160,7 @@ export default function StudiesIndex() {
   const [debouncedInputValue] = useDebouncedValue(inputValue, 500);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
+  const isDesktop = useMediaQuery(media.md);
 
   useEffect(() => {
     const newParams = new URLSearchParams(searchParams);
@@ -126,64 +208,126 @@ export default function StudiesIndex() {
   );
 
   const { response, isLoading } = useFind('studies', query);
-  const studies = (response as any).data || [];
-  const total = (response as any).total || 0;
+  const { data: studies = [], total = 0 } = response as PaginatedResponse;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  const rows = studies.map((study: any) => {
+  const studyItems: StudyItem[] = studies.map(study => {
     const patient = study.patient;
     const firstName = patient?.personalData?.firstName || '';
     const lastName = patient?.personalData?.lastName || '';
     const dni = patient?.personalData?.documentValue;
     const medicare = patient?.medicare || '';
-    const hasResults = study.results && study.results.length > 0;
+    const hasResults = (study.results ?? []).length > 0;
 
-    return (
-      <Table.Tr
-        key={study.id}
-        onClick={() => navigate(`/studies/${study.id}`)}
-        style={{
-          cursor: 'pointer',
-          opacity: study.noOrder ? 0.7 : 1,
-          backgroundColor: !hasResults ? 'var(--mantine-color-yellow-0)' : undefined,
-        }}
-      >
-        <Table.Td>
-          <CellText style={{ fontWeight: 600 }}>#{study.protocol}</CellText>
-        </Table.Td>
-        <Table.Td>
-          <CellText>
-            {firstName} {lastName}
-          </CellText>
-        </Table.Td>
-        <Table.Td>
-          <CellText>{displayDocumentValue(dni)}</CellText>
-        </Table.Td>
-        <Table.Td>
-          <Group gap={4} wrap="wrap">
-            {(study.studies || []).map((type: string) => {
-              const badge = STUDY_TYPE_BADGES[type];
-              if (!badge) return null;
-              return (
-                <Badge key={type} size="xs" color={badge.color} variant="filled">
-                  {badge.short}
-                </Badge>
-              );
-            })}
-          </Group>
-        </Table.Td>
-        <Table.Td>
-          <CellText>{medicare}</CellText>
-        </Table.Td>
-        <Table.Td>
-          <CellText>{study.date ? dayjs(study.date).format('DD/MM/YYYY') : '—'}</CellText>
-        </Table.Td>
-      </Table.Tr>
-    );
+    return { study, firstName, lastName, dni, medicare, hasResults };
   });
 
+  const tableRows = studyItems.map(item => (
+    <Table.Tr
+      key={item.study.id}
+      onClick={() => navigate(`/studies/${item.study.id}`)}
+      style={{
+        cursor: 'pointer',
+        opacity: item.study.noOrder ? 0.7 : 1,
+        backgroundColor: !item.hasResults ? 'var(--mantine-color-yellow-0)' : undefined,
+      }}
+    >
+      <Table.Td>
+        <CellText style={{ fontWeight: 600 }}>#{item.study.protocol}</CellText>
+      </Table.Td>
+      <Table.Td>
+        <CellText>
+          {item.firstName} {item.lastName}
+        </CellText>
+      </Table.Td>
+      <Table.Td>
+        <CellText>{displayDocumentValue(item.dni)}</CellText>
+      </Table.Td>
+      <Table.Td>
+        <Group gap={4} wrap="wrap">
+          {item.study.studies.map(type => {
+            const badge = STUDY_TYPE_BADGES[type];
+            if (!badge) return null;
+            return (
+              <Badge key={type} size="xs" color={badge.color} variant="filled">
+                {badge.short}
+              </Badge>
+            );
+          })}
+        </Group>
+      </Table.Td>
+      <Table.Td>
+        <CellText>{item.medicare}</CellText>
+      </Table.Td>
+      <Table.Td>
+        <CellText>{item.study.date ? dayjs(item.study.date).format('DD/MM/YYYY') : '—'}</CellText>
+      </Table.Td>
+    </Table.Tr>
+  ));
+
+  const mobileCards = studyItems.map(item => (
+    <Card
+      key={item.study.id}
+      onClick={() => navigate(`/studies/${item.study.id}`)}
+      style={{
+        opacity: item.study.noOrder ? 0.7 : 1,
+        backgroundColor: !item.hasResults ? 'var(--mantine-color-yellow-0)' : undefined,
+      }}
+    >
+      <CardRow>
+        <BaseText fw={600} size="sm">
+          {item.firstName} {item.lastName}
+        </BaseText>
+        <BaseText size="xs" c="dimmed">
+          #{item.study.protocol}
+        </BaseText>
+      </CardRow>
+
+      <CardRow style={{ marginTop: 4 }}>
+        <BaseText size="xs" c="dimmed">
+          {displayDocumentValue(item.dni)}
+        </BaseText>
+        <BaseText size="xs" c="dimmed">
+          {item.study.date ? dayjs(item.study.date).format('DD/MM/YYYY') : '—'}
+        </BaseText>
+      </CardRow>
+
+      <CardRow style={{ marginTop: 8 }}>
+        <Group gap={4} wrap="wrap">
+          {item.study.studies.map(type => {
+            const badge = STUDY_TYPE_BADGES[type];
+            if (!badge) return null;
+            return (
+              <Badge key={type} size="xs" color={badge.color} variant="filled">
+                {badge.short}
+              </Badge>
+            );
+          })}
+        </Group>
+        {item.medicare && (
+          <BaseText size="xs" c="dimmed">
+            {item.medicare}
+          </BaseText>
+        )}
+      </CardRow>
+    </Card>
+  ));
+
+  const emptyState = (
+    <EmptyState onClick={() => inputRef.current?.focus()} style={{ cursor: 'pointer' }}>
+      {inputValue && !isLoading ? (
+        <FlaskConical size={48} color="var(--mantine-color-dimmed)" />
+      ) : (
+        <Search size={48} color="var(--mantine-color-dimmed)" />
+      )}
+      <BaseText c="dimmed" ta="center">
+        {inputValue && !isLoading ? t('studies.no_results') : t('studies.search_prompt')}
+      </BaseText>
+    </EmptyState>
+  );
+
   return (
-    <Stack p="lg">
+    <Stack p={isDesktop ? 'lg' : 'xs'}>
       <Portal id="toolbar">
         <Group justify="space-between" align="center" w="100%">
           <TextInput
@@ -202,45 +346,38 @@ export default function StudiesIndex() {
         </Group>
       </Portal>
 
-      <Wrapper>
-        <Table highlightOnHover layout="fixed">
-          {rows.length > 0 && (
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th w={100}>{t('studies.col_protocol')}</Table.Th>
-                <Table.Th>{t('studies.col_patient')}</Table.Th>
-                <Table.Th w={120}>{t('studies.col_dni')}</Table.Th>
-                <Table.Th w={180}>{t('studies.col_studies')}</Table.Th>
-                <Table.Th w={140}>{t('studies.col_insurance')}</Table.Th>
-                <Table.Th w={110}>{t('studies.col_date')}</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-          )}
-          <Table.Tbody>
-            {rows.length > 0 && rows}
-            {rows.length === 0 && (
-              <Table.Tr onClick={() => inputRef.current?.focus()} style={{ cursor: 'pointer' }}>
-                <Table.Td colSpan={6}>
-                  <EmptyState>
-                    {inputValue && !isLoading ? (
-                      <FlaskConical size={48} color="var(--mantine-color-dimmed)" />
-                    ) : (
-                      <Search size={48} color="var(--mantine-color-dimmed)" />
-                    )}
-                    <BaseText c="dimmed" ta="center">
-                      {inputValue && !isLoading ? t('studies.no_results') : t('studies.search_prompt')}
-                    </BaseText>
-                  </EmptyState>
-                </Table.Td>
-              </Table.Tr>
+      {isDesktop ? (
+        <Wrapper>
+          <Table highlightOnHover layout="fixed">
+            {tableRows.length > 0 && (
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th w={100}>{t('studies.col_protocol')}</Table.Th>
+                  <Table.Th>{t('studies.col_patient')}</Table.Th>
+                  <Table.Th w={180}>{t('studies.col_dni')}</Table.Th>
+                  <Table.Th w={180}>{t('studies.col_studies')}</Table.Th>
+                  <Table.Th w={150}>{t('studies.col_insurance')}</Table.Th>
+                  <Table.Th w={150}>{t('studies.col_date')}</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
             )}
-          </Table.Tbody>
-        </Table>
-      </Wrapper>
+            <Table.Tbody>
+              {tableRows.length > 0 && tableRows}
+              {tableRows.length === 0 && (
+                <Table.Tr onClick={() => inputRef.current?.focus()} style={{ cursor: 'pointer' }}>
+                  <Table.Td colSpan={6}>{emptyState}</Table.Td>
+                </Table.Tr>
+              )}
+            </Table.Tbody>
+          </Table>
+        </Wrapper>
+      ) : (
+        <>{studyItems.length > 0 ? mobileCards : emptyState}</>
+      )}
 
       {totalPages > 1 && (
         <Group justify="center" mt="md">
-          <Pagination total={totalPages} value={page} onChange={setPage} />
+          <Pagination total={totalPages} value={page} onChange={setPage} size={isDesktop ? 'md' : 'sm'} />
         </Group>
       )}
     </Stack>
