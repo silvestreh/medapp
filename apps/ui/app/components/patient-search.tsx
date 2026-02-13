@@ -84,6 +84,8 @@ const PatientSearch: FC<PatientSearchProps> = ({ onChange, onBlur, placeholder, 
           placeholder={resolvedPlaceholder}
           styles={{ input: { fontSize: '1em' } }}
           leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
+          autoComplete="off"
+          data-1p-ignore
         />
       </Popover.Target>
       <Popover.Dropdown ref={ref}>

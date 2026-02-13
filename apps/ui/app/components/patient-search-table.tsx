@@ -1,5 +1,5 @@
 import { useState, useMemo, type FC, useEffect, useRef } from 'react';
-import { Table, TextInput, Stack, Loader, Text as BaseText, Pagination, Group } from '@mantine/core';
+import { Table, TextInput, Stack, Loader, Text as BaseText, Pagination, Group, Button } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Search, User } from 'lucide-react';
@@ -10,26 +10,19 @@ import type { Patient } from '~/declarations';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { displayDocumentValue } from '~/utils';
+import { css } from '~/styled-system/css';
 
 const Wrapper = styled('div', {
   base: {
     background: 'white',
     display: 'flex',
     flexDirection: 'column',
-    border: '1px solid var(--mantine-color-gray-2)',
+    flex: 1,
+    minHeight: 0,
     width: '100%',
   },
 
   variants: {
-    borderRadius: {
-      true: {
-        borderRadius: 'var(--mantine-radius-md)',
-        borderWidth: '1px',
-      },
-      false: {
-        borderWidth: 0,
-      },
-    },
     hideOnMobileIfEmpty: {
       true: {
         sm: {
@@ -41,19 +34,16 @@ const Wrapper = styled('div', {
       },
     },
   },
-
-  defaultVariants: {
-    borderRadius: true,
-  },
 });
 
-const Text = styled(BaseText, {
+const CellText = styled('span', {
   base: {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     display: 'block',
     padding: 'var(--mantine-spacing-xs)',
+    fontSize: 'var(--mantine-font-size-sm)',
   },
 });
 
@@ -66,6 +56,40 @@ const EmptyState = styled('div', {
     width: '100%',
     gap: '4px',
     padding: 'var(--mantine-spacing-xl)',
+  },
+});
+
+const HeaderContainer = styled('div', {
+  base: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FAFBFB',
+
+    sm: {
+      padding: '1em',
+    },
+    md: {
+      padding: '2em 2em 1em',
+    },
+  },
+});
+
+const Title = styled('h1', {
+  base: {
+    fontSize: '1.5rem',
+    lineHeight: 1,
+    fontWeight: 700,
+    flex: 1,
+    margin: 0,
+
+    md: {
+      fontSize: '2rem',
+    },
+
+    lg: {
+      fontSize: '2.25rem',
+    },
   },
 });
 
@@ -126,21 +150,26 @@ const PatientSearchTable: FC = () => {
   const totalPages = Math.ceil(total / 10);
 
   const rows = patients.map((patient: Patient) => (
-    <Table.Tr key={patient.id} onClick={() => navigate(`/encounters/${patient.id}`)} style={{ cursor: 'pointer' }}>
+    <Table.Tr
+      key={patient.id}
+      onClick={() => navigate(`/encounters/${patient.id}`)}
+      styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
+      style={{ cursor: 'pointer' }}
+    >
       <Table.Td>
-        <Text>{patient.personalData.firstName || '—'}</Text>
+        <CellText>{patient.personalData.firstName || '—'}</CellText>
       </Table.Td>
       <Table.Td>
-        <Text>{patient.personalData.lastName || '—'}</Text>
+        <CellText>{patient.personalData.lastName || '—'}</CellText>
       </Table.Td>
       <Table.Td>
-        <Text>{displayDocumentValue(patient.personalData.documentValue)}</Text>
+        <CellText>{displayDocumentValue(patient.personalData.documentValue)}</CellText>
       </Table.Td>
     </Table.Tr>
   ));
 
   return (
-    <Stack>
+    <Stack style={{ display: 'flex', flex: 1, flexDirection: 'column', minHeight: 0 }}>
       <Portal id="toolbar">
         <TextInput
           ref={inputRef}
@@ -153,24 +182,56 @@ const PatientSearchTable: FC = () => {
           size="lg"
           flex={1}
           styles={{ input: { lineHeight: 1, height: 'auto', minHeight: 0 } }}
+          autoComplete="off"
+          data-1p-ignore
         />
       </Portal>
 
       <Wrapper hideOnMobileIfEmpty={rows.length === 0}>
-        <Table highlightOnHover layout="fixed" variant="vertical">
-          {rows.length > 0 && (
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>{t('patients.col_first_name')}</Table.Th>
-                <Table.Th>{t('patients.col_last_name')}</Table.Th>
-                <Table.Th>{t('patients.col_document')}</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-          )}
+        <HeaderContainer>
+          <Title>Pacientes</Title>
+        </HeaderContainer>
+        <Table
+          highlightOnHover={rows.length > 0}
+          layout="fixed"
+          bg="white"
+          className={css({
+            lg: {
+              borderLeft: '1px solid var(--mantine-color-gray-2)',
+              marginLeft: '-1px',
+            },
+          })}
+        >
+          <Table.Thead>
+            <Table.Tr bg="blue.0">
+              <Table.Th
+                style={{ border: '1px solid var(--mantine-color-blue-1)', borderLeft: 'none' }}
+                fw={500}
+                fz="md"
+                py="0.5em"
+              >
+                {t('patients.col_first_name')}
+              </Table.Th>
+              <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+                {t('patients.col_last_name')}
+              </Table.Th>
+              <Table.Th
+                style={{ border: '1px solid var(--mantine-color-blue-1)', borderRight: 'none' }}
+                fw={500}
+                fz="md"
+                py="0.5em"
+              >
+                {t('patients.col_document')}
+              </Table.Th>
+            </Table.Tr>
+          </Table.Thead>
           <Table.Tbody>
             {rows.length > 0 && rows}
             {rows.length === 0 && (
-              <Table.Tr onClick={() => inputRef.current?.focus()} style={{ cursor: 'pointer' }}>
+              <Table.Tr
+                styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
+                onClick={() => inputRef.current?.focus()}
+              >
                 <Table.Td colSpan={3}>
                   <EmptyState>
                     {inputValue && !isLoading ? (
@@ -181,6 +242,9 @@ const PatientSearchTable: FC = () => {
                     <BaseText c="dimmed" ta="center">
                       {inputValue && !isLoading ? t('patients.no_results') : t('patients.search_prompt')}
                     </BaseText>
+                    <Button size="lg" mt="xl" onClick={() => inputRef.current?.focus()} variant="light">
+                      {t('common.search')}
+                    </Button>
                   </EmptyState>
                 </Table.Td>
               </Table.Tr>
@@ -190,7 +254,7 @@ const PatientSearchTable: FC = () => {
       </Wrapper>
 
       {totalPages > 1 && (
-        <Group justify="center" mt="md">
+        <Group justify="center" bg="white" py="lg">
           <Pagination total={totalPages} value={page} onChange={setPage} />
         </Group>
       )}
