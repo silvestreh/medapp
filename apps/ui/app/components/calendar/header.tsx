@@ -19,7 +19,7 @@ const HeaderContainer = styled('div', {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FAFBFB',
+    // backgroundColor: '#FAFBFB',
 
     sm: {
       padding: '1em',

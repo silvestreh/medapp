@@ -64,7 +64,6 @@ const HeaderContainer = styled('div', {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FAFBFB',
 
     sm: {
       padding: '1em',
@@ -137,7 +136,7 @@ const PatientSearchTable: FC = () => {
   const query = useMemo(
     () => ({
       q: debouncedInputValue,
-      $limit: 10,
+      $limit: 15,
       $skip: (page - 1) * 10,
     }),
     [debouncedInputValue, page]
@@ -254,7 +253,18 @@ const PatientSearchTable: FC = () => {
       </Wrapper>
 
       {totalPages > 1 && (
-        <Group justify="center" bg="white" py="lg">
+        <Group
+          justify="center"
+          bg="white"
+          py="lg"
+          className={css({
+            lg: {
+              position: 'sticky',
+              bottom: 0,
+              borderTop: '1px solid var(--mantine-color-gray-1)',
+            },
+          })}
+        >
           <Pagination total={totalPages} value={page} onChange={setPage} />
         </Group>
       )}
