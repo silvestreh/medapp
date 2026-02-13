@@ -82,8 +82,20 @@ export default function Login() {
 
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <Form method="post">
-          <TextInput label={t('auth.username')} name="username" placeholder={t('auth.username_placeholder')} required mb="md" />
-          <PasswordInput label={t('auth.password')} name="password" placeholder={t('auth.password_placeholder')} required mb="xl" />
+          <TextInput
+            label={t('auth.username')}
+            name="username"
+            placeholder={t('auth.username_placeholder')}
+            required
+            mb="md"
+          />
+          <PasswordInput
+            label={t('auth.password')}
+            name="password"
+            placeholder={t('auth.password_placeholder')}
+            required
+            mb="xl"
+          />
 
           {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{t('auth.invalid_credentials')}</div>}
 

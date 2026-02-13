@@ -14,9 +14,9 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@feathersjs/authentication-client": "^5.0.33",
-    "@feathersjs/feathers": "^5.0.33",
-    "@feathersjs/rest-client": "^5.0.33",
+    "@feathersjs/authentication-client": "^5.0.40",
+    "@feathersjs/feathers": "^5.0.40",
+    "@feathersjs/rest-client": "^5.0.40",
     "@mantine/charts": "^8.0.0",
     "@mantine/core": "^8.0.0",
     "@mantine/dates": "^8.0.0",
