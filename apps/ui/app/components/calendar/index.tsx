@@ -90,6 +90,18 @@ const WeekdayHeader = styled('div', {
   },
 });
 
+const WeekdayCol = styled(Grid.Col, {
+  base: {
+    backgroundColor: 'var(--mantine-color-blue-0)',
+
+    lg: {
+      position: 'sticky',
+      top: '4.8em',
+      zIndex: 3,
+    },
+  },
+});
+
 const GridContainer = styled('div', {
   base: {
     borderTop: '1px solid var(--mantine-color-blue-1)',
@@ -250,11 +262,11 @@ function Calendar({
       <GridContainer>
         <Grid columns={7} gutter={0} bg="var(--mantine-color-gray-3)">
           {WEEKDAYS.map((day, index) => (
-            <Grid.Col key={day} span={1} pos="sticky" top={0}>
+            <WeekdayCol key={day} span={1}>
               <WeekdayHeader isFirst={index === 0} isLast={index === 6}>
                 {day}
               </WeekdayHeader>
-            </Grid.Col>
+            </WeekdayCol>
           ))}
 
           {daysWithPosition.flatMap((week, weekIndex) =>
