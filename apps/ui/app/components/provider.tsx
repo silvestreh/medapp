@@ -231,9 +231,7 @@ export const useGet = (serviceName: string, id: string, params?: Params & { enab
     error,
     mutate: swrMutate,
   } = useSWR(
-    params?.enabled !== false && id
-      ? [serviceName, 'get' as keyof ServiceMethods<any>, id, params]
-      : null,
+    params?.enabled !== false && id ? [serviceName, 'get' as keyof ServiceMethods<any>, id, params] : null,
     args => fetcher(args, feathersClient)
   );
 
