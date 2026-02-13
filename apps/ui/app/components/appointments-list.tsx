@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { ActionIcon, Popover, Group, Button, Stack } from '@mantine/core';
 import { useClickOutside } from '@mantine/hooks';
 import { Trash } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
 import { useMutation } from '~/components/provider';
@@ -144,6 +145,7 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
   medicId,
   className,
 }) => {
+  const { t } = useTranslation();
   const [slots, setSlots] = useState(initialSlots);
   const [openPopover, setOpenPopover] = useState<string | null>(null);
   const [activeSlot, setActiveSlot] = useState<string | null>(null);
@@ -219,7 +221,9 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
 
         return (
           <Slot key={index} onClick={handleClickSlot(slot)} isActiveSlot={isActiveSlot} isClickable={isClickable}>
-            <Time isExtra={isExtra}>{isExtra ? <>&nbsp;&nbsp;&nbsp;ST</> : dayjs(slot.date).format('HH:mm')}</Time>
+            <Time isExtra={isExtra}>
+              {isExtra ? <>&nbsp;&nbsp;&nbsp;{t('appointments.extra_slot_short')}</> : dayjs(slot.date).format('HH:mm')}
+            </Time>
             <MainContent>
               {slot.appointment && (
                 <>
@@ -230,7 +234,7 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
                       {slot.appointment.patient.personalData.firstName}
                     </Text>
                     <Text variant="light" small>
-                      {slot.appointment.patient.medicare || 'Particular'}
+                      {slot.appointment.patient.medicare || t('appointments.private')}
                     </Text>
                   </TextContent>
                   {!readonly && (
@@ -248,13 +252,13 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
                       </Popover.Target>
                       <Popover.Dropdown ref={ref}>
                         <Stack align="flex-end">
-                          <Text>¿Estás seguro de querer eliminar este turno?</Text>
+                          <Text>{t('appointments.delete_appointment_confirm')}</Text>
                           <Group>
                             <Button size="compact-sm" onClick={handleRemove(slot.appointment.id)} color="red">
-                              Eliminar
+                              {t('common.delete')}
                             </Button>
                             <Button size="compact-sm" variant="outline" onClick={handleClosePopover}>
-                              Cancelar
+                              {t('common.cancel')}
                             </Button>
                           </Group>
                         </Stack>
@@ -263,8 +267,8 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
                   )}
                 </>
               )}
-              {!slot.appointment && readonly && <Text variant="light">Libre</Text>}
-              {!slot.appointment && !isActiveSlot && !readonly && <Text variant="light">Libre</Text>}
+              {!slot.appointment && readonly && <Text variant="light">{t('appointments.free')}</Text>}
+              {!slot.appointment && !isActiveSlot && !readonly && <Text variant="light">{t('appointments.free')}</Text>}
               {!slot.appointment && !readonly && isActiveSlot && (
                 <PatientSearch autoFocus onChange={handlePatientChange(slot)} onBlur={() => setActiveSlot(null)} />
               )}
@@ -274,11 +278,11 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
       })}
       {!readonly && (
         <Slot>
-          <Time isExtra>&nbsp;&nbsp;&nbsp;ST</Time>
+          <Time isExtra>&nbsp;&nbsp;&nbsp;{t('appointments.extra_slot_short')}</Time>
           <MainContent>
             <PatientSearch
               onChange={handlePatientChange({ date: dayjs().format('YYYY-MM-DD'), appointment: null }, true)}
-              placeholder="Agregar sobre turno"
+              placeholder={t('appointments.add_extra_slot')}
               key={slots.length}
             />
           </MainContent>

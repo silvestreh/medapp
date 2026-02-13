@@ -189,7 +189,7 @@ const PatientSearchTable: FC = () => {
 
       <Wrapper hideOnMobileIfEmpty={rows.length === 0}>
         <HeaderContainer>
-          <Title>Pacientes</Title>
+          <Title>{t('patients.title')}</Title>
         </HeaderContainer>
         <Table
           highlightOnHover={rows.length > 0}

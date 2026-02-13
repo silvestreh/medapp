@@ -2,6 +2,7 @@ import { Group, ActionIcon, Tooltip } from '@mantine/core';
 import { ChevronLeft, ChevronRight, Settings, Calendar } from 'lucide-react';
 import dayjs from 'dayjs';
 import startCase from 'lodash/startCase';
+import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
 
@@ -48,23 +49,25 @@ const Title = styled('h1', {
 });
 
 export function Header({ date, onPrevMonth, onNextMonth, onTodayClick, onSettingsClick }: HeaderProps) {
+  const { t } = useTranslation();
+
   return (
     <HeaderContainer>
       <Title>{startCase(date.format('MMMM YYYY'))}</Title>
 
       <Group align="center" gap="sm">
-        <Tooltip label="Hoy" withArrow arrowSize={8}>
+        <Tooltip label={t('appointments.today')} withArrow arrowSize={8}>
           <ActionIcon onClick={onTodayClick} size="lg">
             <Calendar size={20} />
           </ActionIcon>
         </Tooltip>
-        <Tooltip label="Configuración" withArrow arrowSize={8}>
+        <Tooltip label={t('common.settings')} withArrow arrowSize={8}>
           <ActionIcon onClick={onSettingsClick} size="lg">
             <Settings size={20} />
           </ActionIcon>
         </Tooltip>
         <Group align="center" gap={0}>
-          <Tooltip label="Mes anterior" withArrow arrowSize={8}>
+          <Tooltip label={t('appointments.previous_month')} withArrow arrowSize={8}>
             <ActionIcon
               onClick={onPrevMonth}
               size="lg"
@@ -73,7 +76,7 @@ export function Header({ date, onPrevMonth, onNextMonth, onTodayClick, onSetting
               <ChevronLeft size={20} />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label="Mes siguiente" withArrow arrowSize={8}>
+          <Tooltip label={t('appointments.next_month')} withArrow arrowSize={8}>
             <ActionIcon
               onClick={onNextMonth}
               size="lg"

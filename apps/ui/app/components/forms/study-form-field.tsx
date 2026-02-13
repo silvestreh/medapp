@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Text, Group, Stack } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 import {
   FieldRow,
@@ -73,6 +74,7 @@ export function StudyFormField({
   readOnly,
   showMethod,
 }: StudyFormFieldProps) {
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
 
   const validate = useCallback(
@@ -83,12 +85,12 @@ export function StudyFormField({
       }
       const pattern = new RegExp(field.pattern);
       if (!pattern.test(val)) {
-        setError('Formato incorrecto');
+        setError(t('forms.invalid_format'));
       } else {
         setError(null);
       }
     },
-    [field.pattern],
+    [field.pattern, t],
   );
 
   // -- Hide empty fields in read-only mode ----------------------------------
@@ -121,7 +123,7 @@ export function StudyFormField({
 
   const hint = (referenceStr || methodStr) ? (
     <Group gap="xs" mt={2} wrap="nowrap">
-      {referenceStr && <ReferenceText>Ref: {referenceStr}</ReferenceText>}
+      {referenceStr && <ReferenceText>{t('forms.reference_prefix')}: {referenceStr}</ReferenceText>}
       {methodStr && <MethodText>({methodStr})</MethodText>}
     </Group>
   ) : null;

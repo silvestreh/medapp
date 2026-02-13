@@ -4,6 +4,7 @@ import { useLoaderData, useNavigate, useLocation } from '@remix-run/react';
 import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { Drawer, Title, DrawerProps } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
+import { useTranslation } from 'react-i18next';
 import '@mantine/dates/styles.css';
 
 import AppointmentsList from '~/components/appointments-list';
@@ -102,5 +103,6 @@ export default function AppointmentsForDate() {
 }
 
 export const ErrorBoundary = () => {
-  return <div>Something went wrong</div>;
+  const { t } = useTranslation();
+  return <div>{t('common.something_went_wrong')}</div>;
 };

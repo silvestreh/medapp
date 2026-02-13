@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useForm } from '@mantine/form';
+import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 
 import {
@@ -119,6 +120,7 @@ export interface StudyFormProps {
 }
 
 export function StudyForm({ schema, initialData, onChange, readOnly }: StudyFormProps) {
+  const { t } = useTranslation();
   const form = useForm<StudyResultData>({
     initialValues: buildInitialValues(schema, initialData),
   });
@@ -205,17 +207,17 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
       {(!readOnly || form.values.comments || form.values.conclusion) && (
         <>
           <FormHeader>
-            <StyledTitle>Comentarios y Conclusión</StyledTitle>
+            <StyledTitle>{t('studies.comments_and_conclusion')}</StyledTitle>
           </FormHeader>
           <FormCard>
             {(!readOnly || form.values.comments) && (
               <FieldRow>
-                <Label>Comentarios:</Label>
+                <Label>{t('studies.comments_label')}</Label>
                 <StyledTextarea
                   readOnly={readOnly}
                   autosize
                   minRows={2}
-                  placeholder="Comentarios"
+                  placeholder={t('studies.comments_section_placeholder')}
                   value={(form.values.comments as string) ?? ''}
                   onChange={e => form.setFieldValue('comments', e.currentTarget.value)}
                 />
@@ -223,12 +225,12 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
             )}
             {(!readOnly || form.values.conclusion) && (
               <FieldRow>
-                <Label>Conclusión:</Label>
+                <Label>{t('studies.conclusion_label')}</Label>
                 <StyledTextarea
                   readOnly={readOnly}
                   autosize
                   minRows={2}
-                  placeholder="Conclusión"
+                  placeholder={t('studies.conclusion_section_placeholder')}
                   value={(form.values.conclusion as string) ?? ''}
                   onChange={e => form.setFieldValue('conclusion', e.currentTarget.value)}
                 />

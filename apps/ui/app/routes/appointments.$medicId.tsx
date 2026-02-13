@@ -4,6 +4,7 @@ import { useLoaderData, useParams, Outlet, useNavigate } from '@remix-run/react'
 import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Drawer, Skeleton } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
+import { useTranslation } from 'react-i18next';
 
 import { media } from '~/media';
 import { generateEmptySlots } from '~/utils';
@@ -152,5 +153,6 @@ export default function AppointmentsForMedic() {
 }
 
 export const ErrorBoundary = () => {
-  return <div>Something went wrong</div>;
+  const { t } = useTranslation();
+  return <div>{t('common.something_went_wrong')}</div>;
 };

@@ -3,13 +3,14 @@ import { ActionIcon, Flex, Tooltip, Image, type DefaultMantineColor } from '@man
 import { useMediaQuery } from '@mantine/hooks';
 import { NavLink, useMatches } from '@remix-run/react';
 import { Calendar, User, Stethoscope, FlaskConical, Shield, type LucideProps } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
 import { media } from '~/media';
 import HasPermission from '~/components/has-permission';
 
 type Section = {
-  label: string;
+  labelKey: string;
   icon: React.ReactNode;
   path: string;
   permissions: string[];
@@ -149,35 +150,35 @@ const Logo = styled(Image, {
 
 const sections: Section[] = [
   {
-    label: 'Encuentros',
+    labelKey: 'encounters',
     icon: <Stethoscope />,
     permissions: ['encounters:create', 'encounters:find', 'encounters:get'],
     path: '/encounters',
     color: 'lime',
   },
   {
-    label: 'Estudios',
+    labelKey: 'studies',
     icon: <FlaskConical />,
     permissions: ['studies:create', 'studies:find', 'studies:get'],
     path: '/studies',
     color: 'indigo',
   },
   {
-    label: 'Turnos',
+    labelKey: 'appointments',
     icon: <Calendar />,
     permissions: ['appointments:create', 'appointments:find', 'appointments:get'],
     path: '/appointments',
     color: 'pink',
   },
   {
-    label: 'Pacientes',
+    labelKey: 'patients',
     icon: <User />,
     permissions: ['patients:create', 'patients:find', 'patients:get'],
     path: '/patients',
     color: 'yellow',
   },
   {
-    label: 'Usuarios & Roles',
+    labelKey: 'users_roles',
     icon: <Shield />,
     permissions: ['users:create', 'users:find', 'users:get', 'roles:find', 'roles:get', 'roles:patch'],
     path: '/users',
@@ -186,6 +187,7 @@ const sections: Section[] = [
 ];
 
 const SideNav: React.FC = () => {
+  const { t } = useTranslation();
   const matches = useMatches();
   const isMobile = useMediaQuery(media.sm);
 
@@ -195,10 +197,11 @@ const SideNav: React.FC = () => {
         <Logo src="/logo.webp" alt="Logo" />
         {sections.map((section: Section) => {
           const isActive = matches.at(-1)?.pathname.startsWith(section.path);
+          const label = t(`navigation.${section.labelKey}` as any);
 
           return (
-            <HasPermission key={section.label} permissions={section.permissions}>
-              <Tooltip label={section.label} position="right">
+            <HasPermission key={section.labelKey} permissions={section.permissions}>
+              <Tooltip label={label} position="right">
                 <NavItem
                   tone={section.color}
                   active={isActive}
