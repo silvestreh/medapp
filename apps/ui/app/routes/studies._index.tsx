@@ -91,13 +91,40 @@ const STUDY_TYPE_BADGES: Record<string, { short: string; color: string }> = {
 // ---------------------------------------------------------------------------
 
 const Wrapper = styled('div', {
+  base: {},
+});
+
+const HeaderContainer = styled('div', {
   base: {
-    background: 'white',
     display: 'flex',
-    flexDirection: 'column',
-    border: '1px solid var(--mantine-color-gray-2)',
-    width: '100%',
-    borderRadius: 'var(--mantine-radius-md)',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FAFBFB',
+
+    sm: {
+      padding: '1em',
+    },
+    md: {
+      padding: '2em 2em 1em',
+    },
+  },
+});
+
+const Title = styled('h1', {
+  base: {
+    fontSize: '1.5rem',
+    lineHeight: 1,
+    fontWeight: 700,
+    flex: 1,
+    margin: 0,
+
+    md: {
+      fontSize: '2rem',
+    },
+
+    lg: {
+      fontSize: '2.25rem',
+    },
   },
 });
 
@@ -225,6 +252,7 @@ export default function StudiesIndex() {
   const tableRows = studyItems.map(item => (
     <Table.Tr
       key={item.study.id}
+      styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
       onClick={() => navigate(`/studies/${item.study.id}`)}
       style={{
         cursor: 'pointer',
@@ -327,7 +355,7 @@ export default function StudiesIndex() {
   );
 
   return (
-    <Stack p={isDesktop ? 'lg' : 'xs'}>
+    <Stack>
       <Portal id="toolbar">
         <Group justify="space-between" align="center" w="100%">
           <TextInput
@@ -337,8 +365,10 @@ export default function StudiesIndex() {
             value={inputValue}
             onChange={event => setInputValue(event.currentTarget.value)}
             leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
+            flex={1}
             size="lg"
-            style={{ flex: 1 }}
+            variant="unstyled"
+            styles={{ input: { lineHeight: 1, height: 'auto', minHeight: 0 } }}
           />
           <Button component={Link} to="/studies/new" leftSection={<Plus size={16} />}>
             {t('studies.new_study')}
@@ -348,23 +378,72 @@ export default function StudiesIndex() {
 
       {isDesktop ? (
         <Wrapper>
-          <Table highlightOnHover layout="fixed">
+          <HeaderContainer>
+            <Title>{t('studies.title')}</Title>
+          </HeaderContainer>
+          <Table highlightOnHover layout="fixed" bg="white">
             {tableRows.length > 0 && (
               <Table.Thead>
-                <Table.Tr>
-                  <Table.Th w={100}>{t('studies.col_protocol')}</Table.Th>
-                  <Table.Th>{t('studies.col_patient')}</Table.Th>
-                  <Table.Th w={180}>{t('studies.col_dni')}</Table.Th>
-                  <Table.Th w={180}>{t('studies.col_studies')}</Table.Th>
-                  <Table.Th w={150}>{t('studies.col_insurance')}</Table.Th>
-                  <Table.Th w={150}>{t('studies.col_date')}</Table.Th>
+                <Table.Tr bg="blue.0">
+                  <Table.Th
+                    w={100}
+                    style={{ border: '1px solid var(--mantine-color-blue-1)', borderLeft: 'none' }}
+                    fw={500}
+                    fz="md"
+                    py="0.5em"
+                  >
+                    {t('studies.col_protocol')}
+                  </Table.Th>
+                  <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+                    {t('studies.col_patient')}
+                  </Table.Th>
+                  <Table.Th
+                    w={180}
+                    style={{ border: '1px solid var(--mantine-color-blue-1)' }}
+                    fw={500}
+                    fz="md"
+                    py="0.5em"
+                  >
+                    {t('studies.col_dni')}
+                  </Table.Th>
+                  <Table.Th
+                    w={180}
+                    style={{ border: '1px solid var(--mantine-color-blue-1)' }}
+                    fw={500}
+                    fz="md"
+                    py="0.5em"
+                  >
+                    {t('studies.col_studies')}
+                  </Table.Th>
+                  <Table.Th
+                    w={150}
+                    style={{ border: '1px solid var(--mantine-color-blue-1)' }}
+                    fw={500}
+                    fz="md"
+                    py="0.5em"
+                  >
+                    {t('studies.col_insurance')}
+                  </Table.Th>
+                  <Table.Th
+                    w={150}
+                    style={{ border: '1px solid var(--mantine-color-blue-1)', borderRight: 'none' }}
+                    fw={500}
+                    fz="md"
+                    py="0.5em"
+                  >
+                    {t('studies.col_date')}
+                  </Table.Th>
                 </Table.Tr>
               </Table.Thead>
             )}
             <Table.Tbody>
               {tableRows.length > 0 && tableRows}
               {tableRows.length === 0 && (
-                <Table.Tr onClick={() => inputRef.current?.focus()} style={{ cursor: 'pointer' }}>
+                <Table.Tr
+                  styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
+                  onClick={() => inputRef.current?.focus()}
+                  style={{ cursor: 'pointer' }}
+                >
                   <Table.Td colSpan={6}>{emptyState}</Table.Td>
                 </Table.Tr>
               )}
@@ -376,7 +455,15 @@ export default function StudiesIndex() {
       )}
 
       {totalPages > 1 && (
-        <Group justify="center" mt="md">
+        <Group
+          justify="center"
+          mt="md"
+          pos="sticky"
+          bottom="0"
+          bg="white"
+          py="lg"
+          style={{ borderTop: '1px solid var(--mantine-color-gray-1)' }}
+        >
           <Pagination total={totalPages} value={page} onChange={setPage} size={isDesktop ? 'md' : 'sm'} />
         </Group>
       )}

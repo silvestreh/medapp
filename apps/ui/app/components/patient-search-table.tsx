@@ -1,6 +1,7 @@
 import { useState, useMemo, type FC, useEffect, useRef } from 'react';
 import { Table, TextInput, Stack, Loader, Text as BaseText, Pagination, Group } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
+import { useTranslation } from 'react-i18next';
 import { Search, User } from 'lucide-react';
 import { useNavigate, useSearchParams } from '@remix-run/react';
 
@@ -69,6 +70,7 @@ const EmptyState = styled('div', {
 });
 
 const PatientSearchTable: FC = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('q') || '';
   const [inputValue, setInputValue] = useState(initialSearch);
@@ -143,12 +145,14 @@ const PatientSearchTable: FC = () => {
         <TextInput
           ref={inputRef}
           autoFocus
-          placeholder="Buscar paciente por nombre, apellido o documento..."
+          placeholder={t('patients.search_placeholder')}
           value={inputValue}
           onChange={event => setInputValue(event.currentTarget.value)}
           leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
+          variant="unstyled"
           size="lg"
-          w="100%"
+          flex={1}
+          styles={{ input: { lineHeight: 1, height: 'auto', minHeight: 0 } }}
         />
       </Portal>
 
@@ -157,9 +161,9 @@ const PatientSearchTable: FC = () => {
           {rows.length > 0 && (
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Nombre</Table.Th>
-                <Table.Th>Apellido</Table.Th>
-                <Table.Th>Documento</Table.Th>
+                <Table.Th>{t('patients.col_first_name')}</Table.Th>
+                <Table.Th>{t('patients.col_last_name')}</Table.Th>
+                <Table.Th>{t('patients.col_document')}</Table.Th>
               </Table.Tr>
             </Table.Thead>
           )}
@@ -175,7 +179,7 @@ const PatientSearchTable: FC = () => {
                       <Search size={48} color="var(--mantine-color-dimmed)" />
                     )}
                     <BaseText c="dimmed" ta="center">
-                      {inputValue && !isLoading ? 'No se encontraron pacientes' : 'Comience a escribir para buscar...'}
+                      {inputValue && !isLoading ? t('patients.no_results') : t('patients.search_prompt')}
                     </BaseText>
                   </EmptyState>
                 </Table.Td>
