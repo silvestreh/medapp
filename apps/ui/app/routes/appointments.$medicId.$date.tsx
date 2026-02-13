@@ -11,6 +11,7 @@ import AppointmentsList from '~/components/appointments-list';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import { generateSlots } from '~/utils';
 import { styled } from '~/styled-system/jsx';
+import { css } from '~/styled-system/css';
 import { media } from '~/media';
 import type { Account } from '~/declarations';
 
@@ -96,7 +97,33 @@ export default function AppointmentsForDate() {
         <Title order={2} mb="lg" display={isTablet ? 'block' : 'none'}>
           {title}
         </Title>
-        <AppointmentsList slots={slots} borderRadius={isTablet} medicId={medicId} />
+        <AppointmentsList
+          slots={slots}
+          medicId={medicId}
+          className={css({
+            borderTopWidth: 0,
+            borderBottomWidth: 0,
+
+            lg: {
+              borderRadius: 8,
+              border: '1px solid var(--mantine-color-gray-2)',
+
+              '& .slot': {
+                '&:last-child': {
+                  borderBottomWidth: 0,
+                },
+              },
+
+              '& .slot:first-child .slot-time': {
+                borderTopLeftRadius: '8px',
+              },
+
+              '& .slot:last-child .slot-time': {
+                borderBottomLeftRadius: '8px',
+              },
+            },
+          })}
+        />
       </Container>
     </Wrapper>
   );
