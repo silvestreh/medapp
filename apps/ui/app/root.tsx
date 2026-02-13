@@ -5,14 +5,12 @@ import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
 import { useTranslation } from 'react-i18next';
-import { useEffect } from 'react';
 import './global.css';
 import '@mantine/core/styles.layer.css';
 import '@mantine/notifications/styles.layer.css';
 import './panda.css';
 
-import i18next, { localeCookie } from '~/i18n/i18next.server';
-import i18n from '~/i18n/i18n';
+import { localeCookie, resolveLocale } from '~/i18n/i18next.server';
 import { FeathersProvider } from '~/components/provider';
 import MainLayout from '~/components/main-layout';
 import { getToken, getUser } from '~/utils/auth.server';
@@ -34,14 +32,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const initialToken = await getToken(request);
   const initialUser = await getUser(request);
   const apiUrl = process.env.API_URL;
-  const locale = await i18next.getLocale(request);
-  const url = new URL(request.url);
-  const requestedLocale = url.searchParams.get('lng');
-  const shouldSetLocaleCookie = !!requestedLocale && i18n.supportedLngs.includes(requestedLocale as any);
+  const locale = await resolveLocale(request);
 
   return json(
     { initialToken, initialUser, apiUrl, locale },
-    shouldSetLocaleCookie ? { headers: { 'Set-Cookie': await localeCookie.serialize(requestedLocale) } } : undefined
+    {
+      headers: {
+        'Set-Cookie': await localeCookie.serialize(locale),
+      },
+    }
   );
 };
 
@@ -96,16 +95,8 @@ export const ErrorBoundary = () => {
 export default function App() {
   const data = useRouteLoaderData<typeof loader>('root');
   const locale = data?.locale || 'es';
-  const { i18n: i18nClient } = useTranslation();
 
   useChangeLanguage(locale);
-
-  useEffect(() => {
-    const currentLocale = i18nClient.resolvedLanguage || locale;
-    if (!currentLocale) return;
-
-    document.cookie = `lng=${encodeURIComponent(currentLocale)}; Path=/; Max-Age=31536000; SameSite=Lax`;
-  }, [i18nClient.resolvedLanguage, locale]);
 
   return (
     <Document>

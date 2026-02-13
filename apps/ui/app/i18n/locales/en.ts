@@ -17,6 +17,8 @@ export const en: typeof es = {
     close: 'Close',
     yes: 'Yes',
     no: 'No',
+    spanish: 'Español',
+    english: 'English',
     select: 'Select...',
     from: 'From',
     to: 'To',
@@ -32,6 +34,7 @@ export const en: typeof es = {
     appointments: 'Appointments',
     patients: 'Patients',
     users_roles: 'Users & Roles',
+    language: 'Language',
   },
   appointments: {
     today_schedule: "Today's appointments",
