@@ -220,8 +220,14 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
         })();
 
         return (
-          <Slot key={index} onClick={handleClickSlot(slot)} isActiveSlot={isActiveSlot} isClickable={isClickable}>
-            <Time isExtra={isExtra}>
+          <Slot
+            className="slot"
+            key={index}
+            onClick={handleClickSlot(slot)}
+            isActiveSlot={isActiveSlot}
+            isClickable={isClickable}
+          >
+            <Time className="slot-time" isExtra={isExtra}>
               {isExtra ? <>&nbsp;&nbsp;&nbsp;{t('appointments.extra_slot_short')}</> : dayjs(slot.date).format('HH:mm')}
             </Time>
             <MainContent>
@@ -277,8 +283,10 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
         );
       })}
       {!readonly && (
-        <Slot>
-          <Time isExtra>&nbsp;&nbsp;&nbsp;{t('appointments.extra_slot_short')}</Time>
+        <Slot className="slot">
+          <Time className="slot-time" isExtra>
+            &nbsp;&nbsp;&nbsp;{t('appointments.extra_slot_short')}
+          </Time>
           <MainContent>
             <PatientSearch
               onChange={handlePatientChange({ date: dayjs().format('YYYY-MM-DD'), appointment: null }, true)}
