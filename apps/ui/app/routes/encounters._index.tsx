@@ -4,11 +4,10 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { Flex } from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
 
 import { generateSlots } from '~/utils';
+import { css } from '~/styled-system/css';
 import { styled } from '~/styled-system/jsx';
-import { media } from '~/media';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import AppointmentsList from '~/components/appointments-list';
 import PatientSearchTable from '~/components/patient-search-table';
@@ -22,19 +21,19 @@ const Container = styled(Flex, {
       flexDirection: 'column-reverse',
     },
     lg: {
-      alignItems: 'flex-start',
+      alignItems: 'stretch',
       flexDirection: 'row',
-      padding: '2rem',
-      gap: '1rem',
+      minHeight: 'calc(100vh - 4.8em)',
     },
   },
 });
 
 const LeftColumn = styled(Flex, {
   base: {
+    flexDirection: 'column',
+
     lg: {
-      position: 'sticky',
-      top: '7.65rem',
+      minHeight: 0,
       width: '40%',
     },
   },
@@ -42,7 +41,44 @@ const LeftColumn = styled(Flex, {
 
 const MainColumn = styled(Flex, {
   base: {
+    flexDirection: 'column',
     flex: 1,
+    minHeight: 0,
+    backgroundColor: 'white',
+  },
+});
+
+const HeaderContainer = styled('div', {
+  base: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FAFBFB',
+
+    sm: {
+      padding: '1em',
+    },
+    md: {
+      padding: '2em 2em 1em',
+    },
+  },
+});
+
+const Title = styled('h1', {
+  base: {
+    fontSize: '1.5rem',
+    lineHeight: 1,
+    fontWeight: 700,
+    flex: 1,
+    margin: 0,
+
+    md: {
+      fontSize: '2rem',
+    },
+
+    lg: {
+      fontSize: '2.25rem',
+    },
   },
 });
 
@@ -65,12 +101,24 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
 
 export default function EncountersIndex() {
   const { slots } = useLoaderData<typeof loader>();
-  const isTablet = useMediaQuery(media.lg);
 
   return (
     <Container>
       <LeftColumn>
-        <AppointmentsList slots={slots} readonly onAppointmentClick={console.log} borderRadius={isTablet} />
+        <HeaderContainer>
+          <Title>Turnos de Hoy</Title>
+        </HeaderContainer>
+        <AppointmentsList
+          slots={slots}
+          readonly
+          onAppointmentClick={console.log}
+          className={css({
+            borderTop: '1px solid var(--mantine-color-gray-2)',
+            lg: {
+              borderRight: '1px solid var(--mantine-color-gray-2)',
+            },
+          })}
+        />
       </LeftColumn>
       <MainColumn>
         <PatientSearchTable />

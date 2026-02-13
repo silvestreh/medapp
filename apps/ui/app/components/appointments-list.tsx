@@ -11,11 +11,11 @@ import type { Appointment, Slot as SlotType } from '~/declarations';
 
 interface AppointmentsListProps {
   slots: SlotType[];
-  borderRadius?: boolean;
   readonly?: boolean;
   onRemove?: (id: string) => void;
   onAppointmentClick?: (appointment: Appointment | null) => void;
   medicId?: string;
+  className?: string;
 }
 
 const Container = styled('div', {
@@ -23,24 +23,10 @@ const Container = styled('div', {
     background: 'white',
     display: 'flex',
     flexDirection: 'column',
-    border: '1px solid var(--mantine-color-gray-2)',
+    borderTop: '1px solid var(--mantine-color-gray-2)',
+    flex: 1,
+    minHeight: 0,
     width: '100%',
-  },
-
-  variants: {
-    borderRadius: {
-      true: {
-        borderRadius: 'var(--mantine-radius-md)',
-        borderWidth: '1px',
-      },
-      false: {
-        borderWidth: 0,
-      },
-    },
-  },
-
-  defaultVariants: {
-    borderRadius: true,
   },
 });
 
@@ -50,24 +36,22 @@ const Slot = styled('div', {
     display: 'flex',
     gap: '4px',
     color: 'var(--mantine-color-gray-8)',
-    height: '4em',
+    height: '3em',
 
     '& + &': {
       borderTop: '1px solid var(--mantine-color-gray-2)',
     },
+
+    '&:last-child': {
+      borderBottom: '1px solid var(--mantine-color-gray-2)',
+    },
+
+    md: {
+      height: '4em',
+    },
   },
 
   variants: {
-    borderRadius: {
-      true: {
-        '&:first-child > span:first-child': {
-          borderTopLeftRadius: 'var(--mantine-radius-md)',
-        },
-        '&:last-child > span:first-child': {
-          borderBottomLeftRadius: 'var(--mantine-radius-md)',
-        },
-      },
-    },
     isClickable: {
       true: {
         cursor: 'pointer',
@@ -81,10 +65,6 @@ const Slot = styled('div', {
         background: 'rgb(from var(--mantine-color-blue-0) r g b / 35%)',
       },
     },
-  },
-
-  defaultVariants: {
-    borderRadius: true,
   },
 });
 
@@ -159,10 +139,10 @@ const TextContent = styled('div', {
 const AppointmentsList: FC<AppointmentsListProps> = ({
   slots: initialSlots,
   onRemove,
-  borderRadius,
   readonly,
   onAppointmentClick,
   medicId,
+  className,
 }) => {
   const [slots, setSlots] = useState(initialSlots);
   const [openPopover, setOpenPopover] = useState<string | null>(null);
@@ -216,7 +196,7 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
     };
 
   return (
-    <Container borderRadius={borderRadius}>
+    <Container className={className}>
       {slots.map((slot, index) => {
         const isExtra = slot.appointment?.extra;
         const isActiveSlot = activeSlot === slot.date;
@@ -238,13 +218,7 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
         })();
 
         return (
-          <Slot
-            key={index}
-            borderRadius={borderRadius}
-            onClick={handleClickSlot(slot)}
-            isActiveSlot={isActiveSlot}
-            isClickable={isClickable}
-          >
+          <Slot key={index} onClick={handleClickSlot(slot)} isActiveSlot={isActiveSlot} isClickable={isClickable}>
             <Time isExtra={isExtra}>{isExtra ? <>&nbsp;&nbsp;&nbsp;ST</> : dayjs(slot.date).format('HH:mm')}</Time>
             <MainContent>
               {slot.appointment && (
@@ -299,7 +273,7 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
         );
       })}
       {!readonly && (
-        <Slot borderRadius={borderRadius}>
+        <Slot>
           <Time isExtra>&nbsp;&nbsp;&nbsp;ST</Time>
           <MainContent>
             <PatientSearch

@@ -6,6 +6,20 @@ alwaysApply: true
 1. NEVER, ever, ever, ever, clean the DB without conscent. In fact, never run any code that touches the database unless explicitely told.
 2. When interacting with the API, use the hooks defined in `~/components/provider.tsx`.
 
+# Code Style
+
+1. When using conditional rendering of components, prefer explicit true/false code over ternary operators, like:
+
+```jsx
+{isDesktop && (
+  <SomeDesktopComponent />
+)}
+
+{!isDesktop && (
+  <SomeMobileComponent />
+)}
+```
+
 # Medical Forms Styling Rules
 
 Adhere to these styling rules when creating or modifying medical forms in the `apps/ui/app/components/forms/` directory.
