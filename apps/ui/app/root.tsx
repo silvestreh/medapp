@@ -4,6 +4,7 @@ import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
+import { useTranslation } from 'react-i18next';
 import './global.css';
 import '@mantine/core/styles.layer.css';
 import '@mantine/notifications/styles.layer.css';
@@ -73,12 +74,13 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 export const ErrorBoundary = () => {
+  const { t } = useTranslation();
   const error = useRouteError();
   captureRemixErrorBoundaryError(error);
 
   return (
     <Document>
-      <div>Something went wrong</div>
+      <div>{t('common.something_went_wrong')}</div>
     </Document>
   );
 };

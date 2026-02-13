@@ -2,6 +2,7 @@ import { type FC, useEffect, useState, useMemo, memo } from 'react';
 import { Select, Group, Text, type SelectProps } from '@mantine/core';
 import { User } from 'lucide-react';
 import { useParams } from '@remix-run/react';
+import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
 
@@ -20,6 +21,7 @@ const Option = styled(Group, {
 });
 
 const MedicList: FC<MedicListProps> = ({ onChange, medics = [] }) => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [selectedMedic, setSelectedMedic] = useState<string | null>(null);
   const params = useParams();
@@ -62,7 +64,7 @@ const MedicList: FC<MedicListProps> = ({ onChange, medics = [] }) => {
       onSearchChange={setSearch}
       onFocus={() => setSearch('')}
       clearable={false}
-      placeholder="Buscar médico…"
+      placeholder={t('appointments.search_medic_placeholder')}
       renderOption={handleRenderOption}
       value={selectedMedic || params.medicId}
       variant="filled"

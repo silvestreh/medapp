@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { type MetaFunction, type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { useLoaderData, Outlet, useNavigate } from '@remix-run/react';
+import { useTranslation } from 'react-i18next';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import MedicList from '~/components/medic-list';
@@ -46,5 +47,6 @@ export default function AppointmentsLayout() {
 }
 
 export const ErrorBoundary = () => {
-  return <div>Something went wrong</div>;
+  const { t } = useTranslation();
+  return <div>{t('common.something_went_wrong')}</div>;
 };

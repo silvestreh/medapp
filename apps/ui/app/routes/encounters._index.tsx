@@ -4,6 +4,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { Flex } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 
 import { generateSlots } from '~/utils';
 import { css } from '~/styled-system/css';
@@ -100,13 +101,14 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
 });
 
 export default function EncountersIndex() {
+  const { t } = useTranslation();
   const { slots } = useLoaderData<typeof loader>();
 
   return (
     <Container>
       <LeftColumn>
         <HeaderContainer>
-          <Title>Turnos de Hoy</Title>
+          <Title>{t('appointments.today_schedule')}</Title>
         </HeaderContainer>
         <AppointmentsList
           slots={slots}
