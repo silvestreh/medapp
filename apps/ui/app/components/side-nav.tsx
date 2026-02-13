@@ -239,7 +239,7 @@ const SideNav: React.FC = () => {
                   prefetch="intent"
                   to={isActive ? '#' : section.path}
                   variant="subtle"
-                  size={isMobile ? '3.5em' : '2.75em'}
+                  size="3em"
                   className={isActive ? 'active' : ''}
                 >
                   {isValidElement(section.icon) &&
@@ -254,7 +254,7 @@ const SideNav: React.FC = () => {
         <Menu withArrow position={isMobile ? 'top-end' : 'right-end'} shadow="xs">
           <Menu.Target>
             <Tooltip label={t('navigation.language')} position={isMobile ? 'top' : 'right'}>
-              <ActionIcon variant="subtle" size={isMobile ? '3.5em' : '2.75em'}>
+              <ActionIcon variant="subtle" size="3em">
                 <Languages size={isMobile ? 18 : 22} />
               </ActionIcon>
             </Tooltip>

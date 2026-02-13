@@ -5,10 +5,10 @@ import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
 import { useTranslation } from 'react-i18next';
-import './global.css';
+import '~/global.css';
 import '@mantine/core/styles.layer.css';
 import '@mantine/notifications/styles.layer.css';
-import './panda.css';
+import '~/panda.css';
 
 import { localeCookie, resolveLocale } from '~/i18n/i18next.server';
 import { FeathersProvider } from '~/components/provider';
