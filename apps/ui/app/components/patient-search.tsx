@@ -1,6 +1,7 @@
 import { useState, useMemo, type FC } from 'react';
 import { Popover, TextInput, Stack, Loader, Text } from '@mantine/core';
 import { useDebouncedValue, useDisclosure, useClickOutside } from '@mantine/hooks';
+import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 
 import { useFind } from '~/components/provider';
@@ -33,12 +34,9 @@ const Button = styled('button', {
   },
 });
 
-const PatientSearch: FC<PatientSearchProps> = ({
-  onChange,
-  onBlur,
-  placeholder = 'Buscar paciente…',
-  autoFocus = false,
-}) => {
+const PatientSearch: FC<PatientSearchProps> = ({ onChange, onBlur, placeholder, autoFocus = false }) => {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t('patients.search_patient');
   const [inputValue, setInputValue] = useState('');
   const [debouncedInputValue] = useDebouncedValue(inputValue, 500);
   const [isOpen, { open, close }] = useDisclosure(false);
@@ -83,7 +81,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
           value={inputValue}
           onChange={e => setInputValue(e.currentTarget.value)}
           onBlur={handleBlur}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           styles={{ input: { fontSize: '1em' } }}
           leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
         />
@@ -94,7 +92,8 @@ const PatientSearch: FC<PatientSearchProps> = ({
             <Button key={patient.id} onClick={() => onChange?.(patient.id)}>
               <Text>
                 {patient.personalData.firstName} {patient.personalData.lastName}
-                {displayDocumentValue(patient.personalData.documentValue) !== '—' && ` (${patient.personalData.documentValue})`}
+                {displayDocumentValue(patient.personalData.documentValue) !== '—' &&
+                  ` (${patient.personalData.documentValue})`}
               </Text>
               <Text size="xs" c="dimmed">
                 {patient.medicare} {patient.medicareNumber}
