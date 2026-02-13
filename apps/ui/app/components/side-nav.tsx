@@ -1,8 +1,8 @@
 import React, { cloneElement, isValidElement, type ReactElement } from 'react';
-import { ActionIcon, Flex, Tooltip, Image, type DefaultMantineColor } from '@mantine/core';
+import { ActionIcon, Flex, Tooltip, Image, Menu, type DefaultMantineColor } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { NavLink, useMatches } from '@remix-run/react';
-import { Calendar, User, Stethoscope, FlaskConical, Shield, type LucideProps } from 'lucide-react';
+import { NavLink, useLocation, useMatches, useNavigate } from '@remix-run/react';
+import { Calendar, User, Stethoscope, FlaskConical, Shield, Languages, type LucideProps } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
@@ -148,6 +148,23 @@ const Logo = styled(Image, {
   },
 }) as unknown as typeof Image;
 
+const LanguageSwitcherContainer = styled(Flex, {
+  base: {
+    sm: {
+      alignItems: 'center',
+      padding: '0.75em',
+    },
+    md: {
+      width: '100%',
+      justifyContent: 'center',
+      marginTop: 'auto',
+      padding: '0.75em 1em 1em',
+      position: 'sticky',
+      bottom: 0,
+    },
+  },
+});
+
 const sections: Section[] = [
   {
     labelKey: 'encounters',
@@ -187,9 +204,22 @@ const sections: Section[] = [
 ];
 
 const SideNav: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const matches = useMatches();
+  const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery(media.sm);
+  const currentLanguage = i18n.resolvedLanguage || 'es';
+
+  const handleLanguageChange = (lng: string) => () => {
+    if (currentLanguage === lng) {
+      return;
+    }
+
+    const params = new URLSearchParams(location.search);
+    params.set('lng', lng);
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true, preventScrollReset: true });
+  };
 
   return (
     <Container>
@@ -220,6 +250,25 @@ const SideNav: React.FC = () => {
           );
         })}
       </StickyContent>
+      <LanguageSwitcherContainer>
+        <Menu withArrow position={isMobile ? 'top-end' : 'right-end'} shadow="xs">
+          <Menu.Target>
+            <Tooltip label={t('navigation.language')} position={isMobile ? 'top' : 'right'}>
+              <ActionIcon variant="subtle" size={isMobile ? '3.5em' : '2.75em'}>
+                <Languages size={isMobile ? 18 : 22} />
+              </ActionIcon>
+            </Tooltip>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item onClick={handleLanguageChange('es')} disabled={currentLanguage === 'es'}>
+              {t('common.spanish')}
+            </Menu.Item>
+            <Menu.Item onClick={handleLanguageChange('en')} disabled={currentLanguage === 'en'}>
+              {t('common.english')}
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      </LanguageSwitcherContainer>
     </Container>
   );
 };

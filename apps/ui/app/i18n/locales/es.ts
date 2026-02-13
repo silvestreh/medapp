@@ -15,6 +15,8 @@ export const es = {
     close: 'Cerrar',
     yes: 'Sí',
     no: 'No',
+    spanish: 'Español',
+    english: 'English',
     select: 'Seleccione...',
     from: 'Desde',
     to: 'Hasta',
@@ -30,6 +32,7 @@ export const es = {
     appointments: 'Turnos',
     patients: 'Pacientes',
     users_roles: 'Usuarios & Roles',
+    language: 'Idioma',
   },
   appointments: {
     today_schedule: 'Turnos de Hoy',
