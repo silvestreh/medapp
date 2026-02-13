@@ -1,7 +1,7 @@
 import { captureRemixErrorBoundaryError } from '@sentry/remix';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError, useRouteLoaderData } from '@remix-run/react';
 import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
-import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
 import './global.css';
@@ -13,6 +13,17 @@ import i18next from '~/i18n/i18next.server';
 import { FeathersProvider } from '~/components/provider';
 import MainLayout from '~/components/main-layout';
 import { getToken, getUser } from '~/utils/auth.server';
+import { breakpoints } from '~/media';
+
+// Override Mantine's default breakpoints to match the ones defined in ~/media.
+// This keeps a single source of truth (media.ts) for PandaCSS, Mantine, and
+// useMediaQuery calls. Mantine expects em values, so we convert from px (÷ 16).
+const theme = createTheme({
+  breakpoints: Object.fromEntries(Object.entries(breakpoints).map(([k, v]) => [k, `${v / 16}em`])) as Record<
+    string,
+    string
+  >,
+});
 
 export const links: LinksFunction = () => [];
 
@@ -53,7 +64,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <FeathersProvider initialToken={initialToken} initialUser={initialUser} apiUrl={apiUrl}>
-      <MantineProvider>
+      <MantineProvider theme={theme}>
         <Notifications position="top-right" mt="5em" />
         <MainLayout>{children}</MainLayout>
       </MantineProvider>

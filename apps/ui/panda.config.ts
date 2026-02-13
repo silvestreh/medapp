@@ -1,4 +1,5 @@
 import { defineConfig } from '@pandacss/dev';
+import { breakpoints } from './app/media';
 
 export default defineConfig({
   preflight: false,
@@ -8,12 +9,7 @@ export default defineConfig({
   outdir: 'app/styled-system',
   theme: {
     extend: {
-      breakpoints: {
-        sm: '320px',
-        md: '640px',
-        lg: '1024px',
-        xl: '1440px',
-      },
+      breakpoints: Object.fromEntries(Object.entries(breakpoints).map(([k, v]) => [k, `${v}px`])),
     },
   },
 });
