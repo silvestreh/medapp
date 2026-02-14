@@ -3,15 +3,7 @@ import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 
-import {
-  FormContainer,
-  FormCard,
-  FieldRow,
-  Label,
-  StyledTextarea,
-  StyledTitle,
-  FormHeader,
-} from '~/components/forms/styles';
+import { FormContainer, FormCard, FieldRow, Label, StyledTextarea, FormHeader } from '~/components/forms/styles';
 import { StudyFormField } from './study-form-field';
 import type { StudySchema, StudyField, StudyResultData, StudySelectValue } from './study-form-types';
 
@@ -108,6 +100,15 @@ const FieldsGrid = styled('div', {
   },
 });
 
+const StyledTitle = styled('h2', {
+  base: {
+    fontWeight: 500,
+    margin: '1.5rem 0 0',
+    lineHeight: 1,
+    color: 'var(--mantine-color-gray-6)',
+  },
+});
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -157,7 +158,7 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
         <div key={`s-${si}`}>
           {section.titleField && (
             <FormHeader>
-              <StyledTitle order={3}>
+              <StyledTitle>
                 <span dangerouslySetInnerHTML={{ __html: section.titleField.label ?? '' }} />
                 {section.titleField.unit && (
                   <span style={{ color: 'var(--mantine-color-gray-5)', fontSize: '0.75em', marginLeft: '0.5rem' }}>

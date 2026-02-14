@@ -2,24 +2,16 @@ import { useState, useCallback } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 import { useFetcher, useNavigate } from '@remix-run/react';
-import { Group, Button, Checkbox, Text } from '@mantine/core';
+import { Group, Button } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { FlaskConical } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import { useGet } from '~/components/provider';
-import PatientSearch from '~/components/patient-search';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
-import {
-  FormCard,
-  FieldRow,
-  Label,
-  StyledTextInput,
-  StyledTextarea,
-  StyledDateInput,
-  StyledTitle,
-} from '~/components/forms/styles';
+import { StyledTitle } from '~/components/forms/styles';
+import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 
 export const meta: MetaFunction = () => {
   return [{ title: 'MedApp / Nuevo Estudio' }];
@@ -73,22 +65,6 @@ const PageContainer = styled('div', {
   },
 });
 
-const TypeGrid = styled('div', {
-  base: {
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-    gap: '0.75rem',
-
-    sm: {
-      gridTemplateColumns: '1fr 1fr',
-    },
-
-    lg: {
-      gridTemplateColumns: '1fr 1fr 1fr',
-    },
-  },
-});
-
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
@@ -136,80 +112,24 @@ export default function NewStudy() {
         </Group>
       </Portal>
 
-      <StyledTitle order={3}>{t('studies.study_data')}</StyledTitle>
-      <FormCard>
-        <FieldRow>
-          <Label>{t('studies.patient_required')}</Label>
-          <PatientSearch
-            onChange={id => setPatientId(id)}
-            onBlur={() => {}}
-            placeholder={t('studies.patient_search_placeholder')}
-            autoFocus
-          />
-        </FieldRow>
-        <FieldRow>
-          <Label>{t('studies.referring_doctor')}</Label>
-          <StyledTextInput
-            placeholder={t('studies.referring_doctor_placeholder')}
-            value={medic}
-            onChange={e => setMedic(e.currentTarget.value)}
-          />
-        </FieldRow>
-        <FieldRow>
-          <Label>{t('studies.insurance')}</Label>
-          <StyledTextInput
-            placeholder={t('studies.insurance_placeholder')}
-            value={(patient as any)?.medicare || ''}
-            readOnly
-            disabled={!patientId}
-          />
-        </FieldRow>
-        <FieldRow>
-          <Label>{t('studies.extraction_date')}</Label>
-          <StyledDateInput value={date} onChange={v => setDate(v ? new Date(v) : null)} valueFormat="DD/MM/YYYY" />
-        </FieldRow>
-        <FieldRow checkbox>
-          <Checkbox
-            label={t('studies.no_order')}
-            checked={noOrder}
-            onChange={e => setNoOrder(e.currentTarget.checked)}
-            color="blue"
-          />
-        </FieldRow>
-        <FieldRow>
-          <Label>{t('studies.observations')}</Label>
-          <StyledTextarea
-            placeholder={t('studies.observations_placeholder')}
-            value={comment}
-            onChange={e => setComment(e.currentTarget.value)}
-            autosize
-            minRows={2}
-          />
-        </FieldRow>
-      </FormCard>
-
-      <StyledTitle order={3}>{t('studies.requested_studies')}</StyledTitle>
-      <FormCard>
-        <FieldRow stacked>
-          <TypeGrid>
-            {STUDY_TYPE_KEYS.map(key => (
-              <Checkbox
-                key={key}
-                label={t(`studies.type_${key}`)}
-                checked={selectedStudies.includes(key)}
-                onChange={() => toggleStudy(key)}
-                color="blue"
-              />
-            ))}
-          </TypeGrid>
-
-          {selectedStudies.length === 0 && (
-            <Text size="sm" c="dimmed" ta="center" mt="sm">
-              {t('studies.select_at_least_one')}
-            </Text>
-          )}
-        </FieldRow>
-      </FormCard>
+      <StudyMetadataForm
+        mode="create"
+        studyTypeKeys={STUDY_TYPE_KEYS}
+        selectedStudies={selectedStudies}
+        onToggleStudy={toggleStudy}
+        noOrder={noOrder}
+        onNoOrderChange={setNoOrder}
+        comment={comment}
+        onCommentChange={setComment}
+        date={date}
+        onDateChange={setDate}
+        patientId={patientId}
+        onPatientChange={setPatientId}
+        patient={patient as any}
+        referringDoctor={medic}
+        onReferringDoctorChange={setMedic}
+        showEmptyStudyHint
+      />
 
       <Group justify="flex-end">
         <Button variant="subtle" color="gray" onClick={() => navigate('/studies')}>

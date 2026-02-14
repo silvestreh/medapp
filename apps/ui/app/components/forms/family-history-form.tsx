@@ -258,6 +258,8 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                     {...form.getInputProps(`items.${index}.firstName`)}
                     readOnly={readOnly}
                     styles={{ input: { paddingLeft: 0 } }}
+                    autoComplete="off"
+                    data-1p-ignore
                   />
                 </Table.Td>
                 <Table.Td>
@@ -266,6 +268,8 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                     {...form.getInputProps(`items.${index}.lastName`)}
                     readOnly={readOnly}
                     styles={{ input: { paddingLeft: 0 } }}
+                    autoComplete="off"
+                    data-1p-ignore
                   />
                 </Table.Td>
                 <Table.Td>
