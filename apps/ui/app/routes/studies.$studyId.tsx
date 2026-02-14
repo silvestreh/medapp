@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useNavigate, useParams } from '@remix-run/react';
-import { Group, Button, Checkbox, Tabs, Text, Loader } from '@mantine/core';
+import { Group, Button, Tabs, Text, Loader } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { Save } from 'lucide-react';
 
@@ -12,16 +12,9 @@ import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { studySchemas } from '~/components/forms/study-schemas';
 import { StudyForm } from '~/components/forms/study-form';
+import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 import type { StudyResultData } from '~/components/forms/study-form-types';
-import {
-  FormCard,
-  FieldRow,
-  Label,
-  StyledTextInput,
-  StyledTextarea,
-  StyledDateInput,
-  StyledTitle,
-} from '~/components/forms/styles';
+import { StyledTitle } from '~/components/forms/styles';
 
 export const meta: MetaFunction = () => {
   return [{ title: 'MedApp / Estudio' }];
@@ -75,21 +68,7 @@ const PageContainer = styled('div', {
   },
 });
 
-const TypeGrid = styled('div', {
-  base: {
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-    gap: '0.75rem',
-
-    sm: {
-      gridTemplateColumns: '1fr 1fr',
-    },
-
-    lg: {
-      gridTemplateColumns: '1fr 1fr 1fr',
-    },
-  },
-});
+const toStartOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 // ---------------------------------------------------------------------------
 // Main component
@@ -104,8 +83,9 @@ export default function StudyDetail() {
 
   const { data: study, isLoading: studyLoading } = useGet('studies', studyId!);
 
-  // Debounce timer refs for auto-saving results
-  const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  // Local draft state for result forms (saved explicitly by button)
+  const [resultDrafts, setResultDrafts] = useState<Record<string, StudyResultData>>({});
+  const [savingResultType, setSavingResultType] = useState<string | null>(null);
 
   // Local metadata state (initialized from study once loaded)
   const [metaDirty, setMetaDirty] = useState(false);
@@ -146,21 +126,36 @@ export default function StudyDetail() {
     setMetaDirty(false);
   }, [studyId, comment, noOrder, selectedStudies, date, fetcher]);
 
-  const handleResultChange = useCallback(
-    (type: string, resultId: string | undefined) => (data: StudyResultData) => {
-      // Clear existing timer for this type
-      if (saveTimers.current[type]) {
-        clearTimeout(saveTimers.current[type]);
-      }
+  const handleResultDraftChange = useCallback(
+    (type: string) => (data: StudyResultData) => {
+      setResultDrafts(prev => ({
+        ...prev,
+        [type]: data,
+      }));
+    },
+    []
+  );
 
-      // Debounce the save by 1 second
-      saveTimers.current[type] = setTimeout(() => {
+  const handleSaveResult = useCallback(
+    async (type: string, resultId: string | undefined, data: StudyResultData | undefined) => {
+      if (!studyId || !data) return;
+
+      setSavingResultType(type);
+      try {
         if (resultId) {
-          resultsMutation.patch(resultId, { data });
-        } else if (studyId) {
-          resultsMutation.create({ studyId, type, data });
+          await resultsMutation.patch(resultId, { data });
+        } else {
+          await resultsMutation.create({ studyId, type, data });
         }
-      }, 1000);
+
+        setResultDrafts(prev => {
+          const next = { ...prev };
+          delete next[type];
+          return next;
+        });
+      } finally {
+        setSavingResultType(null);
+      }
     },
     [studyId, resultsMutation]
   );
@@ -177,6 +172,11 @@ export default function StudyDetail() {
 
   const isSavingMeta = fetcher.state !== 'idle';
   const currentStudies = selectedStudies || study.studies || [];
+  const extractionDate = date ?? (study.date ? new Date(study.date) : null);
+  const hasExistingResults = results.length > 0;
+  const canEditResults =
+    hasExistingResults ||
+    (extractionDate ? toStartOfDay(new Date()).getTime() > toStartOfDay(extractionDate).getTime() : false);
 
   return (
     <PageContainer>
@@ -194,78 +194,25 @@ export default function StudyDetail() {
         </Group>
       </Portal>
 
-      {/* Metadata section */}
-      <StyledTitle order={3}>{t('studies.study_data')}</StyledTitle>
-      <FormCard>
-        <FieldRow>
-          <Label>{t('studies.patient')}</Label>
-          <StyledTextInput
-            value={patient ? `${patient.personalData?.firstName || ''} ${patient.personalData?.lastName || ''}` : '—'}
-            readOnly
-          />
-        </FieldRow>
-        <FieldRow>
-          <Label>{t('studies.insurance')}</Label>
-          <StyledTextInput value={patient?.medicare || '—'} readOnly />
-        </FieldRow>
-        <FieldRow>
-          <Label>{t('studies.extraction_date')}</Label>
-          <StyledDateInput
-            value={date ?? (study.date ? new Date(study.date) : null)}
-            onChange={v => {
-              setDate(v ? new Date(v) : null);
-              setMetaDirty(true);
-            }}
-            valueFormat="DD/MM/YYYY"
-          />
-        </FieldRow>
-        <FieldRow>
-          <Label>{t('studies.col_dni')}</Label>
-          <StyledTextInput value={patient?.personalData?.documentValue || '—'} readOnly />
-        </FieldRow>
-        <FieldRow checkbox>
-          <Checkbox
-            label={t('studies.no_order')}
-            checked={noOrder ?? study.noOrder ?? false}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setNoOrder(e.currentTarget.checked);
-              setMetaDirty(true);
-            }}
-            color="blue"
-          />
-        </FieldRow>
-        <FieldRow>
-          <Label>{t('studies.observations')}</Label>
-          <StyledTextarea
-            placeholder={t('studies.observations_placeholder')}
-            value={comment ?? study.comment ?? ''}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-              setComment(e.currentTarget.value);
-              setMetaDirty(true);
-            }}
-            autosize
-            minRows={2}
-          />
-        </FieldRow>
-      </FormCard>
-
-      {/* Study types */}
-      <StyledTitle order={3}>{t('studies.requested_studies')}</StyledTitle>
-      <FormCard>
-        <FieldRow stacked>
-          <TypeGrid>
-            {STUDY_TYPE_KEYS.map(key => (
-              <Checkbox
-                key={key}
-                label={t(`studies.type_${key}`)}
-                checked={currentStudies.includes(key)}
-                onChange={() => toggleStudy(key)}
-                color="blue"
-              />
-            ))}
-          </TypeGrid>
-        </FieldRow>
-      </FormCard>
+      <StudyMetadataForm
+        mode="edit"
+        studyTypeKeys={STUDY_TYPE_KEYS}
+        selectedStudies={currentStudies}
+        onToggleStudy={toggleStudy}
+        noOrder={noOrder ?? study.noOrder ?? false}
+        onNoOrderChange={value => {
+          setNoOrder(value);
+          setMetaDirty(true);
+        }}
+        comment={comment ?? study.comment ?? ''}
+        onCommentChange={value => {
+          setComment(value);
+          setMetaDirty(true);
+        }}
+        date={extractionDate}
+        dateReadOnly
+        patient={patient}
+      />
 
       {metaDirty && (
         <Group justify="flex-end">
@@ -276,42 +223,53 @@ export default function StudyDetail() {
       )}
 
       {/* Results section */}
-      {currentStudies.length > 0 && (
+      {currentStudies.length > 0 && canEditResults && (
         <>
-          <StyledTitle order={3}>{t('studies.results')}</StyledTitle>
-          <FormCard>
-            <Tabs defaultValue={currentStudies[0]}>
-              <Tabs.List>
-                {currentStudies.map((type: string) => {
-                  const schema = studySchemas[type];
-                  return (
-                    <Tabs.Tab key={type} value={type}>
-                      {schema?.label ?? type}
-                    </Tabs.Tab>
-                  );
-                })}
-              </Tabs.List>
-
+          <StyledTitle>{t('studies.results')}</StyledTitle>
+          <Tabs defaultValue={currentStudies[0]} variant="pills">
+            <Tabs.List mb="sm" bd="1px solid var(--mantine-color-gray-2)" bdrs={4}>
               {currentStudies.map((type: string) => {
                 const schema = studySchemas[type];
-                if (!schema) return null;
-
-                const existingResult = results.find((r: any) => r.type === type);
-                const resultData = existingResult?.data as StudyResultData | undefined;
-
                 return (
-                  <Tabs.Panel key={type} value={type} pt="md">
-                    <StudyForm
-                      schema={schema}
-                      initialData={resultData}
-                      onChange={handleResultChange(type, existingResult?.id)}
-                      readOnly={false}
-                    />
-                  </Tabs.Panel>
+                  <Tabs.Tab key={type} value={type}>
+                    {schema?.label ?? type}
+                  </Tabs.Tab>
                 );
               })}
-            </Tabs>
-          </FormCard>
+            </Tabs.List>
+
+            {currentStudies.map((type: string) => {
+              const schema = studySchemas[type];
+              if (!schema) return null;
+
+              const existingResult = results.find((r: any) => r.type === type);
+              const resultData = existingResult?.data as StudyResultData | undefined;
+              const draftData = resultDrafts[type];
+              const initialResultData = draftData ?? resultData;
+              const hasPendingChanges = !!draftData;
+
+              return (
+                <Tabs.Panel key={type} value={type}>
+                  <StudyForm
+                    schema={schema}
+                    initialData={initialResultData}
+                    onChange={handleResultDraftChange(type)}
+                    readOnly={false}
+                  />
+                  <Group justify="flex-end" mt="md">
+                    <Button
+                      onClick={() => void handleSaveResult(type, existingResult?.id, draftData)}
+                      disabled={!hasPendingChanges}
+                      loading={savingResultType === type}
+                      leftSection={<Save size={16} />}
+                    >
+                      {t('common.save')}
+                    </Button>
+                  </Group>
+                </Tabs.Panel>
+              );
+            })}
+          </Tabs>
         </>
       )}
     </PageContainer>

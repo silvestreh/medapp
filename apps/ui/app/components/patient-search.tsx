@@ -62,6 +62,12 @@ const PatientSearch: FC<PatientSearchProps> = ({ onChange, onBlur, placeholder, 
     if (patients.length > 0) open();
   };
 
+  const handleSelectPatient = (patient: Patient) => {
+    onChange?.(patient.id);
+    setInputValue(`${patient.personalData.firstName} ${patient.personalData.lastName}`.trim());
+    close();
+  };
+
   return (
     <Popover
       withArrow
@@ -91,7 +97,13 @@ const PatientSearch: FC<PatientSearchProps> = ({ onChange, onBlur, placeholder, 
       <Popover.Dropdown ref={ref}>
         <Stack gap={4}>
           {patients.map((patient: Patient) => (
-            <Button key={patient.id} onClick={() => onChange?.(patient.id)}>
+            <Button
+              key={patient.id}
+              onMouseDown={e => {
+                e.preventDefault();
+                handleSelectPatient(patient);
+              }}
+            >
               <Text>
                 {patient.personalData.firstName} {patient.personalData.lastName}
                 {displayDocumentValue(patient.personalData.documentValue) !== '—' &&

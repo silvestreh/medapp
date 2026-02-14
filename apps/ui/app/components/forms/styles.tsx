@@ -28,10 +28,8 @@ export function TriStateCheckbox({ value, onChange, label, readOnly, disabled }:
     );
   }
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleToggle = () => {
     if (disabled || readOnly) return;
-    e.preventDefault();
-    e.stopPropagation();
 
     if (value === 'indeterminate' || value === undefined) {
       onChange?.(true);
@@ -47,8 +45,7 @@ export function TriStateCheckbox({ value, onChange, label, readOnly, disabled }:
       label={label}
       checked={value === true}
       indeterminate={value === 'indeterminate' || value === undefined}
-      onChange={() => {}}
-      onClick={handleClick}
+      onChange={handleToggle}
       disabled={disabled}
       styles={{
         input: { cursor: disabled ? 'not-allowed' : 'pointer' },
