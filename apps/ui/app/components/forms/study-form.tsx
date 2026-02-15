@@ -135,14 +135,11 @@ const FieldRow = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
+    gap: '0.5rem',
     padding: '1rem',
     borderBottom: '1px solid var(--mantine-color-gray-2)',
     '&:last-child': {
       borderBottom: 'none',
-    },
-    lg: {
-      alignItems: 'flex-start',
-      flexDirection: 'row',
     },
   },
 });
@@ -150,13 +147,8 @@ const FieldRow = styled('div', {
 const Label = styled('label', {
   base: {
     color: 'var(--mantine-color-gray-6)',
-    fontSize: 'var(--mantine-font-size-md)',
+    fontSize: 'var(--mantine-font-size-sm)',
     transition: 'color 120ms ease',
-    lg: {
-      marginRight: '1rem',
-      textAlign: 'right',
-      width: '25%',
-    },
   },
   variants: {
     focused: {
