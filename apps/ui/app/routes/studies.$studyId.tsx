@@ -162,7 +162,7 @@ export default function StudyDetail() {
     <PageContainer>
       <Portal id="toolbar">
         <Group align="center" flex={1}>
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/studies')}>
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate(-1)}>
             <ArrowLeft size={20} />
           </ActionIcon>
           <Flex direction="column" gap={0}>
