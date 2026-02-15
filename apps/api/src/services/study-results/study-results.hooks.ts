@@ -11,9 +11,9 @@ export default {
     all: [],
     find: [ includeDecryptedAttributes() ],
     get: [ includeDecryptedAttributes() ],
-    create: [ sanitizeEncryptedData('data') ],
+    create: [ disallow('external'), sanitizeEncryptedData('data') ],
     update: [ disallow('external') ],
-    patch: [ sanitizeEncryptedData('data') ],
+    patch: [ disallow('external'), sanitizeEncryptedData('data') ],
     remove: [ disallow('external') ]
   },
 

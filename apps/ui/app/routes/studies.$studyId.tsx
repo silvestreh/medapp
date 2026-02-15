@@ -1,13 +1,13 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useNavigate, useParams } from '@remix-run/react';
-import { Group, Button, Tabs, Text, Loader } from '@mantine/core';
+import { Group, Button, Tabs, Text, Loader, Title, ActionIcon, Flex } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { Save } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
-import { useGet, useMutation } from '~/components/provider';
+import { useGet } from '~/components/provider';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { studySchemas } from '~/components/forms/study-schemas';
@@ -68,8 +68,6 @@ const PageContainer = styled('div', {
   },
 });
 
-const toStartOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
@@ -79,13 +77,11 @@ export default function StudyDetail() {
   const { studyId } = useParams();
   const navigate = useNavigate();
   const fetcher = useFetcher();
-  const resultsMutation = useMutation('study-results');
 
   const { data: study, isLoading: studyLoading } = useGet('studies', studyId!);
 
-  // Local draft state for result forms (saved explicitly by button)
+  // Local draft state for result forms (saved through the unified study save action)
   const [resultDrafts, setResultDrafts] = useState<Record<string, StudyResultData>>({});
-  const [savingResultType, setSavingResultType] = useState<string | null>(null);
 
   // Local metadata state (initialized from study once loaded)
   const [metaDirty, setMetaDirty] = useState(false);
@@ -113,18 +109,28 @@ export default function StudyDetail() {
     setMetaDirty(true);
   }, []);
 
-  const handleSaveMeta = useCallback(() => {
+  useEffect(() => {
+    const wasSaved = (fetcher.data as { success?: boolean } | undefined)?.success;
+    if (fetcher.state === 'idle' && wasSaved) {
+      setMetaDirty(false);
+      setResultDrafts({});
+    }
+  }, [fetcher.state, fetcher.data]);
+
+  const handleSave = useCallback(() => {
     if (!studyId) return;
 
-    const payload: Record<string, any> = {};
-    if (comment !== undefined) payload.comment = comment;
-    if (noOrder !== undefined) payload.noOrder = noOrder;
-    if (selectedStudies !== undefined) payload.studies = selectedStudies;
-    if (date !== undefined) payload.date = date?.toISOString();
+    const payload: Record<string, any> = {
+      id: studyId,
+      comment: comment ?? study.comment ?? '',
+      noOrder: noOrder ?? study.noOrder ?? false,
+      studies: selectedStudies ?? study.studies ?? [],
+      date: (date ?? (study.date ? new Date(study.date) : null))?.toISOString(),
+      results: Object.entries(resultDrafts).map(([type, data]) => ({ type, data })),
+    };
 
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
-    setMetaDirty(false);
-  }, [studyId, comment, noOrder, selectedStudies, date, fetcher]);
+  }, [studyId, comment, noOrder, selectedStudies, date, study, resultDrafts, fetcher]);
 
   const handleResultDraftChange = useCallback(
     (type: string) => (data: StudyResultData) => {
@@ -134,30 +140,6 @@ export default function StudyDetail() {
       }));
     },
     []
-  );
-
-  const handleSaveResult = useCallback(
-    async (type: string, resultId: string | undefined, data: StudyResultData | undefined) => {
-      if (!studyId || !data) return;
-
-      setSavingResultType(type);
-      try {
-        if (resultId) {
-          await resultsMutation.patch(resultId, { data });
-        } else {
-          await resultsMutation.create({ studyId, type, data });
-        }
-
-        setResultDrafts(prev => {
-          const next = { ...prev };
-          delete next[type];
-          return next;
-        });
-      } finally {
-        setSavingResultType(null);
-      }
-    },
-    [studyId, resultsMutation]
   );
 
   if (studyLoading || !study?.id) {
@@ -171,25 +153,33 @@ export default function StudyDetail() {
   }
 
   const isSavingMeta = fetcher.state !== 'idle';
+  const isDirty = metaDirty || Object.keys(resultDrafts).length > 0;
   const currentStudies = selectedStudies || study.studies || [];
   const extractionDate = date ?? (study.date ? new Date(study.date) : null);
-  const hasExistingResults = results.length > 0;
-  const canEditResults =
-    hasExistingResults ||
-    (extractionDate ? toStartOfDay(new Date()).getTime() > toStartOfDay(extractionDate).getTime() : false);
+  const canEditResults = !!study.id;
 
   return (
     <PageContainer>
       <Portal id="toolbar">
-        <Group justify="space-between" align="center" w="100%">
-          <Group gap="sm" align="baseline">
-            <StyledTitle order={2}>{t('studies.study_title')}</StyledTitle>
-            <Text c="dimmed" size="lg">
+        <Group align="center" flex={1}>
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/studies')}>
+            <ArrowLeft size={20} />
+          </ActionIcon>
+          <Flex direction="column" gap={0}>
+            <Title m={0} lh={1} fz="sm">
+              {t('studies.study_title')}
+            </Title>
+            <Text c="dimmed" size="h4" fw={600}>
               #{study.protocol}
             </Text>
-          </Group>
-          <Button variant="subtle" onClick={() => navigate('/studies')}>
-            {t('studies.back_to_list')}
+          </Flex>
+        </Group>
+      </Portal>
+
+      <Portal id="form-actions">
+        <Group>
+          <Button onClick={handleSave} loading={isSavingMeta} disabled={!isDirty} leftSection={<Save size={16} />}>
+            {t('studies.save_changes')}
           </Button>
         </Group>
       </Portal>
@@ -213,14 +203,6 @@ export default function StudyDetail() {
         dateReadOnly
         patient={patient}
       />
-
-      {metaDirty && (
-        <Group justify="flex-end">
-          <Button onClick={handleSaveMeta} loading={isSavingMeta} leftSection={<Save size={16} />}>
-            {t('studies.save_changes')}
-          </Button>
-        </Group>
-      )}
 
       {/* Results section */}
       {currentStudies.length > 0 && canEditResults && (
@@ -246,7 +228,6 @@ export default function StudyDetail() {
               const resultData = existingResult?.data as StudyResultData | undefined;
               const draftData = resultDrafts[type];
               const initialResultData = draftData ?? resultData;
-              const hasPendingChanges = !!draftData;
 
               return (
                 <Tabs.Panel key={type} value={type}>
@@ -256,16 +237,6 @@ export default function StudyDetail() {
                     onChange={handleResultDraftChange(type)}
                     readOnly={false}
                   />
-                  <Group justify="flex-end" mt="md">
-                    <Button
-                      onClick={() => void handleSaveResult(type, existingResult?.id, draftData)}
-                      disabled={!hasPendingChanges}
-                      loading={savingResultType === type}
-                      leftSection={<Save size={16} />}
-                    >
-                      {t('common.save')}
-                    </Button>
-                  </Group>
                 </Tabs.Panel>
               );
             })}

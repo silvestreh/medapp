@@ -2,15 +2,14 @@ import { useState, useCallback } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 import { useFetcher, useNavigate } from '@remix-run/react';
-import { Group, Button } from '@mantine/core';
+import { Group, Button, ActionIcon, Title } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { FlaskConical } from 'lucide-react';
+import { Save, ArrowLeft } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import { useGet } from '~/components/provider';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
-import { StyledTitle } from '~/components/forms/styles';
 import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 
 export const meta: MetaFunction = () => {
@@ -99,6 +98,7 @@ export default function NewStudy() {
       studies: selectedStudies,
       noOrder,
       comment: comment || undefined,
+      results: [],
     };
 
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
@@ -107,8 +107,21 @@ export default function NewStudy() {
   return (
     <PageContainer>
       <Portal id="toolbar">
-        <Group justify="space-between" align="center" w="100%">
-          <StyledTitle order={2}>{t('studies.new_study')}</StyledTitle>
+        <Group align="center" flex={1}>
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/studies')}>
+            <ArrowLeft size={20} />
+          </ActionIcon>
+          <Title m={0} lh={1} fz="h2">
+            {t('studies.new_study')}
+          </Title>
+        </Group>
+      </Portal>
+
+      <Portal id="form-actions">
+        <Group>
+          <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<Save size={16} />}>
+            {t('studies.save')}
+          </Button>
         </Group>
       </Portal>
 
@@ -130,15 +143,6 @@ export default function NewStudy() {
         onReferringDoctorChange={setMedic}
         showEmptyStudyHint
       />
-
-      <Group justify="flex-end">
-        <Button variant="subtle" color="gray" onClick={() => navigate('/studies')}>
-          {t('common.cancel')}
-        </Button>
-        <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<FlaskConical size={16} />}>
-          {t('studies.save')}
-        </Button>
-      </Group>
     </PageContainer>
   );
 }

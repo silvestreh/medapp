@@ -200,6 +200,12 @@ export function StudiesTable({
 }: StudiesTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const stickyHeaderStyle = {
+    position: 'sticky' as const,
+    top: '4.8em',
+    zIndex: 3,
+    background: 'var(--mantine-color-blue-0)',
+  };
 
   // -------------------------------------------------------------------------
   // Shared: study type badges
@@ -332,19 +338,24 @@ export function StudiesTable({
                 <Table.Tr bg="blue.0">
                   <Table.Th
                     w={100}
-                    style={{ border: '1px solid var(--mantine-color-blue-1)', borderLeft: 'none' }}
+                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)', borderLeft: 'none' }}
                     fw={500}
                     fz="md"
                     py="0.5em"
                   >
                     {t('studies.col_protocol')}
                   </Table.Th>
-                  <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+                  <Table.Th
+                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)' }}
+                    fw={500}
+                    fz="md"
+                    py="0.5em"
+                  >
                     {t('studies.col_patient')}
                   </Table.Th>
                   <Table.Th
                     w={180}
-                    style={{ border: '1px solid var(--mantine-color-blue-1)' }}
+                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)' }}
                     fw={500}
                     fz="md"
                     py="0.5em"
@@ -353,7 +364,7 @@ export function StudiesTable({
                   </Table.Th>
                   <Table.Th
                     w={180}
-                    style={{ border: '1px solid var(--mantine-color-blue-1)' }}
+                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)' }}
                     fw={500}
                     fz="md"
                     py="0.5em"
@@ -362,7 +373,7 @@ export function StudiesTable({
                   </Table.Th>
                   <Table.Th
                     w={150}
-                    style={{ border: '1px solid var(--mantine-color-blue-1)' }}
+                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)' }}
                     fw={500}
                     fz="md"
                     py="0.5em"
@@ -371,7 +382,7 @@ export function StudiesTable({
                   </Table.Th>
                   <Table.Th
                     w={150}
-                    style={{ border: '1px solid var(--mantine-color-blue-1)', borderRight: 'none' }}
+                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)', borderRight: 'none' }}
                     fw={500}
                     fz="md"
                     py="0.5em"

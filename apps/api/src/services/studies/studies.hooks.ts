@@ -4,6 +4,8 @@ import { checkPermissions } from '../../hooks/check-permissions';
 import populateResults from './hooks/populate-results';
 import populatePatient from './hooks/populate-patient';
 import autoProtocol from './hooks/auto-protocol';
+import extractStudyResults from './hooks/extract-study-results';
+import upsertStudyResults from './hooks/upsert-study-results';
 import { omitForDeleted } from '../../hooks/omit-for-deleted';
 import { sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import searchStudies from './hooks/search-studies';
@@ -19,9 +21,9 @@ export default {
     ],
     find: [searchStudies()],
     get: [],
-    create: [autoProtocol()],
+    create: [autoProtocol(), extractStudyResults()],
     update: [],
-    patch: [],
+    patch: [extractStudyResults()],
     remove: []
   },
 
@@ -38,9 +40,9 @@ export default {
       populatePatient(),
       omitForDeleted({ service: 'patients', fkey: 'patientId' })
     ],
-    create: [],
+    create: [upsertStudyResults()],
     update: [],
-    patch: [],
+    patch: [upsertStudyResults()],
     remove: []
   },
 

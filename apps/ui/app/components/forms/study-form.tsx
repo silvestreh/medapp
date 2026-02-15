@@ -1,9 +1,9 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
+import { Textarea } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 
-import { FormContainer, FormCard, FieldRow, Label, StyledTextarea, FormHeader } from '~/components/forms/styles';
 import { StudyFormField } from './study-form-field';
 import type { StudySchema, StudyField, StudyResultData, StudySelectValue } from './study-form-types';
 
@@ -30,19 +30,19 @@ function buildInitialValues(schema: StudySchema, initialData?: StudyResultData):
 /**
  * A group of fields rendered inside a single FormCard.
  * - 'grid': consecutive input/textarea/select fields rendered in a 2-col grid
- * - 'inline-title': a `title` or `separator` rendered as an inline header within the card
+ * - 'inline-content': non-grid content (currently separators) rendered inside a card
  */
 interface FieldGroup {
-  kind: 'grid' | 'inline-title';
+  kind: 'grid' | 'inline-content';
   fields: StudyField[];
 }
 
 /**
  * A section is a visual "sub-form" with its own header and FormCard.
- * `title-input` fields act as section dividers.
+ * `title`, `title-input`, and `separator` fields act as section dividers.
  */
 interface FormSection {
-  /** The title-input field that starts this section (undefined for the first section). */
+  /** The heading-like field that starts this section (undefined for the first section). */
   titleField?: StudyField;
   /** Groups of fields within this section's FormCard. */
   groups: FieldGroup[];
@@ -68,13 +68,13 @@ function buildSections(fields: StudyField[]): FormSection[] {
   };
 
   for (const field of fields) {
-    if (field.type === 'title-input') {
-      // Start a new section
+    if (field.type === 'title-input' || field.type === 'title' || field.type === 'separator') {
+      // Start a new titled section
       flushSection();
-      currentSection = { titleField: field, groups: [] };
-    } else if (field.type === 'title' || field.type === 'separator') {
-      flushGrid();
-      currentSection.groups.push({ kind: 'inline-title', fields: [field] });
+      currentSection = {
+        titleField: field.label ? field : undefined,
+        groups: [],
+      };
     } else {
       currentGrid.push(field);
     }
@@ -82,6 +82,12 @@ function buildSections(fields: StudyField[]): FormSection[] {
   flushSection();
 
   return sections;
+}
+
+function hasVisibleValue(value: string | StudySelectValue | undefined): boolean {
+  if (value === '' || value === null || value === undefined) return false;
+  if (typeof value === 'object') return Boolean(value.value);
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -93,10 +99,102 @@ const FieldsGrid = styled('div', {
     display: 'grid',
     gridTemplateColumns: '1fr',
     gap: 0,
+    '& > *:last-child': {
+      borderBottom: 'none',
+    },
+    // When rendered field count is even, remove border from second-to-last too.
+    '& > *:nth-last-child(2):nth-child(odd)': {
+      borderBottom: 'none',
+    },
 
     lg: {
       gridTemplateColumns: '1fr 1fr',
     },
+  },
+});
+
+const FormContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+    width: '100%',
+  },
+});
+
+const FormCard = styled('div', {
+  base: {
+    background: 'white',
+    border: '1px solid var(--mantine-color-gray-2)',
+    borderRadius: 'var(--mantine-radius-md)',
+    overflow: 'hidden',
+  },
+});
+
+const FieldRow = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '1rem',
+    borderBottom: '1px solid var(--mantine-color-gray-2)',
+    '&:last-child': {
+      borderBottom: 'none',
+    },
+    lg: {
+      alignItems: 'flex-start',
+      flexDirection: 'row',
+    },
+  },
+});
+
+const Label = styled('label', {
+  base: {
+    color: 'var(--mantine-color-gray-6)',
+    fontSize: 'var(--mantine-font-size-md)',
+    transition: 'color 120ms ease',
+    lg: {
+      marginRight: '1rem',
+      textAlign: 'right',
+      width: '25%',
+    },
+  },
+  variants: {
+    focused: {
+      true: {
+        color: 'var(--mantine-color-blue-6)',
+      },
+    },
+    clickable: {
+      true: {
+        cursor: 'pointer',
+      },
+    },
+  },
+});
+
+const StyledTextarea = styled(Textarea, {
+  base: {
+    flex: 1,
+    '& .mantine-Textarea-input': {
+      border: 'none',
+      padding: 0,
+      height: 'auto',
+      minHeight: '1.5rem',
+      lineHeight: 1.75,
+      backgroundColor: 'transparent',
+      '&:focus': {
+        boxShadow: 'none',
+      },
+    },
+  },
+});
+
+const FormHeader = styled('div', {
+  base: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '1rem',
   },
 });
 
@@ -106,6 +204,13 @@ const StyledTitle = styled('h2', {
     margin: '1.5rem 0 0',
     lineHeight: 1,
     color: 'var(--mantine-color-gray-6)',
+  },
+});
+
+const MainTitle = styled(StyledTitle, {
+  base: {
+    fontSize: '1.75rem',
+    lineHeight: 1.1,
   },
 });
 
@@ -122,6 +227,7 @@ export interface StudyFormProps {
 
 export function StudyForm({ schema, initialData, onChange, readOnly }: StudyFormProps) {
   const { t } = useTranslation();
+  const [focusedExtraField, setFocusedExtraField] = useState<'comments' | 'conclusion' | null>(null);
   const form = useForm<StudyResultData>({
     initialValues: buildInitialValues(schema, initialData),
   });
@@ -145,16 +251,36 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
     },
     [form]
   );
+  const focusControl = useCallback(
+    (id: string) => {
+      if (readOnly) return;
+      const element = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLButtonElement | null;
+      element?.focus();
+    },
+    [readOnly]
+  );
 
   const sections = buildSections(schema.fields);
+  const visibleSections = readOnly
+    ? sections.filter(section =>
+        section.groups.some(group =>
+          group.fields.some(field => {
+            if (!field.name) return false;
+            return hasVisibleValue(form.values[field.name]);
+          })
+        )
+      )
+    : sections;
+  const commentsControlId = 'study-comments';
+  const conclusionControlId = 'study-conclusion';
 
   return (
     <FormContainer>
       <FormHeader>
-        <StyledTitle>{schema.label}</StyledTitle>
+        <MainTitle>{schema.label}</MainTitle>
       </FormHeader>
 
-      {sections.map((section, si) => (
+      {visibleSections.map((section, si) => (
         <div key={`s-${si}`}>
           {section.titleField && (
             <FormHeader>
@@ -171,7 +297,7 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
 
           <FormCard>
             {section.groups.map((group, gi) => {
-              if (group.kind === 'inline-title') {
+              if (group.kind === 'inline-content') {
                 const field = group.fields[0];
                 return (
                   <StudyFormField
@@ -213,27 +339,47 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
           <FormCard>
             {(!readOnly || form.values.comments) && (
               <FieldRow>
-                <Label>{t('studies.comments_label')}</Label>
+                <Label
+                  focused={focusedExtraField === 'comments'}
+                  clickable={!readOnly}
+                  htmlFor={!readOnly ? commentsControlId : undefined}
+                  onClick={!readOnly ? () => focusControl(commentsControlId) : undefined}
+                >
+                  {t('studies.comments_label')}
+                </Label>
                 <StyledTextarea
+                  id={commentsControlId}
                   readOnly={readOnly}
                   autosize
                   minRows={2}
                   placeholder={t('studies.comments_section_placeholder')}
                   value={(form.values.comments as string) ?? ''}
                   onChange={e => form.setFieldValue('comments', e.currentTarget.value)}
+                  onFocus={!readOnly ? () => setFocusedExtraField('comments') : undefined}
+                  onBlur={!readOnly ? () => setFocusedExtraField(null) : undefined}
                 />
               </FieldRow>
             )}
             {(!readOnly || form.values.conclusion) && (
               <FieldRow>
-                <Label>{t('studies.conclusion_label')}</Label>
+                <Label
+                  focused={focusedExtraField === 'conclusion'}
+                  clickable={!readOnly}
+                  htmlFor={!readOnly ? conclusionControlId : undefined}
+                  onClick={!readOnly ? () => focusControl(conclusionControlId) : undefined}
+                >
+                  {t('studies.conclusion_label')}
+                </Label>
                 <StyledTextarea
+                  id={conclusionControlId}
                   readOnly={readOnly}
                   autosize
                   minRows={2}
                   placeholder={t('studies.conclusion_section_placeholder')}
                   value={(form.values.conclusion as string) ?? ''}
                   onChange={e => form.setFieldValue('conclusion', e.currentTarget.value)}
+                  onFocus={!readOnly ? () => setFocusedExtraField('conclusion') : undefined}
+                  onBlur={!readOnly ? () => setFocusedExtraField(null) : undefined}
                 />
               </FieldRow>
             )}
