@@ -241,6 +241,7 @@ const AppointmentsSettings = () => {
     <RouteDrawer
       position={isTablet ? 'right' : 'bottom'}
       styles={{ content: { minWidth: '50vw' } }}
+      skeleton={<>loading…</>}
     >
       <Title order={3} mb="md">
         {t('common.settings')}
