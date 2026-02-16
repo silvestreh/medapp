@@ -1,4 +1,5 @@
-import { Application } from '../../declarations';
+import { ServiceAddons } from '@feathersjs/feathers';
+import type { Application, Laboratory } from '../../declarations';
 import { Laboratories } from './laboratories.class';
 import createModel from '../../models/laboratories.model';
 import hooks from './laboratories.hooks';
@@ -6,7 +7,7 @@ import hooks from './laboratories.hooks';
 // Add this service to the service type index
 declare module '../../declarations' {
   interface ServiceTypes {
-    'laboratories': Laboratories;
+    laboratories: Laboratories & ServiceAddons<Laboratory>;
   }
 }
 

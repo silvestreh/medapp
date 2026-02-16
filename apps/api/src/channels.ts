@@ -2,8 +2,20 @@ import '@feathersjs/transport-commons';
 import { HookContext } from '@feathersjs/feathers';
 import { Application } from './declarations';
 
+type RealtimeApplication = Application & {
+  channel: (...names: string[]) => {
+    join: (...connections: any[]) => void;
+    leave: (...connections: any[]) => void;
+  };
+  publish: (publisher: (data: any, hook: HookContext) => any) => any;
+};
+
+function hasRealtime(app: Application): app is RealtimeApplication {
+  return typeof (app as any).channel === 'function' && typeof (app as any).publish === 'function';
+}
+
 export default function(app: Application): void {
-  if(typeof app.channel !== 'function') {
+  if(!hasRealtime(app)) {
     // If no real-time functionality has been configured just return
     return;
   }
