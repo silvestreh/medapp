@@ -35,6 +35,11 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING,
       allowNull: true
     },
+    scheduleAllWeekCustomTime: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
     mondayStart: {
       type: DataTypes.TIME,
       allowNull: true,

@@ -20,24 +20,53 @@ import type { Slot, Account } from '~/declarations';
 
 dayjs.extend(isSameOrBefore);
 
+type WeekdayName = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
+
+const WEEKDAY_NAMES: WeekdayName[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+export function isDayEnabledFromSettings(settings: Account['settings'] | null | undefined, day: WeekdayName): boolean {
+  if (!settings) {
+    return false;
+  }
+
+  const dayStart = `${day}Start` as keyof Account['settings'];
+  const dayEnd = `${day}End` as keyof Account['settings'];
+  const startValue = settings[dayStart];
+  const endValue = settings[dayEnd];
+
+  return Boolean(startValue && endValue);
+}
+
+export function getWorkDaysFromSettings(settings: Account['settings'] | null | undefined): number[] {
+  return WEEKDAY_NAMES.map((day, index) => (isDayEnabledFromSettings(settings, day) ? index : null)).filter(
+    (index): index is number => index !== null
+  );
+}
+
 export function generateEmptySlots(date: Dayjs, medic: Account | null): Slot[] {
   if (!dayjs.isDayjs(date)) {
     return [];
   }
 
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const duration = medic?.settings?.encounterDuration ?? 20;
   const slots: Slot[] = [];
-  const day = days[date.day()];
+  const day = WEEKDAY_NAMES[date.day()];
   const dayStart = `${day}Start` as keyof Account['settings'];
   const dayEnd = `${day}End` as keyof Account['settings'];
+  const startValue = medic?.settings?.[dayStart];
+  const endValue = medic?.settings?.[dayEnd];
 
-  if (!medic || !dayStart || !dayEnd) {
+  if (!medic || !startValue || !endValue || !isDayEnabledFromSettings(medic.settings, day)) {
     return [];
   }
 
-  const startTime = dayjs(date.format('YYYY-MM-DD') + 'T' + medic.settings[dayStart]);
-  const endTime = dayjs(date.format('YYYY-MM-DD') + 'T' + medic.settings[dayEnd]);
+  const startTime = dayjs(date.format('YYYY-MM-DD') + 'T' + startValue);
+  const endTime = dayjs(date.format('YYYY-MM-DD') + 'T' + endValue);
+
+  if (!startTime.isValid() || !endTime.isValid() || startTime.isAfter(endTime)) {
+    return [];
+  }
+
   let current = startTime;
 
   while (current.isSameOrBefore(endTime)) {

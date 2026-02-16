@@ -49,7 +49,7 @@ function Document({ children }: { children: React.ReactNode }) {
   const locale = data?.locale || 'es';
 
   return (
-    <html lang={locale} dir="ltr">
+    <html lang={locale} dir="ltr" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

@@ -28,6 +28,7 @@
     "coverage": "nyc report --reporter=text-lcov > coverage/lcov.info",
     "db:drop": "ts-node scripts/drop-db.ts",
     "db:init": "ts-node scripts/init-db.ts",
+    "db:import-time-off": "ts-node scripts/import-time-off-events.ts",
     "db:reset": "ts-node scripts/reset-db.ts",
     "dev": "ts-node-dev --no-notify src/",
     "lint": "eslint src/. test/. --config .eslintrc.json --ext .ts --fix",

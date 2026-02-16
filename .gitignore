@@ -32,10 +32,12 @@ coverage
 
 # Panda CSS generated
 apps/ui/app/styled-system
-apps/studies-book
+apps/studies-book*
+apps/colmed-*
 
 # Misc
 .DS_Store
 *.pem
 .cache
 .temp
+*.tsbuildinfo
