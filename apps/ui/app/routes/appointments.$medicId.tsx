@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { useLoaderData, useParams, Outlet, useNavigate, useRouteError } from '@remix-run/react';
 import { type LoaderFunctionArgs } from '@remix-run/node';
-import { Drawer, Skeleton } from '@mantine/core';
+import { Skeleton } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 
@@ -10,6 +10,7 @@ import { media } from '~/media';
 import { generateEmptySlots, getWorkDaysFromSettings } from '~/utils';
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { useFind } from '~/components/provider';
+import { RouteDrawer } from '~/components/route-drawer';
 import Calendar from '~/components/calendar';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -186,18 +187,14 @@ export default function AppointmentsForMedic() {
         medicId={medicId as string}
         onSettingsClick={handleSettingsClick}
       />
-      {isTablet && (
-        <Drawer
+      {isTablet && (hasDateChild || dateDrawerOpen) && (
+        <RouteDrawer
           opened={dateDrawerOpen}
           onClose={handleDateDrawerClose}
-          keepMounted
-          transitionProps={{ onExited: handleDateDrawerExited }}
+          onExited={handleDateDrawerExited}
           position="right"
-          styles={{
-            content: { minWidth: '50vw' },
-          }}
-        >
-          {!hasDateChild && (
+          styles={{ content: { minWidth: '50vw' } }}
+          skeleton={
             <>
               <Skeleton h={36} w={300} mb="md" />
               {emptySlots.map((_, index) => {
@@ -222,9 +219,10 @@ export default function AppointmentsForMedic() {
                 );
               })}
             </>
-          )}
-          {hasDateChild && <Outlet />}
-        </Drawer>
+          }
+        >
+          <Outlet />
+        </RouteDrawer>
       )}
       {(!isTablet || !hasDateChild) && <Outlet />}
     </div>

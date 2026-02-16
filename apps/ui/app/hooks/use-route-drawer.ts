@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from '@remix-run/react';
+import { useLocation, useNavigate, useNavigation } from '@remix-run/react';
 import { useMediaQuery } from '@mantine/hooks';
 
 import { media } from '~/media';
@@ -11,9 +11,11 @@ interface UseRouteDrawerOptions {
 export function useRouteDrawer(options: UseRouteDrawerOptions = {}) {
   const location = useLocation();
   const navigate = useNavigate();
+  const navigation = useNavigation();
   const isTablet = useMediaQuery(media.lg);
   const [opened, setOpened] = useState(false);
   const preventScrollReset = options.preventScrollReset ?? isTablet;
+  const isLoading = navigation.state === 'loading';
 
   useEffect(() => {
     setOpened(true);
@@ -28,5 +30,5 @@ export function useRouteDrawer(options: UseRouteDrawerOptions = {}) {
     navigate(parent, { preventScrollReset });
   }, [location.pathname, navigate, preventScrollReset]);
 
-  return { opened, isTablet, onClose, onExited };
+  return { opened, isTablet, isLoading, onClose, onExited };
 }

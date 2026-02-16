@@ -30,7 +30,7 @@ const Container = styled(Flex, {
       borderRight: 'none',
       position: 'sticky',
       bottom: 0,
-      zIndex: 1,
+      zIndex: 2,
     },
     md: {
       flexDirection: 'column',
