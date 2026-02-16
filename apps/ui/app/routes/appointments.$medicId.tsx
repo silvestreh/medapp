@@ -58,7 +58,14 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
 export default function AppointmentsForMedic() {
   const navigate = useNavigate();
-  const { medicId, appointments, holidays, medic, timeOffEvents: initialTimeOffEvents, initialDate } = useLoaderData<typeof loader>();
+  const {
+    medicId,
+    appointments,
+    holidays,
+    medic,
+    timeOffEvents: initialTimeOffEvents,
+    initialDate,
+  } = useLoaderData<typeof loader>();
   const [workDays, setWorkDays] = useState<number[]>([]);
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(initialDate ? dayjs(initialDate) : null);
   const [date, setDate] = useState<Dayjs | null>(initialDate ? dayjs(initialDate) : dayjs());
@@ -66,6 +73,8 @@ export default function AppointmentsForMedic() {
   const params = useParams();
   const emptySlots = useMemo(() => generateEmptySlots(selectedDate as Dayjs, medic), [selectedDate, medic]);
   const isTablet = useMediaQuery(media.lg);
+  const hasDateChild = Boolean(params.date);
+  const [dateDrawerOpen, setDateDrawerOpen] = useState(false);
   const query = useMemo(
     () => ({
       medicId: medicId,
@@ -89,7 +98,12 @@ export default function AppointmentsForMedic() {
     }),
     [medicId, memoizedDate]
   );
-  const { response: timeOffResponse } = useFind('time-off-events', timeOffQuery, { paginate: false }, initialTimeOffEvents);
+  const { response: timeOffResponse } = useFind(
+    'time-off-events',
+    timeOffQuery,
+    { paginate: false },
+    initialTimeOffEvents
+  );
 
   const events = useMemo(() => {
     const appointmentsList = Array.isArray(response) ? response : response?.data || [];
@@ -140,8 +154,25 @@ export default function AppointmentsForMedic() {
   }, [params.date]);
 
   useEffect(() => {
+    if (selectedDate && isTablet) {
+      setDateDrawerOpen(true);
+    }
+  }, [selectedDate, isTablet]);
+
+  useEffect(() => {
     setWorkDays(getWorkDaysFromSettings(medic?.settings));
   }, [medic]);
+
+  const handleDateDrawerClose = useCallback(() => {
+    setDateDrawerOpen(false);
+  }, []);
+
+  const handleDateDrawerExited = useCallback(() => {
+    setSelectedDate(null);
+    if (params.date) {
+      navigate(`/appointments/${medicId}`, { preventScrollReset: isTablet });
+    }
+  }, [params.date, navigate, medicId, isTablet]);
 
   return (
     <div>
@@ -155,36 +186,47 @@ export default function AppointmentsForMedic() {
         medicId={medicId as string}
         onSettingsClick={handleSettingsClick}
       />
-      <Drawer
-        opened={Boolean(selectedDate && isTablet)}
-        onClose={() => setSelectedDate(null)}
-        position="right"
-        styles={{ content: { minWidth: '50vw' } }}
-      >
-        <Skeleton h={36} w={300} mb="md" />
-        {emptySlots.map((_, index) => {
-          const isFirst = index === 0;
-          const isLast = index === emptySlots.length - 1;
+      {isTablet && (
+        <Drawer
+          opened={dateDrawerOpen}
+          onClose={handleDateDrawerClose}
+          keepMounted
+          transitionProps={{ onExited: handleDateDrawerExited }}
+          position="right"
+          styles={{
+            content: { minWidth: '50vw' },
+          }}
+        >
+          {!hasDateChild && (
+            <>
+              <Skeleton h={36} w={300} mb="md" />
+              {emptySlots.map((_, index) => {
+                const isFirst = index === 0;
+                const isLast = index === emptySlots.length - 1;
 
-          return (
-            <Skeleton
-              key={index}
-              w="100%"
-              h={63.5}
-              styles={{
-                root: {
-                  marginBottom: 1,
-                  borderTopLeftRadius: isFirst ? 10 : 0,
-                  borderTopRightRadius: isFirst ? 10 : 0,
-                  borderBottomLeftRadius: isLast ? 10 : 0,
-                  borderBottomRightRadius: isLast ? 10 : 0,
-                },
-              }}
-            />
-          );
-        })}
-      </Drawer>
-      <Outlet />
+                return (
+                  <Skeleton
+                    key={index}
+                    w="100%"
+                    h={63.5}
+                    styles={{
+                      root: {
+                        marginBottom: 1,
+                        borderTopLeftRadius: isFirst ? 10 : 0,
+                        borderTopRightRadius: isFirst ? 10 : 0,
+                        borderBottomLeftRadius: isLast ? 10 : 0,
+                        borderBottomRightRadius: isLast ? 10 : 0,
+                      },
+                    }}
+                  />
+                );
+              })}
+            </>
+          )}
+          {hasDateChild && <Outlet />}
+        </Drawer>
+      )}
+      {(!isTablet || !hasDateChild) && <Outlet />}
     </div>
   );
 }

@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo, type FC } from 'react';
+import { useMemo } from 'react';
 import dayjs from 'dayjs';
-import { useLoaderData, useNavigate, useLocation } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
-import { Drawer, Title, DrawerProps } from '@mantine/core';
+import { Title } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import '@mantine/dates/styles.css';
@@ -34,8 +34,6 @@ const Container = styled('div', {
   },
 });
 
-const DummyDrawer: FC<DrawerProps> = ({ children }) => children;
-
 export const loader = authenticatedLoader(async ({ request, params }: LoaderFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
   const date = dayjs(params.date);
@@ -61,71 +59,42 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
 
 export default function AppointmentsForDate() {
   const { slots, date, medicId } = useLoaderData<typeof loader>();
-  const [isMounted, setIsMounted] = useState(false);
   const isTablet = useMediaQuery(media.lg);
-  const Wrapper = isTablet ? Drawer : DummyDrawer;
-  const location = useLocation();
-  const navigate = useNavigate();
   const title = useMemo(() => dayjs(date).format('DD [de] MMMM, YYYY'), [date]);
 
-  const handleClose = () => {
-    const parent = location.pathname.split('/').slice(0, -1).join('/');
-    navigate(parent, { preventScrollReset: isTablet });
-  };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return null;
-  }
-
   return (
-    <Wrapper
-      opened={isMounted}
-      onClose={handleClose}
-      position="right"
-      key={date}
-      keepMounted
-      styles={{
-        content: { minWidth: '50vw' },
-        overlay: { backgroundColor: 'transparent' },
-      }}
-    >
-      <Container>
-        <Title order={2} mb="lg" display={isTablet ? 'block' : 'none'}>
-          {title}
-        </Title>
-        <AppointmentsList
-          slots={slots}
-          medicId={medicId}
-          className={css({
-            borderTopWidth: 0,
-            borderBottomWidth: 0,
+    <Container>
+      <Title order={2} mb="lg" display={isTablet ? 'block' : 'none'}>
+        {title}
+      </Title>
+      <AppointmentsList
+        slots={slots}
+        medicId={medicId}
+        className={css({
+          borderTopWidth: 0,
+          borderBottomWidth: 0,
 
-            lg: {
-              borderRadius: 8,
-              border: '1px solid var(--mantine-color-gray-2)',
+          lg: {
+            borderRadius: 8,
+            border: '1px solid var(--mantine-color-gray-2)',
 
-              '& .slot': {
-                '&:last-child': {
-                  borderBottomWidth: 0,
-                },
-              },
-
-              '& .slot:first-child .slot-time': {
-                borderTopLeftRadius: '8px',
-              },
-
-              '& .slot:last-child .slot-time': {
-                borderBottomLeftRadius: '8px',
+            '& .slot': {
+              '&:last-child': {
+                borderBottomWidth: 0,
               },
             },
-          })}
-        />
-      </Container>
-    </Wrapper>
+
+            '& .slot:first-child .slot-time': {
+              borderTopLeftRadius: '8px',
+            },
+
+            '& .slot:last-child .slot-time': {
+              borderBottomLeftRadius: '8px',
+            },
+          },
+        })}
+      />
+    </Container>
   );
 }
 
