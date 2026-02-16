@@ -96,6 +96,14 @@ interface MongoEncounter {
   };
 }
 
+interface MongoLicense {
+  _id: MongoID;
+  medic: MongoID;
+  start: number;
+  end: number;
+  type: string;
+}
+
 interface MongoPatient {
   _id: MongoID;
   personal_data: PersonalData;
@@ -112,6 +120,10 @@ interface SkippedAppointment extends MongoAppointment {
 }
 
 interface SkippedEncounter extends MongoEncounter {
+  reason: string;
+}
+
+interface SkippedLicense extends MongoLicense {
   reason: string;
 }
 
@@ -236,6 +248,9 @@ async function importData(multibar: cliProgress.MultiBar) {
     const encounters: MongoEncounter[] = JSON.parse(
       await fs.readFile(path.join(__dirname, './dumps/encounter.json'), 'utf-8')
     );
+    const licenses: MongoLicense[] = JSON.parse(
+      await fs.readFile(path.join(__dirname, './dumps/licenses.json'), 'utf-8')
+    );
     const patients: MongoPatient[] = JSON.parse(
       await fs.readFile(path.join(__dirname, './dumps/patient.json'), 'utf-8')
     );
@@ -250,6 +265,7 @@ async function importData(multibar: cliProgress.MultiBar) {
     const userBar = multibar.create(users.length, 0, { title: 'Users' });
     const patientBar = multibar.create(patients.length, 0, { title: 'Patients' });
     const encounterBar = multibar.create(encounters.length, 0, { title: 'Encounters' });
+    const licenseBar = multibar.create(licenses.length, 0, { title: 'Licenses' });
     const appointmentBar = multibar.create(appointments.length, 0, { title: 'Appointments' });
     const studyBar = multibar.create(studies.length, 0, { title: 'Studies' });
     const studyResultBar = multibar.create(studyResults.length, 0, { title: 'Study Results' });
@@ -263,6 +279,7 @@ async function importData(multibar: cliProgress.MultiBar) {
     const mdSettingsService = app.service('md-settings');
     const appointmentsService = app.service('appointments');
     const encountersService = app.service('encounters');
+    const timeOffEventsService = app.service('time-off-events');
     const patientsService = app.service('patients');
     const studiesService = app.service('studies');
     const studyResultsService = app.service('study-results');
@@ -276,11 +293,14 @@ async function importData(multibar: cliProgress.MultiBar) {
     const patientIdsWithEncounters = new Set<string>();
     const skippedAppointments: SkippedAppointment[] = [];
     const skippedEncounters: SkippedEncounter[] = [];
+    const skippedLicenses: SkippedLicense[] = [];
     const skippedStudies: SkippedStudy[] = [];
     const skippedStudyResults: SkippedStudyResult[] = [];
     const cleanedUpPatients = new Set<string>();
     const juancaId = '540dc81947771d1f3f8b4567';
     let weirdUserId;
+    const recentLicenseCutoff = dayjs().subtract(1, 'month').startOf('day');
+    const importedLicenseKeys = new Set<string>();
 
     // Import users
     for (const user of users) {
@@ -332,6 +352,65 @@ async function importData(multibar: cliProgress.MultiBar) {
       }
 
       userBar.increment();
+    }
+
+    // Import recent licenses as time-off events
+    for (const license of licenses) {
+      const medicId = license?.medic?.$oid;
+      const startTimestamp = Number(license?.start);
+      const endTimestamp = Number(license?.end);
+
+      if (!medicId || isNaN(startTimestamp) || isNaN(endTimestamp)) {
+        skippedLicenses.push({ ...license, reason: 'invalid_license_data' });
+        licenseBar.increment();
+        continue;
+      }
+
+      if (!validUserIds.has(medicId)) {
+        skippedLicenses.push({ ...license, reason: 'missing_medic_reference' });
+        licenseBar.increment();
+        continue;
+      }
+
+      const startDate = dayjs.unix(startTimestamp).startOf('day');
+      const endDate = dayjs.unix(endTimestamp).endOf('day');
+
+      if (!startDate.isValid() || !endDate.isValid() || startDate.isAfter(endDate)) {
+        skippedLicenses.push({ ...license, reason: 'invalid_date_range' });
+        licenseBar.increment();
+        continue;
+      }
+
+      if (endDate.isBefore(recentLicenseCutoff)) {
+        skippedLicenses.push({ ...license, reason: 'license_too_old' });
+        licenseBar.increment();
+        continue;
+      }
+
+      const normalizedType: 'vacation' | 'cancelDay' | 'other' =
+        license.type === 'vacation' || license.type === 'cancelDay' || license.type === 'other' ? license.type : 'other';
+      const dedupeKey = `${medicId}:${startDate.toISOString()}:${endDate.toISOString()}:${normalizedType}`;
+
+      if (importedLicenseKeys.has(dedupeKey)) {
+        skippedLicenses.push({ ...license, reason: 'duplicate_license' });
+        licenseBar.increment();
+        continue;
+      }
+
+      try {
+        await timeOffEventsService.create({
+          medicId,
+          startDate: startDate.toDate(),
+          endDate: endDate.toDate(),
+          type: normalizedType,
+          notes: null,
+        });
+        importedLicenseKeys.add(dedupeKey);
+      } catch (error: any) {
+        skippedLicenses.push({ ...license, reason: error?.message || 'failed_to_create_license' });
+      }
+
+      licenseBar.increment();
     }
 
     // Import patients
@@ -670,6 +749,9 @@ async function importData(multibar: cliProgress.MultiBar) {
     if (skippedEncounters.length > 0) {
       console.log(`Skipped ${skippedEncounters.length} encounters due to missing medic references`);
     }
+    if (skippedLicenses.length > 0) {
+      console.log(`Skipped ${skippedLicenses.length} licenses during import`);
+    }
     if (invalidTimestamps.size > 0) {
       console.log(`Skipped ${invalidTimestamps.size} appointments and encounters due to invalid timestamps`);
       console.log(Array.from(invalidTimestamps));
@@ -678,6 +760,7 @@ async function importData(multibar: cliProgress.MultiBar) {
     console.log('Imported patients:', validPatientIds.size, 'out of', patients.length);
     console.log('Imported appointments:', appointments.length - skippedAppointments.length, 'out of', appointments.length);
     console.log('Imported encounters:', encounters.length - skippedEncounters.length, 'out of', encounters.length);
+    console.log('Imported licenses:', importedLicenseKeys.size, 'out of', licenses.length);
     console.log('Imported studies:', validStudyIds.size, 'out of', studies.length);
     console.log('Imported study results:', validStudyResultIds.size, 'out of', studyResults.length);
     console.log('Cleaned up patients:', cleanedUpPatients.size, 'out of', validPatientIds.size);
@@ -699,6 +782,13 @@ async function importData(multibar: cliProgress.MultiBar) {
       await fs.writeFile(
         path.join(__dirname, './errors/encounters.json'),
         JSON.stringify(skippedEncounters, null, 2)
+      );
+    }
+
+    if (skippedLicenses.length > 0) {
+      await fs.writeFile(
+        path.join(__dirname, './errors/licenses.json'),
+        JSON.stringify(skippedLicenses, null, 2)
       );
     }
 

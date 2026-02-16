@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
-import { useLoaderData, useParams, Outlet, useNavigate } from '@remix-run/react';
+import { useLoaderData, useParams, Outlet, useNavigate, useRouteError } from '@remix-run/react';
 import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Drawer, Skeleton } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 
 import { media } from '~/media';
-import { generateEmptySlots } from '~/utils';
+import { generateEmptySlots, getWorkDaysFromSettings } from '~/utils';
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { useFind } from '~/components/provider';
 import Calendar from '~/components/calendar';
@@ -33,12 +33,32 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     },
   });
 
-  return { medicId, appointments, holidays, medic, initialDate: params.date };
+  let timeOffEvents: any[] = [];
+
+  try {
+    timeOffEvents = await client.service('time-off-events').find({
+      query: {
+        medicId,
+        startDate: {
+          $lte: dayjs().endOf('month').toISOString(),
+        },
+        endDate: {
+          $gte: dayjs().startOf('month').toISOString(),
+        },
+      },
+      paginate: false,
+    });
+  } catch (error) {
+    // Keep appointments usable even if time-off service/permissions are not ready.
+    timeOffEvents = [];
+  }
+
+  return { medicId, appointments, holidays, medic, timeOffEvents, initialDate: params.date };
 };
 
 export default function AppointmentsForMedic() {
   const navigate = useNavigate();
-  const { medicId, appointments, holidays, medic, initialDate } = useLoaderData<typeof loader>();
+  const { medicId, appointments, holidays, medic, timeOffEvents: initialTimeOffEvents, initialDate } = useLoaderData<typeof loader>();
   const [workDays, setWorkDays] = useState<number[]>([]);
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(initialDate ? dayjs(initialDate) : null);
   const [date, setDate] = useState<Dayjs | null>(initialDate ? dayjs(initialDate) : dayjs());
@@ -57,9 +77,26 @@ export default function AppointmentsForMedic() {
     [medicId, memoizedDate] // eslint-disable-line react-hooks/exhaustive-deps
   );
   const { response } = useFind('appointments', query, { paginate: false }, appointments);
+  const timeOffQuery = useMemo(
+    () => ({
+      medicId,
+      startDate: {
+        $lte: memoizedDate?.endOf('month').add(1, 'week').toISOString(),
+      },
+      endDate: {
+        $gte: memoizedDate?.startOf('month').subtract(1, 'week').toISOString(),
+      },
+    }),
+    [medicId, memoizedDate]
+  );
+  const { response: timeOffResponse } = useFind('time-off-events', timeOffQuery, { paginate: false }, initialTimeOffEvents);
 
   const events = useMemo(() => {
-    const appointments = response?.map((appointment: any) => ({
+    const appointmentsList = Array.isArray(response) ? response : response?.data || [];
+    const timeOffList = Array.isArray(timeOffResponse) ? timeOffResponse : timeOffResponse?.data || [];
+    const holidaysList = Array.isArray(holidays) ? holidays : [];
+
+    const appointments = appointmentsList.map((appointment: any) => ({
       id: appointment.id,
       title: `${appointment.patient.personalData.lastName.toUpperCase()}, ${appointment.patient.personalData.firstName}`,
       extra: appointment.extra,
@@ -77,8 +114,22 @@ export default function AppointmentsForMedic() {
             .toISOString(),
     }));
 
-    return [...appointments, ...holidays];
-  }, [response, holidays]);
+    const timeOffEvents = timeOffList.map((event: any) => ({
+      id: `time-off-${event.id}`,
+      title:
+        event.type === 'vacation'
+          ? 'Vacaciones'
+          : event.type === 'cancelDay'
+            ? 'Suspende consultorio'
+            : 'Tiempo fuera de consultorio',
+      startDate: dayjs(event.startDate).startOf('day').toISOString(),
+      endDate: dayjs(event.endDate).endOf('day').toISOString(),
+      allDay: true,
+      variant: 'pink',
+    }));
+
+    return [...appointments, ...holidaysList, ...timeOffEvents];
+  }, [response, holidays, timeOffResponse]);
 
   const handleNavigate = useCallback((newDate: Dayjs) => setDate(newDate), []);
   const handleSelectDate = useCallback((newDate: Dayjs) => setSelectedDate(newDate), []);
@@ -89,21 +140,7 @@ export default function AppointmentsForMedic() {
   }, [params.date]);
 
   useEffect(() => {
-    const daysOfWeek = [
-      'sundayStart',
-      'mondayStart',
-      'tuesdayStart',
-      'wednesdayStart',
-      'thursdayStart',
-      'fridayStart',
-      'saturdayStart',
-    ];
-
-    const workDays = daysOfWeek
-      .map((day, index) => (medic?.settings?.[day] ? index : null))
-      .filter(index => index !== null);
-
-    setWorkDays(workDays as number[]);
+    setWorkDays(getWorkDaysFromSettings(medic?.settings));
   }, [medic]);
 
   return (
@@ -154,5 +191,14 @@ export default function AppointmentsForMedic() {
 
 export const ErrorBoundary = () => {
   const { t } = useTranslation();
-  return <div>{t('common.something_went_wrong')}</div>;
+  const error = useRouteError() as any;
+
+  return (
+    <div>
+      <div>{t('common.something_went_wrong')}</div>
+      {process.env.NODE_ENV !== 'production' && error && (
+        <pre style={{ whiteSpace: 'pre-wrap', marginTop: 12 }}>{error?.message || JSON.stringify(error, null, 2)}</pre>
+      )}
+    </div>
+  );
 };

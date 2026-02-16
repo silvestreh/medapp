@@ -126,6 +126,15 @@ export interface Appointment {
   startDate: Date;
 }
 
+export interface TimeOffEvent {
+  id: Id;
+  medicId: Id;
+  startDate: Date;
+  endDate: Date;
+  type: 'vacation' | 'cancelDay' | 'other';
+  notes?: string | null;
+}
+
 export interface Encounter {
   id: Id;
   patientId: Id;

@@ -47,7 +47,8 @@ export default function (app: Application): typeof Model {
       user_personal_data,
       user_contact_data,
       roles,
-      studies
+      studies,
+      time_off_events
     } = models;
 
     users.belongsToMany(personal_data, {
@@ -73,6 +74,10 @@ export default function (app: Application): typeof Model {
     });
     users.belongsTo(roles, { foreignKey: 'roleId' });
     users.hasMany(studies, {
+      foreignKey: 'medicId',
+      constraints: false
+    });
+    users.hasMany(time_off_events, {
       foreignKey: 'medicId',
       constraints: false
     });

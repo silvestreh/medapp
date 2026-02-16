@@ -242,13 +242,21 @@ export const normalizeMaritalStatus = (maritalStatus?: string | null): string | 
 
 interface OldData {
   schedule_all_shifts?: Record<number, { start: string; end: string }>;
-  schedule_all_week_custom_time?: boolean;
+  schedule_all_week_custom_time?: boolean | string | null;
   schedule_all_week_start_time?: string;
   schedule_all_week_end_time?: string;
-  schedule_all_week_shift_duration?: number;
+  schedule_all_week_shift_duration?: number | string | null;
+  schedule_monday?: boolean | string | null;
+  schedule_tuesday?: boolean | string | null;
+  schedule_wednesday?: boolean | string | null;
+  schedule_thursday?: boolean | string | null;
+  schedule_friday?: boolean | string | null;
+  schedule_saturday?: boolean | string | null;
+  schedule_sunday?: boolean | string | null;
 }
 
 interface NewSchedule {
+  scheduleAllWeekCustomTime: boolean;
   mondayStart: string | null;
   mondayEnd: string | null;
   tuesdayStart: string | null;
@@ -268,23 +276,50 @@ interface NewSchedule {
 
 export const transformSchedule = (oldData: OldData): NewSchedule => {
   const schedule = oldData.schedule_all_shifts || {};
-  const useCustomTime = oldData.schedule_all_week_custom_time;
-  const defaultStartTime = oldData.schedule_all_week_start_time || '';
-  const defaultEndTime = oldData.schedule_all_week_end_time || '';
-
-  // Convert schedule_all_week_shift_duration to a number if it's a string
-  let encounterDuration = 15; // Default to 15
-  if (typeof oldData.schedule_all_week_shift_duration === 'number') {
-    encounterDuration = oldData.schedule_all_week_shift_duration;
-  } else if (typeof oldData.schedule_all_week_shift_duration === 'string') {
-    const parsedDuration = parseInt(oldData.schedule_all_week_shift_duration, 10);
-    if (!isNaN(parsedDuration)) {
-      encounterDuration = parsedDuration;
+  const normalizeBoolean = (value: unknown): boolean => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value === 1;
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase();
+      return ['true', '1', 'on', 'yes', 'y', 'si', 's'].includes(normalized);
     }
-  }
+    return false;
+  };
+  const normalizeTime = (value?: string | null): string | null => {
+    if (!value) return null;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  };
+  const parseDuration = (value?: number | string | null): number => {
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const parsed = parseInt(value, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+    return 15;
+  };
+
+  const useCustomTime = normalizeBoolean(oldData.schedule_all_week_custom_time);
+  const defaultStartTime = normalizeTime(oldData.schedule_all_week_start_time);
+  const defaultEndTime = normalizeTime(oldData.schedule_all_week_end_time);
+  const encounterDuration = parseDuration(oldData.schedule_all_week_shift_duration);
+  const enabledDays: Record<number, boolean> = {
+    0: normalizeBoolean(oldData.schedule_sunday),
+    1: normalizeBoolean(oldData.schedule_monday),
+    2: normalizeBoolean(oldData.schedule_tuesday),
+    3: normalizeBoolean(oldData.schedule_wednesday),
+    4: normalizeBoolean(oldData.schedule_thursday),
+    5: normalizeBoolean(oldData.schedule_friday),
+    6: normalizeBoolean(oldData.schedule_saturday),
+  };
 
   // Map days of the week to the new format
   const newSchedule: NewSchedule = {
+    scheduleAllWeekCustomTime: useCustomTime,
     mondayStart: null,
     mondayEnd: null,
     tuesdayStart: null,
@@ -315,17 +350,22 @@ export const transformSchedule = (oldData: OldData): NewSchedule => {
 
   for (let day = 0; day <= 6; day++) {
     const [startKey, endKey] = dayMap[day];
-    if (useCustomTime && schedule[day]) {
-      // @ts-expect-error whatever
-      newSchedule[startKey] = schedule[day].start || null;
-      // @ts-expect-error whatever
-      newSchedule[endKey] = schedule[day].end || null;
-    } else {
-      // @ts-expect-error whatever
-      newSchedule[startKey] = defaultStartTime || null;
-      // @ts-expect-error whatever
-      newSchedule[endKey] = defaultEndTime || null;
+    if (useCustomTime) {
+      const daySchedule = schedule[day];
+      const start = normalizeTime(daySchedule?.start);
+      const end = normalizeTime(daySchedule?.end);
+      // @ts-expect-error indexed assignment
+      newSchedule[startKey] = start;
+      // @ts-expect-error indexed assignment
+      newSchedule[endKey] = end;
+      continue;
     }
+
+    const isEnabled = enabledDays[day];
+    // @ts-expect-error indexed assignment
+    newSchedule[startKey] = isEnabled ? defaultStartTime : null;
+    // @ts-expect-error indexed assignment
+    newSchedule[endKey] = isEnabled ? defaultEndTime : null;
   }
 
   return newSchedule;
