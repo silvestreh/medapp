@@ -11,9 +11,6 @@
     "resolveJsonModule": true,
     "composite": true
   },
-  "exclude": [
-    "test",
-    "scripts",
-    "data"
-  ]
+  "include": ["src"],
+  "exclude": ["test", "scripts", "data", "lib"]
 }
