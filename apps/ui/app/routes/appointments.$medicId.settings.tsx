@@ -1,22 +1,15 @@
 import { useEffect } from 'react';
-import { Drawer, Tabs, Title } from '@mantine/core';
+import { Tabs, Title } from '@mantine/core';
 import '@mantine/dates/styles.css';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
-import {
-  useActionData,
-  useLoaderData,
-  useLocation,
-  useNavigate,
-  useNavigation,
-  useParams,
-  useSubmit,
-} from '@remix-run/react';
+import { useActionData, useLoaderData, useNavigation, useParams, useSubmit } from '@remix-run/react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { showNotification } from '@mantine/notifications';
 
 import { media } from '~/media';
 import { getAuthenticatedClient } from '~/utils/auth.server';
+import { RouteDrawer } from '~/components/route-drawer';
 import { SettingsTab, type MdSettingsRecord, type SettingsSavePayload } from '~/components/appointments/settings-tab';
 import { TimeOffTab, type TimeOffEvent } from '~/components/appointments/time-off-tab';
 
@@ -137,8 +130,6 @@ const AppointmentsSettings = () => {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const submit = useSubmit();
-  const location = useLocation();
-  const navigate = useNavigate();
   const { medicId: medicIdParam } = useParams();
   const isTablet = useMediaQuery(media.lg);
   const medicId = medicIdFromLoader || medicIdParam || '';
@@ -213,11 +204,6 @@ const AppointmentsSettings = () => {
     }
   }, [actionData, t]);
 
-  const handleClose = () => {
-    const parent = location.pathname.split('/').slice(0, -1).join('/');
-    navigate(parent, { preventScrollReset: isTablet });
-  };
-
   const handleSaveSettings = (payload: SettingsSavePayload) => {
     if (!medicId) {
       return;
@@ -252,9 +238,7 @@ const AppointmentsSettings = () => {
   };
 
   return (
-    <Drawer
-      opened={true}
-      onClose={handleClose}
+    <RouteDrawer
       position={isTablet ? 'right' : 'bottom'}
       styles={{ content: { minWidth: '50vw' } }}
     >
@@ -285,7 +269,7 @@ const AppointmentsSettings = () => {
           />
         </Tabs.Panel>
       </Tabs>
-    </Drawer>
+    </RouteDrawer>
   );
 };
 
