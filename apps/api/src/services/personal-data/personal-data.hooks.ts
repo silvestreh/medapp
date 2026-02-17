@@ -12,7 +12,6 @@ export default {
   before: {
     all: [ authenticate('jwt') ],
     find: [
-      disallow('external'),
       queryEncryptedFields('documentValue', 'birthDate'),
     ],
     get: [ disallow('external') ],

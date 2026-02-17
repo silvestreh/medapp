@@ -93,7 +93,11 @@ const Title = styled('h1', {
   },
 });
 
-const PatientSearchTable: FC = () => {
+interface PatientSearchTableProps {
+  basePath?: string;
+}
+
+const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounters' }) => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('q') || '';
@@ -152,7 +156,7 @@ const PatientSearchTable: FC = () => {
   const rows = patients.map((patient: Patient) => (
     <Table.Tr
       key={patient.id}
-      onClick={() => navigate(`/encounters/${patient.id}`)}
+      onClick={() => navigate(`${basePath}/${patient.id}`)}
       styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
       style={{ cursor: 'pointer' }}
     >
