@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
@@ -122,6 +122,12 @@ export default function PatientDetail() {
   const isSaving = fetcher.state !== 'idle';
 
   const actionData = fetcher.data as { success?: boolean; error?: string; encounterCount?: number; studyCount?: number } | undefined;
+
+  useEffect(() => {
+    if (actionData?.success) {
+      navigate(-1);
+    }
+  }, [actionData?.success, navigate]);
 
   const handleSave = useCallback(() => {
     const validation = form.validate();

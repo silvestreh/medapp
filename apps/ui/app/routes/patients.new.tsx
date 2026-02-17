@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
-import { redirect } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import { useFetcher, useNavigate } from '@remix-run/react';
 import { Group, Button, ActionIcon, Title, Alert, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
@@ -45,7 +45,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     medicarePlan: patientFields.medicarePlan,
   });
 
-  return redirect(`/patients/${patient.id}`);
+  return json({ success: true, patientId: patient.id });
 };
 
 const PageContainer = styled('div', {
@@ -132,6 +132,13 @@ export default function NewPatient() {
   }, [existingPersonalData?.id, patientAlreadyExists]);
 
   const isSaving = fetcher.state !== 'idle';
+  const actionData = fetcher.data as { success?: boolean } | undefined;
+
+  useEffect(() => {
+    if (actionData?.success) {
+      navigate(-1);
+    }
+  }, [actionData?.success, navigate]);
 
   const canSave =
     !patientAlreadyExists &&
