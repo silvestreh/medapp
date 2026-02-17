@@ -352,24 +352,26 @@ export function SettingsTab({ medicId, initialSettings, isSaving, onSave }: Sett
         </SimpleGrid>
       </Stack>
 
-      <Checkbox
-        checked={useDifferentTimes}
-        onChange={event => {
-          const checked = event.currentTarget.checked;
-          setUseDifferentTimes(checked);
+      {selectedCount > 1 && (
+        <Checkbox
+          checked={useDifferentTimes}
+          onChange={event => {
+            const checked = event.currentTarget.checked;
+            setUseDifferentTimes(checked);
 
-          if (!checked) {
-            const sourceDay = selectedDayList[0];
-            if (sourceDay) {
-              const sourceStart = daySettings[sourceDay].start || '09:00';
-              const sourceEnd = daySettings[sourceDay].end || '17:00';
-              setCommonStart(sourceStart);
-              setCommonEnd(sourceEnd);
+            if (!checked) {
+              const sourceDay = selectedDayList[0];
+              if (sourceDay) {
+                const sourceStart = daySettings[sourceDay].start || '09:00';
+                const sourceEnd = daySettings[sourceDay].end || '17:00';
+                setCommonStart(sourceStart);
+                setCommonEnd(sourceEnd);
+              }
             }
-          }
-        }}
-        label={t('appointments.use_different_times_toggle')}
-      />
+          }}
+          label={t('appointments.use_different_times_toggle')}
+        />
+      )}
 
       {!useDifferentTimes && (
         <Group grow>
