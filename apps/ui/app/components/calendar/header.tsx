@@ -5,9 +5,11 @@ import startCase from 'lodash/startCase';
 import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
+import { formatInLocale } from '~/utils';
 
 interface HeaderProps {
   date: dayjs.Dayjs;
+  locale?: string | null;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onTodayClick: () => void;
@@ -48,12 +50,12 @@ const Title = styled('h1', {
   },
 });
 
-export function Header({ date, onPrevMonth, onNextMonth, onTodayClick, onSettingsClick }: HeaderProps) {
+export function Header({ date, locale, onPrevMonth, onNextMonth, onTodayClick, onSettingsClick }: HeaderProps) {
   const { t } = useTranslation();
 
   return (
     <HeaderContainer>
-      <Title>{startCase(date.format('MMMM YYYY'))}</Title>
+      <Title>{startCase(formatInLocale(date, 'MMMM YYYY', locale))}</Title>
 
       <Group align="center" gap="sm">
         <Tooltip label={t('appointments.today')} withArrow arrowSize={8}>

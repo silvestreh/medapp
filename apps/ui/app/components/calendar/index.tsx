@@ -5,14 +5,13 @@ import startCase from 'lodash/startCase';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import weekday from 'dayjs/plugin/weekday';
-import localeData from 'dayjs/plugin/localeData';
 import { useEventListener } from 'usehooks-ts';
-import { useNavigate } from '@remix-run/react';
-import 'dayjs/locale/es';
+import { useNavigate, useRouteLoaderData } from '@remix-run/react';
 
 import { Header } from '~/components/calendar/header';
 import { Day } from '~/components/calendar/day';
 import { styled } from '~/styled-system/jsx';
+import { getWeekdayNames, formatInLocale } from '~/utils';
 
 export type EventVariant = 'blue' | 'green' | 'pink' | 'yellow';
 
@@ -39,10 +38,6 @@ interface CalendarProps {
 
 dayjs.extend(isBetween);
 dayjs.extend(weekday);
-dayjs.extend(localeData);
-dayjs.locale('es');
-
-const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 const MainContainer = styled('div', {
   base: {
@@ -119,6 +114,10 @@ function Calendar({
   medicId,
   onSettingsClick,
 }: CalendarProps) {
+  const rootData = useRouteLoaderData('root') as { locale?: string } | undefined;
+  const locale = rootData?.locale ?? 'es';
+  const weekdayNames = useMemo(() => getWeekdayNames(locale, 'short'), [locale]);
+
   const currentDate = date || dayjs();
   const startOfMonth = currentDate.startOf('month');
   const daysToSubtract = (startOfMonth.day() + 6) % 7;
@@ -185,13 +184,13 @@ function Calendar({
       if (!workDays.includes(date.day())) {
         return showNotification({
           title: 'No disponible',
-          message: `No atiende los días ${startCase(date.format('dddd'))}`,
+          message: `No atiende los días ${startCase(formatInLocale(date, 'dddd', locale))}`,
           color: 'red',
         });
       }
       onChange(date);
     },
-    [workDays, onChange]
+    [workDays, onChange] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const handleKeyDown = useCallback(
@@ -254,6 +253,7 @@ function Calendar({
     <MainContainer>
       <Header
         date={currentDate}
+        locale={locale}
         onPrevMonth={handlePrevMonth}
         onNextMonth={handleNextMonth}
         onTodayClick={handleTodayClick}
@@ -261,7 +261,7 @@ function Calendar({
       />
       <GridContainer>
         <Grid columns={7} gutter={0} bg="var(--mantine-color-gray-3)">
-          {WEEKDAYS.map((day, index) => (
+          {weekdayNames.map((day, index) => (
             <WeekdayCol key={day} span={1}>
               <WeekdayHeader isFirst={index === 0} isLast={index === 6}>
                 {day}

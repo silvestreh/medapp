@@ -1,16 +1,15 @@
 import { type FC, useCallback, useMemo } from 'react';
 import { Accordion, Text, Stack } from '@mantine/core';
 import dayjs from 'dayjs';
-import 'dayjs/locale/es';
 import groupBy from 'lodash/groupBy';
 import omit from 'lodash/omit';
 import mapValues from 'lodash/mapValues';
 import { useTranslation } from 'react-i18next';
+import { useRouteLoaderData } from '@remix-run/react';
 
 import { styled } from '~/styled-system/jsx';
 import { studySchemas } from '~/components/forms/study-schemas';
-
-dayjs.locale('es');
+import { formatInLocale, parseInLocale } from '~/utils';
 
 interface Encounter {
   id: string;
@@ -201,10 +200,17 @@ const EncounterTree: FC<EncounterTreeProps> = ({
     return entries;
   }, [encounters, studies]);
 
-  // Group timeline entries by Year -> Month
-  const groupedEntries = mapValues(
-    groupBy(timeline, entry => dayjs(entry.date).format('YYYY')),
-    yearEntries => groupBy(yearEntries, entry => dayjs(entry.date).format('MMMM, YYYY'))
+  const rootData = useRouteLoaderData('root') as { locale?: string } | undefined;
+  const locale = rootData?.locale ?? 'es';
+
+  // Group timeline entries by Year -> Month (labels in current locale)
+  const groupedEntries = useMemo(
+    () =>
+      mapValues(
+        groupBy(timeline, entry => formatInLocale(entry.date, 'YYYY', locale)),
+        yearEntries => groupBy(yearEntries, entry => formatInLocale(entry.date, 'MMMM, YYYY', locale))
+      ),
+    [timeline, locale]
   );
 
   const years = Object.keys(groupedEntries).sort((a, b) => b.localeCompare(a));
@@ -220,7 +226,9 @@ const EncounterTree: FC<EncounterTreeProps> = ({
             <StyledAccordion variant="default" multiple>
               {Object.keys(groupedEntries[year])
                 .sort((a, b) => {
-                  return dayjs(b, 'MMMM, YYYY', 'es').valueOf() - dayjs(a, 'MMMM, YYYY', 'es').valueOf();
+                  return (
+                    parseInLocale(b, 'MMMM, YYYY', locale).valueOf() - parseInLocale(a, 'MMMM, YYYY', locale).valueOf()
+                  );
                 })
                 .map(monthYear => (
                   <Accordion.Item key={monthYear} value={monthYear}>
@@ -239,7 +247,9 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                   key={`enc-${encounter.id}`}
                                   active={activeEncounterId === encounter.id && !activeFormKey}
                                 >
-                                  <EncounterDateText>{dayjs(encounter.date).format('dddd D, HH:mm')}</EncounterDateText>
+                                  <EncounterDateText>
+                                    {formatInLocale(encounter.date, 'dddd D, HH:mm', locale)}
+                                  </EncounterDateText>
                                   {encounter.data &&
                                     Object.keys(encounter.data).map(key => (
                                       <FormItem
@@ -264,7 +274,9 @@ const EncounterTree: FC<EncounterTreeProps> = ({
 
                             return (
                               <EncounterBox key={`study-${study.id}`}>
-                                <EncounterDateText>{dayjs(study.date).format('dddd D, HH:mm')}</EncounterDateText>
+                                <EncounterDateText>
+                                  {formatInLocale(study.date, 'dddd D, HH:mm', locale)}
+                                </EncounterDateText>
                                 <FormItem onClick={e => handleStudyClick(e, study)} active={activeStudyId === study.id}>
                                   Protocolo #{study.protocol}
                                   <Text size="xs" c={activeStudyId === study.id ? 'white' : 'gray.5'} mt={2}>
