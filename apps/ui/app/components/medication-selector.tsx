@@ -107,6 +107,7 @@ export function MedicationSelector({ value, onChange, placeholder, label, error,
   const handleSelect = (medication: Medication) => {
     const formattedValue = `${medication.commercialNamePresentation} / ${medication.genericDrug} / ${medication.pharmaceuticalForm}`;
     onChange(formattedValue);
+    setSearchValue(formattedValue);
     setOpened(false);
   };
 
@@ -228,7 +229,14 @@ export function MedicationSelector({ value, onChange, placeholder, label, error,
                       {results.map((med: Medication) => {
                         const formattedMed = `${med.commercialNamePresentation} / ${med.genericDrug} / ${med.pharmaceuticalForm}`;
                         return (
-                          <TableRow key={med.id} onClick={() => handleSelect(med)} selected={value === formattedMed}>
+                          <TableRow
+                            key={med.id}
+                            onMouseDown={e => {
+                              e.preventDefault();
+                              handleSelect(med);
+                            }}
+                            selected={value === formattedMed}
+                          >
                             <Table.Td>
                               <MantineText size="sm" fw={500}>
                                 {med.commercialNamePresentation}
