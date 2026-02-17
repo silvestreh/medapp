@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 
 import { Title } from '~/components/typography';
 import { authenticatedLoader } from '~/utils/auth.server';
+import { getPageTitle } from '~/utils/meta';
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'MedApp / Usuarios & Roles' }];
+export const meta: MetaFunction = ({ matches }) => {
+  return [{ title: getPageTitle(matches, 'users_roles') }];
 };
 
 export const loader = authenticatedLoader();

@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next';
 
 import createFeathersClient from '~/feathers';
 import { getSession, commitSession, destroySession } from '~/session';
+import { getPageTitle } from '~/utils/meta';
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'New Remix App' }, { name: 'description', content: 'Welcome to Remix!' }];
+export const meta: MetaFunction = ({ matches }) => {
+  return [{ title: getPageTitle(matches, 'login') }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

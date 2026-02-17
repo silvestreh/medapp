@@ -22,6 +22,7 @@ export default function populatePatient(): Hook {
         id: { $in: uniquePatientIds },
       },
       paginate: false,
+      disableSoftDelete: true,
     });
 
     const patientMap = new Map(
