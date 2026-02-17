@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import dayjs from 'dayjs';
-import { useLoaderData } from '@remix-run/react';
+import { useLoaderData, useRouteLoaderData } from '@remix-run/react';
 import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { Title } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
@@ -9,7 +9,7 @@ import '@mantine/dates/styles.css';
 
 import AppointmentsList from '~/components/appointments-list';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
-import { generateSlots } from '~/utils';
+import { generateSlots, formatInLocale } from '~/utils';
 import { styled } from '~/styled-system/jsx';
 import { css } from '~/styled-system/css';
 import { media } from '~/media';
@@ -59,8 +59,13 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
 
 export default function AppointmentsForDate() {
   const { slots, date, medicId } = useLoaderData<typeof loader>();
+  const rootData = useRouteLoaderData('root') as { locale?: string } | undefined;
+  const locale = rootData?.locale ?? 'es';
   const isTablet = useMediaQuery(media.lg);
-  const title = useMemo(() => dayjs(date).format('DD [de] MMMM, YYYY'), [date]);
+  const title = useMemo(
+    () => formatInLocale(date, locale === 'es' ? 'DD [de] MMMM, YYYY' : 'MMMM D, YYYY', locale),
+    [date, locale]
+  );
 
   return (
     <Container>

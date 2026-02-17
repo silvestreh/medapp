@@ -1,7 +1,78 @@
 import dayjs, { Dayjs } from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import localeData from 'dayjs/plugin/localeData';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import 'dayjs/locale/es';
+import 'dayjs/locale/en';
+
+import type { Slot, Account } from '~/declarations';
+
+dayjs.extend(isSameOrBefore);
+dayjs.extend(localeData);
+dayjs.extend(customParseFormat);
 
 const MONGO_OBJECT_ID_RE = /^[a-f\d]{24}$/i;
 const UUID_RE = /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i;
+
+/** Locales supported by the app (must match i18n supportedLngs). */
+export type SupportedLocale = 'es' | 'en';
+
+const SUPPORTED_LOCALES: SupportedLocale[] = ['es', 'en'];
+
+function toSupportedLocale(locale: string | null | undefined): SupportedLocale {
+  if (locale && SUPPORTED_LOCALES.includes(locale as SupportedLocale)) {
+    return locale as SupportedLocale;
+  }
+  return 'es';
+}
+
+/**
+ * Returns a dayjs instance with the given locale. Use this when you need
+ * date formatting (month names, day names, etc.) in the user's language.
+ */
+export function dayjsInLocale(date?: string | number | Date | Dayjs | null | undefined, locale?: string | null): Dayjs {
+  const l = toSupportedLocale(locale);
+  const d = date == null ? dayjs() : dayjs(date);
+  return d.locale(l);
+}
+
+/**
+ * Format a date in the given locale. Uses dayjs format tokens (e.g. 'MMMM YYYY', 'dddd', 'DD/MM/YYYY').
+ */
+export function formatInLocale(date: string | number | Date | Dayjs, format: string, locale?: string | null): string {
+  return dayjsInLocale(date, locale).format(format);
+}
+
+/**
+ * Month names in the given locale. Index 0 = January.
+ * format: 'short' (e.g. Jan) or 'long' (e.g. January).
+ */
+export function getMonthNames(locale?: string | null, format: 'short' | 'long' = 'long'): string[] {
+  const l = toSupportedLocale(locale);
+  const d = dayjs().locale(l);
+  return format === 'short' ? d.localeData().monthsShort() : d.localeData().months();
+}
+
+/**
+ * Weekday names in the given locale, Monday first (index 0 = Monday).
+ * format: 'short' (e.g. Mon) or 'long' (e.g. Monday).
+ */
+export function getWeekdayNames(locale?: string | null, format: 'short' | 'long' = 'short'): string[] {
+  const l = toSupportedLocale(locale);
+  const d = dayjs().locale(l);
+  const names = format === 'short' ? d.localeData().weekdaysShort() : d.localeData().weekdays();
+  // dayjs uses Sunday = 0; return Monday-first for calendar UIs
+  return [...names.slice(1), names[0]];
+}
+
+/**
+ * Parse a date string in the given locale (e.g. "November, 2024" or "noviembre, 2024").
+ * Uses dayjs string + format parsing with the locale so month/day names are understood.
+ */
+export function parseInLocale(str: string, format: string, locale?: string | null): Dayjs {
+  const l = toSupportedLocale(locale);
+  return dayjs(str, format, l);
+}
 
 /**
  * Returns the display value for a national ID / document value.
@@ -14,11 +85,6 @@ export function displayDocumentValue(value: string | null | undefined): string {
   if (MONGO_OBJECT_ID_RE.test(value) || UUID_RE.test(value)) return '—';
   return value;
 }
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-
-import type { Slot, Account } from '~/declarations';
-
-dayjs.extend(isSameOrBefore);
 
 type WeekdayName = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
 
