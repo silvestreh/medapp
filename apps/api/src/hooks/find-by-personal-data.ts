@@ -176,24 +176,28 @@ export const findByPersonalData = (options: FindByPersonalDataOptions): Hook => 
       return context;
     }
 
-    // Handle pagination ourselves since $in doesn't preserve order
+    // Store original pagination params so the after hook can paginate
+    // on the actual results (studies) instead of on owner IDs (patients).
+    // This is critical for 1:many relationships (e.g. one patient → many studies).
     const $limit = parseInt(params.query.$limit) || 10;
     const $skip = parseInt(params.query.$skip) || 0;
-    const pageOwnerIds = sortedOwnerIds.slice($skip, $skip + $limit);
 
-    // Store the sorted order so the after hook can re-sort results
-    context.params._sortedOwnerIds = pageOwnerIds;
-    context.params._totalOwners = sortedOwnerIds.length;
+    context.params._sortedOwnerIds = sortedOwnerIds;
+    context.params._originalLimit = $limit;
+    context.params._originalSkip = $skip;
     context.params._ownerForeignKey = foreignKey;
 
-    // Update the query to filter by the current page's owner IDs only
+    // Disable Feathers pagination so all matching records are returned
+    // as a plain array; the after hook will re-paginate correctly.
+    context.params.paginate = false;
+
+    // Filter by ALL matching owner IDs — pagination happens in the after hook
+    const cleanQuery = omit(params.query, ...searchableFields, '$skip', '$limit');
     context.params.query = {
-      ...omit(params.query, ...searchableFields),
+      ...cleanQuery,
       [foreignKey]: {
-        $in: pageOwnerIds.length > 0 ? pageOwnerIds : ['none']
+        $in: sortedOwnerIds
       },
-      $skip: 0,
-      $limit: pageOwnerIds.length || 1
     };
 
     return context;
@@ -203,7 +207,8 @@ export const findByPersonalData = (options: FindByPersonalDataOptions): Hook => 
 export const sortByPersonalDataRank = (options?: { foreignKey?: string }): Hook => {
   return async (context: HookContext) => {
     const sortedOwnerIds: string[] | undefined = context.params._sortedOwnerIds;
-    const totalOwners: number | undefined = context.params._totalOwners;
+    const originalLimit: number | undefined = context.params._originalLimit;
+    const originalSkip: number | undefined = context.params._originalSkip;
     const fk = options?.foreignKey || context.params._ownerForeignKey || 'id';
 
     if (!sortedOwnerIds || sortedOwnerIds.length === 0) {
@@ -218,14 +223,36 @@ export const sortByPersonalDataRank = (options?: { foreignKey?: string }): Hook 
       return indexA - indexB;
     };
 
-    if (context.result.data) {
-      // Paginated result - fix ordering and total count
-      context.result.data.sort(sortFn);
-      if (totalOwners !== undefined) {
-        context.result.total = totalOwners;
-      }
-    } else if (Array.isArray(context.result)) {
-      context.result.sort(sortFn);
+    // Collect items from either paginated or plain-array result
+    let items: any[];
+    if (Array.isArray(context.result)) {
+      items = context.result;
+    } else if (context.result.data) {
+      items = context.result.data;
+    } else {
+      return context;
+    }
+
+    items.sort(sortFn);
+
+    // Re-paginate on the actual items (not on owner IDs) so that every
+    // page contains exactly $limit results regardless of how many items
+    // each owner has.
+    if (originalLimit !== undefined) {
+      const skip = originalSkip || 0;
+      const total = items.length;
+      const paginatedItems = items.slice(skip, skip + originalLimit);
+
+      context.result = {
+        data: paginatedItems,
+        total,
+        limit: originalLimit,
+        skip,
+      };
+    } else if (context.result.data) {
+      context.result.data = items;
+    } else {
+      context.result = items;
     }
 
     return context;
