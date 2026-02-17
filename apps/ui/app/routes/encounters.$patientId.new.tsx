@@ -10,6 +10,7 @@ import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { EncounterForm } from '~/components/forms/encounter-form';
 import NewEncounterSidebar from '~/components/new-encounter-sidebar';
+import { getPageTitle } from '~/utils/meta';
 
 const Container = styled('div', {
   base: {
@@ -54,8 +55,8 @@ const Content = styled('div', {
   },
 });
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'MedApp / Nuevo Encuentro' }];
+export const meta: MetaFunction = ({ matches }) => {
+  return [{ title: getPageTitle(matches, 'new_encounter') }];
 };
 
 export const action = async ({ params, request }: ActionFunctionArgs) => {

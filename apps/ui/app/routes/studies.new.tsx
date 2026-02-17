@@ -11,9 +11,10 @@ import { useGet } from '~/components/provider';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
+import { getPageTitle } from '~/utils/meta';
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'MedApp / Nuevo Estudio' }];
+export const meta: MetaFunction = ({ matches }) => {
+  return [{ title: getPageTitle(matches, 'new_study') }];
 };
 
 export const loader = authenticatedLoader();

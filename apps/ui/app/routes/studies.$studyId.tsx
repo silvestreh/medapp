@@ -15,9 +15,10 @@ import { StudyForm } from '~/components/forms/study-form';
 import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 import type { StudyResultData } from '~/components/forms/study-form-types';
 import { StyledTitle } from '~/components/forms/styles';
+import { getPageTitle } from '~/utils/meta';
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'MedApp / Estudio' }];
+export const meta: MetaFunction = ({ matches }) => {
+  return [{ title: getPageTitle(matches, 'study') }];
 };
 
 export const loader = authenticatedLoader();

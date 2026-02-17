@@ -17,9 +17,10 @@ import {
   buildFormPayload,
   type PatientFormValues,
 } from '~/components/forms/patient-form';
+import { getPageTitle } from '~/utils/meta';
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'MedApp / Paciente' }];
+export const meta: MetaFunction = ({ matches }) => {
+  return [{ title: getPageTitle(matches, 'patient') }];
 };
 
 export const loader = authenticatedLoader(async ({ params, request }: LoaderFunctionArgs) => {

@@ -31,9 +31,11 @@ export const omitForDeleted = (options: Options): Hook => {
 
     if (method === 'find') {
       if (Array.isArray(result.data)) {
-        context.result.data = await Promise.all(result.data.filter(checkSoftDelete));
+        const checks = await Promise.all(result.data.map(checkSoftDelete));
+        context.result.data = result.data.filter((_: any, index: number) => checks[index]);
       } else if (Array.isArray(result)) {
-        context.result = await Promise.all(result.filter(checkSoftDelete));
+        const checks = await Promise.all(result.map(checkSoftDelete));
+        context.result = result.filter((_: any, index: number) => checks[index]);
       }
     } else if (method === 'get') {
       await checkSoftDelete(result);

@@ -15,6 +15,7 @@ import { StudyForm } from '~/components/forms/study-form';
 import { studySchemas } from '~/components/forms/study-schemas';
 import { PatientOverview } from '~/components/patient-overview';
 import type { StudyResultData } from '~/components/forms/study-form-types';
+import { getPageTitle } from '~/utils/meta';
 
 const Container = styled('div', {
   base: {
@@ -52,8 +53,8 @@ const Content = styled('div', {
   },
 });
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'MedApp / Detalle de Encuentro' }];
+export const meta: MetaFunction = ({ matches }) => {
+  return [{ title: getPageTitle(matches, 'encounter_detail') }];
 };
 
 export const action = async ({ params, request }: ActionFunctionArgs) => {

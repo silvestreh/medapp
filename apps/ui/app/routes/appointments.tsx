@@ -6,9 +6,10 @@ import { useTranslation } from 'react-i18next';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import MedicList from '~/components/medic-list';
 import Portal from '~/components/portal';
+import { getPageTitle } from '~/utils/meta';
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'MedApp / Turnos' }];
+export const meta: MetaFunction = ({ matches }) => {
+  return [{ title: getPageTitle(matches, 'appointments') }];
 };
 
 export const loader = authenticatedLoader(async ({ request, params }: LoaderFunctionArgs) => {

@@ -1,8 +1,9 @@
 import { type MetaFunction, redirect, type LoaderFunctionArgs } from '@remix-run/node';
 import { getUser } from '~/utils/auth.server';
+import { getPageTitle } from '~/utils/meta';
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'New Remix App' }, { name: 'description', content: 'Welcome to Remix!' }];
+export const meta: MetaFunction = ({ matches }) => {
+  return [{ title: getPageTitle(matches, 'home') }];
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
