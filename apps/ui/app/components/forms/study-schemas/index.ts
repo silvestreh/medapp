@@ -16,11 +16,4 @@ export const studySchemas = {
   thrombophilia,
 } as Record<string, StudySchema>;
 
-export {
-  anemia,
-  anticoagulation,
-  compatibility,
-  hemostasis,
-  myelogram,
-  thrombophilia,
-};
+export { anemia, anticoagulation, compatibility, hemostasis, myelogram, thrombophilia };

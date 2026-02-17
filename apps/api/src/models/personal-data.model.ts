@@ -12,11 +12,11 @@ export default function (app: Application): typeof Model {
     },
     firstName: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: false
     },
     lastName: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: false
     },
     nationality: {
       type: DataTypes.ENUM(
@@ -276,7 +276,8 @@ export default function (app: Application): typeof Model {
     },
     documentValue: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
+      unique: true
     },
     maritalStatus: {
       type: DataTypes.ENUM('single', 'married', 'divorced', 'widowed'),

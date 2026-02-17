@@ -4,7 +4,15 @@ alwaysApply: true
 # General rules
 
 1. NEVER, ever, ever, ever, clean the DB without conscent. In fact, never run any code that touches the database unless explicitely told.
-2. When interacting with the API, use the hooks defined in `~/components/provider.tsx`.
+2. When interacting with the API in a client-side component use the hooks defined in `~/components/provider.tsx`. Always prefer Remix loaders to grab initial data and actions to submit forms.
+3. Always define event handlers (like for button clicks) using something like:
+  ```js
+  const handleClick = () => {};
+
+  <Component onClick={handleClick} />
+  ```
+
+  Always memoize functions to avoid them being re-created.
 
 # Code Style
 
@@ -47,7 +55,7 @@ Use these exported components from `styles.tsx`:
 -   `FieldRow`: A flex row for each field (1rem padding, bottom border).
 -   `Label`: A text label (25% width, right-aligned, gray-6 color).
 -   `StyledTextInput`, `StyledTextarea`, `StyledDateInput`: Borderless Mantine inputs with specific line heights.
--   `StyledTitle`: A blue-4 title with 400 font weight.
+-   `StyledTitle`: A blue-4 title with 400 font weight. Don't add the `order` prop, this usually sends titles to the bottom of the form and gives me extra work to fix them.
 -   `FormHeader`, `ItemHeader`: Flex containers for form/item titles and action buttons.
 
 Add new components as needed.
