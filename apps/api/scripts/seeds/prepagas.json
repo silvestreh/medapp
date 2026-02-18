@@ -2967,7 +2967,7 @@
     "rnas": "4-0170-4",
     "enemp": null,
     "denomination": "OBRA SOCIAL DE EMPRESARIOS, PROFESIONALES Y MONOTRIBUTISTAS",
-    "shortName": "OSDEPYM"
+    "shortName": "OSDE"
   },
   {
     "rnas": "4-0220-2",
@@ -3004,12 +3004,6 @@
     "enemp": null,
     "denomination": "MUTUAL DE SEGURIDAD SOCIAL",
     "shortName": "MUTUAL SEGURIDAD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INSTITUTO DE SEGURIDAD SOCIAL Y SEGUROS - SEROS CHUBUT",
-    "shortName": "SEROS"
   },
   {
     "rnas": null,

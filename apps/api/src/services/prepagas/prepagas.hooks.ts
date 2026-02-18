@@ -1,11 +1,12 @@
 import * as authentication from '@feathersjs/authentication';
+import { searchPrepagas } from './hooks/search-prepagas';
 
 const { authenticate } = authentication.hooks;
 
 export default {
   before: {
     all: [],
-    find: [authenticate('jwt')],
+    find: [authenticate('jwt'), searchPrepagas()],
     get: [authenticate('jwt')],
     create: [],
     update: [],
