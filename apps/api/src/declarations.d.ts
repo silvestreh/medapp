@@ -29,6 +29,14 @@ export interface Medication {
   searchText?: string;
 }
 
+export interface Prepaga {
+  id: string;
+  rnas: string | null;
+  enemp: string | null;
+  denomination: string;
+  shortName: string;
+}
+
 export interface ServiceTypes {}
 // The application instance type that will be used everywhere else
 export type Application = ExpressFeathers<ServiceTypes>;

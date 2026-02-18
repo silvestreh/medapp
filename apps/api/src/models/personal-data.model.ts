@@ -12,11 +12,11 @@ export default function (app: Application): typeof Model {
     },
     firstName: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     lastName: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     nationality: {
       type: DataTypes.ENUM(

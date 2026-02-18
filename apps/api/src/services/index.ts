@@ -17,6 +17,7 @@ import icd10 from './icd-10/icd-10.service';
 import laboratories from './laboratories/laboratories.service';
 import medications from './medications/medications.service';
 import timeOffEvents from './time-off-events/time-off-events.service';
+import prepagas from './prepagas/prepagas.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -38,4 +39,5 @@ export default function (app: Application): void {
   app.configure(laboratories);
   app.configure(medications);
   app.configure(timeOffEvents);
+  app.configure(prepagas);
 }

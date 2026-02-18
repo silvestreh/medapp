@@ -113,4 +113,8 @@ lib/
 scripts/dumps/*.json
 scripts/errors/*.json
 scripts/results/*.json
+scripts/seeds/*.seed.json
+scripts/seeds/discarded/*.json
+scripts/seeds/import-skipped/*.json
 .env
+.llm-name-cache.json

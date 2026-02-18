@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import axios from 'axios';
 import areaCodes from '../data/area-codes';
 import type { PhoneNumber } from '../src/declarations';
@@ -373,7 +375,24 @@ export const transformSchedule = (oldData: OldData): NewSchedule => {
 
 // --- LLM-based name cleaning ---
 
-const nameCache = new Map<string, string>();
+const LLM_CACHE_PATH = path.join(__dirname, 'seeds', '.llm-name-cache.json');
+
+function loadNameCache(): Map<string, string> {
+  try {
+    const raw = fs.readFileSync(LLM_CACHE_PATH, 'utf-8');
+    return new Map(Object.entries(JSON.parse(raw)));
+  } catch {
+    return new Map();
+  }
+}
+
+function saveNameCache(cache: Map<string, string>): void {
+  const dir = path.dirname(LLM_CACHE_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(LLM_CACHE_PATH, JSON.stringify(Object.fromEntries(cache), null, 2));
+}
+
+const nameCache = loadNameCache();
 
 export const cleanedNames: { original: string; cleaned: string }[] = [];
 
@@ -466,6 +485,7 @@ export const normalizeNameWithLLM = async (name?: string): Promise<string | unde
   }
 
   nameCache.set(trimmed, cleaned);
+  saveNameCache(nameCache);
 
   if (cleaned !== trimmed) {
     cleanedNames.push({ original: trimmed, cleaned });
