@@ -46,7 +46,7 @@ interface EncounterTreeProps {
 const StyledAccordion = styled(Accordion, {
   base: {
     position: 'sticky',
-    top: 0,
+    top: '4.8em',
     width: '100%',
 
     '& .mantine-Accordion-item': {
