@@ -32,11 +32,15 @@ export default function (app: Application): typeof Model {
     },
     medicId: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'users',
         key: 'id'
       }
+    },
+    referringDoctor: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     patientId: {
       type: DataTypes.STRING,

@@ -1,15 +1,16 @@
 import { HookContext } from '@feathersjs/feathers';
+import { getUserPermissions } from '../../../utils/get-user-permissions';
 
 const populateUser = () => {
   return async (context: HookContext) => {
     const { app, result } = context;
 
     if (result.roleId) {
-      const role = await app.service('roles').get(result.roleId);
+      const mergedPermissions = await getUserPermissions(app, result.id, result.roleId);
 
       result.role = {
-        id: role.id,
-        permissions: role.permissions
+        id: result.roleId,
+        permissions: mergedPermissions
       };
     }
 

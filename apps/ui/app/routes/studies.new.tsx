@@ -20,14 +20,11 @@ export const meta: MetaFunction = ({ matches }) => {
 export const loader = authenticatedLoader();
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { client, user } = await getAuthenticatedClient(request);
+  const { client } = await getAuthenticatedClient(request);
   const formData = await request.formData();
   const payload = JSON.parse(formData.get('data') as string);
 
-  const study = await client.service('studies').create({
-    ...payload,
-    medicId: user.id,
-  });
+  const study = await client.service('studies').create(payload);
 
   return redirect(`/studies/${study.id}`);
 };
@@ -76,7 +73,8 @@ export default function NewStudy() {
 
   const [patientId, setPatientId] = useState<string | null>(null);
   const [date, setDate] = useState<Date | null>(new Date());
-  const [medic, setMedic] = useState('');
+  const [referringDoctor, setReferringDoctor] = useState('');
+  const [medicId, setMedicId] = useState<string | null>(null);
   const [comment, setComment] = useState('');
   const [noOrder, setNoOrder] = useState(false);
   const [selectedStudies, setSelectedStudies] = useState<string[]>([]);
@@ -99,11 +97,12 @@ export default function NewStudy() {
       studies: selectedStudies,
       noOrder,
       comment: comment || undefined,
+      ...(medicId ? { medicId } : { referringDoctor: referringDoctor || undefined }),
       results: [],
     };
 
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
-  }, [canSave, patientId, date, selectedStudies, noOrder, comment, fetcher]);
+  }, [canSave, patientId, date, selectedStudies, noOrder, comment, referringDoctor, medicId, fetcher]);
 
   return (
     <PageContainer>
@@ -140,8 +139,10 @@ export default function NewStudy() {
         patientId={patientId}
         onPatientChange={setPatientId}
         patient={patient as any}
-        referringDoctor={medic}
-        onReferringDoctorChange={setMedic}
+        referringDoctor={referringDoctor}
+        onReferringDoctorChange={setReferringDoctor}
+        medicId={medicId}
+        onMedicIdChange={setMedicId}
         showEmptyStudyHint
       />
     </PageContainer>

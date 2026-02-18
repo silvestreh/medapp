@@ -1,5 +1,6 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
 import { Forbidden } from '@feathersjs/errors';
+import { getUserPermissions } from '../utils/get-user-permissions';
 
 interface CheckPermissionOptions {
   foreignKey?: string;
@@ -15,13 +16,13 @@ export const checkPermissions = (options: CheckPermissionOptions = {}): Hook => 
     }
 
     const { user } = params;
-    const role = await app.service('roles').get(user.roleId);
+    const permissions = await getUserPermissions(app, user.id, user.roleId);
     const basePermission = `${path}:${method}`;
     const allPermission = `${basePermission}:all`;
 
-    const hasAllPermission = role.permissions.includes(allPermission);
-    const hasBasePermission = role.permissions.includes(basePermission);
-    const fieldPermissions = role.permissions
+    const hasAllPermission = permissions.includes(allPermission);
+    const hasBasePermission = permissions.includes(basePermission);
+    const fieldPermissions = permissions
       .filter((p: string) => p.startsWith(`${basePermission}.`))
       .map((p: string) => p.split('.')[1]);
 

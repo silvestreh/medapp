@@ -67,9 +67,9 @@
       "patients:remove:all",
       "studies:create",
       "studies:find",
-      "studies:get:all",
-      "studies:patch:all",
-      "studies:remove:all",
+      "studies:get",
+      "studies:patch",
+      "studies:remove",
       "study-results:create",
       "study-results:find",
       "study-results:get:all",
@@ -91,7 +91,9 @@
       "patients:patch:all",
       "patients:remove:all",
       "studies:create",
+      "studies:create:all",
       "studies:find",
+      "studies:find:all",
       "studies:get:all",
       "studies:patch:all",
       "studies:remove:all",
@@ -100,6 +102,16 @@
       "study-results:get:all",
       "study-results:patch:all",
       "study-results:remove:all"
+    ]
+  },
+  {
+    "id": "lab-owner",
+    "permissions": [
+      "studies:create:all",
+      "studies:find:all",
+      "studies:get:all",
+      "studies:patch:all",
+      "studies:remove:all"
     ]
   }
 ]

@@ -10,6 +10,7 @@ import {
   transformSchedule,
   getCountry,
 } from '../utils';
+import { resolveMedic } from './process-studies';
 import type {
   MongoUser,
   MongoEncounter,
@@ -52,9 +53,13 @@ export async function processUsers({
 
   const medicIdsWithEncounters = new Set(encounters.map(e => e.medic_id));
 
-  // All studies are attributed to JUANCA_ID during seed generation
-  const JUANCA_ID = '540dc81947771d1f3f8b4567';
-  const medicIdsWithStudies = new Set<string>(studies.length > 0 ? [JUANCA_ID] : []);
+  const medicIdsWithStudies = new Set<string>();
+  for (const study of studies) {
+    const { medicId } = resolveMedic(study.medic);
+    if (medicId) {
+      medicIdsWithStudies.add(medicId);
+    }
+  }
 
   const seedUsers: SeedUser[] = [];
   const keptUserIds = new Set<string>();
@@ -141,6 +146,8 @@ export async function processUsers({
       };
     }
 
+    const JUANCA_ID = '540dc81947771d1f3f8b4567';
+
     const roleId: SeedUser['roleId'] =
       user.__class === 'SuperUser'
         ? 'admin'
@@ -148,11 +155,14 @@ export async function processUsers({
           ? 'receptionist'
           : 'medic';
 
+    const additionalRoleIds = userId === JUANCA_ID ? ['lab-owner'] : undefined;
+
     seedUsers.push({
       id: userId,
       username: user.username ?? 'weird_user',
       password: user.bf_password || 'retrete',
       roleId,
+      additionalRoleIds,
       personalData,
       contactData,
       mdSettings,

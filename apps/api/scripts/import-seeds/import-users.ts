@@ -19,14 +19,22 @@ export async function importUsers({ users, resetPasswords, bar }: ImportUsersOpt
   const validUserIds = new Set<string>();
   const skipped: ImportUsersResult['skipped'] = [];
 
+  const userRolesService = app.service('user-roles');
+
   for (const user of users) {
     try {
-      const { mdSettings, ...userData } = user;
+      const { mdSettings, additionalRoleIds, ...userData } = user;
       if (resetPasswords) {
         userData.password = 'retrete';
       }
       await usersService.create(userData as any);
       validUserIds.add(user.id);
+
+      if (additionalRoleIds) {
+        for (const roleId of additionalRoleIds) {
+          await userRolesService.create({ userId: user.id, roleId });
+        }
+      }
 
       if (mdSettings) {
         await mdSettingsService.create(mdSettings);
