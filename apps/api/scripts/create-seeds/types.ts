@@ -204,6 +204,7 @@ export interface SeedUser {
   username: string;
   password: string;
   roleId: 'admin' | 'receptionist' | 'medic';
+  additionalRoleIds?: string[];
   personalData?: SeedPersonalData;
   contactData?: SeedContactData;
   mdSettings?: SeedMdSettings;
@@ -239,7 +240,8 @@ export interface SeedStudy {
   protocol: number;
   studies: string[];
   noOrder: boolean;
-  medicId: string;
+  medicId: string | null;
+  referringDoctor: string | null;
   patientId: string;
 }
 

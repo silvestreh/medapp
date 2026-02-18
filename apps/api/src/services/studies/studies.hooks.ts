@@ -6,6 +6,8 @@ import populatePatient from './hooks/populate-patient';
 import autoProtocol from './hooks/auto-protocol';
 import extractStudyResults from './hooks/extract-study-results';
 import upsertStudyResults from './hooks/upsert-study-results';
+import { clearReferringDoctor, populateReferringDoctor } from './hooks/resolve-referring-doctor';
+import restrictToMedic from './hooks/restrict-to-medic';
 import { sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import searchStudies from './hooks/search-studies';
 // Don't remove this comment. It's needed to format import lines nicely.
@@ -16,14 +18,14 @@ export default {
   before: {
     all: [
       authenticate('jwt'),
-      checkPermissions({ foreignKey: 'medicId' })
+      checkPermissions()
     ],
-    find: [searchStudies()],
-    get: [],
-    create: [autoProtocol(), extractStudyResults()],
+    find: [restrictToMedic(), searchStudies()],
+    get: [restrictToMedic()],
+    create: [restrictToMedic(), clearReferringDoctor(), autoProtocol(), extractStudyResults()],
     update: [],
-    patch: [extractStudyResults()],
-    remove: []
+    patch: [restrictToMedic(), clearReferringDoctor(), extractStudyResults()],
+    remove: [restrictToMedic()]
   },
 
   after: {
@@ -31,15 +33,17 @@ export default {
     find: [
       populateResults(),
       populatePatient(),
+      populateReferringDoctor(),
       sortByPersonalDataRank({ foreignKey: 'patientId' })
     ],
     get: [
       populateResults(),
       populatePatient(),
+      populateReferringDoctor(),
     ],
-    create: [upsertStudyResults()],
+    create: [upsertStudyResults(), populateReferringDoctor()],
     update: [],
-    patch: [upsertStudyResults()],
+    patch: [upsertStudyResults(), populateReferringDoctor()],
     remove: []
   },
 

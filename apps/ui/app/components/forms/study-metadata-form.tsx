@@ -1,8 +1,10 @@
-import { Checkbox, Text } from '@mantine/core';
+import { useMemo, useCallback } from 'react';
+import { Autocomplete, Checkbox, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 import PatientSearch from '~/components/patient-search';
 import { PrepagaSelector } from '~/components/prepaga-selector';
+import { useFind } from '~/components/provider';
 import {
   FormCard,
   FieldRow,
@@ -40,6 +42,8 @@ interface StudyMetadataFormProps {
   patient?: StudyPatientInfo;
   referringDoctor?: string;
   onReferringDoctorChange?: (value: string) => void;
+  medicId?: string | null;
+  onMedicIdChange?: (value: string | null) => void;
   showEmptyStudyHint?: boolean;
 }
 
@@ -66,6 +70,24 @@ const TypeGrid = styled('div', {
   },
 });
 
+const StyledAutocomplete = styled(Autocomplete, {
+  base: {
+    flex: 1,
+
+    '& .mantine-Autocomplete-input': {
+      border: 'none',
+      padding: 0,
+      height: 'auto',
+      minHeight: '1.5rem',
+      lineHeight: 1.75,
+
+      '&:focus': {
+        boxShadow: 'none',
+      },
+    },
+  },
+});
+
 export function StudyMetadataForm({
   mode,
   studyTypeKeys,
@@ -78,15 +100,28 @@ export function StudyMetadataForm({
   date,
   onDateChange,
   dateReadOnly,
-  patientId,
   onPatientChange,
   patient,
   referringDoctor,
   onReferringDoctorChange,
+  onMedicIdChange,
   showEmptyStudyHint,
 }: StudyMetadataFormProps) {
   const { t } = useTranslation();
   const isCreateMode = mode === 'create';
+
+  const { response: doctorsResponse } = useFind('referring-doctors');
+  const doctors: any[] = Array.isArray(doctorsResponse) ? doctorsResponse : [];
+  const autocompleteData = useMemo(() => doctors.map((d: any) => d.name), [doctors]);
+  const doctorsByName = useMemo(() => new Map(doctors.map((d: any) => [d.name, d.medicId])), [doctors]);
+
+  const handleReferringDoctorChange = useCallback(
+    (value: string) => {
+      onReferringDoctorChange?.(value);
+      onMedicIdChange?.(doctorsByName.get(value) ?? null);
+    },
+    [onReferringDoctorChange, onMedicIdChange, doctorsByName]
+  );
 
   return (
     <>
@@ -116,24 +151,22 @@ export function StudyMetadataForm({
           </FieldRow>
         )}
 
-        {isCreateMode && (
-          <FieldRow>
-            <Label>{t('studies.referring_doctor')}</Label>
-            <StyledTextInput
+        <FieldRow>
+          <Label>{t('studies.referring_doctor')}</Label>
+          {isCreateMode && (
+            <StyledAutocomplete
               placeholder={t('studies.referring_doctor_placeholder')}
               value={referringDoctor || ''}
-              onChange={e => onReferringDoctorChange?.(e.currentTarget.value)}
+              onChange={handleReferringDoctorChange}
+              data={autocompleteData}
             />
-          </FieldRow>
-        )}
+          )}
+          {!isCreateMode && <StyledTextInput value={referringDoctor || '—'} readOnly disabled />}
+        </FieldRow>
 
         <FieldRow>
           <Label>{t('studies.insurance')}</Label>
-          <PrepagaSelector
-            value={patient?.medicare || ''}
-            onChange={() => {}}
-            readOnly
-          />
+          <PrepagaSelector value={patient?.medicare || ''} onChange={() => {}} readOnly />
         </FieldRow>
 
         <FieldRow>

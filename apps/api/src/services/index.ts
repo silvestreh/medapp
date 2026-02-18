@@ -18,6 +18,8 @@ import laboratories from './laboratories/laboratories.service';
 import medications from './medications/medications.service';
 import timeOffEvents from './time-off-events/time-off-events.service';
 import prepagas from './prepagas/prepagas.service';
+import referringDoctors from './referring-doctors/referring-doctors.service';
+import userRoles from './user-roles/user-roles.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -40,4 +42,6 @@ export default function (app: Application): void {
   app.configure(medications);
   app.configure(timeOffEvents);
   app.configure(prepagas);
+  app.configure(referringDoctors);
+  app.configure(userRoles);
 }

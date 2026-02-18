@@ -182,7 +182,8 @@ export interface Study {
   protocol: number;
   studies: string[];
   noOrder: boolean;
-  medicId: Id;
+  medicId: Id | null;
+  referringDoctor?: string | null;
   patientId: Id;
   results?: StudyResult[];
 }

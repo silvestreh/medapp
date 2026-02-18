@@ -203,6 +203,7 @@ export default function StudyDetail() {
         date={extractionDate}
         dateReadOnly
         patient={patient}
+        referringDoctor={study.referringDoctor ?? ''}
       />
 
       {/* Results section */}

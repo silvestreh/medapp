@@ -5,6 +5,71 @@ import type { MongoStudy, MongoPatient, ProcessingStats, SeedStudy, SeedPatient 
 import { transformPatientToSeed } from './process-patients';
 
 const JUANCA_ID = '540dc81947771d1f3f8b4567';
+const DE_LOS_SANTOS_ID = '5549f38e75d036e0058b457a';
+const LIPRERI_ID = '55c0c04975d036f44f8b45db';
+const SORIA_ID = '5a71da3671302e8a638b4576';
+const ALVAREZ_ID = '5ca5377671302ed70a8b458a';
+const MAM_ID = '5818bc9a71302eb3768b472a';
+
+interface ResolvedMedic {
+  medicId: string | null;
+  referringDoctor: string | null;
+}
+
+const OTHER_MEDICS = new Map<string, ResolvedMedic>([
+  ['de los santos', { medicId: DE_LOS_SANTOS_ID, referringDoctor: 'De Los Santos' }],
+  ['r. de los santos', { medicId: DE_LOS_SANTOS_ID, referringDoctor: 'De Los Santos' }],
+  ['lipreri', { medicId: LIPRERI_ID, referringDoctor: 'Lipreri' }],
+  ['soria o.', { medicId: SORIA_ID, referringDoctor: 'Soria O.' }],
+  ['alvarez', { medicId: ALVAREZ_ID, referringDoctor: 'Alvarez' }],
+  ['mam', { medicId: MAM_ID, referringDoctor: 'MAM' }],
+
+  ['m.e. sirotinsky', { medicId: null, referringDoctor: 'M.E. Sirotinsky' }],
+  ['sirotinsky', { medicId: null, referringDoctor: 'M.E. Sirotinsky' }],
+  ['.m.e. sirotinsky', { medicId: null, referringDoctor: 'M.E. Sirotinsky' }],
+  ['m. e. sirotinsky', { medicId: null, referringDoctor: 'M.E. Sirotinsky' }],
+  ['mes', { medicId: null, referringDoctor: 'M.E. Sirotinsky' }],
+  ['es', { medicId: null, referringDoctor: 'M.E. Sirotinsky' }],
+
+  ['lutteral', { medicId: null, referringDoctor: 'Dra. Lutteral' }],
+  ['dra. lutteral', { medicId: null, referringDoctor: 'Dra. Lutteral' }],
+
+  ['canigia', { medicId: null, referringDoctor: 'Canigia Pilar' }],
+  ['canigia pilar', { medicId: null, referringDoctor: 'Canigia Pilar' }],
+
+  ['g. perez juarez', { medicId: null, referringDoctor: 'G. Perez Juarez' }],
+  ['p. juarez', { medicId: null, referringDoctor: 'G. Perez Juarez' }],
+
+  ['a. ambrosi', { medicId: null, referringDoctor: 'A. Ambrosi' }],
+  ['cipriani hernan', { medicId: null, referringDoctor: 'Cipriani Hernan' }],
+  ['tedesco nicolas', { medicId: null, referringDoctor: 'Tedesco Nicolas' }],
+  ['pittaioli', { medicId: null, referringDoctor: 'Pittaioli' }],
+  ['de sábato', { medicId: null, referringDoctor: 'De Sábato' }],
+  ['zamboschi', { medicId: null, referringDoctor: 'Zamboschi' }],
+  ['hzco', { medicId: null, referringDoctor: 'HZCO' }],
+  ['rios part', { medicId: null, referringDoctor: 'Rios Part' }],
+  ["d'assaro", { medicId: null, referringDoctor: "D'Assaro" }],
+  ['goffredo', { medicId: null, referringDoctor: 'Goffredo' }],
+  ['arizcuren', { medicId: null, referringDoctor: 'Arizcuren' }],
+  ['gurevich', { medicId: null, referringDoctor: 'Gurevich' }],
+  ['torres', { medicId: null, referringDoctor: 'Torres' }],
+  ['dr. rappallini.', { medicId: null, referringDoctor: 'Dr. Rappallini' }],
+  ['j. montalva', { medicId: null, referringDoctor: 'J. Montalva' }],
+  ['dra. arrieta', { medicId: null, referringDoctor: 'Dra. Arrieta' }],
+  ['pereyra', { medicId: null, referringDoctor: 'Pereyra' }],
+  ['barreda', { medicId: null, referringDoctor: 'Barreda' }],
+]);
+
+export function resolveMedic(medic: string | undefined): ResolvedMedic {
+  const raw = medic?.trim() || '';
+  if (!raw) return { medicId: JUANCA_ID, referringDoctor: null };
+
+  const normalized = raw.toLowerCase();
+  const match = OTHER_MEDICS.get(normalized);
+  if (match) return match;
+
+  return { medicId: JUANCA_ID, referringDoctor: raw };
+}
 
 function generateObjectId(): string {
   return crypto.randomBytes(12).toString('hex');
@@ -194,13 +259,16 @@ export function processStudies({
       }
     }
 
+    const { medicId, referringDoctor } = resolveMedic(study.medic);
+
     kept.push({
       id: study._id.$oid,
       date: dayjs(study.date.$date).toISOString(),
       protocol: study.protocol,
       studies: Object.keys(study.studies).filter(key => study.studies[key]),
       noOrder: study.noOrder,
-      medicId: JUANCA_ID,
+      medicId,
+      referringDoctor,
       patientId: patientId!,
     });
 
