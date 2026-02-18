@@ -2,6 +2,7 @@ import { Checkbox, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 import PatientSearch from '~/components/patient-search';
+import { PrepagaSelector } from '~/components/prepaga-selector';
 import {
   FormCard,
   FieldRow,
@@ -128,11 +129,10 @@ export function StudyMetadataForm({
 
         <FieldRow>
           <Label>{t('studies.insurance')}</Label>
-          <StyledTextInput
-            placeholder={t('studies.insurance_placeholder')}
+          <PrepagaSelector
             value={patient?.medicare || ''}
+            onChange={() => {}}
             readOnly
-            disabled={isCreateMode && !patientId}
           />
         </FieldRow>
 

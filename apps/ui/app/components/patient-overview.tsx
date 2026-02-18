@@ -72,7 +72,20 @@ export function PatientOverview({ patient, encounters }: PatientOverviewProps) {
           {patient.medicare && (
             <FieldRow>
               <Label>{t('overview.insurance')}:</Label>
-              <Text>{patient.medicare}</Text>
+              {(() => {
+                const parts = patient.medicare.split('/');
+                if (parts.length >= 2) {
+                  return (
+                    <Stack gap={0}>
+                      <Text size="sm">{parts[0].trim()}</Text>
+                      <Text size="xs" c="dimmed">
+                        {parts.slice(1).join('/').trim()}
+                      </Text>
+                    </Stack>
+                  );
+                }
+                return <Text>{patient.medicare}</Text>;
+              })()}
             </FieldRow>
           )}
 

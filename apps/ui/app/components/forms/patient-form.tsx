@@ -12,6 +12,7 @@ import {
   StyledDateInput,
   StyledTitle,
 } from '~/components/forms/styles';
+import { PrepagaSelector } from '~/components/prepaga-selector';
 
 export interface PatientFormValues {
   documentType: string;
@@ -243,7 +244,12 @@ export function PatientForm({
           <FormCard>
             <FieldRow>
               <Label>{t('patients.medicare')}:</Label>
-              <StyledTextInput placeholder={t('patients.medicare')} {...form.getInputProps('medicare')} />
+              <PrepagaSelector
+                value={form.values.medicare}
+                onChange={val => form.setFieldValue('medicare', val)}
+                placeholder={t('patients.medicare')}
+                readOnly={disabled}
+              />
             </FieldRow>
             <FieldRow>
               <Label>{t('patients.medicare_number')}:</Label>
