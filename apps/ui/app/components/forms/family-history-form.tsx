@@ -5,19 +5,39 @@ import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
 import { styled } from '~/styled-system/jsx';
 import { Icd10Selector } from '~/components/icd10-selector';
-import { FormContainer, StyledTitle, FormHeader, FormCard, StyledTextInput, TriStateCheckbox } from './styles';
+import {
+  FormContainer,
+  StyledTitle,
+  FormHeader,
+  StyledTextInput,
+  StyledSelect,
+  TriStateCheckbox,
+  FormCard,
+  FieldRow,
+  Label,
+  ItemHeader,
+} from './styles';
 
-const StyledTable = styled(Table, {
+const MobileLayout = styled('div', {
   base: {
-    '& thead tr th': {
-      color: 'var(--mantine-color-gray-6)',
-      fontWeight: 600,
-      fontSize: 'var(--mantine-font-size-sm)',
-      padding: '0.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+
+    lg: {
+      display: 'none',
     },
-    '& tbody tr td': {
-      padding: '0.25rem',
-      verticalAlign: 'middle',
+  },
+});
+
+const DesktopLayout = styled('div', {
+  base: {
+    display: 'none',
+
+    lg: {
+      display: 'block',
+      marginLeft: '-2rem',
+      width: 'calc(100% + 4rem)',
     },
   },
 });
@@ -217,22 +237,59 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
         )}
       </FormHeader>
 
-      <FormCard>
-        <StyledTable verticalSpacing="xs">
+      <DesktopLayout>
+        <Table verticalSpacing="xs" bg="white">
           <Table.Thead>
-            <Table.Tr>
-              <Table.Th style={{ width: '180px' }}>{t('forms.family_history_relationship')}</Table.Th>
-              <Table.Th style={{ width: '50px' }}>{t('forms.family_history_alive')}</Table.Th>
-              <Table.Th>{t('forms.family_history_first_name')}</Table.Th>
-              <Table.Th>{t('forms.family_history_last_name')}</Table.Th>
-              <Table.Th style={{ width: '300px' }}>{t('forms.family_history_issue')}</Table.Th>
-              {!readOnly && <Table.Th style={{ width: '50px' }}></Table.Th>}
+            <Table.Tr bg="blue.0">
+              <Table.Th
+                style={{
+                  border: '1px solid var(--mantine-color-blue-1)',
+                  borderLeft: 'none',
+                  width: '180px',
+                  paddingLeft: '1rem',
+                }}
+                fw={500}
+                fz="md"
+                py="0.5em"
+              >
+                {t('forms.family_history_relationship')}
+              </Table.Th>
+              <Table.Th
+                style={{ border: '1px solid var(--mantine-color-blue-1)', width: '50px' }}
+                fw={500}
+                fz="md"
+                py="0.5em"
+              >
+                {t('forms.family_history_alive')}
+              </Table.Th>
+              <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+                {t('forms.family_history_first_name')}
+              </Table.Th>
+              <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+                {t('forms.family_history_last_name')}
+              </Table.Th>
+              <Table.Th
+                style={{ border: '1px solid var(--mantine-color-blue-1)', width: '300px' }}
+                fw={500}
+                fz="md"
+                py="0.5em"
+              >
+                {t('forms.family_history_issue')}
+              </Table.Th>
+              {!readOnly && (
+                <Table.Th
+                  style={{ border: '1px solid var(--mantine-color-blue-1)', borderRight: 'none', width: '50px' }}
+                  fw={500}
+                  fz="md"
+                  py="0.5em"
+                />
+              )}
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {form.values.items.map((item, index) => (
               <Table.Tr key={index}>
-                <Table.Td pl="lg">
+                <Table.Td pl="lg" style={{ verticalAlign: 'middle' }}>
                   {readOnly ? (
                     <Text size="sm">{getRelationshipLabel(item.relationship)}</Text>
                   ) : (
@@ -245,14 +302,14 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                     />
                   )}
                 </Table.Td>
-                <Table.Td ta={readOnly ? 'left' : 'center'}>
+                <Table.Td ta={readOnly ? 'left' : 'center'} style={{ verticalAlign: 'middle' }}>
                   <TriStateCheckbox
                     {...form.getInputProps(`items.${index}.isAlive`)}
                     readOnly={readOnly}
                     disabled={readOnly}
                   />
                 </Table.Td>
-                <Table.Td>
+                <Table.Td style={{ verticalAlign: 'middle' }}>
                   <StyledTextInput
                     placeholder={t('forms.family_history_first_name')}
                     {...form.getInputProps(`items.${index}.firstName`)}
@@ -262,7 +319,7 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                     data-1p-ignore
                   />
                 </Table.Td>
-                <Table.Td>
+                <Table.Td style={{ verticalAlign: 'middle' }}>
                   <StyledTextInput
                     placeholder={t('forms.family_history_last_name')}
                     {...form.getInputProps(`items.${index}.lastName`)}
@@ -272,7 +329,7 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                     data-1p-ignore
                   />
                 </Table.Td>
-                <Table.Td>
+                <Table.Td style={{ verticalAlign: 'middle' }}>
                   <Icd10Selector
                     value={item.issueId}
                     onChange={val => form.setFieldValue(`items.${index}.issueId`, val as string)}
@@ -280,7 +337,7 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                   />
                 </Table.Td>
                 {!readOnly && (
-                  <Table.Td>
+                  <Table.Td style={{ verticalAlign: 'middle' }}>
                     <ActionIcon
                       color="red"
                       variant="subtle"
@@ -294,8 +351,78 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
               </Table.Tr>
             ))}
           </Table.Tbody>
-        </StyledTable>
-      </FormCard>
+        </Table>
+      </DesktopLayout>
+
+      <MobileLayout>
+        {form.values.items.map((item, index) => (
+          <FormCard key={index}>
+            <ItemHeader style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--mantine-color-gray-2)' }}>
+              <Text fw={500} size="sm" c="gray.7">
+                #{index + 1}
+              </Text>
+              {!readOnly && (
+                <ActionIcon
+                  color="red"
+                  variant="subtle"
+                  onClick={() => form.removeListItem('items', index)}
+                  disabled={form.values.items.length === 1}
+                >
+                  <Trash size={16} />
+                </ActionIcon>
+              )}
+            </ItemHeader>
+            <FieldRow>
+              <Label>{t('forms.family_history_relationship')}:</Label>
+              {readOnly ? (
+                <Text size="sm">{getRelationshipLabel(item.relationship)}</Text>
+              ) : (
+                <StyledSelect
+                  data={relationshipOptions}
+                  placeholder={t('forms.family_history_relationship')}
+                  {...form.getInputProps(`items.${index}.relationship`)}
+                />
+              )}
+            </FieldRow>
+            <FieldRow>
+              <Label>{t('forms.family_history_alive')}:</Label>
+              <TriStateCheckbox
+                {...form.getInputProps(`items.${index}.isAlive`)}
+                readOnly={readOnly}
+                disabled={readOnly}
+              />
+            </FieldRow>
+            <FieldRow>
+              <Label>{t('forms.family_history_first_name')}:</Label>
+              <StyledTextInput
+                placeholder={t('forms.family_history_first_name')}
+                {...form.getInputProps(`items.${index}.firstName`)}
+                readOnly={readOnly}
+                autoComplete="off"
+                data-1p-ignore
+              />
+            </FieldRow>
+            <FieldRow>
+              <Label>{t('forms.family_history_last_name')}:</Label>
+              <StyledTextInput
+                placeholder={t('forms.family_history_last_name')}
+                {...form.getInputProps(`items.${index}.lastName`)}
+                readOnly={readOnly}
+                autoComplete="off"
+                data-1p-ignore
+              />
+            </FieldRow>
+            <FieldRow>
+              <Label>{t('forms.family_history_issue')}:</Label>
+              <Icd10Selector
+                value={item.issueId}
+                onChange={val => form.setFieldValue(`items.${index}.issueId`, val as string)}
+                readOnly={readOnly}
+              />
+            </FieldRow>
+          </FormCard>
+        ))}
+      </MobileLayout>
     </FormContainer>
   );
 }
