@@ -2,7 +2,6 @@ import type cliProgress from 'cli-progress';
 import dayjs from 'dayjs';
 import { startCase } from 'lodash';
 import {
-  normalizeNameWithLLM,
   normalizeCity,
   provinceToISO,
   normalizePhoneNumber,
@@ -10,6 +9,10 @@ import {
   transformSchedule,
   getCountry,
 } from '../utils';
+
+function stripDoctorPrefix(name: string): string {
+  return name.replace('Dr ', '').replace('Dra ', '');
+}
 import { resolveMedic } from './process-studies';
 import type {
   MongoUser,
@@ -26,7 +29,6 @@ interface ProcessUsersOptions {
   users: MongoUser[];
   encounters: MongoEncounter[];
   studies: MongoStudy[];
-  skipLLM: boolean;
   bar: cliProgress.SingleBar;
 }
 
@@ -41,7 +43,6 @@ export async function processUsers({
   users,
   encounters,
   studies,
-  skipLLM,
   bar,
 }: ProcessUsersOptions): Promise<ProcessUsersResult> {
   const stats: ProcessingStats = {
@@ -86,19 +87,11 @@ export async function processUsers({
       weirdUserId = userId;
     }
 
-    // Clean names
+    // Clean names: strip Dr/Dra prefix and title-case
     let firstName = user.personal_data?.first_name;
     let lastName = user.personal_data?.last_name;
-
-    if (skipLLM) {
-      if (firstName) firstName = startCase(firstName.toLowerCase());
-      if (lastName) lastName = startCase(lastName.toLowerCase());
-    } else {
-      const cleanedFirst = await normalizeNameWithLLM(firstName);
-      if (cleanedFirst) firstName = startCase(cleanedFirst.toLowerCase());
-      const cleanedLast = await normalizeNameWithLLM(lastName);
-      if (cleanedLast) lastName = startCase(cleanedLast.toLowerCase());
-    }
+    if (firstName) firstName = startCase(stripDoctorPrefix(firstName).toLowerCase());
+    if (lastName) lastName = startCase(stripDoctorPrefix(lastName).toLowerCase());
 
     // Build personalData
     let personalData: SeedPersonalData | undefined;
