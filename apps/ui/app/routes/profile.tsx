@@ -1,7 +1,8 @@
-import { Alert, Button, Code, Group, Image, Text, Tooltip } from '@mantine/core';
+import { useEffect, useState } from 'react';
+import { Alert, Button, Code, Group, Image, Modal, Stack, Text, TextInput, Tooltip, Flex } from '@mantine/core';
 import type { Application } from '@feathersjs/feathers';
 import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useRevalidator } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
 import { InfoIcon } from 'lucide-react';
@@ -11,7 +12,6 @@ import { styled } from '~/styled-system/jsx';
 import { css } from '~/styled-system/css';
 import {
   FormContainer,
-  FormCard,
   FieldRow,
   Label,
   StyledTextInput,
@@ -114,13 +114,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Profile() {
   const { username, twoFactorEnabled } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const revalidator = useRevalidator();
   const { t } = useTranslation();
+  const [setupModalClosed, setSetupModalClosed] = useState(false);
+  const [setupPayload, setSetupPayload] = useState<{
+    secret: string;
+    otpauthUri: string;
+    qrCodeDataUrl: string;
+  } | null>(null);
 
   const hasSetupResult = actionData?.ok && actionData.intent === 'setup-2fa';
-  const setupSecret = hasSetupResult && actionData && 'result' in actionData ? actionData.result?.secret || '' : '';
-  const setupUri = hasSetupResult && actionData && 'result' in actionData ? actionData.result?.otpauthUri || '' : '';
-  const qrCodeDataUrl =
-    hasSetupResult && actionData && 'result' in actionData ? actionData.result?.qrCodeDataUrl || '' : '';
+  const setupResult = hasSetupResult && actionData && 'result' in actionData ? actionData.result : null;
+  const setupSecret = setupResult?.secret ?? setupPayload?.secret ?? '';
+  const setupUri = setupResult?.otpauthUri ?? setupPayload?.otpauthUri ?? '';
+  const qrCodeDataUrl = setupResult?.qrCodeDataUrl ?? setupPayload?.qrCodeDataUrl ?? '';
 
   const hasEnableSuccess = actionData?.ok && actionData.intent === 'enable-2fa';
   const hasPasswordSuccess = actionData?.ok && actionData.intent === 'change-password';
@@ -128,87 +135,100 @@ export default function Profile() {
   const isEnableError = actionData?.ok === false && actionData.intent === 'enable-2fa';
   const errorMessage = actionData?.ok === false && actionData && 'error' in actionData ? actionData.error : '';
 
+  const hasSetupData = Boolean(setupSecret || setupPayload);
+  const setupModalOpen = Boolean(hasSetupData && !twoFactorEnabled && !setupModalClosed);
+
+  useEffect(() => {
+    if (hasSetupResult && setupResult && !twoFactorEnabled) {
+      setSetupPayload(setupResult);
+      setSetupModalClosed(false);
+    }
+  }, [hasSetupResult, setupResult, twoFactorEnabled]);
+
+  useEffect(() => {
+    if (hasEnableSuccess) {
+      setSetupPayload(null);
+      revalidator.revalidate();
+    }
+  }, [hasEnableSuccess, revalidator]);
+
   return (
     <FormContainer style={{ padding: '2rem', maxWidth: 720, margin: '0 auto' }}>
       <StyledTitle>{t('profile.title')}</StyledTitle>
-      <FormCard>
-        <FieldRow>
-          <Label>{t('profile.username')}:</Label>
-          <StyledTextInput value={username} readOnly />
-        </FieldRow>
-        <FieldRow>
-          <Label>{t('profile.two_factor_status')}:</Label>
-          <Text c={twoFactorEnabled ? 'teal' : 'gray'}>
-            <strong>{twoFactorEnabled ? t('profile.two_factor_enabled') : t('profile.two_factor_disabled')}</strong>{' '}
-            <Tooltip label={t('profile.two_factor_enabled_notice')}>
-              <InfoIcon size={16} />
-            </Tooltip>
-          </Text>
-        </FieldRow>
-
-        {!twoFactorEnabled && !hasSetupResult && (
+      <Flex direction="column" gap="1rem">
+        <PasswordFormContainer>
           <FieldRow>
-            <Form method="post">
-              <input type="hidden" name="intent" value="setup-2fa" />
-              <Button type="submit" variant="light">
-                {t('profile.setup_2fa')}
-              </Button>
-            </Form>
+            <Label>{t('profile.username')}:</Label>
+            <StyledTextInput value={username} readOnly />
           </FieldRow>
-        )}
-      </FormCard>
+          <FieldRow>
+            <Label>{t('profile.two_factor_status')}:</Label>
+            <Text c={twoFactorEnabled ? 'teal' : 'gray'}>
+              <strong>{twoFactorEnabled ? t('profile.two_factor_enabled') : t('profile.two_factor_disabled')}</strong>{' '}
+              {twoFactorEnabled && (
+                <Tooltip label={t('profile.two_factor_enabled_notice')}>
+                  <InfoIcon size={16} />
+                </Tooltip>
+              )}
+            </Text>
+          </FieldRow>
+        </PasswordFormContainer>
 
-      {hasSetupResult && !twoFactorEnabled && (
-        <>
-          <FormCard>
-            <FieldRow stacked>
-              <Alert color="blue" mb="sm">
-                {t('profile.setup_2fa_instructions')}
-              </Alert>
-            </FieldRow>
-            <FieldRow>
-              <Label>{t('profile.setup_key')}:</Label>
-              <Code block style={{ flex: 1 }}>
-                {setupSecret}
-              </Code>
-            </FieldRow>
-            <FieldRow>
-              <Label>{t('profile.scan_qr')}:</Label>
-              <Image
-                src={qrCodeDataUrl}
-                alt={t('profile.scan_qr')}
-                width={220}
-                height={220}
-                fit="contain"
-                radius="sm"
-                style={{ border: '1px solid var(--mantine-color-gray-3)' }}
+        {!twoFactorEnabled && (
+          <Form method="post" style={{ marginLeft: 'auto' }}>
+            <input type="hidden" name="intent" value="setup-2fa" />
+            <Button type="submit">{t('profile.setup_2fa')}</Button>
+          </Form>
+        )}
+      </Flex>
+
+      <Modal title={t('profile.setup_2fa')} opened={setupModalOpen} onClose={() => setSetupModalClosed(true)} size="sm">
+        <Stack gap="md">
+          <Alert color="blue">{t('profile.setup_2fa_instructions')}</Alert>
+          <div>
+            <Text size="sm" c="dimmed" mb={4}>
+              {t('profile.setup_key')}
+            </Text>
+            <Code block>{setupSecret}</Code>
+          </div>
+          <div>
+            <Text size="sm" c="dimmed" mb={4}>
+              {t('profile.scan_qr')}
+            </Text>
+            <Image
+              src={qrCodeDataUrl}
+              alt={t('profile.scan_qr')}
+              width={220}
+              height={220}
+              fit="contain"
+              radius="sm"
+              style={{ border: '1px solid var(--mantine-color-gray-3)' }}
+            />
+          </div>
+          <div>
+            <Text size="sm" c="dimmed" mb={4}>
+              {t('profile.otp_auth_uri')}
+            </Text>
+            <Code block>{setupUri}</Code>
+          </div>
+          <Form method="post">
+            <input type="hidden" name="intent" value="enable-2fa" />
+            {isEnableError && <Alert color="red">{errorMessage}</Alert>}
+            <Group align="end" mt="sm">
+              <TextInput
+                name="twoFactorCode"
+                label={t('profile.two_factor_code')}
+                placeholder="123456"
+                required
+                style={{ flex: 1 }}
               />
-            </FieldRow>
-            <FieldRow>
-              <Label>{t('profile.otp_auth_uri')}:</Label>
-              <Code block style={{ flex: 1 }}>
-                {setupUri}
-              </Code>
-            </FieldRow>
-            <FieldRow>
-              <Form method="post">
-                <input type="hidden" name="intent" value="enable-2fa" />
-                {isEnableError && (
-                  <Alert color="red" mb="sm">
-                    {errorMessage}
-                  </Alert>
-                )}
-                <Group align="end">
-                  <StyledTextInput name="twoFactorCode" placeholder="123456" required style={{ width: 180 }} />
-                  <Button type="submit" variant="light">
-                    {t('profile.enable_2fa')}
-                  </Button>
-                </Group>
-              </Form>
-            </FieldRow>
-          </FormCard>
-        </>
-      )}
+              <Button type="submit" variant="filled" color="teal">
+                {t('profile.enable_2fa')}
+              </Button>
+            </Group>
+          </Form>
+        </Stack>
+      </Modal>
 
       {hasEnableSuccess && <Alert color="teal">{t('profile.enable_2fa_success')}</Alert>}
 

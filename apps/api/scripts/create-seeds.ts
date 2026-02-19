@@ -109,7 +109,6 @@ function printStats(label: string, stats: ProcessingStats) {
       users: dumps.users,
       encounters: dumps.encounters,
       studies: dumps.studies,
-      skipLLM,
       bar: userBar,
     });
 
