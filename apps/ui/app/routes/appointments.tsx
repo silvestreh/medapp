@@ -12,13 +12,16 @@ export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'appointments') }];
 };
 
+const DEFAULT_MEDIC_ID = '540dc81947771d1f3f8b4567';
+
 export const loader = authenticatedLoader(async ({ request, params }: LoaderFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
   const query = { roleId: 'medic', $skip: 0, $limit: 100 };
   const { data: medics } = await client.service('users').find({ query });
 
   if (!params.medicId) {
-    throw redirect(`/appointments/${medics[0].id}`);
+    const defaultMedic = medics.find((m: { id: string }) => m.id === DEFAULT_MEDIC_ID) ?? medics[0];
+    throw redirect(`/appointments/${defaultMedic?.id ?? DEFAULT_MEDIC_ID}`);
   }
 
   return { medics };
