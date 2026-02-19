@@ -161,22 +161,24 @@ export interface MdSettings {
   userId: Id;
   medicalSpecialty: string | null;
   nationalLicenseNumber: string | null;
-  scheduleAllShifts: {
-    [key: string]: any;
-  } | string | null;
-  scheduleAllWeekCustomTime: boolean;
-  scheduleAllWeekEndTime: string | null;
-  scheduleAllWeekShiftDuration: number | null;
-  scheduleAllWeekStartTime: string | null;
-  scheduleSunday: boolean;
-  scheduleMonday: boolean;
-  scheduleTuesday: boolean;
-  scheduleWednesday: boolean;
-  scheduleThursday: boolean;
-  scheduleFriday: boolean;
-  scheduleSaturday: boolean;
   stateLicense: string | null;
   stateLicenseNumber: string | null;
+  scheduleAllWeekCustomTime: boolean;
+  encounterDuration: number;
+  mondayStart: string | null;
+  mondayEnd: string | null;
+  tuesdayStart: string | null;
+  tuesdayEnd: string | null;
+  wednesdayStart: string | null;
+  wednesdayEnd: string | null;
+  thursdayStart: string | null;
+  thursdayEnd: string | null;
+  fridayStart: string | null;
+  fridayEnd: string | null;
+  saturdayStart: string | null;
+  saturdayEnd: string | null;
+  sundayStart: string | null;
+  sundayEnd: string | null;
 }
 
 export interface Study {
