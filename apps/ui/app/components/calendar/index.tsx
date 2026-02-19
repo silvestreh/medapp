@@ -91,7 +91,7 @@ const WeekdayCol = styled(Grid.Col, {
 
     lg: {
       position: 'sticky',
-      top: '4.8em',
+      top: '5em',
       zIndex: 3,
     },
   },
