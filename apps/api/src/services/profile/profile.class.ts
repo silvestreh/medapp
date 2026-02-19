@@ -2,7 +2,7 @@ import { BadRequest, Forbidden, NotAuthenticated } from '@feathersjs/errors';
 import type { Application, User } from '../../declarations';
 import { buildTotpAuthUri, generateTotpSecret, verifyTotpCode } from '../../utils/totp';
 
-type ProfileAction = 'setup-2fa' | 'enable-2fa' | 'change-password';
+type ProfileAction = 'setup-2fa' | 'enable-2fa' | 'change-password' | 'update-profile';
 
 type SetupTwoFactorResponse = {
   action: 'setup-2fa';
@@ -20,7 +20,16 @@ type ChangePasswordResponse = {
   success: true;
 };
 
-type ProfileActionResponse = SetupTwoFactorResponse | EnableTwoFactorResponse | ChangePasswordResponse;
+type UpdateProfileResponse = {
+  action: 'update-profile';
+  success: true;
+};
+
+type ProfileActionResponse =
+  | SetupTwoFactorResponse
+  | EnableTwoFactorResponse
+  | ChangePasswordResponse
+  | UpdateProfileResponse;
 
 const ensureAuthenticatedUser = (params: any): User => {
   const user = params?.user as User | undefined;
@@ -158,6 +167,122 @@ export class Profile {
 
       return {
         action: 'change-password',
+        success: true,
+      };
+    }
+
+    if (action === 'update-profile') {
+      const internalParams = { provider: undefined };
+
+      const personalDataPayload = data?.personalData;
+      if (personalDataPayload && typeof personalDataPayload === 'object') {
+        const userPersonalData = await this.app.service('user-personal-data').find({
+          query: { ownerId: user.id, $limit: 1 },
+          paginate: false,
+          ...internalParams,
+        } as any);
+        const link = Array.isArray(userPersonalData) ? userPersonalData[0] : null;
+        if (link?.personalDataId) {
+          await this.app.service('personal-data').patch(
+            link.personalDataId,
+            {
+              firstName: personalDataPayload.firstName ?? undefined,
+              lastName: personalDataPayload.lastName ?? undefined,
+              nationality: personalDataPayload.nationality ?? undefined,
+              documentType: personalDataPayload.documentType ?? undefined,
+              documentValue: personalDataPayload.documentValue ?? undefined,
+              maritalStatus: personalDataPayload.maritalStatus ?? undefined,
+              birthDate: personalDataPayload.birthDate ?? undefined,
+            },
+            internalParams as any
+          );
+        } else {
+          const newPersonal = await this.app.service('personal-data').create(
+            {
+              firstName: personalDataPayload.firstName ?? undefined,
+              lastName: personalDataPayload.lastName ?? undefined,
+              nationality: personalDataPayload.nationality ?? undefined,
+              documentType: personalDataPayload.documentType ?? undefined,
+              documentValue: personalDataPayload.documentValue ?? undefined,
+              maritalStatus: personalDataPayload.maritalStatus ?? undefined,
+              birthDate: personalDataPayload.birthDate ?? undefined,
+            },
+            internalParams as any
+          );
+          await this.app.service('user-personal-data').create(
+            { ownerId: user.id, personalDataId: newPersonal.id },
+            internalParams as any
+          );
+        }
+      }
+
+      const contactDataPayload = data?.contactData;
+      if (contactDataPayload && typeof contactDataPayload === 'object') {
+        const userContactData = await this.app.service('user-contact-data').find({
+          query: { ownerId: user.id, $limit: 1 },
+          paginate: false,
+          ...internalParams,
+        } as any);
+        const link = Array.isArray(userContactData) ? userContactData[0] : null;
+        const contactPayload = {
+          streetAddress: contactDataPayload.streetAddress ?? undefined,
+          city: contactDataPayload.city ?? undefined,
+          province: contactDataPayload.province ?? undefined,
+          country: contactDataPayload.country ?? undefined,
+          phoneNumber: contactDataPayload.phoneNumber ?? undefined,
+          email: contactDataPayload.email ?? undefined,
+        };
+        if (link?.contactDataId) {
+          await this.app.service('contact-data').patch(
+            link.contactDataId,
+            contactPayload,
+            internalParams as any
+          );
+        } else {
+          const newContact = await this.app.service('contact-data').create(
+            contactPayload,
+            internalParams as any
+          );
+          await this.app.service('user-contact-data').create(
+            { ownerId: user.id, contactDataId: newContact.id },
+            internalParams as any
+          );
+        }
+      }
+
+      const mdSettingsPayload = data?.mdSettings;
+      if (
+        mdSettingsPayload &&
+        typeof mdSettingsPayload === 'object' &&
+        (user as any).roleId === 'medic'
+      ) {
+        const existing = await this.app.service('md-settings').find({
+          query: { userId: user.id, $limit: 1 },
+          paginate: false,
+          ...internalParams,
+        } as any);
+        const list = Array.isArray(existing) ? existing : [];
+        const record = list[0];
+        const patchPayload = {
+          medicalSpecialty: mdSettingsPayload.medicalSpecialty ?? undefined,
+          nationalLicenseNumber: mdSettingsPayload.nationalLicenseNumber ?? undefined,
+          stateLicense: mdSettingsPayload.stateLicense ?? undefined,
+          stateLicenseNumber: mdSettingsPayload.stateLicenseNumber ?? undefined,
+        };
+        if (record?.id) {
+          await this.app.service('md-settings').patch(record.id, patchPayload, internalParams as any);
+        } else {
+          const createPayload = {
+            userId: user.id,
+            encounterDuration: 20,
+            ...patchPayload,
+          };
+          await this.app.service('md-settings').create(createPayload as any, internalParams as any);
+        }
+      }
+
+      return {
+        action: 'update-profile',
         success: true,
       };
     }
