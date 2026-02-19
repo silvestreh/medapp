@@ -1,4 +1,5 @@
 import { useState, useMemo, type FC } from 'react';
+import { Link } from '@remix-run/react';
 import { Popover, TextInput, Stack, Loader, Text } from '@mantine/core';
 import { useDebouncedValue, useDisclosure, useClickOutside } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
@@ -9,11 +10,18 @@ import { styled } from '~/styled-system/jsx';
 import type { Patient } from '~/declarations';
 import { displayDocumentValue } from '~/utils';
 
+export interface CreateNewPatientSlot {
+  medicId: string;
+  startDate: string;
+  extra: boolean;
+}
+
 interface PatientSearchProps {
   onChange?: (patientId: Patient['id']) => void;
   onBlur?: () => void;
   placeholder?: string;
   autoFocus?: boolean;
+  createNewPatientSlot?: CreateNewPatientSlot | null;
 }
 
 const Button = styled('button', {
@@ -34,7 +42,30 @@ const Button = styled('button', {
   },
 });
 
-const PatientSearch: FC<PatientSearchProps> = ({ onChange, onBlur, placeholder, autoFocus = false }) => {
+const CreateNewLink = styled(Link, {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+    alignItems: 'flex-start',
+    padding: '0.5em 1em',
+    borderRadius: 'var(--mantine-radius-sm)',
+    color: 'inherit',
+    textDecoration: 'none',
+
+    '&:hover': {
+      backgroundColor: 'var(--mantine-color-blue-0)',
+    },
+  },
+});
+
+const PatientSearch: FC<PatientSearchProps> = ({
+  onChange,
+  onBlur,
+  placeholder,
+  autoFocus = false,
+  createNewPatientSlot,
+}) => {
   const { t } = useTranslation();
   const resolvedPlaceholder = placeholder ?? t('patients.search_patient');
   const [inputValue, setInputValue] = useState('');
@@ -54,12 +85,18 @@ const PatientSearch: FC<PatientSearchProps> = ({ onChange, onBlur, placeholder, 
     isLoading,
   } = useFind('patients', query);
 
+  const showCreateNew =
+    createNewPatientSlot && (inputValue === '' || patients.length === 0);
+  const dropdownOpen =
+    isOpen &&
+    (patients.length > 0 || (createNewPatientSlot && (inputValue === '' || patients.length === 0)));
+
   const handleBlur = () => {
     if (inputValue === '') onBlur?.();
   };
 
   const handleFocus = () => {
-    if (patients.length > 0) open();
+    if (patients.length > 0 || createNewPatientSlot) open();
   };
 
   const handleSelectPatient = (patient: Patient) => {
@@ -68,6 +105,13 @@ const PatientSearch: FC<PatientSearchProps> = ({ onChange, onBlur, placeholder, 
     close();
   };
 
+  const createNewState = createNewPatientSlot
+    ? {
+        assignSlot: createNewPatientSlot,
+        returnTo: `/appointments/${createNewPatientSlot.medicId}/${createNewPatientSlot.startDate.slice(0, 10)}`,
+      }
+    : undefined;
+
   return (
     <Popover
       withArrow
@@ -75,7 +119,7 @@ const PatientSearch: FC<PatientSearchProps> = ({ onChange, onBlur, placeholder, 
       position="bottom-start"
       styles={{ dropdown: { padding: 4 } }}
       key={patients.length}
-      opened={isOpen && patients.length > 0}
+      opened={dropdownOpen}
       shadow="xs"
     >
       <Popover.Target>
@@ -114,6 +158,15 @@ const PatientSearch: FC<PatientSearchProps> = ({ onChange, onBlur, placeholder, 
               </Text>
             </Button>
           ))}
+          {showCreateNew && createNewState && (
+            <CreateNewLink
+              to="/patients/new"
+              state={createNewState}
+              onMouseDown={e => e.preventDefault()}
+            >
+              <Text>{t('patients.new_patient')}</Text>
+            </CreateNewLink>
+          )}
         </Stack>
       </Popover.Dropdown>
     </Popover>

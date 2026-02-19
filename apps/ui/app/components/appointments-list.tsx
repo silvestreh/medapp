@@ -276,7 +276,12 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
               {!slot.appointment && readonly && <Text variant="light">{t('appointments.free')}</Text>}
               {!slot.appointment && !isActiveSlot && !readonly && <Text variant="light">{t('appointments.free')}</Text>}
               {!slot.appointment && !readonly && isActiveSlot && (
-                <PatientSearch autoFocus onChange={handlePatientChange(slot)} onBlur={() => setActiveSlot(null)} />
+                <PatientSearch
+                  autoFocus
+                  onChange={handlePatientChange(slot)}
+                  onBlur={() => setActiveSlot(null)}
+                  createNewPatientSlot={medicId ? { medicId, startDate: slot.date, extra: false } : undefined}
+                />
               )}
             </MainContent>
           </Slot>
@@ -292,6 +297,9 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
               onChange={handlePatientChange({ date: dayjs().format('YYYY-MM-DD'), appointment: null }, true)}
               placeholder={t('appointments.add_extra_slot')}
               key={slots.length}
+              createNewPatientSlot={
+                medicId ? { medicId, startDate: dayjs().format('YYYY-MM-DD'), extra: true } : undefined
+              }
             />
           </MainContent>
         </Slot>

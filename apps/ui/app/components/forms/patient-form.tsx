@@ -91,7 +91,11 @@ export function buildFormPayload(values: PatientFormValues) {
       lastName: lastName.trim(),
       nationality: nationality || undefined,
       maritalStatus: maritalStatus || undefined,
-      birthDate: birthDate ? birthDate.toISOString() : undefined,
+      birthDate: (() => {
+        if (birthDate == null) return undefined;
+        const d = birthDate instanceof Date ? birthDate : new Date(birthDate as unknown as string);
+        return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+      })(),
       gender: gender || undefined,
     },
     contactData: {
