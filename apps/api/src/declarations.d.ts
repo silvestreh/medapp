@@ -76,6 +76,9 @@ export interface User {
   id: Id;
   username: string;
   password: string;
+  twoFactorEnabled?: boolean;
+  twoFactorSecret?: string | null;
+  twoFactorTempSecret?: string | null;
   roleId: Id;
   personalData: Partial<PersonalData>;
   contactData: Partial<ContactData>;

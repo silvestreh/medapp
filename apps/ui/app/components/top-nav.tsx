@@ -1,4 +1,6 @@
-import { Group, Image } from '@mantine/core';
+import { Group, Image, ActionIcon } from '@mantine/core';
+import { Link } from '@remix-run/react';
+import { ShieldCheck } from 'lucide-react';
 
 import { styled } from '~/styled-system/jsx';
 import { useAccount } from '~/components/provider';
@@ -76,6 +78,9 @@ export default function TopNav() {
       <Logo src="/logo.webp" alt="Logo" />
       <Toolbar id="toolbar" />
       <FormActions id="form-actions" />
+      <ActionIcon variant="subtle" size="2.5em" component={Link} to="/profile" prefetch="intent" aria-label="Profile">
+        <ShieldCheck size={18} />
+      </ActionIcon>
       <LogoutButton />
     </Container>
   );

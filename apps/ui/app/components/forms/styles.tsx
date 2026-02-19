@@ -1,4 +1,4 @@
-import { TextInput, Textarea, Title, Stack, Select, Checkbox, Text } from '@mantine/core';
+import { TextInput, Textarea, PasswordInput, Title, Stack, Select, Checkbox, Text } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { styled } from '~/styled-system/jsx';
 
@@ -175,6 +175,31 @@ export const StyledTextInput = styled(TextInput, {
       '&:focus': {
         boxShadow: 'none',
       },
+    },
+  },
+});
+
+export const StyledPasswordInput = styled(PasswordInput, {
+  base: {
+    flex: 1,
+
+    '& .mantine-PasswordInput-input': {
+      border: 'none',
+      padding: 0,
+      height: 'auto',
+      minHeight: '1.5rem',
+      lineHeight: 1.75,
+
+      '&:focus-within': {
+        boxShadow: 'none',
+      },
+    },
+
+    '& .mantine-PasswordInput-innerInput': {
+      padding: 0,
+      height: 'auto',
+      minHeight: '1.5rem',
+      lineHeight: 1.75,
     },
   },
 });

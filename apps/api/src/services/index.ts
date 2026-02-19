@@ -20,6 +20,7 @@ import timeOffEvents from './time-off-events/time-off-events.service';
 import prepagas from './prepagas/prepagas.service';
 import referringDoctors from './referring-doctors/referring-doctors.service';
 import userRoles from './user-roles/user-roles.service';
+import profile from './profile/profile.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -44,4 +45,5 @@ export default function (app: Application): void {
   app.configure(prepagas);
   app.configure(referringDoctors);
   app.configure(userRoles);
+  app.configure(profile);
 }
