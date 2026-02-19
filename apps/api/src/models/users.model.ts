@@ -21,6 +21,19 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING,
       allowNull: false
     },
+    twoFactorEnabled: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    twoFactorSecret: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    twoFactorTempSecret: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     roleId: {
       type: DataTypes.STRING,
       allowNull: false,

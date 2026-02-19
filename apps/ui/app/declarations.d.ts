@@ -1,6 +1,7 @@
 export interface Account {
   id: string;
   username: string;
+  twoFactorEnabled?: boolean;
   role: {
     id: string;
     permissions: string[];
