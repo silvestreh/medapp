@@ -24,7 +24,7 @@ const Container = styled(Flex, {
     lg: {
       alignItems: 'stretch',
       flexDirection: 'row',
-      minHeight: 'calc(100vh - 4.8em)',
+      minHeight: 'calc(100vh - 5em)',
     },
   },
 });
