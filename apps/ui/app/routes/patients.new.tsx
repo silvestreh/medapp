@@ -1,15 +1,16 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useFetcher, useNavigate } from '@remix-run/react';
+import { useFetcher, useNavigate, useLocation } from '@remix-run/react';
 import { Group, Button, ActionIcon, Title, Alert, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Save, ArrowLeft, AlertCircle, RotateCcw } from 'lucide-react';
+import omit from 'lodash/omit';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
-import { useFind } from '~/components/provider';
+import { useFind, useMutation } from '~/components/provider';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import {
@@ -34,7 +35,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { existingPersonalDataId, personalData, contactData, patientFields } = payload;
 
   if (existingPersonalDataId) {
-    const { documentValue, ...patchable } = personalData;
+    const patchable = omit(personalData, ['documentValue']);
     await client.service('personal-data').patch(existingPersonalDataId, patchable);
   }
 
@@ -65,19 +66,31 @@ const PageContainer = styled('div', {
   },
 });
 
+interface AssignSlotState {
+  assignSlot: { medicId: string; startDate: string; extra: boolean };
+  returnTo: string;
+}
+
 export default function NewPatient() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const fetcher = useFetcher();
+  const { create: createAppointment } = useMutation('appointments');
+  const hasHandledSuccess = useRef(false);
+
+  const state = location.state as AssignSlotState | undefined;
+  const assignSlot = state?.assignSlot;
+  const returnTo = state?.returnTo;
 
   const [existingPersonalDataId, setExistingPersonalDataId] = useState<string | null>(null);
 
   const form = useForm<PatientFormValues>({
     initialValues: EMPTY_PATIENT_FORM_VALUES,
     validate: {
-      documentValue: (value) => (value.trim() ? null : t('patients.validation.document_required')),
-      firstName: (value) => (value.trim() ? null : t('patients.validation.first_name_required')),
-      lastName: (value) => (value.trim() ? null : t('patients.validation.last_name_required')),
+      documentValue: value => (value.trim() ? null : t('patients.validation.document_required')),
+      firstName: value => (value.trim() ? null : t('patients.validation.first_name_required')),
+      lastName: value => (value.trim() ? null : t('patients.validation.last_name_required')),
     },
   });
 
@@ -93,17 +106,13 @@ export default function NewPatient() {
     [debouncedDocValue]
   );
 
-  const { response: pdResponse, isLoading: pdLoading } = useFind(
-    'personal-data',
-    personalDataQuery ?? undefined,
-    { enabled: !!personalDataQuery }
-  );
+  const { response: pdResponse, isLoading: pdLoading } = useFind('personal-data', personalDataQuery ?? undefined, {
+    enabled: !!personalDataQuery,
+  });
 
-  const { response: ptResponse, isLoading: ptLoading } = useFind(
-    'patients',
-    patientQuery ?? undefined,
-    { enabled: !!patientQuery }
-  );
+  const { response: ptResponse, isLoading: ptLoading } = useFind('patients', patientQuery ?? undefined, {
+    enabled: !!patientQuery,
+  });
 
   const pdResults = (pdResponse as any)?.data || [];
   const ptResults = (ptResponse as any)?.data || [];
@@ -130,16 +139,33 @@ export default function NewPatient() {
     if (!existingPersonalData) {
       setExistingPersonalDataId(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingPersonalData?.id, patientAlreadyExists]);
 
   const isSaving = fetcher.state !== 'idle';
-  const actionData = fetcher.data as { success?: boolean } | undefined;
+  const actionData = fetcher.data as { success?: boolean; patientId?: string } | undefined;
 
   useEffect(() => {
-    if (actionData?.success) {
+    if (!actionData?.success || hasHandledSuccess.current) return;
+
+    const patientId = actionData.patientId;
+    if (!patientId) return;
+
+    hasHandledSuccess.current = true;
+
+    if (assignSlot && returnTo) {
+      createAppointment({
+        patientId,
+        medicId: assignSlot.medicId,
+        startDate: assignSlot.startDate,
+        extra: assignSlot.extra,
+      }).then(() => {
+        navigate(returnTo);
+      });
+    } else {
       navigate(-1);
     }
-  }, [actionData?.success, navigate]);
+  }, [actionData?.success, actionData?.patientId, assignSlot, returnTo, createAppointment, navigate]);
 
   const canSave =
     !patientAlreadyExists &&
@@ -173,7 +199,7 @@ export default function NewPatient() {
     <PageContainer>
       <Portal id="toolbar">
         <Group align="center" flex={1}>
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/patients')}>
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate(-1)}>
             <ArrowLeft size={20} />
           </ActionIcon>
           <Title m={0} lh={1} fz="h2">
@@ -191,7 +217,9 @@ export default function NewPatient() {
       </Portal>
 
       {isLookingUp && (
-        <Text size="xs" c="dimmed">{t('patients.looking_up')}</Text>
+        <Text size="xs" c="dimmed">
+          {t('patients.looking_up')}
+        </Text>
       )}
 
       {patientAlreadyExists && (
@@ -240,11 +268,7 @@ export default function NewPatient() {
         </Alert>
       )}
 
-      <PatientForm
-        form={form}
-        disabled={patientAlreadyExists}
-        showContactAndInsurance={!patientAlreadyExists}
-      />
+      <PatientForm form={form} disabled={patientAlreadyExists} showContactAndInsurance={!patientAlreadyExists} />
     </PageContainer>
   );
 }
