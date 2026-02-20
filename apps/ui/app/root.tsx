@@ -32,11 +32,10 @@ export const links: LinksFunction = () => [];
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const initialToken = await getToken(request);
   const initialUser = await getUser(request);
-  const apiUrl = process.env.API_URL;
   const locale = await resolveLocale(request);
 
   return json(
-    { initialToken, initialUser, apiUrl, locale },
+    { initialToken, initialUser, locale },
     {
       headers: {
         'Set-Cookie': await localeCookie.serialize(locale),
@@ -69,10 +68,10 @@ function Document({ children }: { children: React.ReactNode }) {
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>('root');
-  const { initialToken, initialUser, apiUrl } = data || {};
+  const { initialToken, initialUser } = data || {};
 
   return (
-    <FeathersProvider initialToken={initialToken} initialUser={initialUser} apiUrl={apiUrl}>
+    <FeathersProvider initialToken={initialToken} initialUser={initialUser}>
       <MantineProvider theme={theme}>
         <ModalsProvider>
           <Notifications position="top-right" mt="5em" />
