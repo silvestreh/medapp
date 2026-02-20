@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { useLoaderData, useNavigate } from '@remix-run/react';
 import { Flex } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,7 @@ import { styled } from '~/styled-system/jsx';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import AppointmentsList from '~/components/appointments-list';
 import PatientSearchTable from '~/components/patient-search-table';
+import type { Appointment } from '~/declarations';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -84,7 +85,7 @@ const Title = styled('h1', {
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
-  const date = dayjs('2024-11-27');
+  const date = dayjs();
   const appointments = await client.service('appointments').find({
     query: {
       medicId: user?.id,
@@ -96,12 +97,18 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   });
   const slots = generateSlots(date, appointments, user);
 
-  return { slots };
+  return { slots, date: date.format('YYYY-MM-DD') };
 });
 
 export default function EncountersIndex() {
   const { t } = useTranslation();
-  const { slots } = useLoaderData<typeof loader>();
+  const { slots, date } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const handleAppointmentClick = (appointment: Appointment | null) => {
+    if (appointment) {
+      navigate(`/encounters/${appointment.patientId}`);
+    }
+  };
 
   return (
     <Container>
@@ -112,7 +119,8 @@ export default function EncountersIndex() {
         <AppointmentsList
           slots={slots}
           readonly
-          onAppointmentClick={console.log}
+          currentDate={date}
+          onAppointmentClick={handleAppointmentClick}
           className={css({
             borderTop: '1px solid var(--mantine-color-gray-2)',
             lg: {

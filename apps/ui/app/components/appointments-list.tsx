@@ -17,6 +17,7 @@ interface AppointmentsListProps {
   onAppointmentClick?: (appointment: Appointment | null) => void;
   medicId?: string;
   className?: string;
+  currentDate?: string;
 }
 
 const Container = styled('div', {
@@ -144,6 +145,7 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
   onAppointmentClick,
   medicId,
   className,
+  currentDate,
 }) => {
   const { t } = useTranslation();
   const [slots, setSlots] = useState(initialSlots);
@@ -294,11 +296,27 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
           </Time>
           <MainContent>
             <PatientSearch
-              onChange={handlePatientChange({ date: dayjs().format('YYYY-MM-DD'), appointment: null }, true)}
+              onChange={handlePatientChange(
+                {
+                  date: currentDate
+                    ? dayjs(currentDate).startOf('day').toISOString()
+                    : dayjs().startOf('day').toISOString(),
+                  appointment: null,
+                },
+                true
+              )}
               placeholder={t('appointments.add_extra_slot')}
               key={slots.length}
               createNewPatientSlot={
-                medicId ? { medicId, startDate: dayjs().format('YYYY-MM-DD'), extra: true } : undefined
+                medicId
+                  ? {
+                      medicId,
+                      startDate: currentDate
+                        ? dayjs(currentDate).startOf('day').toISOString()
+                        : dayjs().startOf('day').toISOString(),
+                      extra: true,
+                    }
+                  : undefined
               }
             />
           </MainContent>
