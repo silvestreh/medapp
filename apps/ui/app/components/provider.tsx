@@ -26,7 +26,6 @@ const FeathersContext = createContext<FeathersContextType | undefined>(undefined
 interface FeathersProviderProps extends PropsWithChildren {
   initialToken?: string;
   initialUser?: Account | null;
-  apiUrl?: string;
   swrConfig?: SWRConfiguration;
 }
 
@@ -34,16 +33,14 @@ export const FeathersProvider: React.FC<FeathersProviderProps> = ({
   children,
   initialToken,
   initialUser,
-  apiUrl = process.env.API_URL ?? 'http://localhost:3030',
   swrConfig = { dedupingInterval: 2000 },
 }) => {
   const [feathersClient, setFeathersClient] = useState<Application | null>(null);
 
   useEffect(() => {
-    console.log('[FeathersProvider] creating client with apiUrl:', apiUrl, 'hasToken:', !!initialToken);
-    const client = createFeathersClient(apiUrl, initialToken);
+    const client = createFeathersClient(undefined, initialToken);
     setFeathersClient(client);
-  }, [initialToken, apiUrl]);
+  }, [initialToken]);
 
   return (
     <SWRConfig value={swrConfig}>

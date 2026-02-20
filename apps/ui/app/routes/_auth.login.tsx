@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { json, redirect, type ActionFunction, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { Form, useActionData, useRouteLoaderData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import { TextInput, PasswordInput, Button, Paper, Title, Text, Container, Divider } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { startAuthentication, browserSupportsWebAuthn } from '@simplewebauthn/browser';
@@ -71,7 +71,7 @@ export const action: ActionFunction = async ({ request }) => {
   const username = String(formData.get('username') || '');
   const password = String(formData.get('password') || '');
   const twoFactorCode = String(formData.get('twoFactorCode') || '');
-  const apiUrl = process.env.API_URL ?? 'http://localhost:3030';
+  const apiUrl = process.env.API_URL;
   console.log('[login] action: authenticating with', apiUrl, 'user:', username);
   const client = createFeathersClient(apiUrl);
 
@@ -91,7 +91,10 @@ export const action: ActionFunction = async ({ request }) => {
       },
     });
   } catch (error: any) {
-    console.error('[login] action: auth failed', JSON.stringify(error?.response?.data || error?.data || error?.message || error));
+    console.error(
+      '[login] action: auth failed',
+      JSON.stringify(error?.response?.data || error?.data || error?.message || error)
+    );
     const errorData = error?.response?.data || error?.data || error || {};
     const errorReason = errorData?.reason || '';
     const rawMessage = errorData?.message || error?.message || '';
@@ -118,7 +121,6 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Login() {
   const actionData = useActionData<typeof action>();
-  const rootData = useRouteLoaderData<{ apiUrl?: string }>('root');
   const { t } = useTranslation();
   const formRef = useRef<HTMLFormElement>(null);
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
@@ -132,16 +134,14 @@ export default function Login() {
     setIsPasskeyLoading(true);
 
     try {
-      const apiUrl = rootData?.apiUrl || 'http://localhost:3030';
-
-      const optionsRes = await axios.post(`${apiUrl}/webauthn`, {
+      const optionsRes = await axios.post('/api/webauthn', {
         action: 'generate-authentication-options',
       });
       const { options } = optionsRes.data;
 
       const credential = await startAuthentication({ optionsJSON: options });
 
-      const verifyRes = await axios.post(`${apiUrl}/webauthn`, {
+      const verifyRes = await axios.post('/api/webauthn', {
         action: 'verify-authentication',
         credential,
         challenge: options.challenge,
@@ -167,7 +167,7 @@ export default function Login() {
     } finally {
       setIsPasskeyLoading(false);
     }
-  }, [t, rootData?.apiUrl]);
+  }, [t]);
 
   const [supportsPasskeys, setSupportsPasskeys] = useState(false);
 

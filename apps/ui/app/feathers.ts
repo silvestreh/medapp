@@ -13,17 +13,18 @@ type AuthenticatedApp = Application & {
   logout: AuthenticationClient['logout'];
 };
 
-const createFeathersClient = (baseURL: string, accessToken?: SessionToken) => {
+const BROWSER_PROXY_URL = '/api';
+
+const createFeathersClient = (baseURL?: string, accessToken?: SessionToken) => {
+  const resolvedURL = baseURL ?? BROWSER_PROXY_URL;
   const client = feathers() as AuthenticatedApp;
-  const restClient = rest(baseURL);
+  const restClient = rest(resolvedURL);
 
   client.configure(restClient.axios(axios));
   client.configure(auth({ storageKey: 'feathers-jwt' }));
 
   if (accessToken) {
-    console.log('[feathers] authenticating with JWT, baseURL:', baseURL);
-    client.authenticate({ strategy: 'jwt', accessToken }).catch((err) => {
-      console.error('[feathers] JWT auth failed:', err?.message || err);
+    client.authenticate({ strategy: 'jwt', accessToken }).catch(() => {
       axios
         .post('/logout')
         .then(() => {
