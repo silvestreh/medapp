@@ -6,7 +6,6 @@ import {
   FormContainer,
   FormCard,
   FieldRow,
-  Label,
   StyledTextarea,
   StyledTitle,
   FormHeader,
@@ -221,8 +220,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
         </FieldRow>
         {isToggled && (
           <IndentedSection>
-            <FieldRow stacked>
-              <Label stacked>{t('common.from')}:</Label>
+            <FieldRow label={`${t('common.from')}:`} variant="stacked">
               <StyledDateInput
                 {...form.getInputProps(desdeName)}
                 readOnly={readOnly}
@@ -231,8 +229,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
                 clearable
               />
             </FieldRow>
-            <FieldRow stacked>
-              <Label stacked>{t('common.to')}:</Label>
+            <FieldRow label={`${t('common.to')}:`} variant="stacked">
               <StyledDateInput
                 {...form.getInputProps(hastaName)}
                 readOnly={readOnly}
@@ -241,8 +238,7 @@ export function OccupationalHistoryForm({ initialData, onChange, readOnly }: Occ
                 clearable
               />
             </FieldRow>
-            <FieldRow stacked>
-              <Label stacked>{t('common.comments')}:</Label>
+            <FieldRow label={`${t('common.comments')}:`} variant="stacked">
               <StyledTextarea
                 {...form.getInputProps(commentsName)}
                 readOnly={readOnly}

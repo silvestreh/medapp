@@ -7,7 +7,6 @@ import {
   FormContainer,
   FormCard,
   FieldRow,
-  Label,
   StyledTextInput,
   StyledTextarea,
   StyledTitle,
@@ -126,16 +125,14 @@ export function ReasonForConsultationForm({ initialData, onChange, readOnly }: R
               )}
             </ItemHeader>
             <FormCard>
-              <FieldRow>
-                <Label>{t('forms.consulta_internacion_reason')}:</Label>
+              <FieldRow label={`${t('forms.consulta_internacion_reason')}:`}>
                 <StyledTextInput
                   placeholder={t('forms.consulta_internacion_placeholder_reason')}
                   {...form.getInputProps(`reasons.${index}.reason`)}
                   readOnly={readOnly}
                 />
               </FieldRow>
-              <FieldRow>
-                <Label>{t('forms.consulta_internacion_description')}:</Label>
+              <FieldRow label={`${t('forms.consulta_internacion_description')}:`}>
                 <StyledTextarea
                   placeholder={t('forms.consulta_internacion_placeholder_description')}
                   {...form.getInputProps(`reasons.${index}.description`)}

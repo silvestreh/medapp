@@ -6,7 +6,6 @@ import {
   FormContainer,
   FormCard,
   FieldRow,
-  Label,
   StyledSelect,
   StyledTextInput,
   StyledTitle,
@@ -98,8 +97,7 @@ export function AsthmaForm({ initialData, onChange, readOnly }: AsthmaFormProps)
         {t('forms.asthma_general')}
       </Text>
       <FormCard>
-        <FieldRow>
-          <Label>{t('forms.asthma_clinical_severity')}:</Label>
+        <FieldRow label={`${t('forms.asthma_clinical_severity')}:`}>
           <StyledSelect
             data={[
               { value: 'nhlbi', label: 'NHLBI' },
@@ -121,8 +119,7 @@ export function AsthmaForm({ initialData, onChange, readOnly }: AsthmaFormProps)
         </FieldRow>
         {hasSintomas && (
           <IndentedSection>
-            <FieldRow>
-              <Label>{t('forms.asthma_annual_frequency')}:</Label>
+            <FieldRow label={`${t('forms.asthma_annual_frequency')}:`}>
               <StyledSelect
                 data={[
                   { value: '1', label: '1' },
@@ -136,8 +133,7 @@ export function AsthmaForm({ initialData, onChange, readOnly }: AsthmaFormProps)
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.asthma_exacerbation_type')}:</Label>
+            <FieldRow label={`${t('forms.asthma_exacerbation_type')}:`}>
               <StyledSelect
                 data={[
                   { value: 'actividad_sueno', label: t('forms.asthma_exacerbation_activity_sleep') },
@@ -163,8 +159,7 @@ export function AsthmaForm({ initialData, onChange, readOnly }: AsthmaFormProps)
         </FieldRow>
         {hasSintomaNoct && (
           <IndentedSection>
-            <FieldRow>
-              <Label>{t('forms.asthma_nocturnal_frequency')}:</Label>
+            <FieldRow label={`${t('forms.asthma_nocturnal_frequency')}:`}>
               <StyledTextInput type="number" {...form.getInputProps('frecuencia_nocturna')} readOnly={readOnly} />
             </FieldRow>
           </IndentedSection>
@@ -176,8 +171,7 @@ export function AsthmaForm({ initialData, onChange, readOnly }: AsthmaFormProps)
         {t('forms.asthma_pef_title')}
       </Text>
       <FormCard>
-        <FieldRow>
-          <Label>{t('forms.asthma_theoretical')}:</Label>
+        <FieldRow label={`${t('forms.asthma_theoretical')}:`}>
           <StyledSelect
             data={[
               { value: '60-', label: '≤ 60%' },
@@ -190,8 +184,7 @@ export function AsthmaForm({ initialData, onChange, readOnly }: AsthmaFormProps)
             clearable
           />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('forms.asthma_variability')}:</Label>
+        <FieldRow label={`${t('forms.asthma_variability')}:`}>
           <StyledSelect
             data={[
               { value: '20-', label: '< 20%' },
@@ -211,8 +204,7 @@ export function AsthmaForm({ initialData, onChange, readOnly }: AsthmaFormProps)
         {t('forms.asthma_fev1_title')}
       </Text>
       <FormCard>
-        <FieldRow>
-          <Label>{t('forms.asthma_theoretical')}:</Label>
+        <FieldRow label={`${t('forms.asthma_theoretical')}:`}>
           <StyledSelect
             data={[
               { value: '60-', label: '≤ 60%' },
@@ -225,8 +217,7 @@ export function AsthmaForm({ initialData, onChange, readOnly }: AsthmaFormProps)
             clearable
           />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('forms.asthma_reversibility')}:</Label>
+        <FieldRow label={`${t('forms.asthma_reversibility')}:`}>
           <StyledSelect
             data={[
               { value: 'no', label: t('common.no') },

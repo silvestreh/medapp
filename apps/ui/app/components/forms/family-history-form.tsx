@@ -14,7 +14,6 @@ import {
   TriStateCheckbox,
   FormCard,
   FieldRow,
-  Label,
   ItemHeader,
 } from './styles';
 
@@ -372,8 +371,7 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                 </ActionIcon>
               )}
             </ItemHeader>
-            <FieldRow>
-              <Label>{t('forms.family_history_relationship')}:</Label>
+            <FieldRow label={`${t('forms.family_history_relationship')}:`}>
               {readOnly ? (
                 <Text size="sm">{getRelationshipLabel(item.relationship)}</Text>
               ) : (
@@ -384,16 +382,14 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                 />
               )}
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.family_history_alive')}:</Label>
+            <FieldRow label={`${t('forms.family_history_alive')}:`}>
               <TriStateCheckbox
                 {...form.getInputProps(`items.${index}.isAlive`)}
                 readOnly={readOnly}
                 disabled={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.family_history_first_name')}:</Label>
+            <FieldRow label={`${t('forms.family_history_first_name')}:`}>
               <StyledTextInput
                 placeholder={t('forms.family_history_first_name')}
                 {...form.getInputProps(`items.${index}.firstName`)}
@@ -402,8 +398,7 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                 data-1p-ignore
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.family_history_last_name')}:</Label>
+            <FieldRow label={`${t('forms.family_history_last_name')}:`}>
               <StyledTextInput
                 placeholder={t('forms.family_history_last_name')}
                 {...form.getInputProps(`items.${index}.lastName`)}
@@ -412,8 +407,7 @@ export function FamilyHistoryForm({ initialData, onChange, readOnly }: FamilyHis
                 data-1p-ignore
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.family_history_issue')}:</Label>
+            <FieldRow label={`${t('forms.family_history_issue')}:`}>
               <Icd10Selector
                 value={item.issueId}
                 onChange={val => form.setFieldValue(`items.${index}.issueId`, val as string)}

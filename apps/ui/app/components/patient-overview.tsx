@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 import type { Patient } from '~/declarations';
 import { styled } from '~/styled-system/jsx';
-import { StyledTitle, FormCard, FieldRow, Label, FormHeader } from '~/components/forms/styles';
+import { StyledTitle, FormCard, FieldRow, FormHeader } from '~/components/forms/styles';
 
 interface PatientOverviewProps {
   patient: Patient;
@@ -60,8 +60,7 @@ export function PatientOverview({ patient, encounters }: PatientOverviewProps) {
         </FormHeader>
         <FormCard>
           {formattedBirth && (
-            <FieldRow>
-              <Label>{t('overview.birth_date')}:</Label>
+            <FieldRow label={`${t('overview.birth_date')}:`}>
               <Text>
                 {formattedBirth}
                 {age !== null && ` (${t('overview.years_old', { age })})`}
@@ -70,8 +69,7 @@ export function PatientOverview({ patient, encounters }: PatientOverviewProps) {
           )}
 
           {patient.medicare && (
-            <FieldRow>
-              <Label>{t('overview.insurance')}:</Label>
+            <FieldRow label={`${t('overview.insurance')}:`}>
               {(() => {
                 const parts = patient.medicare.split('/');
                 if (parts.length >= 2) {
@@ -90,8 +88,7 @@ export function PatientOverview({ patient, encounters }: PatientOverviewProps) {
           )}
 
           {patient.personalData?.gender && (
-            <FieldRow>
-              <Label>{t('overview.gender')}:</Label>
+            <FieldRow label={`${t('overview.gender')}:`}>
               <Text>
                 {patient.personalData.gender === 'M'
                   ? t('overview.gender_male')
@@ -103,8 +100,7 @@ export function PatientOverview({ patient, encounters }: PatientOverviewProps) {
           )}
 
           {patient.personalData?.documentValue && (
-            <FieldRow>
-              <Label>{t('overview.document')}:</Label>
+            <FieldRow label={`${t('overview.document')}:`}>
               <Text>
                 {patient.personalData.documentType && `${patient.personalData.documentType} `}
                 {patient.personalData.documentValue}
@@ -113,15 +109,13 @@ export function PatientOverview({ patient, encounters }: PatientOverviewProps) {
           )}
 
           {patient.personalData?.nationality && (
-            <FieldRow>
-              <Label>{t('overview.nationality')}:</Label>
+            <FieldRow label={`${t('overview.nationality')}:`}>
               <Text>{patient.personalData.nationality}</Text>
             </FieldRow>
           )}
 
           {patient.personalData?.maritalStatus && (
-            <FieldRow>
-              <Label>{t('overview.marital_status')}:</Label>
+            <FieldRow label={`${t('overview.marital_status')}:`}>
               <Text>{patient.personalData.maritalStatus}</Text>
             </FieldRow>
           )}

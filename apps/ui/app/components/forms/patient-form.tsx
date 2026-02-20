@@ -6,7 +6,6 @@ import {
   FormContainer,
   FormCard,
   FieldRow,
-  Label,
   StyledTextInput,
   StyledSelect,
   StyledDateInput,
@@ -159,12 +158,10 @@ export function PatientForm({
       {/* Personal Data */}
       <StyledTitle>{t('patients.personal_data')}</StyledTitle>
       <FormCard>
-        <FieldRow>
-          <Label>{t('patients.document_type')}:</Label>
+        <FieldRow label={`${t('patients.document_type')}:`}>
           <StyledSelect data={documentTypeOptions} disabled={disabled} {...form.getInputProps('documentType')} />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('patients.document_value')}:</Label>
+        <FieldRow label={`${t('patients.document_value')}:`}>
           <StyledTextInput
             placeholder={readOnlyDocument ? undefined : t('patients.document_value_placeholder')}
             readOnly={readOnlyDocument}
@@ -172,28 +169,24 @@ export function PatientForm({
             {...form.getInputProps('documentValue')}
           />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('patients.first_name')}:</Label>
+        <FieldRow label={`${t('patients.first_name')}:`}>
           <StyledTextInput
             placeholder={t('patients.first_name')}
             disabled={disabled}
             {...form.getInputProps('firstName')}
           />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('patients.last_name')}:</Label>
+        <FieldRow label={`${t('patients.last_name')}:`}>
           <StyledTextInput
             placeholder={t('patients.last_name')}
             disabled={disabled}
             {...form.getInputProps('lastName')}
           />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('patients.nationality')}:</Label>
+        <FieldRow label={`${t('patients.nationality')}:`}>
           <StyledSelect data={countryOptions} searchable disabled={disabled} {...form.getInputProps('nationality')} />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('patients.birth_date')}:</Label>
+        <FieldRow label={`${t('patients.birth_date')}:`}>
           <StyledDateInput
             placeholder="DD/MM/YYYY"
             valueFormat="DD/MM/YYYY"
@@ -202,12 +195,10 @@ export function PatientForm({
             {...form.getInputProps('birthDate')}
           />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('patients.gender')}:</Label>
+        <FieldRow label={`${t('patients.gender')}:`}>
           <StyledSelect data={genderOptions} disabled={disabled} {...form.getInputProps('gender')} />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('patients.marital_status')}:</Label>
+        <FieldRow label={`${t('patients.marital_status')}:`}>
           <StyledSelect data={maritalStatusOptions} disabled={disabled} {...form.getInputProps('maritalStatus')} />
         </FieldRow>
       </FormCard>
@@ -217,28 +208,22 @@ export function PatientForm({
         <>
           <StyledTitle>{t('patients.contact_data')}</StyledTitle>
           <FormCard>
-            <FieldRow>
-              <Label>{t('patients.street_address')}:</Label>
+            <FieldRow label={`${t('patients.street_address')}:`}>
               <StyledTextInput placeholder={t('patients.street_address')} {...form.getInputProps('streetAddress')} />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('patients.city')}:</Label>
+            <FieldRow label={`${t('patients.city')}:`}>
               <StyledTextInput placeholder={t('patients.city')} {...form.getInputProps('city')} />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('patients.province')}:</Label>
+            <FieldRow label={`${t('patients.province')}:`}>
               <StyledSelect data={provinceOptions} searchable {...form.getInputProps('province')} />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('patients.country')}:</Label>
+            <FieldRow label={`${t('patients.country')}:`}>
               <StyledSelect data={countryOptions} searchable {...form.getInputProps('country')} />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('patients.phone')}:</Label>
+            <FieldRow label={`${t('patients.phone')}:`}>
               <StyledTextInput placeholder={t('patients.phone')} {...form.getInputProps('phoneNumber')} />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('patients.email')}:</Label>
+            <FieldRow label={`${t('patients.email')}:`}>
               <StyledTextInput placeholder={t('patients.email')} {...form.getInputProps('email')} />
             </FieldRow>
           </FormCard>
@@ -246,8 +231,7 @@ export function PatientForm({
           {/* Insurance */}
           <StyledTitle>{t('patients.insurance')}</StyledTitle>
           <FormCard>
-            <FieldRow>
-              <Label>{t('patients.medicare')}:</Label>
+            <FieldRow label={`${t('patients.medicare')}:`}>
               <PrepagaSelector
                 value={form.values.medicare}
                 onChange={val => form.setFieldValue('medicare', val)}
@@ -255,12 +239,10 @@ export function PatientForm({
                 readOnly={disabled}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('patients.medicare_number')}:</Label>
+            <FieldRow label={`${t('patients.medicare_number')}:`}>
               <StyledTextInput placeholder={t('patients.medicare_number')} {...form.getInputProps('medicareNumber')} />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('patients.medicare_plan')}:</Label>
+            <FieldRow label={`${t('patients.medicare_plan')}:`}>
               <StyledTextInput placeholder={t('patients.medicare_plan')} {...form.getInputProps('medicarePlan')} />
             </FieldRow>
           </FormCard>

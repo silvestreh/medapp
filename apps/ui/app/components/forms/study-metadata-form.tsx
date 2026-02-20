@@ -8,7 +8,6 @@ import { useFind } from '~/components/provider';
 import {
   FormCard,
   FieldRow,
-  Label,
   StyledTextInput,
   StyledTextarea,
   StyledDateInput,
@@ -130,8 +129,7 @@ export function StudyMetadataForm({
       </FormHeader>
       <FormCard>
         {isCreateMode && (
-          <FieldRow>
-            <Label>{t('studies.patient_required')}</Label>
+          <FieldRow label={t('studies.patient_required')}>
             <PatientSearch
               onChange={id => onPatientChange?.(id)}
               onBlur={() => {}}
@@ -142,8 +140,7 @@ export function StudyMetadataForm({
         )}
 
         {!isCreateMode && (
-          <FieldRow>
-            <Label>{t('studies.patient')}</Label>
+          <FieldRow label={t('studies.patient')}>
             <StyledTextInput
               value={patient ? `${patient.personalData?.firstName || ''} ${patient.personalData?.lastName || ''}` : '—'}
               readOnly
@@ -151,8 +148,7 @@ export function StudyMetadataForm({
           </FieldRow>
         )}
 
-        <FieldRow>
-          <Label>{t('studies.referring_doctor')}</Label>
+        <FieldRow label={t('studies.referring_doctor')}>
           {isCreateMode && (
             <StyledAutocomplete
               placeholder={t('studies.referring_doctor_placeholder')}
@@ -164,13 +160,11 @@ export function StudyMetadataForm({
           {!isCreateMode && <StyledTextInput value={referringDoctor || '—'} readOnly disabled />}
         </FieldRow>
 
-        <FieldRow>
-          <Label>{t('studies.insurance')}</Label>
+        <FieldRow label={t('studies.insurance')}>
           <PrepagaSelector value={patient?.medicare || ''} onChange={() => {}} readOnly />
         </FieldRow>
 
-        <FieldRow>
-          <Label>{t('studies.extraction_date')}</Label>
+        <FieldRow label={t('studies.extraction_date')}>
           <StyledDateInput
             value={date}
             onChange={v => onDateChange?.(v ? new Date(v) : null)}
@@ -181,8 +175,7 @@ export function StudyMetadataForm({
         </FieldRow>
 
         {!isCreateMode && (
-          <FieldRow>
-            <Label>{t('studies.col_dni')}</Label>
+          <FieldRow label={t('studies.col_dni')}>
             <StyledTextInput value={patient?.personalData?.documentValue || '—'} readOnly />
           </FieldRow>
         )}
@@ -196,8 +189,7 @@ export function StudyMetadataForm({
           />
         </FieldRow>
 
-        <FieldRow>
-          <Label>{t('studies.observations')}</Label>
+        <FieldRow label={t('studies.observations')}>
           <StyledTextarea
             placeholder={t('studies.observations_placeholder')}
             value={comment}

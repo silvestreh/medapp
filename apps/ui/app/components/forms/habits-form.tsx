@@ -6,7 +6,6 @@ import {
   FieldRow,
   FormCard,
   FormContainer,
-  Label,
   FormHeader,
   StyledTextInput,
   StyledTextarea,
@@ -222,8 +221,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
 
         <Tabs.Panel value="food">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.habits_food_quantity')}:</Label>
+            <FieldRow label={`${t('forms.habits_food_quantity')}:`}>
               <StyledSelect
                 data={selectData.quantity}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -233,8 +231,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_food_quality')}:</Label>
+            <FieldRow label={`${t('forms.habits_food_quality')}:`}>
               <StyledSelect
                 data={selectData.quality}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -253,8 +250,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
             </FieldRow>
             {form.values.dieta_toggle === true && (
               <IndentedSection>
-                <FieldRow stacked>
-                  <Label stacked>{t('forms.habits_food_diet_compliance')}:</Label>
+                <FieldRow label={`${t('forms.habits_food_diet_compliance')}:`} variant="stacked">
                   <StyledSelect
                     data={selectData.compliance}
                     placeholder={t('forms.habits_select_placeholder')}
@@ -264,8 +260,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                     flex={1}
                   />
                 </FieldRow>
-                <FieldRow stacked>
-                  <Label stacked>{''}</Label>
+                <FieldRow label={''} variant="stacked">
                   <Stack gap="xs">
                     <TriStateCheckbox
                       label={t('forms.habits_food_diet_low_sodium')}
@@ -291,8 +286,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 </FieldRow>
               </IndentedSection>
             )}
-            <FieldRow>
-              <Label>{t('forms.habits_food_alcohol')}:</Label>
+            <FieldRow label={`${t('forms.habits_food_alcohol')}:`}>
               <Stack gap="xs" flex={1}>
                 <StyledSelect
                   data={selectData.frequency}
@@ -340,8 +334,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
             </FieldRow>
             {form.values.fuma_toggle === true && (
               <IndentedSection>
-                <FieldRow stacked>
-                  <Label stacked>{t('forms.habits_food_smoke_from')}:</Label>
+                <FieldRow label={`${t('forms.habits_food_smoke_from')}:`} variant="stacked">
                   <StyledDateInput
                     placeholder="YYYY"
                     {...form.getInputProps('fuma_desde')}
@@ -351,8 +344,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                     clearable={!readOnly}
                   />
                 </FieldRow>
-                <FieldRow stacked>
-                  <Label stacked>{t('forms.habits_food_smoke_until')}:</Label>
+                <FieldRow label={`${t('forms.habits_food_smoke_until')}:`} variant="stacked">
                   <StyledDateInput
                     placeholder="DD/MM/YYYY"
                     {...form.getInputProps('fuma_hasta')}
@@ -362,8 +354,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                     clearable={!readOnly}
                   />
                 </FieldRow>
-                <FieldRow stacked>
-                  <Label stacked>{t('forms.habits_food_smoke_quantity')}:</Label>
+                <FieldRow label={`${t('forms.habits_food_smoke_quantity')}:`} variant="stacked">
                   <StyledSelect
                     data={selectData.smokeQuantity}
                     placeholder={t('forms.habits_select_placeholder')}
@@ -375,8 +366,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 </FieldRow>
               </IndentedSection>
             )}
-            <FieldRow>
-              <Label>{t('forms.habits_food_infusions')}:</Label>
+            <FieldRow label={`${t('forms.habits_food_infusions')}:`}>
               <Stack gap="xs" flex={1}>
                 <StyledSelect
                   data={selectData.infusionsFrequency}
@@ -420,8 +410,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 ) : null}
               </Stack>
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_food_sal')}:</Label>
+            <FieldRow label={`${t('forms.habits_food_sal')}:`}>
               <StyledSelect
                 data={selectData.sal}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -431,8 +420,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_food_physical_activity')}:</Label>
+            <FieldRow label={`${t('forms.habits_food_physical_activity')}:`}>
               <StyledSelect
                 data={selectData.activity}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -447,8 +435,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
 
         <Tabs.Panel value="work">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.habits_work_type')}:</Label>
+            <FieldRow label={`${t('forms.habits_work_type')}:`}>
               <StyledSelect
                 data={selectData.workType}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -458,8 +445,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_work_continuity')}:</Label>
+            <FieldRow label={`${t('forms.habits_work_continuity')}:`}>
               <StyledSelect
                 data={selectData.workContinuity}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -469,8 +455,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_work_education')}:</Label>
+            <FieldRow label={`${t('forms.habits_work_education')}:`}>
               <StyledSelect
                 data={selectData.education}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -480,8 +465,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_work_social_activity')}:</Label>
+            <FieldRow label={`${t('forms.habits_work_social_activity')}:`}>
               <StyledSelect
                 data={selectData.socialActivity}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -496,8 +480,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
 
         <Tabs.Panel value="sexuality">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.habits_sexuality_activity')}:</Label>
+            <FieldRow label={`${t('forms.habits_sexuality_activity')}:`}>
               <StyledSelect
                 data={selectData.sexualityActivity}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -507,8 +490,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_sexuality_partners')}:</Label>
+            <FieldRow label={`${t('forms.habits_sexuality_partners')}:`}>
               <StyledTextInput
                 type="number"
                 placeholder="0"
@@ -521,8 +503,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
 
         <Tabs.Panel value="addictions">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.habits_addictions_cocaine_inhaled')}:</Label>
+            <FieldRow label={`${t('forms.habits_addictions_cocaine_inhaled')}:`}>
               <StyledSelect
                 data={selectData.addictionsFrequency}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -532,8 +513,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_addictions_cocaine_iv')}:</Label>
+            <FieldRow label={`${t('forms.habits_addictions_cocaine_iv')}:`}>
               <StyledSelect
                 data={selectData.addictionsFrequency}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -543,8 +523,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_addictions_marijuana')}:</Label>
+            <FieldRow label={`${t('forms.habits_addictions_marijuana')}:`}>
               <StyledSelect
                 data={selectData.addictionsFrequency}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -554,8 +533,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_addictions_notes')}:</Label>
+            <FieldRow label={`${t('forms.habits_addictions_notes')}:`}>
               <StyledTextarea
                 placeholder={t('forms.habits_addictions_notes')}
                 {...form.getInputProps('adicciones_notas_adicionales')}
@@ -576,8 +554,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.habits_solar_recreational')}:</Label>
+            <FieldRow label={`${t('forms.habits_solar_recreational')}:`}>
               <StyledSelect
                 data={selectData.solarRecreational}
                 placeholder={t('forms.habits_select_placeholder')}
@@ -596,8 +573,7 @@ export function HabitsForm({ initialData, onChange, readOnly }: HabitsFormProps)
             </FieldRow>
             {form.values.exposolar_proteccion_toggle === true && (
               <IndentedSection>
-                <FieldRow stacked>
-                  <Label stacked>{''}</Label>
+                <FieldRow label={''} variant="stacked">
                   <Stack gap="xs">
                     <TriStateCheckbox
                       label={t('forms.habits_solar_protection_low_uv')}
