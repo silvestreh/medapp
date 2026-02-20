@@ -18,5 +18,30 @@ export default function(app: Application): void {
   authentication.register('local', new TwoFactorLocalStrategy());
 
   app.use('/authentication', authentication);
+
+  app.service('authentication').hooks({
+    before: {
+      create: [
+        (context: any) => {
+          console.log('[auth] request: strategy =', context.data?.strategy, '| from:', context.params?.ip || context.params?.headers?.['x-forwarded-for'] || 'unknown');
+        }
+      ]
+    },
+    after: {
+      create: [
+        (context: any) => {
+          console.log('[auth] success: strategy =', context.data?.strategy);
+        }
+      ]
+    },
+    error: {
+      create: [
+        (context: any) => {
+          console.error('[auth] error: strategy =', context.data?.strategy, '| message:', context.error?.message);
+        }
+      ]
+    }
+  });
+
   app.configure(expressOauth());
 }
