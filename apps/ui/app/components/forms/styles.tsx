@@ -186,7 +186,7 @@ export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(
 
 FieldRow.displayName = 'FieldRow';
 
-export const Label = styled('div', {
+const Label = styled('div', {
   base: {
     color: 'var(--mantine-color-gray-6)',
     fontSize: 'var(--mantine-font-size-md)',
@@ -234,8 +234,9 @@ export const StyledTextInput = styled(TextInput, {
       border: 'none',
       padding: 0,
       height: 'auto',
-      minHeight: '1.5rem',
+      minHeight: '1.75rem',
       lineHeight: 1.75,
+      fontSize: 'var(--mantine-font-size-md)',
 
       '&:focus': {
         boxShadow: 'none',
@@ -252,8 +253,9 @@ export const StyledPasswordInput = styled(PasswordInput, {
       border: 'none',
       padding: 0,
       height: 'auto',
-      minHeight: '1.5rem',
+      minHeight: '1.75rem',
       lineHeight: 1.75,
+      fontSize: 'var(--mantine-font-size-md)',
 
       '&:focus-within': {
         boxShadow: 'none',
@@ -263,8 +265,9 @@ export const StyledPasswordInput = styled(PasswordInput, {
     '& .mantine-PasswordInput-innerInput': {
       padding: 0,
       height: 'auto',
-      minHeight: '1.5rem',
+      minHeight: '1.75rem',
       lineHeight: 1.75,
+      fontSize: 'var(--mantine-font-size-md)',
     },
   },
 });
@@ -277,9 +280,10 @@ export const StyledTextarea = styled(Textarea, {
       border: 'none',
       padding: 0,
       height: 'auto',
-      minHeight: '1.5rem',
-      lineHeight: 1.75,
+      minHeight: '1.75rem',
+      lineHeight: 1.5,
       backgroundColor: 'transparent',
+      fontSize: 'var(--mantine-font-size-md)',
 
       '&:focus': {
         boxShadow: 'none',
@@ -298,8 +302,9 @@ const StyledDateInputBase = styled(DateInput, {
       border: 'none',
       padding: 0,
       height: 'auto',
-      minHeight: '1.5rem',
+      minHeight: '1.75rem',
       lineHeight: 1.75,
+      fontSize: 'var(--mantine-font-size-md)',
 
       '&:focus': {
         boxShadow: 'none',
@@ -318,7 +323,7 @@ export function StyledDateInput({ rawValue, ...props }: StyledDateInputProps) {
 
   if (props.readOnly && (isInvalidDate || isUnparsedString)) {
     return (
-      <Text style={{ flex: 1, lineHeight: 1.75, minHeight: '1.5rem' }}>
+      <Text style={{ flex: 1, lineHeight: 1.75, minHeight: '1.75rem', fontSize: 'var(--mantine-font-size-md)' }}>
         {rawValue || (isUnparsedString ? (props.value as string) : '—')}
       </Text>
     );
@@ -389,9 +394,10 @@ export const StyledSelect = styled(Select, {
       backgroundColor: 'transparent',
       flex: 1,
       height: 'auto',
-      minHeight: '1.5rem',
+      minHeight: '1.75rem',
       lineHeight: 1.75,
       padding: 0,
+      fontSize: 'var(--mantine-font-size-md)',
 
       '&:focus': {
         boxShadow: 'none',

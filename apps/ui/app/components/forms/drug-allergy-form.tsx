@@ -7,7 +7,6 @@ import {
   FormContainer,
   FormCard,
   FieldRow,
-  Label,
   StyledSelect,
   StyledTitle,
   FormHeader,
@@ -130,8 +129,7 @@ export function DrugAllergyForm({ initialData, onChange, readOnly }: DrugAllergy
               )}
             </ItemHeader>
             <FormCard>
-              <FieldRow>
-                <Label>{t('forms.drug_allergy_drug')}:</Label>
+              <FieldRow label={`${t('forms.drug_allergy_drug')}:`}>
                 <MedicationSelector
                   value={form.values.entries[index].drug}
                   onChange={val => form.setFieldValue(`entries.${index}.drug`, val)}
@@ -139,8 +137,7 @@ export function DrugAllergyForm({ initialData, onChange, readOnly }: DrugAllergy
                   placeholder={t('forms.drug_allergy_drug_placeholder')}
                 />
               </FieldRow>
-              <FieldRow>
-                <Label>{t('forms.drug_allergy_status')}:</Label>
+              <FieldRow label={`${t('forms.drug_allergy_status')}:`}>
                 <StyledSelect
                   data={[
                     { value: 'sospechado', label: t('forms.drug_allergy_suspected') },

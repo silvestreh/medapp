@@ -7,7 +7,6 @@ import {
   FormContainer,
   FormCard,
   FieldRow,
-  Label,
   StyledTextInput,
   StyledSelect,
   StyledTitle,
@@ -175,16 +174,14 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
 
         <Tabs.Panel value="tension">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.cardiology_systolic')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_systolic')}:`}>
               <StyledTextInput
                 type="number"
                 {...form.getInputProps('tension_arterial_sistolica')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_diastolic')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_diastolic')}:`}>
               <StyledTextInput
                 type="number"
                 {...form.getInputProps('tension_arterial_diastolica')}
@@ -196,8 +193,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
 
         <Tabs.Panel value="pulsos">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.cardiology_radial_right')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_radial_right')}:`}>
               <StyledSelect
                 data={pulseOptions}
                 placeholder={t('common.select')}
@@ -206,8 +202,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_radial_left')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_radial_left')}:`}>
               <StyledSelect
                 data={pulseOptions}
                 placeholder={t('common.select')}
@@ -216,8 +211,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_femoral_right')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_femoral_right')}:`}>
               <StyledSelect
                 data={pulseOptions}
                 placeholder={t('common.select')}
@@ -226,8 +220,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_femoral_left')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_femoral_left')}:`}>
               <StyledSelect
                 data={pulseOptions}
                 placeholder={t('common.select')}
@@ -236,8 +229,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_tibial_right')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_tibial_right')}:`}>
               <StyledSelect
                 data={pulseOptions}
                 placeholder={t('common.select')}
@@ -246,8 +238,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_tibial_left')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_tibial_left')}:`}>
               <StyledSelect
                 data={pulseOptions}
                 placeholder={t('common.select')}
@@ -256,8 +247,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_pedio_right')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_pedio_right')}:`}>
               <StyledSelect
                 data={pulseOptions}
                 placeholder={t('common.select')}
@@ -266,8 +256,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_pedio_left')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_pedio_left')}:`}>
               <StyledSelect
                 data={pulseOptions}
                 placeholder={t('common.select')}
@@ -276,8 +265,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_carotid_right')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_carotid_right')}:`}>
               <StyledSelect
                 data={pulseOptions}
                 placeholder={t('common.select')}
@@ -286,8 +274,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_carotid_left')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_carotid_left')}:`}>
               <StyledSelect
                 data={pulseOptions}
                 placeholder={t('common.select')}
@@ -301,8 +288,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
 
         <Tabs.Panel value="palpacion">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.cardiology_apex_beat')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_apex_beat')}:`}>
               <StyledSelect
                 data={[
                   { value: 'present', label: t('forms.cardiology_apex_present') },
@@ -316,8 +302,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                 clearable
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.cardiology_fremitus')}:</Label>
+            <FieldRow label={`${t('forms.cardiology_fremitus')}:`}>
               <StyledSelect
                 data={[
                   { value: 'present', label: t('forms.cardiology_fremitus_present') },
@@ -342,8 +327,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
 
             <Tabs.Panel value="general">
               <FormCard>
-                <FieldRow>
-                  <Label>{t('forms.cardiology_r1_characteristic')}:</Label>
+                <FieldRow label={`${t('forms.cardiology_r1_characteristic')}:`}>
                   <StyledSelect
                     data={characteristicOptions}
                     placeholder={t('common.select')}
@@ -352,8 +336,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                     clearable
                   />
                 </FieldRow>
-                <FieldRow>
-                  <Label>{t('forms.cardiology_r2_characteristic')}:</Label>
+                <FieldRow label={`${t('forms.cardiology_r2_characteristic')}:`}>
                   <StyledSelect
                     data={characteristicOptions}
                     placeholder={t('common.select')}
@@ -362,8 +345,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                     clearable
                   />
                 </FieldRow>
-                <FieldRow>
-                  <Label>{t('forms.cardiology_r3_characteristic')}:</Label>
+                <FieldRow label={`${t('forms.cardiology_r3_characteristic')}:`}>
                   <StyledSelect
                     data={presenceOptions}
                     placeholder={t('common.select')}
@@ -372,8 +354,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                     clearable
                   />
                 </FieldRow>
-                <FieldRow>
-                  <Label>{t('forms.cardiology_r4_characteristic')}:</Label>
+                <FieldRow label={`${t('forms.cardiology_r4_characteristic')}:`}>
                   <StyledSelect
                     data={presenceOptions}
                     placeholder={t('common.select')}
@@ -391,8 +372,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                   {t('forms.cardiology_neck_right_title')}
                 </Text>
                 <FormCard>
-                  <FieldRow>
-                    <Label>{t('forms.cardiology_characteristic')}:</Label>
+                  <FieldRow label={`${t('forms.cardiology_characteristic')}:`}>
                     <StyledSelect
                       data={[
                         { value: 'normal', label: t('forms.cardiology_normal') },
@@ -404,8 +384,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                       clearable
                     />
                   </FieldRow>
-                  <FieldRow>
-                    <Label>{t('forms.cardiology_intensity')}:</Label>
+                  <FieldRow label={`${t('forms.cardiology_intensity')}:`}>
                     <StyledSelect
                       data={pulseOptions}
                       placeholder={t('common.select')}
@@ -420,8 +399,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                   {t('forms.cardiology_neck_left_title')}
                 </Text>
                 <FormCard>
-                  <FieldRow>
-                    <Label>{t('forms.cardiology_characteristic')}:</Label>
+                  <FieldRow label={`${t('forms.cardiology_characteristic')}:`}>
                     <StyledSelect
                       data={[
                         { value: 'normal', label: t('forms.cardiology_normal') },
@@ -433,8 +411,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                       clearable
                     />
                   </FieldRow>
-                  <FieldRow>
-                    <Label>{t('forms.cardiology_intensity')}:</Label>
+                  <FieldRow label={`${t('forms.cardiology_intensity')}:`}>
                     <StyledSelect
                       data={pulseOptions}
                       placeholder={t('common.select')}
@@ -469,8 +446,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                       )}
                     </ItemHeader>
                     <FormCard key={index}>
-                      <FieldRow>
-                        <Label>{t('forms.cardiology_characteristic')}:</Label>
+                      <FieldRow label={`${t('forms.cardiology_characteristic')}:`}>
                         <StyledSelect
                           data={[
                             { value: 'sistolico', label: t('forms.cardiology_murmur_systolic') },
@@ -483,8 +459,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                           clearable
                         />
                       </FieldRow>
-                      <FieldRow>
-                        <Label>{t('forms.cardiology_murmur_location')}:</Label>
+                      <FieldRow label={`${t('forms.cardiology_murmur_location')}:`}>
                         <StyledSelect
                           data={[
                             { value: 'mitral', label: t('forms.cardiology_murmur_mitral') },
@@ -498,8 +473,7 @@ export function CardiologyForm({ initialData, onChange, readOnly }: CardiologyFo
                           clearable
                         />
                       </FieldRow>
-                      <FieldRow>
-                        <Label>{t('forms.cardiology_intensity')}:</Label>
+                      <FieldRow label={`${t('forms.cardiology_intensity')}:`}>
                         <StyledSelect
                           data={pulseOptions}
                           placeholder={t('common.select')}

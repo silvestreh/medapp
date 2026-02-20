@@ -4,7 +4,7 @@ import { Plus, Trash } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Icd10Selector } from '~/components/icd10-selector';
-import { FormContainer, FormCard, FieldRow, Label, StyledTextarea, StyledTitle, FormHeader } from './styles';
+import { FormContainer, FormCard, FieldRow, StyledTextarea, StyledTitle, FormHeader } from './styles';
 
 interface EnfermedadActualFormProps {
   initialData?: {
@@ -105,24 +105,24 @@ export function CurrentIllnessForm({ initialData, onChange, readOnly }: Enfermed
         {form.values.symptoms.length > 0 && (
           <FormCard>
             {form.values.symptoms.map((_, index) => (
-              <FieldRow key={index}>
-                <Label>{t('forms.enfermedad_actual_symptom')}:</Label>
-                <Icd10Selector
-                  value={form.values.symptoms[index]}
-                  onChange={val => form.setFieldValue(`symptoms.${index}`, val as string)}
-                  placeholder={t('forms.enfermedad_actual_symptom_placeholder')}
-                  readOnly={readOnly}
-                />
-                {!readOnly && (
-                  <ActionIcon
-                    color="red"
-                    variant="subtle"
-                    onClick={() => form.removeListItem('symptoms', index)}
-                    ml="xs"
-                  >
-                    <Trash size={16} />
-                  </ActionIcon>
-                )}
+              <FieldRow key={index} label={`${t('forms.enfermedad_actual_symptom')}:`}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Icd10Selector
+                    value={form.values.symptoms[index]}
+                    onChange={val => form.setFieldValue(`symptoms.${index}`, val as string)}
+                    placeholder={t('forms.enfermedad_actual_symptom_placeholder')}
+                    readOnly={readOnly}
+                  />
+                  {!readOnly && (
+                    <ActionIcon
+                      color="red"
+                      variant="subtle"
+                      onClick={() => form.removeListItem('symptoms', index)}
+                    >
+                      <Trash size={16} />
+                    </ActionIcon>
+                  )}
+                </div>
               </FieldRow>
             ))}
           </FormCard>
@@ -133,8 +133,7 @@ export function CurrentIllnessForm({ initialData, onChange, readOnly }: Enfermed
         </FormHeader>
 
         <FormCard>
-          <FieldRow>
-            <Label>{t('forms.enfermedad_actual_resp')}:</Label>
+          <FieldRow label={`${t('forms.enfermedad_actual_resp')}:`}>
             <StyledTextarea
               placeholder={t('forms.enfermedad_actual_notes_placeholder')}
               {...form.getInputProps('notas_ap_resp')}
@@ -143,8 +142,7 @@ export function CurrentIllnessForm({ initialData, onChange, readOnly }: Enfermed
               minRows={1}
             />
           </FieldRow>
-          <FieldRow>
-            <Label>{t('forms.enfermedad_actual_cardio')}:</Label>
+          <FieldRow label={`${t('forms.enfermedad_actual_cardio')}:`}>
             <StyledTextarea
               placeholder={t('forms.enfermedad_actual_notes_placeholder')}
               {...form.getInputProps('notas_ap_cardio')}
@@ -153,8 +151,7 @@ export function CurrentIllnessForm({ initialData, onChange, readOnly }: Enfermed
               minRows={1}
             />
           </FieldRow>
-          <FieldRow>
-            <Label>{t('forms.enfermedad_actual_digest')}:</Label>
+          <FieldRow label={`${t('forms.enfermedad_actual_digest')}:`}>
             <StyledTextarea
               placeholder={t('forms.enfermedad_actual_notes_placeholder')}
               {...form.getInputProps('notas_ap_digest')}
@@ -163,8 +160,7 @@ export function CurrentIllnessForm({ initialData, onChange, readOnly }: Enfermed
               minRows={1}
             />
           </FieldRow>
-          <FieldRow>
-            <Label>{t('forms.enfermedad_actual_uro')}:</Label>
+          <FieldRow label={`${t('forms.enfermedad_actual_uro')}:`}>
             <StyledTextarea
               placeholder={t('forms.enfermedad_actual_notes_placeholder')}
               {...form.getInputProps('notas_ap_uro')}
@@ -173,8 +169,7 @@ export function CurrentIllnessForm({ initialData, onChange, readOnly }: Enfermed
               minRows={1}
             />
           </FieldRow>
-          <FieldRow>
-            <Label>{t('forms.enfermedad_actual_loco')}:</Label>
+          <FieldRow label={`${t('forms.enfermedad_actual_loco')}:`}>
             <StyledTextarea
               placeholder={t('forms.enfermedad_actual_notes_placeholder')}
               {...form.getInputProps('notas_ap_loco')}
@@ -183,8 +178,7 @@ export function CurrentIllnessForm({ initialData, onChange, readOnly }: Enfermed
               minRows={1}
             />
           </FieldRow>
-          <FieldRow>
-            <Label>{t('forms.enfermedad_actual_piel')}:</Label>
+          <FieldRow label={`${t('forms.enfermedad_actual_piel')}:`}>
             <StyledTextarea
               placeholder={t('forms.enfermedad_actual_notes_placeholder')}
               {...form.getInputProps('notas_piel')}
@@ -193,8 +187,7 @@ export function CurrentIllnessForm({ initialData, onChange, readOnly }: Enfermed
               minRows={1}
             />
           </FieldRow>
-          <FieldRow>
-            <Label>{t('forms.enfermedad_actual_otro')}:</Label>
+          <FieldRow label={`${t('forms.enfermedad_actual_otro')}:`}>
             <StyledTextarea
               placeholder={t('forms.enfermedad_actual_notes_placeholder')}
               {...form.getInputProps('notas_otro')}

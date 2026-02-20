@@ -10,7 +10,6 @@ import {
   FormContainer,
   FormCard,
   FieldRow,
-  Label,
   StyledTextarea,
   StyledDateInput,
   StyledTitle,
@@ -129,8 +128,7 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
               )}
             </ItemHeader>
             <FormCard>
-              <FieldRow>
-                <Label>{t('forms.personal_history_label')}:</Label>
+              <FieldRow label={`${t('forms.personal_history_label')}:`}>
                 <Icd10Selector
                   value={form.values.items[index].issueId}
                   onChange={val => form.setFieldValue(`items.${index}.issueId`, val as string)}
@@ -138,8 +136,7 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
                   readOnly={readOnly}
                 />
               </FieldRow>
-              <FieldRow>
-                <Label>{t('forms.personal_history_date')}:</Label>
+              <FieldRow label={`${t('forms.personal_history_date')}:`}>
                 <StyledDateInput
                   placeholder={t('forms.personal_history_placeholder_date')}
                   {...form.getInputProps(`items.${index}.date`)}
@@ -149,8 +146,7 @@ export function PersonalHistoryForm({ initialData, onChange, readOnly }: Persona
                   clearable={!readOnly}
                 />
               </FieldRow>
-              <FieldRow>
-                <Label>{t('forms.personal_history_description')}:</Label>
+              <FieldRow label={`${t('forms.personal_history_description')}:`}>
                 <StyledTextarea
                   placeholder={t('forms.personal_history_placeholder_description')}
                   {...form.getInputProps(`items.${index}.description`)}

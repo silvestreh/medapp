@@ -6,7 +6,6 @@ import {
   FieldRow,
   FormCard,
   FormContainer,
-  Label,
   FormHeader,
   StyledTextInput,
   StyledTitle,
@@ -197,24 +196,21 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
 
         <Tabs.Panel value="social">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.housing_cohabits')}:</Label>
+            <FieldRow label={`${t('forms.housing_cohabits')}:`}>
               <StyledTextInput
                 placeholder={t('forms.housing_cohabits_placeholder')}
                 {...form.getInputProps('cohabita_con')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.housing_environments')}:</Label>
+            <FieldRow label={`${t('forms.housing_environments')}:`}>
               <StyledTextInput
                 placeholder={t('forms.housing_environments_placeholder')}
                 {...form.getInputProps('ambientes')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.housing_floor_type')}:</Label>
+            <FieldRow label={`${t('forms.housing_floor_type')}:`}>
               <StyledSelect
                 data={selectData.floor}
                 placeholder={t('forms.common_select_placeholder')}
@@ -224,8 +220,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.housing_wall_type')}:</Label>
+            <FieldRow label={`${t('forms.housing_wall_type')}:`}>
               <StyledSelect
                 data={selectData.wall}
                 placeholder={t('forms.common_select_placeholder')}
@@ -235,8 +230,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.housing_roof_type')}:</Label>
+            <FieldRow label={`${t('forms.housing_roof_type')}:`}>
               <StyledSelect
                 data={selectData.roof}
                 placeholder={t('forms.common_select_placeholder')}
@@ -260,8 +254,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.housing_humidity')}:</Label>
+            <FieldRow label={`${t('forms.housing_humidity')}:`}>
               <StyledSelect
                 data={selectData.humidity}
                 placeholder={t('forms.common_select_placeholder')}
@@ -271,8 +264,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
                 flex={1}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.housing_ventilation')}:</Label>
+            <FieldRow label={`${t('forms.housing_ventilation')}:`}>
               <StyledSelect
                 data={selectData.ventilation}
                 placeholder={t('forms.common_select_placeholder')}
@@ -293,8 +285,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
               </StyledTitle>
             </FormHeader>
             <FormCard>
-              <FieldRow>
-                <Label>{t('forms.housing_water_type')}:</Label>
+              <FieldRow label={`${t('forms.housing_water_type')}:`}>
                 <StyledSelect
                   data={selectData.waterType}
                   placeholder={t('forms.common_select_placeholder')}
@@ -304,8 +295,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
                   flex={1}
                 />
               </FieldRow>
-              <FieldRow>
-                <Label>{t('forms.housing_pipes')}:</Label>
+              <FieldRow label={`${t('forms.housing_pipes')}:`}>
                 <StyledSelect
                   data={selectData.pipes}
                   placeholder={t('forms.common_select_placeholder')}
@@ -323,8 +313,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
               </StyledTitle>
             </FormHeader>
             <FormCard>
-              <FieldRow>
-                <Label>{t('forms.housing_waste_type')}:</Label>
+              <FieldRow label={`${t('forms.housing_waste_type')}:`}>
                 <StyledSelect
                   data={selectData.waste}
                   placeholder={t('forms.common_select_placeholder')}
@@ -349,8 +338,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
               </StyledTitle>
             </FormHeader>
             <FormCard>
-              <FieldRow>
-                <Label>{t('forms.housing_gas_type')}:</Label>
+              <FieldRow label={`${t('forms.housing_gas_type')}:`}>
                 <StyledSelect
                   data={selectData.gas}
                   placeholder={t('forms.common_select_placeholder')}
@@ -360,8 +348,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
                   flex={1}
                 />
               </FieldRow>
-              <FieldRow>
-                <Label>{t('forms.housing_heaters')}:</Label>
+              <FieldRow label={`${t('forms.housing_heaters')}:`}>
                 <StyledSelect
                   data={selectData.heaters}
                   placeholder={t('forms.common_select_placeholder')}
@@ -427,8 +414,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.housing_equip_fridge')}:</Label>
+            <FieldRow label={`${t('forms.housing_equip_fridge')}:`}>
               <StyledSelect
                 data={selectData.fridge}
                 placeholder={t('forms.common_select_placeholder')}
@@ -445,8 +431,7 @@ export function HousingHistoryForm({ initialData, onChange, readOnly }: HousingH
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.housing_equip_tv')}:</Label>
+            <FieldRow label={`${t('forms.housing_equip_tv')}:`}>
               <StyledSelect
                 data={selectData.tv}
                 placeholder={t('forms.common_select_placeholder')}

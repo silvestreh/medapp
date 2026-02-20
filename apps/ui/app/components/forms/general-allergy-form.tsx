@@ -6,7 +6,6 @@ import {
   FormContainer,
   FormCard,
   FieldRow,
-  Label,
   StyledSelect,
   StyledTextInput,
   StyledTitle,
@@ -140,8 +139,7 @@ export function GeneralAllergyForm({ initialData, onChange, readOnly }: GeneralA
         {/* Respiratory symptoms */}
         <Tabs.Panel value="respiratorio">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.allergy_nasal_discharge')}:</Label>
+            <FieldRow label={`${t('forms.allergy_nasal_discharge')}:`}>
               <StyledSelect
                 data={[
                   { value: 'acuosa', label: t('forms.allergy_nasal_watery') },
@@ -183,8 +181,7 @@ export function GeneralAllergyForm({ initialData, onChange, readOnly }: GeneralA
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.allergy_cough')}:</Label>
+            <FieldRow label={`${t('forms.allergy_cough')}:`}>
               <StyledSelect
                 data={[
                   { value: 'seca', label: t('forms.allergy_cough_dry') },
@@ -424,72 +421,63 @@ export function GeneralAllergyForm({ initialData, onChange, readOnly }: GeneralA
         {/* Allergies */}
         <Tabs.Panel value="alergias">
           <FormCard>
-            <FieldRow>
-              <Label>{t('forms.allergy_food')}:</Label>
+            <FieldRow label={`${t('forms.allergy_food')}:`}>
               <StyledTextInput
                 placeholder={t('forms.allergy_text_placeholder')}
                 {...form.getInputProps('al_alimentos')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.allergy_mites')}:</Label>
+            <FieldRow label={`${t('forms.allergy_mites')}:`}>
               <StyledTextInput
                 placeholder={t('forms.allergy_text_placeholder')}
                 {...form.getInputProps('al_acaros')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.allergy_animals')}:</Label>
+            <FieldRow label={`${t('forms.allergy_animals')}:`}>
               <StyledTextInput
                 placeholder={t('forms.allergy_text_placeholder')}
                 {...form.getInputProps('al_animales')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.allergy_insects_venoms')}:</Label>
+            <FieldRow label={`${t('forms.allergy_insects_venoms')}:`}>
               <StyledTextInput
                 placeholder={t('forms.allergy_text_placeholder')}
                 {...form.getInputProps('al_insectos_venenos')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.allergy_molds')}:</Label>
+            <FieldRow label={`${t('forms.allergy_molds')}:`}>
               <StyledTextInput
                 placeholder={t('forms.allergy_text_placeholder')}
                 {...form.getInputProps('al_mohos')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.allergy_parasites')}:</Label>
+            <FieldRow label={`${t('forms.allergy_parasites')}:`}>
               <StyledTextInput
                 placeholder={t('forms.allergy_text_placeholder')}
                 {...form.getInputProps('al_parasitos')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.allergy_tree_pollen')}:</Label>
+            <FieldRow label={`${t('forms.allergy_tree_pollen')}:`}>
               <StyledTextInput
                 placeholder={t('forms.allergy_text_placeholder')}
                 {...form.getInputProps('al_polen_arboles')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.allergy_grass_pollen')}:</Label>
+            <FieldRow label={`${t('forms.allergy_grass_pollen')}:`}>
               <StyledTextInput
                 placeholder={t('forms.allergy_text_placeholder')}
                 {...form.getInputProps('al_polen_gramineas')}
                 readOnly={readOnly}
               />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('forms.allergy_other')}:</Label>
+            <FieldRow label={`${t('forms.allergy_other')}:`}>
               <StyledTextInput
                 placeholder={t('forms.allergy_text_placeholder')}
                 {...form.getInputProps('al_otros')}

@@ -1,7 +1,7 @@
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
-import { FormContainer, FormCard, FormHeader, FieldRow, Label, StyledTextarea, StyledTitle } from './styles';
+import { FormContainer, FormCard, FormHeader, FieldRow, StyledTextarea, StyledTitle } from './styles';
 
 interface EvolutionFormProps {
   initialData?: {
@@ -47,8 +47,7 @@ export function EvolutionForm({ initialData, onChange, readOnly }: EvolutionForm
         <StyledTitle order={1}>{t('forms.evolution_title')}</StyledTitle>
       </FormHeader>
       <FormCard>
-        <FieldRow>
-          <Label>{t('forms.evolution_description_label')}:</Label>
+        <FieldRow label={`${t('forms.evolution_description_label')}:`}>
           <StyledTextarea
             placeholder={t('forms.evolution_placeholder')}
             {...form.getInputProps('description')}

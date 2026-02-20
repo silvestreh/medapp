@@ -7,7 +7,6 @@ import {
   FormContainer,
   FormCard,
   FieldRow,
-  Label,
   StyledTextarea,
   StyledTitle,
   FormHeader,
@@ -162,8 +161,7 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
               )}
             </ItemHeader>
             <FormCard key={index}>
-              <FieldRow>
-                <Label>{t('forms.medication_history_drug')}:</Label>
+              <FieldRow label={`${t('forms.medication_history_drug')}:`}>
                 <MedicationSelector
                   value={form.values.medications[index].droga}
                   onChange={val => form.setFieldValue(`medications.${index}.droga`, val)}
@@ -172,8 +170,7 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
                 />
               </FieldRow>
 
-              <FieldRow>
-                <Label>{t('forms.medication_history_date')}:</Label>
+              <FieldRow label={`${t('forms.medication_history_date')}:`}>
                 <StyledDateInput
                   readOnly={readOnly}
                   rawValue={initialData?.values?.[`ant_fecha_${index}`]}
@@ -191,8 +188,7 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
                 />
               </FieldRow>
 
-              <FieldRow>
-                <Label>{t('forms.medication_history_adverse_effect')}:</Label>
+              <FieldRow label={`${t('forms.medication_history_adverse_effect')}:`}>
                 <StyledSelect
                   readOnly={readOnly}
                   placeholder={t('common.select')}
@@ -213,8 +209,7 @@ export function MedicationHistoryForm({ initialData, onChange, readOnly }: Medic
                 />
               </FieldRow>
 
-              <FieldRow>
-                <Label>{t('forms.medication_history_comments')}:</Label>
+              <FieldRow label={`${t('forms.medication_history_comments')}:`}>
                 <StyledTextarea
                   readOnly={readOnly}
                   placeholder={t('forms.medication_history_comments_placeholder')}
