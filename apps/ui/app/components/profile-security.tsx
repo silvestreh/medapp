@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
-import { Alert, Button, Code, Group, Image, Modal, Stack, Text, TextInput, Tooltip } from '@mantine/core';
-import { Form } from '@remix-run/react';
+import { useCallback, useEffect, useState } from 'react';
+import { Alert, Button, Code, Group, Image, Modal, Stack, Text, TextInput, Tooltip, ActionIcon } from '@mantine/core';
+import { Form, useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { InfoIcon } from 'lucide-react';
+import { InfoIcon, KeyRound, Trash2 } from 'lucide-react';
+import { startRegistration } from '@simplewebauthn/browser';
 
 import Portal from '~/components/portal';
+import { useFeathers } from '~/components/provider';
 import { css } from '~/styled-system/css';
 import {
   FieldRow,
@@ -30,6 +32,12 @@ export type TwoFactorSetupPayload = {
   qrCodeDataUrl: string;
 };
 
+export type PasskeyCredentialItem = {
+  id: string;
+  deviceName: string | null;
+  createdAt: string;
+};
+
 export type ProfileSecurityActionData = {
   ok: boolean;
   intent: string;
@@ -41,6 +49,7 @@ type ProfileSecurityProps = {
   username: string;
   twoFactorEnabled: boolean;
   actionData: ProfileSecurityActionData | undefined;
+  passkeys: PasskeyCredentialItem[];
   showFormActions?: boolean;
 };
 
@@ -48,11 +57,16 @@ export function ProfileSecurity({
   username,
   twoFactorEnabled,
   actionData,
+  passkeys,
   showFormActions = true,
 }: ProfileSecurityProps) {
   const { t } = useTranslation();
+  const fetcher = useFetcher();
+  const feathersClient = useFeathers();
   const [setupModalClosed, setSetupModalClosed] = useState(false);
   const [setupPayload, setSetupPayload] = useState<TwoFactorSetupPayload | null>(null);
+  const [passkeyAlert, setPasskeyAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [isRegisteringPasskey, setIsRegisteringPasskey] = useState(false);
 
   const hasSetupResult = actionData?.ok && actionData.intent === 'setup-2fa';
   const setupResult: TwoFactorSetupPayload | null =
@@ -84,6 +98,78 @@ export function ProfileSecurity({
       setSetupPayload(null);
     }
   }, [hasEnableSuccess]);
+
+  const handleAddPasskey = useCallback(async () => {
+    setPasskeyAlert(null);
+    setIsRegisteringPasskey(true);
+
+    try {
+      console.log('[passkey:register] requesting registration options via feathers client...');
+      const optionsData = await feathersClient.service('webauthn').create({
+        action: 'generate-registration-options',
+      });
+      console.log('[passkey:register] got options, action=%s', optionsData.action);
+
+      const regOptions = optionsData.options;
+      if (!regOptions) {
+        console.error('[passkey:register] no options in response:', optionsData);
+        throw new Error('No registration options received');
+      }
+
+      console.log('[passkey:register] registration options: rp.id=%s rp.name=%s challenge=%s', regOptions.rp?.id, regOptions.rp?.name, regOptions.challenge?.slice(0, 16) + '...');
+
+      console.log('[passkey:register] calling startRegistration (browser prompt)...');
+      const credential = await startRegistration({ optionsJSON: regOptions });
+      console.log('[passkey:register] browser returned credential, id=%s type=%s', credential.id?.slice(0, 16) + '...', credential.type);
+
+      const deviceName = prompt(t('profile.passkeys_device_name_placeholder')) || '';
+      console.log('[passkey:register] verifying registration with deviceName=%s', deviceName || '(none)');
+
+      const verifyResult = await feathersClient.service('webauthn').create({
+        action: 'verify-registration',
+        credential,
+        deviceName,
+      });
+      console.log('[passkey:register] verification result: verified=%s backedUp=%s', verifyResult.verified, verifyResult.backedUp);
+
+      setPasskeyAlert({ type: 'success', message: t('profile.passkeys_add_success') });
+
+      // Trigger a revalidation so the passkey list refreshes
+      const revalidateForm = new FormData();
+      revalidateForm.set('intent', 'passkey-register-verify');
+      fetcher.submit(revalidateForm, { method: 'post' });
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        console.log('[passkey:register] user cancelled the passkey prompt');
+      } else {
+        console.error('[passkey:register] error during registration:', error?.message || error, error);
+        setPasskeyAlert({ type: 'error', message: t('profile.passkeys_add_error') });
+      }
+    } finally {
+      setIsRegisteringPasskey(false);
+    }
+  }, [t, fetcher, feathersClient]);
+
+  const handleRemovePasskey = useCallback(
+    async (id: string) => {
+      if (!confirm(t('profile.passkeys_remove_confirm'))) return;
+
+      try {
+        console.log('[passkey:remove] removing passkey id=%s', id);
+        await feathersClient.service('passkey-credentials').remove(id);
+        console.log('[passkey:remove] passkey removed');
+
+        // Trigger revalidation
+        const form = new FormData();
+        form.set('intent', 'passkey-remove');
+        form.set('passkeyId', id);
+        fetcher.submit(form, { method: 'post' });
+      } catch (error: any) {
+        console.error('[passkey:remove] error:', error?.message || error);
+      }
+    },
+    [t, fetcher, feathersClient]
+  );
 
   return (
     <>
@@ -166,6 +252,69 @@ export function ProfileSecurity({
       </Modal>
 
       {hasEnableSuccess && <Alert color="teal">{t('profile.enable_2fa_success')}</Alert>}
+
+      <FormHeader>
+        <StyledTitle style={{ marginTop: '2rem' }}>{t('profile.passkeys_title')}</StyledTitle>
+      </FormHeader>
+
+      <Text size="sm" c="dimmed">
+        {t('profile.passkeys_description')}
+      </Text>
+
+      {passkeyAlert && (
+        <Alert color={passkeyAlert.type === 'success' ? 'teal' : 'red'} withCloseButton onClose={() => setPasskeyAlert(null)}>
+          {passkeyAlert.message}
+        </Alert>
+      )}
+
+      <PasswordFormContainer>
+        {passkeys.length === 0 && (
+          <FieldRow>
+            <Text c="dimmed" size="sm">
+              {t('profile.passkeys_empty')}
+            </Text>
+          </FieldRow>
+        )}
+        {passkeys.map((passkey) => (
+          <FieldRow key={passkey.id}>
+            <Group
+              gap="sm"
+              wrap="nowrap"
+              className={css({ flex: 1, justifyContent: 'space-between' })}
+            >
+              <Group gap="sm" wrap="nowrap">
+                <KeyRound size={18} />
+                <div>
+                  <Text size="sm" fw={500}>
+                    {passkey.deviceName || 'Passkey'}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {t('profile.passkeys_registered')}: {new Date(passkey.createdAt).toLocaleDateString()}
+                  </Text>
+                </div>
+              </Group>
+              <ActionIcon
+                variant="subtle"
+                color="red"
+                onClick={() => handleRemovePasskey(passkey.id)}
+                aria-label={t('profile.passkeys_remove')}
+              >
+                <Trash2 size={16} />
+              </ActionIcon>
+            </Group>
+          </FieldRow>
+        ))}
+      </PasswordFormContainer>
+
+      <div style={{ marginLeft: 'auto' }}>
+        <Button
+          leftSection={<KeyRound size={16} />}
+          onClick={handleAddPasskey}
+          loading={isRegisteringPasskey}
+        >
+          {t('profile.passkeys_add')}
+        </Button>
+      </div>
 
       <FormHeader>
         <StyledTitle style={{ marginTop: '2rem' }}>{t('profile.change_password')}</StyledTitle>
