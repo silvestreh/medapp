@@ -24,6 +24,7 @@
     "npm": ">=8.0.0"
   },
   "scripts": {
+    "build": "shx rm -rf lib/ && tsc",
     "compile": "shx rm -rf lib/ && tsc",
     "coverage": "nyc report --reporter=text-lcov > coverage/lcov.info",
     "db:drop": "ts-node scripts/drop-db.ts",
@@ -36,7 +37,7 @@
     "lint": "eslint src/. test/. --config .eslintrc.json --ext .ts --fix",
     "mocha": "NODE_ENV=test nyc mocha",
     "pretest": "NODE_ENV=test ts-node scripts/reset-db.ts",
-    "start": "npm run compile && node lib/",
+    "start": "node lib/",
     "test": "npm run lint && npm run compile && npm run mocha"
   },
   "standard": {
