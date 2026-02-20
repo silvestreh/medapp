@@ -34,7 +34,7 @@ export const FeathersProvider: React.FC<FeathersProviderProps> = ({
   children,
   initialToken,
   initialUser,
-  apiUrl = 'http://localhost:3030',
+  apiUrl = process.env.API_URL ?? 'http://localhost:3030',
   swrConfig = { dedupingInterval: 2000 },
 }) => {
   const [feathersClient, setFeathersClient] = useState<Application | null>(null);
