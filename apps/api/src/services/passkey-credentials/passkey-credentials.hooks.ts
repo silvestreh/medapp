@@ -20,8 +20,8 @@ export default {
     find: [restrictToOwner()],
     get: [restrictToOwner()],
     create: [],
-    update: [],
-    patch: [],
+    update: [restrictToOwner()],
+    patch: [restrictToOwner()],
     remove: [restrictToOwner()]
   },
   after: {
