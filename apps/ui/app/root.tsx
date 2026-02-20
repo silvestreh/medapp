@@ -2,6 +2,7 @@ import { captureRemixErrorBoundaryError } from '@sentry/remix';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError, useRouteLoaderData } from '@remix-run/react';
 import { json, type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
 import { useTranslation } from 'react-i18next';
@@ -73,8 +74,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <FeathersProvider initialToken={initialToken} initialUser={initialUser} apiUrl={apiUrl}>
       <MantineProvider theme={theme}>
-        <Notifications position="top-right" mt="5em" />
-        <MainLayout>{children}</MainLayout>
+        <ModalsProvider>
+          <Notifications position="top-right" mt="5em" />
+          <MainLayout>{children}</MainLayout>
+        </ModalsProvider>
       </MantineProvider>
     </FeathersProvider>
   );

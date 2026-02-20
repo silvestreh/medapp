@@ -130,25 +130,19 @@ export default function Login() {
 
     try {
       const apiUrl = rootData?.apiUrl || 'http://localhost:3030';
-      console.log('[passkey:login] starting passkey authentication, apiUrl=%s', apiUrl);
 
       const optionsRes = await axios.post(`${apiUrl}/webauthn`, {
         action: 'generate-authentication-options',
       });
-      const { options, action: _action } = optionsRes.data;
-      console.log('[passkey:login] received authentication options, challenge=%s rpId=%s', options.challenge?.slice(0, 16) + '...', options.rpId);
+      const { options } = optionsRes.data;
 
-      console.log('[passkey:login] calling startAuthentication (browser prompt)...');
       const credential = await startAuthentication({ optionsJSON: options });
-      console.log('[passkey:login] browser returned credential, id=%s type=%s', credential.id?.slice(0, 16) + '...', credential.type);
 
-      console.log('[passkey:login] sending verification request...');
       const verifyRes = await axios.post(`${apiUrl}/webauthn`, {
         action: 'verify-authentication',
         credential,
         challenge: options.challenge,
       });
-      console.log('[passkey:login] verification response: verified=%s hasToken=%s', verifyRes.data.verified, Boolean(verifyRes.data.accessToken));
 
       if (verifyRes.data.verified && verifyRes.data.accessToken) {
         const form = formRef.current;
@@ -157,20 +151,14 @@ export default function Login() {
           const tokenInput = form.querySelector<HTMLInputElement>('input[name="accessToken"]');
           if (intentInput) intentInput.value = 'passkey';
           if (tokenInput) tokenInput.value = verifyRes.data.accessToken;
-          console.log('[passkey:login] submitting form with JWT to set session cookie');
           form.submit();
           return;
         }
-        console.error('[passkey:login] form ref is null, cannot submit');
       }
 
-      console.warn('[passkey:login] verification did not return expected data', verifyRes.data);
       setPasskeyError(t('auth.passkey_error'));
     } catch (error: any) {
-      if (error?.name === 'AbortError') {
-        console.log('[passkey:login] user cancelled the passkey prompt');
-      } else {
-        console.error('[passkey:login] error during passkey login:', error?.message || error, error?.response?.data);
+      if (error?.name !== 'AbortError') {
         setPasskeyError(t('auth.passkey_error'));
       }
     } finally {

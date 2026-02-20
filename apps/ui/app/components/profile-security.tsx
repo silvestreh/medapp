@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Alert, Button, Code, Group, Image, Modal, Stack, Text, TextInput, Tooltip, ActionIcon } from '@mantine/core';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, Button, Code, Group, Image, Modal, Popover, Stack, Text, TextInput, Tooltip, ActionIcon } from '@mantine/core';
+import { useClickOutside } from '@mantine/hooks';
 import { Form, useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { InfoIcon, KeyRound, Trash2 } from 'lucide-react';
+import { Check, InfoIcon, KeyRound, Pencil, Trash2, X } from 'lucide-react';
 import { startRegistration } from '@simplewebauthn/browser';
 
 import Portal from '~/components/portal';
@@ -17,6 +18,191 @@ import {
   FormHeader,
 } from '~/components/forms/styles';
 import { styled } from '~/styled-system/jsx';
+
+function getDeviceLabel(): string {
+  if (typeof navigator === 'undefined') return '';
+
+  const ua = navigator.userAgent;
+
+  let browser = 'Browser';
+  if ((navigator as any).userAgentData?.brands) {
+    const brands = (navigator as any).userAgentData.brands as { brand: string; version: string }[];
+    const preferred = brands.find(
+      (b) => !b.brand.includes('Not') && b.brand !== 'Chromium'
+    );
+    if (preferred) browser = preferred.brand;
+  } else if (ua.includes('Firefox/')) {
+    browser = 'Firefox';
+  } else if (ua.includes('Edg/')) {
+    browser = 'Edge';
+  } else if (ua.includes('OPR/') || ua.includes('Opera/')) {
+    browser = 'Opera';
+  } else if (ua.includes('Safari/') && !ua.includes('Chrome/')) {
+    browser = 'Safari';
+  } else if (ua.includes('Chrome/')) {
+    browser = 'Chrome';
+  }
+
+  let os = '';
+  const platform = ((navigator as any).userAgentData?.platform || '').toLowerCase();
+  if (platform === 'macos' || /Mac OS X/.test(ua)) {
+    os = 'macOS';
+  } else if (platform === 'windows' || /Windows/.test(ua)) {
+    os = 'Windows';
+  } else if (platform === 'ios' || /iPhone|iPad|iPod/.test(ua)) {
+    os = 'iOS';
+  } else if (platform === 'android' || /Android/.test(ua)) {
+    os = 'Android';
+  } else if (platform === 'linux' || /Linux/.test(ua)) {
+    os = 'Linux';
+  } else if (platform === 'chromeos' || /CrOS/.test(ua)) {
+    os = 'ChromeOS';
+  }
+
+  return os ? `${browser} on ${os}` : browser;
+}
+
+type PasskeyRowProps = {
+  passkey: PasskeyCredentialItem;
+  onRemove: (id: string) => void;
+  onRename: (id: string, newName: string) => void;
+};
+
+function PasskeyRow({ passkey, onRemove, onRename }: PasskeyRowProps) {
+  const { t } = useTranslation();
+  const [editing, setEditing] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const popoverRef = useClickOutside(() => setConfirmOpen(false));
+
+  const displayName = passkey.deviceName || 'Passkey';
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [editing]);
+
+  const handleStartEditing = useCallback(() => {
+    setEditing(true);
+  }, []);
+
+  const handleConfirm = useCallback(() => {
+    const newName = inputRef.current?.value?.trim() || '';
+    if (newName && newName !== displayName) {
+      onRename(passkey.id, newName);
+    }
+    setEditing(false);
+  }, [displayName, onRename, passkey.id]);
+
+  const handleCancel = useCallback(() => {
+    setEditing(false);
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleConfirm();
+      } else if (e.key === 'Escape') {
+        handleCancel();
+      }
+    },
+    [handleConfirm, handleCancel]
+  );
+
+  const handleOpenConfirm = useCallback(() => {
+    setConfirmOpen(true);
+  }, []);
+
+  const handleCloseConfirm = useCallback(() => {
+    setConfirmOpen(false);
+  }, []);
+
+  const handleRemove = useCallback(() => {
+    setConfirmOpen(false);
+    onRemove(passkey.id);
+  }, [onRemove, passkey.id]);
+
+  return (
+    <FieldRow>
+      <Group gap="sm" wrap="nowrap" className={css({ flex: 1, justifyContent: 'space-between' })}>
+        <Group gap="sm" wrap="nowrap" className={css({ flex: 1, minWidth: 0 })}>
+          <KeyRound size={18} style={{ flexShrink: 0 }} />
+          <div className={css({ flex: 1, minWidth: 0 })}>
+            {!editing && (
+              <Group gap={4} wrap="nowrap">
+                <Text size="sm" fw={500} truncate>
+                  {displayName}
+                </Text>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="xs"
+                  onClick={handleStartEditing}
+                  aria-label={t('common.edit')}
+                >
+                  <Pencil size={14} />
+                </ActionIcon>
+              </Group>
+            )}
+            {editing && (
+              <Group gap={4} wrap="nowrap">
+                <TextInput
+                  ref={inputRef}
+                  size="xs"
+                  defaultValue={displayName}
+                  onKeyDown={handleKeyDown}
+                  className={css({ flex: 1 })}
+                />
+                <ActionIcon variant="subtle" color="teal" size="sm" onClick={handleConfirm}>
+                  <Check size={16} />
+                </ActionIcon>
+                <ActionIcon variant="subtle" color="gray" size="sm" onClick={handleCancel}>
+                  <X size={16} />
+                </ActionIcon>
+              </Group>
+            )}
+            <Text size="xs" c="dimmed">
+              {t('profile.passkeys_registered')}: {new Date(passkey.createdAt).toLocaleDateString()}
+            </Text>
+          </div>
+        </Group>
+        <Popover
+          position="left"
+          withArrow
+          arrowSize={12}
+          opened={confirmOpen}
+          shadow="xs"
+        >
+          <Popover.Target>
+            <ActionIcon
+              variant="subtle"
+              color="red"
+              onClick={handleOpenConfirm}
+              aria-label={t('profile.passkeys_remove')}
+            >
+              <Trash2 size={16} />
+            </ActionIcon>
+          </Popover.Target>
+          <Popover.Dropdown ref={popoverRef}>
+            <Stack align="flex-end">
+              <Text size="sm">{t('profile.passkeys_remove_confirm')}</Text>
+              <Group>
+                <Button size="compact-sm" color="red" onClick={handleRemove}>
+                  {t('common.delete')}
+                </Button>
+                <Button size="compact-sm" variant="outline" onClick={handleCloseConfirm}>
+                  {t('common.cancel')}
+                </Button>
+              </Group>
+            </Stack>
+          </Popover.Dropdown>
+        </Popover>
+      </Group>
+    </FieldRow>
+  );
+}
 
 const PasswordFormContainer = styled('div', {
   base: {
@@ -104,71 +290,67 @@ export function ProfileSecurity({
     setIsRegisteringPasskey(true);
 
     try {
-      console.log('[passkey:register] requesting registration options via feathers client...');
       const optionsData = await feathersClient.service('webauthn').create({
         action: 'generate-registration-options',
       });
-      console.log('[passkey:register] got options, action=%s', optionsData.action);
 
       const regOptions = optionsData.options;
       if (!regOptions) {
-        console.error('[passkey:register] no options in response:', optionsData);
         throw new Error('No registration options received');
       }
 
-      console.log('[passkey:register] registration options: rp.id=%s rp.name=%s challenge=%s', regOptions.rp?.id, regOptions.rp?.name, regOptions.challenge?.slice(0, 16) + '...');
-
-      console.log('[passkey:register] calling startRegistration (browser prompt)...');
       const credential = await startRegistration({ optionsJSON: regOptions });
-      console.log('[passkey:register] browser returned credential, id=%s type=%s', credential.id?.slice(0, 16) + '...', credential.type);
 
-      const deviceName = prompt(t('profile.passkeys_device_name_placeholder')) || '';
-      console.log('[passkey:register] verifying registration with deviceName=%s', deviceName || '(none)');
+      const deviceName = getDeviceLabel();
 
-      const verifyResult = await feathersClient.service('webauthn').create({
+      await feathersClient.service('webauthn').create({
         action: 'verify-registration',
         credential,
         deviceName,
       });
-      console.log('[passkey:register] verification result: verified=%s backedUp=%s', verifyResult.verified, verifyResult.backedUp);
 
       setPasskeyAlert({ type: 'success', message: t('profile.passkeys_add_success') });
 
-      // Trigger a revalidation so the passkey list refreshes
       const revalidateForm = new FormData();
       revalidateForm.set('intent', 'passkey-register-verify');
       fetcher.submit(revalidateForm, { method: 'post' });
     } catch (error: any) {
-      if (error?.name === 'AbortError') {
-        console.log('[passkey:register] user cancelled the passkey prompt');
-      } else {
-        console.error('[passkey:register] error during registration:', error?.message || error, error);
+      if (error?.name !== 'AbortError') {
         setPasskeyAlert({ type: 'error', message: t('profile.passkeys_add_error') });
       }
     } finally {
       setIsRegisteringPasskey(false);
     }
-  }, [t, fetcher, feathersClient]);
+  }, [t, feathersClient, fetcher]);
 
   const handleRemovePasskey = useCallback(
     async (id: string) => {
-      if (!confirm(t('profile.passkeys_remove_confirm'))) return;
-
       try {
-        console.log('[passkey:remove] removing passkey id=%s', id);
         await feathersClient.service('passkey-credentials').remove(id);
-        console.log('[passkey:remove] passkey removed');
 
-        // Trigger revalidation
         const form = new FormData();
         form.set('intent', 'passkey-remove');
         form.set('passkeyId', id);
         fetcher.submit(form, { method: 'post' });
-      } catch (error: any) {
-        console.error('[passkey:remove] error:', error?.message || error);
+      } catch (_error) {
+        // passkey remove failed
       }
     },
-    [t, fetcher, feathersClient]
+    [fetcher, feathersClient]
+  );
+
+  const handleRenamePasskey = useCallback(
+    async (id: string, newName: string) => {
+      try {
+        await feathersClient.service('passkey-credentials').patch(id, { deviceName: newName });
+        const revalidateForm = new FormData();
+        revalidateForm.set('intent', 'passkey-register-verify');
+        fetcher.submit(revalidateForm, { method: 'post' });
+      } catch (_error) {
+        setPasskeyAlert({ type: 'error', message: t('profile.passkeys_add_error') });
+      }
+    },
+    [feathersClient, fetcher, t]
   );
 
   return (
@@ -262,7 +444,11 @@ export function ProfileSecurity({
       </Text>
 
       {passkeyAlert && (
-        <Alert color={passkeyAlert.type === 'success' ? 'teal' : 'red'} withCloseButton onClose={() => setPasskeyAlert(null)}>
+        <Alert
+          color={passkeyAlert.type === 'success' ? 'teal' : 'red'}
+          withCloseButton
+          onClose={() => setPasskeyAlert(null)}
+        >
           {passkeyAlert.message}
         </Alert>
       )}
@@ -275,43 +461,18 @@ export function ProfileSecurity({
             </Text>
           </FieldRow>
         )}
-        {passkeys.map((passkey) => (
-          <FieldRow key={passkey.id}>
-            <Group
-              gap="sm"
-              wrap="nowrap"
-              className={css({ flex: 1, justifyContent: 'space-between' })}
-            >
-              <Group gap="sm" wrap="nowrap">
-                <KeyRound size={18} />
-                <div>
-                  <Text size="sm" fw={500}>
-                    {passkey.deviceName || 'Passkey'}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {t('profile.passkeys_registered')}: {new Date(passkey.createdAt).toLocaleDateString()}
-                  </Text>
-                </div>
-              </Group>
-              <ActionIcon
-                variant="subtle"
-                color="red"
-                onClick={() => handleRemovePasskey(passkey.id)}
-                aria-label={t('profile.passkeys_remove')}
-              >
-                <Trash2 size={16} />
-              </ActionIcon>
-            </Group>
-          </FieldRow>
+        {passkeys.map(passkey => (
+          <PasskeyRow
+            key={passkey.id}
+            passkey={passkey}
+            onRemove={handleRemovePasskey}
+            onRename={handleRenamePasskey}
+          />
         ))}
       </PasswordFormContainer>
 
       <div style={{ marginLeft: 'auto' }}>
-        <Button
-          leftSection={<KeyRound size={16} />}
-          onClick={handleAddPasskey}
-          loading={isRegisteringPasskey}
-        >
+        <Button leftSection={<KeyRound size={16} />} onClick={handleAddPasskey} loading={isRegisteringPasskey}>
           {t('profile.passkeys_add')}
         </Button>
       </div>
