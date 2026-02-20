@@ -75,6 +75,7 @@ export default function AppointmentsForDate() {
       <AppointmentsList
         slots={slots}
         medicId={medicId}
+        currentDate={date}
         className={css({
           borderTopWidth: 0,
           borderBottomWidth: 0,
