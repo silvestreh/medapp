@@ -1,9 +1,9 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { Textarea } from '@mantine/core';
+import { useEffect, useRef, useCallback } from 'react';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 
+import { FormContainer, FormCard, FormHeader, FieldRow, StyledTextarea } from '~/components/forms/styles';
 import { StudyFormField } from './study-form-field';
 import type { StudySchema, StudyField, StudyResultData, StudySelectValue } from './study-form-types';
 
@@ -113,83 +113,6 @@ const FieldsGrid = styled('div', {
   },
 });
 
-const FormContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-    width: '100%',
-  },
-});
-
-const FormCard = styled('div', {
-  base: {
-    background: 'white',
-    border: '1px solid var(--mantine-color-gray-2)',
-    borderRadius: 'var(--mantine-radius-md)',
-    overflow: 'hidden',
-  },
-});
-
-const FieldRow = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-    padding: '1rem',
-    borderBottom: '1px solid var(--mantine-color-gray-2)',
-    '&:last-child': {
-      borderBottom: 'none',
-    },
-  },
-});
-
-const Label = styled('label', {
-  base: {
-    color: 'var(--mantine-color-gray-6)',
-    fontSize: 'var(--mantine-font-size-sm)',
-    transition: 'color 120ms ease',
-  },
-  variants: {
-    focused: {
-      true: {
-        color: 'var(--mantine-color-blue-6)',
-      },
-    },
-    clickable: {
-      true: {
-        cursor: 'pointer',
-      },
-    },
-  },
-});
-
-const StyledTextarea = styled(Textarea, {
-  base: {
-    flex: 1,
-    '& .mantine-Textarea-input': {
-      border: 'none',
-      padding: 0,
-      height: 'auto',
-      minHeight: '1.5rem',
-      lineHeight: 1.75,
-      backgroundColor: 'transparent',
-      '&:focus': {
-        boxShadow: 'none',
-      },
-    },
-  },
-});
-
-const FormHeader = styled('div', {
-  base: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '1rem',
-  },
-});
-
 const StyledTitle = styled('h2', {
   base: {
     fontWeight: 500,
@@ -219,12 +142,10 @@ export interface StudyFormProps {
 
 export function StudyForm({ schema, initialData, onChange, readOnly }: StudyFormProps) {
   const { t } = useTranslation();
-  const [focusedExtraField, setFocusedExtraField] = useState<'comments' | 'conclusion' | null>(null);
   const form = useForm<StudyResultData>({
     initialValues: buildInitialValues(schema, initialData),
   });
 
-  // Track previous serialised values to avoid unnecessary onChange calls
   const prevRef = useRef<string>(JSON.stringify(form.values));
 
   useEffect(() => {
@@ -243,14 +164,6 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
     },
     [form]
   );
-  const focusControl = useCallback(
-    (id: string) => {
-      if (readOnly) return;
-      const element = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLButtonElement | null;
-      element?.focus();
-    },
-    [readOnly]
-  );
 
   const sections = buildSections(schema.fields);
   const visibleSections = readOnly
@@ -263,8 +176,6 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
         )
       )
     : sections;
-  const commentsControlId = 'study-comments';
-  const conclusionControlId = 'study-conclusion';
 
   return (
     <FormContainer>
@@ -330,49 +241,39 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
           </FormHeader>
           <FormCard>
             {(!readOnly || form.values.comments) && (
-              <FieldRow>
-                <Label
-                  focused={focusedExtraField === 'comments'}
-                  clickable={!readOnly}
-                  htmlFor={!readOnly ? commentsControlId : undefined}
-                  onClick={!readOnly ? () => focusControl(commentsControlId) : undefined}
-                >
-                  {t('studies.comments_label')}
-                </Label>
-                <StyledTextarea
-                  id={commentsControlId}
-                  readOnly={readOnly}
-                  autosize
-                  minRows={2}
-                  placeholder={t('studies.comments_section_placeholder')}
-                  value={(form.values.comments as string) ?? ''}
-                  onChange={e => form.setFieldValue('comments', e.currentTarget.value)}
-                  onFocus={!readOnly ? () => setFocusedExtraField('comments') : undefined}
-                  onBlur={!readOnly ? () => setFocusedExtraField(null) : undefined}
-                />
+              <FieldRow label={t('studies.comments_label')} variant="stacked">
+                {readOnly && (
+                  <p style={{ margin: 0, lineHeight: 1.75, minHeight: '1.5rem' }}>
+                    {(form.values.comments as string) ?? ''}
+                  </p>
+                )}
+                {!readOnly && (
+                  <StyledTextarea
+                    autosize
+                    minRows={2}
+                    placeholder={t('studies.comments_section_placeholder')}
+                    value={(form.values.comments as string) ?? ''}
+                    onChange={e => form.setFieldValue('comments', e.currentTarget.value)}
+                  />
+                )}
               </FieldRow>
             )}
             {(!readOnly || form.values.conclusion) && (
-              <FieldRow>
-                <Label
-                  focused={focusedExtraField === 'conclusion'}
-                  clickable={!readOnly}
-                  htmlFor={!readOnly ? conclusionControlId : undefined}
-                  onClick={!readOnly ? () => focusControl(conclusionControlId) : undefined}
-                >
-                  {t('studies.conclusion_label')}
-                </Label>
-                <StyledTextarea
-                  id={conclusionControlId}
-                  readOnly={readOnly}
-                  autosize
-                  minRows={2}
-                  placeholder={t('studies.conclusion_section_placeholder')}
-                  value={(form.values.conclusion as string) ?? ''}
-                  onChange={e => form.setFieldValue('conclusion', e.currentTarget.value)}
-                  onFocus={!readOnly ? () => setFocusedExtraField('conclusion') : undefined}
-                  onBlur={!readOnly ? () => setFocusedExtraField(null) : undefined}
-                />
+              <FieldRow label={t('studies.conclusion_label')} variant="stacked">
+                {readOnly && (
+                  <p style={{ margin: 0, lineHeight: 1.75, minHeight: '1.5rem' }}>
+                    {(form.values.conclusion as string) ?? ''}
+                  </p>
+                )}
+                {!readOnly && (
+                  <StyledTextarea
+                    autosize
+                    minRows={2}
+                    placeholder={t('studies.conclusion_section_placeholder')}
+                    value={(form.values.conclusion as string) ?? ''}
+                    onChange={e => form.setFieldValue('conclusion', e.currentTarget.value)}
+                  />
+                )}
               </FieldRow>
             )}
           </FormCard>

@@ -1,23 +1,38 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Button, Code, Group, Image, Modal, Popover, Stack, Text, TextInput, Tooltip, ActionIcon } from '@mantine/core';
+import {
+  Button,
+  Code,
+  Group,
+  Image,
+  Modal,
+  Popover,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
+  ActionIcon,
+  Alert,
+} from '@mantine/core';
 import { useClickOutside } from '@mantine/hooks';
+import { showNotification } from '@mantine/notifications';
 import { Form, useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Check, InfoIcon, KeyRound, Pencil, Trash2, X } from 'lucide-react';
 import { startRegistration } from '@simplewebauthn/browser';
 
-import Portal from '~/components/portal';
 import { useFeathers } from '~/components/provider';
 import { css } from '~/styled-system/css';
-import {
-  FieldRow,
-  Label,
-  StyledPasswordInput,
-  StyledTextInput,
-  StyledTitle,
-  FormHeader,
-} from '~/components/forms/styles';
+import { FieldRow, StyledPasswordInput, StyledTextInput, StyledTitle, FormHeader } from '~/components/forms/styles';
 import { styled } from '~/styled-system/jsx';
+
+const FormActions = styled('div', {
+  base: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '1rem',
+    marginTop: 'var(--mantine-spacing-md)',
+  },
+});
 
 function getDeviceLabel(): string {
   if (typeof navigator === 'undefined') return '';
@@ -27,9 +42,7 @@ function getDeviceLabel(): string {
   let browser = 'Browser';
   if ((navigator as any).userAgentData?.brands) {
     const brands = (navigator as any).userAgentData.brands as { brand: string; version: string }[];
-    const preferred = brands.find(
-      (b) => !b.brand.includes('Not') && b.brand !== 'Chromium'
-    );
+    const preferred = brands.find(b => !b.brand.includes('Not') && b.brand !== 'Chromium');
     if (preferred) browser = preferred.brand;
   } else if (ua.includes('Firefox/')) {
     browser = 'Firefox';
@@ -168,13 +181,7 @@ function PasskeyRow({ passkey, onRemove, onRename }: PasskeyRowProps) {
             </Text>
           </div>
         </Group>
-        <Popover
-          position="left"
-          withArrow
-          arrowSize={12}
-          opened={confirmOpen}
-          shadow="xs"
-        >
+        <Popover position="left" withArrow arrowSize={12} opened={confirmOpen} shadow="xs">
           <Popover.Target>
             <ActionIcon
               variant="subtle"
@@ -251,7 +258,6 @@ export function ProfileSecurity({
   const feathersClient = useFeathers();
   const [setupModalClosed, setSetupModalClosed] = useState(false);
   const [setupPayload, setSetupPayload] = useState<TwoFactorSetupPayload | null>(null);
-  const [passkeyAlert, setPasskeyAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [isRegisteringPasskey, setIsRegisteringPasskey] = useState(false);
 
   const hasSetupResult = actionData?.ok && actionData.intent === 'setup-2fa';
@@ -282,11 +288,35 @@ export function ProfileSecurity({
   useEffect(() => {
     if (hasEnableSuccess) {
       setSetupPayload(null);
+      showNotification({ color: 'teal', message: t('profile.enable_2fa_success') });
     }
-  }, [hasEnableSuccess]);
+  }, [hasEnableSuccess, t]);
+
+  useEffect(() => {
+    if (hasPasswordSuccess) {
+      showNotification({ color: 'teal', message: t('profile.password_success') });
+    }
+  }, [hasPasswordSuccess, t]);
+
+  useEffect(() => {
+    if (isPasswordError) {
+      showNotification({
+        color: 'red',
+        message: typeof errorMessage === 'string' ? errorMessage : String(errorMessage),
+      });
+    }
+  }, [isPasswordError, errorMessage]);
+
+  useEffect(() => {
+    if (isEnableError) {
+      showNotification({
+        color: 'red',
+        message: typeof errorMessage === 'string' ? errorMessage : String(errorMessage),
+      });
+    }
+  }, [isEnableError, errorMessage]);
 
   const handleAddPasskey = useCallback(async () => {
-    setPasskeyAlert(null);
     setIsRegisteringPasskey(true);
 
     try {
@@ -309,14 +339,14 @@ export function ProfileSecurity({
         deviceName,
       });
 
-      setPasskeyAlert({ type: 'success', message: t('profile.passkeys_add_success') });
+      showNotification({ color: 'teal', message: t('profile.passkeys_add_success') });
 
       const revalidateForm = new FormData();
       revalidateForm.set('intent', 'passkey-register-verify');
       fetcher.submit(revalidateForm, { method: 'post' });
     } catch (error: any) {
       if (error?.name !== 'AbortError') {
-        setPasskeyAlert({ type: 'error', message: t('profile.passkeys_add_error') });
+        showNotification({ color: 'red', message: t('profile.passkeys_add_error') });
       }
     } finally {
       setIsRegisteringPasskey(false);
@@ -347,7 +377,7 @@ export function ProfileSecurity({
         revalidateForm.set('intent', 'passkey-register-verify');
         fetcher.submit(revalidateForm, { method: 'post' });
       } catch (_error) {
-        setPasskeyAlert({ type: 'error', message: t('profile.passkeys_add_error') });
+        showNotification({ color: 'red', message: t('profile.passkeys_add_error') });
       }
     },
     [feathersClient, fetcher, t]
@@ -359,12 +389,10 @@ export function ProfileSecurity({
         <StyledTitle>{t('profile.setup_2fa_title')}</StyledTitle>
       </FormHeader>
       <PasswordFormContainer>
-        <FieldRow>
-          <Label>{t('profile.username')}:</Label>
+        <FieldRow label={`${t('profile.username')}:`} variant="stacked">
           <StyledTextInput value={username} readOnly />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('profile.two_factor_status')}:</Label>
+        <FieldRow label={`${t('profile.two_factor_status')}:`} variant="stacked">
           <Text c={twoFactorEnabled ? 'teal' : 'gray'}>
             <strong>{twoFactorEnabled ? t('profile.two_factor_enabled') : t('profile.two_factor_disabled')}</strong>{' '}
             {twoFactorEnabled && (
@@ -379,7 +407,9 @@ export function ProfileSecurity({
       {!twoFactorEnabled && (
         <Form method="post" style={{ marginLeft: 'auto' }}>
           <input type="hidden" name="intent" value="setup-2fa" />
-          <Button type="submit">{t('profile.setup_2fa')}</Button>
+          <FormActions>
+            <Button type="submit">{t('profile.setup_2fa')}</Button>
+          </FormActions>
         </Form>
       )}
 
@@ -414,9 +444,6 @@ export function ProfileSecurity({
           </div>
           <Form method="post">
             <input type="hidden" name="intent" value="enable-2fa" />
-            {isEnableError && (
-              <Alert color="red">{typeof errorMessage === 'string' ? errorMessage : String(errorMessage)}</Alert>
-            )}
             <Group align="end" mt="sm">
               <TextInput
                 name="twoFactorCode"
@@ -433,25 +460,13 @@ export function ProfileSecurity({
         </Stack>
       </Modal>
 
-      {hasEnableSuccess && <Alert color="teal">{t('profile.enable_2fa_success')}</Alert>}
-
       <FormHeader>
         <StyledTitle style={{ marginTop: '2rem' }}>{t('profile.passkeys_title')}</StyledTitle>
       </FormHeader>
 
-      <Text size="sm" c="dimmed">
+      <Text size="sm" c="dimmed" mb="md">
         {t('profile.passkeys_description')}
       </Text>
-
-      {passkeyAlert && (
-        <Alert
-          color={passkeyAlert.type === 'success' ? 'teal' : 'red'}
-          withCloseButton
-          onClose={() => setPasskeyAlert(null)}
-        >
-          {passkeyAlert.message}
-        </Alert>
-      )}
 
       <PasswordFormContainer>
         {passkeys.length === 0 && (
@@ -471,20 +486,15 @@ export function ProfileSecurity({
         ))}
       </PasswordFormContainer>
 
-      <div style={{ marginLeft: 'auto' }}>
+      <FormActions>
         <Button leftSection={<KeyRound size={16} />} onClick={handleAddPasskey} loading={isRegisteringPasskey}>
           {t('profile.passkeys_add')}
         </Button>
-      </div>
+      </FormActions>
 
       <FormHeader>
         <StyledTitle style={{ marginTop: '2rem' }}>{t('profile.change_password')}</StyledTitle>
       </FormHeader>
-
-      {hasPasswordSuccess && <Alert color="teal">{t('profile.password_success')}</Alert>}
-      {isPasswordError && (
-        <Alert color="red">{typeof errorMessage === 'string' ? errorMessage : String(errorMessage)}</Alert>
-      )}
 
       <Form
         id="profile-change-password-form"
@@ -498,27 +508,22 @@ export function ProfileSecurity({
       >
         <PasswordFormContainer>
           <input type="hidden" name="intent" value="change-password" />
-          <FieldRow>
-            <Label>{t('profile.current_password')}:</Label>
+          <FieldRow label={`${t('profile.current_password')}:`} variant="stacked">
             <StyledPasswordInput name="currentPassword" required placeholder={t('profile.current_password')} />
           </FieldRow>
-          <FieldRow>
-            <Label>{t('profile.new_password')}:</Label>
+          <FieldRow label={`${t('profile.new_password')}:`} variant="stacked">
             <StyledPasswordInput name="newPassword" required placeholder={t('profile.new_password')} />
           </FieldRow>
           {twoFactorEnabled && (
-            <FieldRow>
-              <Label>{t('profile.two_factor_code')}:</Label>
+            <FieldRow label={`${t('profile.two_factor_code')}:`} variant="stacked">
               <StyledTextInput name="twoFactorCode" placeholder="123456" required />
             </FieldRow>
           )}
         </PasswordFormContainer>
         {showFormActions && (
-          <Portal id="form-actions">
-            <Button type="submit" form="profile-change-password-form">
-              {t('profile.update_password')}
-            </Button>
-          </Portal>
+          <Button type="submit" form="profile-change-password-form" ml="auto">
+            {t('profile.update_password')}
+          </Button>
         )}
       </Form>
     </>

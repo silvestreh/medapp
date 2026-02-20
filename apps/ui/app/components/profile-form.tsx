@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
-import { Alert, Button } from '@mantine/core';
+import { Button } from '@mantine/core';
+import { showNotification } from '@mantine/notifications';
 import { Form } from '@remix-run/react';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +9,6 @@ import Portal from '~/components/portal';
 import {
   FormCard,
   FieldRow,
-  Label,
   StyledSelect,
   StyledTextInput,
   StyledTitle,
@@ -106,6 +106,21 @@ export function ProfileForm({
   const isProfileError = actionData?.ok === false && actionData.intent === 'update-profile';
   const errorMessage = actionData?.ok === false && actionData && 'error' in actionData ? actionData.error : '';
 
+  useEffect(() => {
+    if (hasProfileSuccess) {
+      showNotification({ color: 'teal', message: t('profile.profile_saved') });
+    }
+  }, [hasProfileSuccess, t]);
+
+  useEffect(() => {
+    if (isProfileError) {
+      showNotification({
+        color: 'red',
+        message: typeof errorMessage === 'string' ? errorMessage : t('profile.profile_save_error'),
+      });
+    }
+  }, [isProfileError, errorMessage, t]);
+
   const payload = useMemo(() => {
     const values = profileForm.values;
     return {
@@ -141,17 +156,11 @@ export function ProfileForm({
       <FormHeader>
         <StyledTitle>{t('profile.personal_data')}</StyledTitle>
       </FormHeader>
-      {hasProfileSuccess && <Alert color="teal">{t('profile.profile_saved')}</Alert>}
-      {isProfileError && (
-        <Alert color="red">{typeof errorMessage === 'string' ? errorMessage : t('profile.profile_save_error')}</Alert>
-      )}
       <FormCard>
-        <FieldRow>
-          <Label>{t('profile.first_name')}:</Label>
+        <FieldRow label={`${t('profile.first_name')}:`} variant="stacked">
           <StyledTextInput {...profileForm.getInputProps('firstName')} />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('profile.last_name')}:</Label>
+        <FieldRow label={`${t('profile.last_name')}:`} variant="stacked">
           <StyledTextInput {...profileForm.getInputProps('lastName')} />
         </FieldRow>
       </FormCard>
@@ -160,28 +169,22 @@ export function ProfileForm({
         <StyledTitle style={{ marginTop: '2rem' }}>{t('profile.contact_data')}</StyledTitle>
       </FormHeader>
       <FormCard>
-        <FieldRow>
-          <Label>{t('profile.email')}:</Label>
+        <FieldRow label={`${t('profile.email')}:`} variant="stacked">
           <StyledTextInput type="email" {...profileForm.getInputProps('email')} />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('profile.phone')}:</Label>
+        <FieldRow label={`${t('profile.phone')}:`} variant="stacked">
           <StyledTextInput {...profileForm.getInputProps('phone')} />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('profile.street_address')}:</Label>
+        <FieldRow label={`${t('profile.street_address')}:`} variant="stacked">
           <StyledTextInput {...profileForm.getInputProps('streetAddress')} />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('profile.city')}:</Label>
+        <FieldRow label={`${t('profile.city')}:`} variant="stacked">
           <StyledTextInput {...profileForm.getInputProps('city')} />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('profile.province')}:</Label>
+        <FieldRow label={`${t('profile.province')}:`} variant="stacked">
           <StyledSelect data={provinceOptions} searchable {...profileForm.getInputProps('province')} />
         </FieldRow>
-        <FieldRow>
-          <Label>{t('profile.country')}:</Label>
+        <FieldRow label={`${t('profile.country')}:`} variant="stacked">
           <StyledSelect data={countryOptions} searchable {...profileForm.getInputProps('country')} />
         </FieldRow>
       </FormCard>
@@ -192,20 +195,16 @@ export function ProfileForm({
             <StyledTitle style={{ marginTop: '2rem' }}>{t('profile.professional_info')}</StyledTitle>
           </FormHeader>
           <FormCard>
-            <FieldRow>
-              <Label>{t('profile.medical_specialty')}:</Label>
+            <FieldRow label={`${t('profile.medical_specialty')}:`} variant="stacked">
               <StyledTextInput {...profileForm.getInputProps('medicalSpecialty')} />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('profile.national_license_number')}:</Label>
+            <FieldRow label={`${t('profile.national_license_number')}:`} variant="stacked">
               <StyledTextInput {...profileForm.getInputProps('nationalLicenseNumber')} />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('profile.state_license')}:</Label>
+            <FieldRow label={`${t('profile.state_license')}:`} variant="stacked">
               <StyledSelect data={provinceOptions} searchable {...profileForm.getInputProps('stateLicense')} />
             </FieldRow>
-            <FieldRow>
-              <Label>{t('profile.state_license_number')}:</Label>
+            <FieldRow label={`${t('profile.state_license_number')}:`} variant="stacked">
               <StyledTextInput {...profileForm.getInputProps('stateLicenseNumber')} />
             </FieldRow>
           </FormCard>

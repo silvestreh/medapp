@@ -1,3 +1,4 @@
+import { forwardRef, useCallback, useRef, useState, type ReactNode } from 'react';
 import { TextInput, Textarea, PasswordInput, Title, Stack, Select, Checkbox, Text } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { styled } from '~/styled-system/jsx';
@@ -76,7 +77,7 @@ export const FormCard = styled('div', {
   },
 });
 
-export const FieldRow = styled('div', {
+const FieldRowBase = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
@@ -95,6 +96,7 @@ export const FieldRow = styled('div', {
   variants: {
     stacked: {
       true: {
+        gap: '0.5rem',
         lg: {
           flexDirection: 'column',
           alignItems: 'stretch',
@@ -126,10 +128,69 @@ export const FieldRow = styled('div', {
   },
 });
 
+type FieldRowProps = React.ComponentPropsWithoutRef<typeof FieldRowBase> & {
+  label?: ReactNode;
+  hint?: ReactNode;
+  variant?: 'stacked';
+};
+
+export const FieldRow = forwardRef<HTMLDivElement, FieldRowProps>(
+  ({ label, hint, variant, children, stacked, ...rest }, forwardedRef) => {
+    const localRef = useRef<HTMLDivElement>(null);
+    const [isFocused, setIsFocused] = useState(false);
+    const isStacked = variant === 'stacked' || stacked;
+
+    const setRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        localRef.current = node;
+        if (typeof forwardedRef === 'function') forwardedRef(node);
+        else if (forwardedRef) forwardedRef.current = node;
+      },
+      [forwardedRef]
+    );
+
+    const handleLabelClick = useCallback(() => {
+      const el = localRef.current?.querySelector<HTMLElement>('input, textarea, select, [role="combobox"]');
+      el?.focus();
+    }, []);
+
+    const handleFocusCapture = useCallback(() => setIsFocused(true), []);
+    const handleBlurCapture = useCallback(() => setIsFocused(false), []);
+
+    if (label == null) {
+      return (
+        <FieldRowBase ref={setRef} stacked={isStacked || undefined} {...rest}>
+          {children}
+        </FieldRowBase>
+      );
+    }
+
+    return (
+      <FieldRowBase ref={setRef} stacked={isStacked || undefined} {...rest}>
+        <Label
+          stacked={isStacked || undefined}
+          focused={isFocused || undefined}
+          onClick={handleLabelClick}
+          style={{ cursor: 'pointer' }}
+        >
+          {label}
+        </Label>
+        <div style={{ flex: 1, minWidth: 0 }} onFocusCapture={handleFocusCapture} onBlurCapture={handleBlurCapture}>
+          {children}
+          {hint}
+        </div>
+      </FieldRowBase>
+    );
+  }
+);
+
+FieldRow.displayName = 'FieldRow';
+
 export const Label = styled('div', {
   base: {
     color: 'var(--mantine-color-gray-6)',
     fontSize: 'var(--mantine-font-size-md)',
+    transition: 'color 120ms ease',
 
     lg: {
       marginRight: '1rem',
@@ -143,7 +204,6 @@ export const Label = styled('div', {
         lg: {
           width: '100%!',
           textAlign: 'left!',
-          marginBottom: '0.5rem',
           marginRight: '0!',
         },
       },
@@ -156,6 +216,11 @@ export const Label = styled('div', {
           marginRight: 0,
           marginLeft: '0.5rem',
         },
+      },
+    },
+    focused: {
+      true: {
+        color: 'var(--mantine-color-blue-6)',
       },
     },
   },
