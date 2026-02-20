@@ -9,7 +9,8 @@ export class TwoFactorLocalStrategy extends LocalStrategy {
     let result: any;
     try {
       result = await super.authenticate(data, params);
-      console.log('[auth] local strategy: password check passed');
+      const entity = result?.user || result?.entity;
+      console.log('[auth] local strategy: password check passed, entity id:', entity?.id, 'raw:', JSON.stringify(entity?.id));
     } catch (err: any) {
       console.error('[auth] local strategy: password check failed:', err?.message || err);
       throw err;
