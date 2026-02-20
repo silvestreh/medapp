@@ -79,6 +79,7 @@ export interface User {
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string | null;
   twoFactorTempSecret?: string | null;
+  currentChallenge?: string | null;
   roleId: Id;
   personalData: Partial<PersonalData>;
   contactData: Partial<ContactData>;

@@ -27,6 +27,7 @@
     "@mantine/nprogress": "^8.0.0",
     "@mantine/spotlight": "^8.0.0",
     "@mantine/tiptap": "^8.0.0",
+    "@simplewebauthn/browser": "^12.0.0",
     "@remix-run/node": "^2.16.5",
     "@remix-run/react": "^2.16.5",
     "@remix-run/serve": "^2.16.5",

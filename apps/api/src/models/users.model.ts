@@ -41,6 +41,10 @@ export default function (app: Application): typeof Model {
         model: 'roles',
         key: 'id'
       }
+    },
+    currentChallenge: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     hooks: {
@@ -62,7 +66,8 @@ export default function (app: Application): typeof Model {
       user_roles,
       roles,
       studies,
-      time_off_events
+      time_off_events,
+      passkey_credentials
     } = models;
 
     users.belongsToMany(personal_data, {
@@ -99,6 +104,10 @@ export default function (app: Application): typeof Model {
     });
     users.hasMany(time_off_events, {
       foreignKey: 'medicId',
+      constraints: false
+    });
+    users.hasMany(passkey_credentials, {
+      foreignKey: 'userId',
       constraints: false
     });
   };

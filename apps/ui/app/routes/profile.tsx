@@ -90,12 +90,30 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         }
       }
     }
+    let passkeys: { id: string; deviceName: string | null; createdAt: string }[] = [];
+    try {
+      const credentialsResponse = await client.service('passkey-credentials').find({
+        query: { $sort: { createdAt: -1 } },
+      });
+      const credentialsList = Array.isArray(credentialsResponse)
+        ? credentialsResponse
+        : (credentialsResponse as any)?.data || [];
+      passkeys = credentialsList.map((c: any) => ({
+        id: c.id,
+        deviceName: c.deviceName,
+        createdAt: c.createdAt,
+      }));
+    } catch {
+      // passkey-credentials table may not exist yet
+    }
+
     return json({
       username: user.username,
       twoFactorEnabled: Boolean(profile.twoFactorEnabled),
       user: fullUser,
       isMedic,
       mdSettings: mdSettingsRecord,
+      passkeys,
     });
   } catch (error) {
     throw redirect('/login');
@@ -141,6 +159,30 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ ok: true, intent, result });
     }
 
+    if (intent === 'passkey-register-options') {
+      const result = await client.service('webauthn').create({
+        action: 'generate-registration-options',
+      });
+      return json({ ok: true, intent, result });
+    }
+
+    if (intent === 'passkey-register-verify') {
+      const credential = JSON.parse(String(formData.get('credential') || '{}'));
+      const deviceName = String(formData.get('deviceName') || '');
+      const result = await client.service('webauthn').create({
+        action: 'verify-registration',
+        credential,
+        deviceName,
+      });
+      return json({ ok: true, intent, result });
+    }
+
+    if (intent === 'passkey-remove') {
+      const passkeyId = String(formData.get('passkeyId') || '');
+      await client.service('passkey-credentials').remove(passkeyId);
+      return json({ ok: true, intent });
+    }
+
     if (intent === 'update-profile') {
       const payloadRaw = String(formData.get('payload') || '{}');
       const payload = JSON.parse(payloadRaw) as {
@@ -175,7 +217,7 @@ function buildSelectOptions(obj: Record<string, string>) {
 }
 
 export default function Profile() {
-  const { username, twoFactorEnabled, user, isMedic, mdSettings } = useLoaderData<typeof loader>();
+  const { username, twoFactorEnabled, user, isMedic, mdSettings, passkeys } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const revalidator = useRevalidator();
@@ -194,6 +236,8 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState<string | null>('profile');
   const hasEnableSuccess = actionData?.ok && actionData.intent === 'enable-2fa';
   const hasProfileSuccess = actionData?.ok && actionData.intent === 'update-profile';
+  const hasPasskeyChange =
+    actionData?.ok && (actionData.intent === 'passkey-register-verify' || actionData.intent === 'passkey-remove');
 
   useEffect(() => {
     if (hasEnableSuccess) {
@@ -206,6 +250,12 @@ export default function Profile() {
       revalidator.revalidate();
     }
   }, [hasProfileSuccess, revalidator]);
+
+  useEffect(() => {
+    if (hasPasskeyChange) {
+      revalidator.revalidate();
+    }
+  }, [hasPasskeyChange, revalidator]);
 
   const profileTabListClass = css({
     display: 'flex',
@@ -266,6 +316,7 @@ export default function Profile() {
             username={username}
             twoFactorEnabled={twoFactorEnabled}
             actionData={actionData}
+            passkeys={passkeys}
             showFormActions={activeTab === 'security'}
           />
         </Tabs.Panel>

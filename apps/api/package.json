@@ -55,6 +55,7 @@
     "@feathersjs/express": "^4.5.18",
     "@feathersjs/feathers": "^4.5.17",
     "@feathersjs/transport-commons": "^5.0.31",
+    "@simplewebauthn/server": "^11.0.0",
     "compression": "^1.7.5",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
