@@ -1,0 +1,32 @@
+{
+  "name": "drug-allergy",
+  "formKey": "alergias/medicamentos",
+  "label": "Alergia a medicamentos",
+  "fields": [
+    {
+      "name": "entries",
+      "type": "array",
+      "addLabel": "Agregar medicamento",
+      "itemLabel": "Medicamento #{{index}}",
+      "minItems": 1,
+      "itemFields": [
+        {
+          "name": "drug",
+          "label": "Droga",
+          "type": "medication",
+          "placeholder": "Escriba para buscar..."
+        },
+        {
+          "name": "status",
+          "label": "Estado",
+          "type": "select",
+          "clearable": true,
+          "options": [
+            { "value": "sospechado", "label": "Sospechado" },
+            { "value": "confirmado", "label": "Confirmado" }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "name": "asthma",
+  "formKey": "alergias/asma",
+  "label": "Asma",
+  "fields": [
+    { "type": "text", "label": "General" },
+    {
+      "name": "severidad_clinica", "label": "Severidad clínica", "type": "select", "clearable": true,
+      "options": [
+        { "value": "nhlbi", "label": "NHLBI" },
+        { "value": "gina", "label": "GINA" }
+      ]
+    },
+    { "name": "toggle_sintomas", "label": "Presenta síntomas", "type": "tri-state-checkbox", "variant": "checkbox" },
+    {
+      "type": "group",
+      "indent": true,
+      "condition": { "field": "toggle_sintomas", "operator": "eq", "value": true },
+      "fields": [
+        {
+          "name": "frecuencia_anual", "label": "Frecuencia anual", "type": "select", "clearable": true,
+          "options": [
+            { "value": "1", "label": "1" },
+            { "value": "2a4", "label": "2 a 4" },
+            { "value": "4a8", "label": "4 a 8" },
+            { "value": "8+", "label": "8 o más" }
+          ]
+        },
+        {
+          "name": "tipo_exacerbaciones", "label": "Tipo de exacerbaciones", "type": "select", "clearable": true,
+          "options": [
+            { "value": "actividad_sueno", "label": "Que afectan la actividad y el sueño" },
+            { "value": "pueden_actividad_sueno", "label": "Que pueden llegar a afectar la actividad y el sueño" },
+            { "value": "breves", "label": "Breves (desde unas 48 a menos de 72 hs)" },
+            { "value": "prolongadas", "label": "Prolongadas (más de 72 hs)" }
+          ]
+        }
+      ]
+    },
+    { "name": "toggle_sintoma_nocturno", "label": "Presenta síntomas de asma nocturno", "type": "tri-state-checkbox", "variant": "checkbox" },
+    {
+      "type": "group",
+      "indent": true,
+      "condition": { "field": "toggle_sintoma_nocturno", "operator": "eq", "value": true },
+      "fields": [
+        { "name": "frecuencia_nocturna", "label": "Frecuencia días por semana", "type": "input", "inputType": "number" }
+      ]
+    },
+    { "type": "text", "label": "PEF (en relación ERS / Polgar)" },
+    {
+      "name": "pef_teorico", "label": "Teórico", "type": "select", "clearable": true,
+      "options": [
+        { "value": "60-", "label": "≤ 60%" },
+        { "value": "60a80", "label": "60-80%" },
+        { "value": "80+", "label": "≥ 80%" }
+      ]
+    },
+    {
+      "name": "pef_variabilidad", "label": "Variabilidad", "type": "select", "clearable": true,
+      "options": [
+        { "value": "20-", "label": "< 20%" },
+        { "value": "20a30", "label": "20-30%" },
+        { "value": "30+", "label": "> 30%" }
+      ]
+    },
+    { "type": "text", "label": "FEV1 (en relación ERS / Polgar)" },
+    {
+      "name": "fev_teorico", "label": "Teórico", "type": "select", "clearable": true,
+      "options": [
+        { "value": "60-", "label": "≤ 60%" },
+        { "value": "60a80", "label": "60-80%" },
+        { "value": "80+", "label": "≥ 80%" }
+      ]
+    },
+    {
+      "name": "fev_reversibilidad", "label": "Reversibilidad", "type": "select", "clearable": true,
+      "options": [
+        { "value": "no", "label": "No" },
+        { "value": "12+", "label": "> 12%" },
+        { "value": "20+", "label": "> 20%" }
+      ]
+    }
+  ]
+}

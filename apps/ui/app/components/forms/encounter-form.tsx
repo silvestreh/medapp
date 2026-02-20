@@ -5,19 +5,8 @@ import { Form, useSubmit } from '@remix-run/react';
 import { useCallback, useMemo } from 'react';
 import { Save } from 'lucide-react';
 
-import { ReasonForConsultationForm } from './reason-for-consultation-form';
-import { CurrentIllnessForm } from './current-illness-form';
-import { FamilyHistoryForm } from './family-history-form';
-import { HousingHistoryForm } from './housing-history-form';
-import { PersonalHistoryForm } from './personal-history-form';
-import { EvolutionForm } from './evolution-form';
-import { HabitsForm } from './habits-form';
-import { MedicationHistoryForm } from './medication-history-form';
-import { OccupationalHistoryForm } from './occupational-history-form';
-import { CardiologyForm } from './cardiology-form';
-import { DrugAllergyForm } from './drug-allergy-form';
-import { GeneralAllergyForm } from './general-allergy-form';
-import { AsthmaForm } from './asthma-form';
+import { EncounterSchemaForm } from './encounter-schema-form';
+import { encounterForms } from './encounter-schemas';
 import { FormContainer } from './styles';
 import Portal from '~/components/portal';
 
@@ -27,6 +16,22 @@ interface EncounterFormProps {
   activeFormKey?: string;
   onValuesChange?: (values: any) => void;
 }
+
+const FORM_KEY_ORDER = [
+  'general/consulta_internacion',
+  'general/enfermedad_actual',
+  'antecedentes/familiares',
+  'antecedentes/habitacionales',
+  'antecedentes/personales',
+  'antecedentes/habitos',
+  'antecedentes/medicamentosos',
+  'antecedentes/ocupacionales',
+  'alergias/general',
+  'alergias/medicamentos',
+  'alergias/asma',
+  'cardiologia/general',
+  'general/evolucion_consulta_internacion',
+];
 
 const isDataEmpty = (data: any): boolean => {
   if (!data || typeof data !== 'object' || Object.keys(data).length === 0) return true;
@@ -50,7 +55,6 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
   const { t } = useTranslation();
   const submit = useSubmit();
 
-  // We use Mantine form to manage the aggregate state of all sub-forms
   const form = useForm({
     initialValues: encounter.data || {},
   });
@@ -69,10 +73,13 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
     [form, onValuesChange]
   );
 
-  const shouldShow = (formKey: string) => {
-    if (!activeFormKey) return true;
-    return activeFormKey === formKey;
-  };
+  const shouldShow = useCallback(
+    (formKey: string) => {
+      if (!activeFormKey) return true;
+      return activeFormKey === formKey;
+    },
+    [activeFormKey]
+  );
 
   const handleSave = useCallback(() => {
     if (isEmpty) return;
@@ -81,115 +88,28 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
 
   return (
     <Form method="post" id="encounter-form">
-      {/* Hidden inputs to pass the aggregate data to the Remix action */}
       <input type="hidden" name="patientId" value={encounter.patientId} />
       <input type="hidden" name="data" value={JSON.stringify(form.values)} />
 
       <FormContainer>
         <Stack gap="xl">
-          {shouldShow('general/consulta_internacion') && (
-            <ReasonForConsultationForm
-              initialData={form.values['general/consulta_internacion']}
-              onChange={handleSubFormChange('general/consulta_internacion')}
-              readOnly={readOnly}
-            />
-          )}
+          {FORM_KEY_ORDER.map(formKey => {
+            if (!shouldShow(formKey)) return null;
 
-          {shouldShow('general/enfermedad_actual') && (
-            <CurrentIllnessForm
-              initialData={form.values['general/enfermedad_actual']}
-              onChange={handleSubFormChange('general/enfermedad_actual')}
-              readOnly={readOnly}
-            />
-          )}
+            const def = encounterForms[formKey];
+            if (!def) return null;
 
-          {shouldShow('antecedentes/familiares') && (
-            <FamilyHistoryForm
-              initialData={form.values['antecedentes/familiares']}
-              onChange={handleSubFormChange('antecedentes/familiares')}
-              readOnly={readOnly}
-            />
-          )}
-
-          {shouldShow('antecedentes/habitacionales') && (
-            <HousingHistoryForm
-              initialData={form.values['antecedentes/habitacionales']}
-              onChange={handleSubFormChange('antecedentes/habitacionales')}
-              readOnly={readOnly}
-            />
-          )}
-
-          {shouldShow('antecedentes/personales') && (
-            <PersonalHistoryForm
-              initialData={form.values['antecedentes/personales']}
-              onChange={handleSubFormChange('antecedentes/personales')}
-              readOnly={readOnly}
-            />
-          )}
-
-          {shouldShow('antecedentes/habitos') && (
-            <HabitsForm
-              initialData={form.values['antecedentes/habitos']}
-              onChange={handleSubFormChange('antecedentes/habitos')}
-              readOnly={readOnly}
-            />
-          )}
-
-          {shouldShow('antecedentes/medicamentosos') && (
-            <MedicationHistoryForm
-              initialData={form.values['antecedentes/medicamentosos']}
-              onChange={handleSubFormChange('antecedentes/medicamentosos')}
-              readOnly={readOnly}
-            />
-          )}
-
-          {shouldShow('antecedentes/ocupacionales') && (
-            <OccupationalHistoryForm
-              initialData={form.values['antecedentes/ocupacionales']}
-              onChange={handleSubFormChange('antecedentes/ocupacionales')}
-              readOnly={readOnly}
-            />
-          )}
-
-          {shouldShow('alergias/general') && (
-            <GeneralAllergyForm
-              initialData={form.values['alergias/general']}
-              onChange={handleSubFormChange('alergias/general')}
-              readOnly={readOnly}
-            />
-          )}
-
-          {shouldShow('alergias/medicamentos') && (
-            <DrugAllergyForm
-              initialData={form.values['alergias/medicamentos']}
-              onChange={handleSubFormChange('alergias/medicamentos')}
-              readOnly={readOnly}
-            />
-          )}
-
-          {shouldShow('alergias/asma') && (
-            <AsthmaForm
-              initialData={form.values['alergias/asma']}
-              onChange={handleSubFormChange('alergias/asma')}
-              readOnly={readOnly}
-            />
-          )}
-
-          {shouldShow('cardiologia/general') && (
-            <CardiologyForm
-              initialData={form.values['cardiologia/general']}
-              onChange={handleSubFormChange('cardiologia/general')}
-              readOnly={readOnly}
-            />
-          )}
-
-          {shouldShow('general/evolucion_consulta_internacion') && (
-            <EvolutionForm
-              initialData={form.values['general/evolucion_consulta_internacion']}
-              onChange={handleSubFormChange('general/evolucion_consulta_internacion')}
-              readOnly={readOnly}
-            />
-          )}
+            return (
+              <EncounterSchemaForm
+                key={formKey}
+                schema={def.schema}
+                adapter={def.adapter}
+                initialData={form.values[formKey]}
+                onChange={handleSubFormChange(formKey)}
+                readOnly={readOnly}
+              />
+            );
+          })}
 
           {!readOnly && (
             <Portal id="form-actions">

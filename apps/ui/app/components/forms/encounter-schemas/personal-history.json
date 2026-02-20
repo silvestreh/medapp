@@ -1,0 +1,36 @@
+{
+  "name": "personal-history",
+  "formKey": "antecedentes/personales",
+  "label": "Antecedentes personales",
+  "fields": [
+    {
+      "name": "items",
+      "type": "array",
+      "addLabel": "Agregar antecedente",
+      "itemLabel": "Antecedente #{{index}}",
+      "minItems": 1,
+      "itemFields": [
+        {
+          "name": "issueId",
+          "label": "Antecedente",
+          "type": "icd10",
+          "placeholder": "Escriba para buscar..."
+        },
+        {
+          "name": "date",
+          "label": "Fecha",
+          "type": "date",
+          "placeholder": "Haga clic para seleccionar una fecha",
+          "valueFormat": "DD/MM/YYYY"
+        },
+        {
+          "name": "description",
+          "label": "Descripción",
+          "type": "textarea",
+          "placeholder": "Escriba algo... (Opcional)",
+          "minRows": 1
+        }
+      ]
+    }
+  ]
+}

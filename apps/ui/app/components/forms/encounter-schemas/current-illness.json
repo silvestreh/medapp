@@ -1,0 +1,75 @@
+{
+  "name": "current-illness",
+  "formKey": "general/enfermedad_actual",
+  "label": "Enfermedad Actual",
+  "fields": [
+    {
+      "name": "symptoms",
+      "type": "array",
+      "addLabel": "Agregar síntoma",
+      "itemLabel": "Síntoma #{{index}}",
+      "minItems": 0,
+      "itemFields": [
+        {
+          "name": "symptom",
+          "label": "Síntoma",
+          "type": "icd10",
+          "placeholder": "Escriba para buscar..."
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "label": "Notas"
+    },
+    {
+      "name": "notas_ap_resp",
+      "label": "Aparato respiratorio",
+      "type": "textarea",
+      "placeholder": "Ingrese una descripción (Opcional)",
+      "minRows": 1
+    },
+    {
+      "name": "notas_ap_cardio",
+      "label": "Aparato cardiovascular",
+      "type": "textarea",
+      "placeholder": "Ingrese una descripción (Opcional)",
+      "minRows": 1
+    },
+    {
+      "name": "notas_ap_digest",
+      "label": "Aparato digestivo",
+      "type": "textarea",
+      "placeholder": "Ingrese una descripción (Opcional)",
+      "minRows": 1
+    },
+    {
+      "name": "notas_ap_uro",
+      "label": "Aparato urogenital",
+      "type": "textarea",
+      "placeholder": "Ingrese una descripción (Opcional)",
+      "minRows": 1
+    },
+    {
+      "name": "notas_ap_loco",
+      "label": "Aparato locomotor",
+      "type": "textarea",
+      "placeholder": "Ingrese una descripción (Opcional)",
+      "minRows": 1
+    },
+    {
+      "name": "notas_piel",
+      "label": "Piel y faneras",
+      "type": "textarea",
+      "placeholder": "Ingrese una descripción (Opcional)",
+      "minRows": 1
+    },
+    {
+      "name": "notas_otro",
+      "label": "Otro",
+      "type": "textarea",
+      "placeholder": "Ingrese una descripción (Opcional)",
+      "minRows": 1
+    }
+  ]
+}

@@ -1,0 +1,250 @@
+{
+  "name": "cardiology",
+  "formKey": "cardiologia/general",
+  "label": "Cardiología",
+  "fields": [
+    {
+      "type": "tabs",
+      "tabStyle": "pills",
+      "grow": true,
+      "tabs": [
+        {
+          "value": "tension",
+          "label": "Tensión arterial",
+          "fields": [
+            { "name": "tension_arterial_sistolica", "label": "Sistólica", "type": "input", "inputType": "number" },
+            { "name": "tension_arterial_diastolica", "label": "Diastólica", "type": "input", "inputType": "number" }
+          ]
+        },
+        {
+          "value": "pulsos",
+          "label": "Pulsos periféricos",
+          "fields": [
+            {
+              "name": "pulso_radial_derecho", "label": "Radial derecho", "type": "select", "clearable": true,
+              "options": [
+                { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                { "value": "4/4", "label": "4/4" }
+              ]
+            },
+            {
+              "name": "pulso_radial_izquierdo", "label": "Radial izquierdo", "type": "select", "clearable": true,
+              "options": [
+                { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                { "value": "4/4", "label": "4/4" }
+              ]
+            },
+            {
+              "name": "pulso_femoral_derecho", "label": "Femoral derecho", "type": "select", "clearable": true,
+              "options": [
+                { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                { "value": "4/4", "label": "4/4" }
+              ]
+            },
+            {
+              "name": "pulso_femoral_izquierdo", "label": "Femoral izquierdo", "type": "select", "clearable": true,
+              "options": [
+                { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                { "value": "4/4", "label": "4/4" }
+              ]
+            },
+            {
+              "name": "pulso_tibial_posterior_derecho", "label": "Tibial posterior derecho", "type": "select", "clearable": true,
+              "options": [
+                { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                { "value": "4/4", "label": "4/4" }
+              ]
+            },
+            {
+              "name": "pulso_tibial_posterior_izquierdo", "label": "Tibial posterior izquierdo", "type": "select", "clearable": true,
+              "options": [
+                { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                { "value": "4/4", "label": "4/4" }
+              ]
+            },
+            {
+              "name": "pulso_pedio_derecho", "label": "Pedio derecho", "type": "select", "clearable": true,
+              "options": [
+                { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                { "value": "4/4", "label": "4/4" }
+              ]
+            },
+            {
+              "name": "pulso_pedio_izquierdo", "label": "Pedio izquierdo", "type": "select", "clearable": true,
+              "options": [
+                { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                { "value": "4/4", "label": "4/4" }
+              ]
+            },
+            {
+              "name": "pulso_carotideo_derecho", "label": "Carotídeo derecho", "type": "select", "clearable": true,
+              "options": [
+                { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                { "value": "4/4", "label": "4/4" }
+              ]
+            },
+            {
+              "name": "pulso_carotideo_izquierdo", "label": "Carotídeo izquierdo", "type": "select", "clearable": true,
+              "options": [
+                { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                { "value": "4/4", "label": "4/4" }
+              ]
+            }
+          ]
+        },
+        {
+          "value": "palpacion",
+          "label": "Palpación precordial",
+          "fields": [
+            {
+              "name": "choque_de_punta", "label": "Choque de punta", "type": "select", "clearable": true,
+              "options": [
+                { "value": "present", "label": "Presente" },
+                { "value": "abscent", "label": "Ausente" },
+                { "value": "broad", "label": "Amplio" },
+                { "value": "sustained", "label": "Sostenido" }
+              ]
+            },
+            {
+              "name": "fremito", "label": "Frémito", "type": "select", "clearable": true,
+              "options": [
+                { "value": "present", "label": "Presente" },
+                { "value": "abscent", "label": "Ausente" }
+              ]
+            }
+          ]
+        },
+        {
+          "value": "auscultacion",
+          "label": "Auscultación",
+          "fields": [
+            {
+              "type": "tabs",
+              "tabStyle": "default",
+              "tabs": [
+                {
+                  "value": "general",
+                  "label": "Auscultación general",
+                  "fields": [
+                    {
+                      "name": "auscultacion_r1", "label": "R1 Característica", "type": "select", "clearable": true,
+                      "options": [
+                        { "value": "normal", "label": "Normal" }, { "value": "augmented", "label": "Aumentado" },
+                        { "value": "diminished", "label": "Disminuido" }, { "value": "unfolded", "label": "Desdoblado" }
+                      ]
+                    },
+                    {
+                      "name": "auscultacion_r2", "label": "R2 Característica", "type": "select", "clearable": true,
+                      "options": [
+                        { "value": "normal", "label": "Normal" }, { "value": "augmented", "label": "Aumentado" },
+                        { "value": "diminished", "label": "Disminuido" }, { "value": "unfolded", "label": "Desdoblado" }
+                      ]
+                    },
+                    {
+                      "name": "auscultacion_r3", "label": "R3 Característica", "type": "select", "clearable": true,
+                      "options": [
+                        { "value": "present", "label": "Presente" }, { "value": "abscent", "label": "Ausente" }
+                      ]
+                    },
+                    {
+                      "name": "auscultacion_r4", "label": "R4 Característica", "type": "select", "clearable": true,
+                      "options": [
+                        { "value": "present", "label": "Presente" }, { "value": "abscent", "label": "Ausente" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "value": "cuello",
+                  "label": "Auscultación de cuello",
+                  "fields": [
+                    { "type": "text", "label": "Auscultación de Cuello Carotídeo Derecho" },
+                    {
+                      "name": "caracteristica_auscultacion_cuello_derecho", "label": "Característica", "type": "select", "clearable": true,
+                      "options": [
+                        { "value": "normal", "label": "Normal" }, { "value": "soplo", "label": "Soplo" }
+                      ]
+                    },
+                    {
+                      "name": "intensidad_auscultacion_cuello_derecho", "label": "Intensidad", "type": "select", "clearable": true,
+                      "options": [
+                        { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                        { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                        { "value": "4/4", "label": "4/4" }
+                      ]
+                    },
+                    { "type": "text", "label": "Auscultación de Cuello Carotídeo Izquierdo" },
+                    {
+                      "name": "caracteristica_auscultacion_cuello_izquierdo", "label": "Característica", "type": "select", "clearable": true,
+                      "options": [
+                        { "value": "normal", "label": "Normal" }, { "value": "soplo", "label": "Soplo" }
+                      ]
+                    },
+                    {
+                      "name": "intensidad_auscultacion_cuello_izquierdo", "label": "Intensidad", "type": "select", "clearable": true,
+                      "options": [
+                        { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                        { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                        { "value": "4/4", "label": "4/4" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "value": "soplos",
+                  "label": "Soplos",
+                  "fields": [
+                    {
+                      "name": "murmurs",
+                      "type": "array",
+                      "addLabel": "Agregar soplo",
+                      "itemLabel": "Soplo #{{index}}",
+                      "minItems": 1,
+                      "itemFields": [
+                        {
+                          "name": "characteristic", "label": "Característica", "type": "select", "clearable": true,
+                          "options": [
+                            { "value": "sistolico", "label": "Sistólico" },
+                            { "value": "diastolico", "label": "Diastólico" },
+                            { "value": "continuo", "label": "Continuo" }
+                          ]
+                        },
+                        {
+                          "name": "location", "label": "Localización", "type": "select", "clearable": true,
+                          "options": [
+                            { "value": "mitral", "label": "Foco mitral" },
+                            { "value": "aortico", "label": "Foco aórtico" },
+                            { "value": "pulmonar", "label": "Foco pulmonar" },
+                            { "value": "tricuspideo", "label": "Foco tricúspideo" }
+                          ]
+                        },
+                        {
+                          "name": "intensity", "label": "Intensidad", "type": "select", "clearable": true,
+                          "options": [
+                            { "value": "0/4", "label": "0/4" }, { "value": "1/4", "label": "1/4" },
+                            { "value": "2/4", "label": "2/4" }, { "value": "3/4", "label": "3/4" },
+                            { "value": "4/4", "label": "4/4" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

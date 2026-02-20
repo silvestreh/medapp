@@ -1,0 +1,168 @@
+{
+  "name": "housing-history",
+  "formKey": "antecedentes/habitacionales",
+  "label": "Antecedentes Habitacionales",
+  "fields": [
+    {
+      "type": "tabs",
+      "tabStyle": "pills",
+      "grow": true,
+      "tabs": [
+        {
+          "value": "social",
+          "label": "Antecedentes sociales",
+          "fields": [
+            { "name": "cohabita_con", "label": "Cohabita con", "type": "input", "placeholder": "Número de personas" },
+            { "name": "ambientes", "label": "Cantidad de ambientes", "type": "input", "placeholder": "Número de ambientes" },
+            {
+              "name": "tipo_piso", "label": "Tipo de piso", "type": "select", "clearable": true,
+              "options": [
+                { "value": "madera", "label": "Madera" },
+                { "value": "cemento", "label": "Cemento" },
+                { "value": "mosaico", "label": "Mosaico" },
+                { "value": "tierra", "label": "Tierra" }
+              ]
+            },
+            {
+              "name": "tipo_pared", "label": "Paredes de", "type": "select", "clearable": true,
+              "options": [
+                { "value": "madera", "label": "Madera" },
+                { "value": "ladrillo", "label": "Ladrillo" },
+                { "value": "chapa", "label": "Chapa" }
+              ]
+            },
+            {
+              "name": "tipo_techo", "label": "Techo de", "type": "select", "clearable": true,
+              "options": [
+                { "value": "cemento", "label": "Cemento" },
+                { "value": "ladrillo", "label": "Ladrillo" },
+                { "value": "chapa", "label": "Chapa" }
+              ]
+            },
+            { "name": "aberturas_puertas", "label": "Aberturas puertas", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "aberturas_ventanas", "label": "Aberturas ventanas", "type": "tri-state-checkbox", "variant": "checkbox" },
+            {
+              "name": "humedad", "label": "Humedad", "type": "select", "clearable": true,
+              "options": [
+                { "value": "no", "label": "No" },
+                { "value": "poca", "label": "Sí, poca" },
+                { "value": "mucha", "label": "Sí, mucha" }
+              ]
+            },
+            {
+              "name": "ventilacion", "label": "Ventilación", "type": "select", "clearable": true,
+              "options": [
+                { "value": "no", "label": "No" },
+                { "value": "poca", "label": "Sí, poca" },
+                { "value": "mucha", "label": "Sí, mucha" }
+              ]
+            }
+          ]
+        },
+        {
+          "value": "basicServices",
+          "label": "Servicios básicos",
+          "fields": [
+            { "type": "title", "label": "Agua" },
+            {
+              "name": "tipo_agua", "label": "Tipo", "type": "select", "clearable": true,
+              "options": [
+                { "value": "surface", "label": "Superficie (tajamar/río/lago)" },
+                { "value": "net", "label": "Red" },
+                { "value": "well", "label": "Pozo" }
+              ]
+            },
+            {
+              "name": "canerias", "label": "Cañerías", "type": "select", "clearable": true,
+              "options": [
+                { "value": "inside", "label": "Por cañería dentro de la vivienda" },
+                { "value": "outside", "label": "Por cañería fuera de la vivienda" }
+              ]
+            },
+            { "type": "title", "label": "Cloacas" },
+            {
+              "name": "tipo_cloacas", "label": "Tipo", "type": "select", "clearable": true,
+              "options": [
+                { "value": "red_publica", "label": "A red pública" },
+                { "value": "pozo_ciego", "label": "Pozo ciego" },
+                { "value": "fosa_septica", "label": "Fosa séptica" }
+              ]
+            },
+            { "name": "sanitarios", "label": "Sanitarios", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "type": "title", "label": "Gas" },
+            {
+              "name": "tipo_gas", "label": "Tipo", "type": "select", "clearable": true,
+              "options": [
+                { "value": "natural", "label": "Gas natural" },
+                { "value": "garrafa", "label": "Garrafa" }
+              ]
+            },
+            {
+              "name": "estufas", "label": "Estufas", "type": "select", "clearable": true,
+              "options": [
+                { "value": "tiro_balanceado", "label": "Tiro balanceado" },
+                { "value": "kerosene", "label": "Kerosene" },
+                { "value": "lena", "label": "Leña" }
+              ]
+            },
+            { "type": "title", "label": "Electricidad" },
+            { "name": "electricidad", "label": "Electricidad", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "electricidad_segura", "label": "Segura", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "electricidad_legal", "label": "Legal", "type": "tri-state-checkbox", "variant": "checkbox" }
+          ]
+        },
+        {
+          "value": "equipment",
+          "label": "Equipamiento",
+          "fields": [
+            { "name": "equip_cocina", "label": "Cocina", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "equip_tel_linea", "label": "Teléfono de línea", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "equip_tel_celular", "label": "Teléfono celular", "type": "tri-state-checkbox", "variant": "checkbox" },
+            {
+              "name": "equip_heladera", "label": "Heladera", "type": "select", "clearable": true,
+              "options": [
+                { "value": "no", "label": "No" },
+                { "value": "freezer", "label": "Sí, con freezer" },
+                { "value": "nofreezer", "label": "Sí, sin freezer" }
+              ]
+            },
+            { "name": "equip_lavarropas", "label": "Lavarropas", "type": "tri-state-checkbox", "variant": "checkbox" },
+            {
+              "name": "equip_televisor", "label": "Televisor", "type": "select", "clearable": true,
+              "options": [
+                { "value": "no", "label": "No" },
+                { "value": "blanco_y_negro", "label": "Sí, blanco y negro" },
+                { "value": "tubo", "label": "Sí, de tubo" },
+                { "value": "lcd", "label": "Sí, LCD" },
+                { "value": "led", "label": "Sí, LED" },
+                { "value": "plasma", "label": "Sí, Plasma" }
+              ]
+            },
+            { "name": "equip_antena_satelital", "label": "Antena satelital", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "equip_internet", "label": "Internet", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "equip_automovil", "label": "Automóvil", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "equip_moto", "label": "Moto", "type": "tri-state-checkbox", "variant": "checkbox" }
+          ]
+        },
+        {
+          "value": "medical",
+          "label": "Antecedentes médicos",
+          "fields": [
+            { "name": "alfombras", "label": "Alfombras", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "colchonlanamas4", "label": "Colchón lana/espuma más de 4 años", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "almohadamas2", "label": "Almohada pluma/lana/espuma más de 2 años", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "cortinadosgruesos", "label": "Cortinados gruesos", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "empapelado", "label": "Empapelado", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "biblioteca", "label": "Biblioteca", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "peluche", "label": "Peluche", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "rellenos", "label": "Rellenos (pluma/lana/tapizado/etc)", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "frazadas", "label": "Frazadas o colchón de lana o douset", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "mascotas", "label": "Mascotas", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "cucarachas", "label": "Cucarachas", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "zona_chagas", "label": "Zona endémica de chagas", "type": "tri-state-checkbox", "variant": "checkbox" }
+          ]
+        }
+      ]
+    }
+  ]
+}
