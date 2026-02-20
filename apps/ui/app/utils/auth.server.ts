@@ -90,14 +90,17 @@ export async function getUser(request: Request) {
   }
 
   try {
-    const client = createFeathersClient(process.env.API_URL ?? 'http://localhost:3030');
+    const apiUrl = process.env.API_URL ?? 'http://localhost:3030';
+    console.log('[auth.server] getUser: authenticating with', apiUrl);
+    const client = createFeathersClient(apiUrl);
     const auth = await client.authenticate({
       strategy: 'jwt',
       accessToken: token,
     });
-
+    console.log('[auth.server] getUser: success, user id:', auth.user?.id);
     return auth.user;
-  } catch (error) {
+  } catch (error: any) {
+    console.error('[auth.server] getUser: failed', error?.message || error);
     return null;
   }
 }

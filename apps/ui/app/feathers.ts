@@ -21,7 +21,9 @@ const createFeathersClient = (baseURL: string, accessToken?: SessionToken) => {
   client.configure(auth({ storageKey: 'feathers-jwt' }));
 
   if (accessToken) {
-    client.authenticate({ strategy: 'jwt', accessToken }).catch(() => {
+    console.log('[feathers] authenticating with JWT, baseURL:', baseURL);
+    client.authenticate({ strategy: 'jwt', accessToken }).catch((err) => {
+      console.error('[feathers] JWT auth failed:', err?.message || err);
       axios
         .post('/logout')
         .then(() => {

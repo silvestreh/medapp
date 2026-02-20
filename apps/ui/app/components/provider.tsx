@@ -40,6 +40,7 @@ export const FeathersProvider: React.FC<FeathersProviderProps> = ({
   const [feathersClient, setFeathersClient] = useState<Application | null>(null);
 
   useEffect(() => {
+    console.log('[FeathersProvider] creating client with apiUrl:', apiUrl, 'hasToken:', !!initialToken);
     const client = createFeathersClient(apiUrl, initialToken);
     setFeathersClient(client);
   }, [initialToken, apiUrl]);
