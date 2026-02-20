@@ -273,14 +273,35 @@ export default function Profile() {
     fontSize: 'inherit',
     fontWeight: 500,
     transition: 'color 0.15s ease, border-color 0.15s ease',
+    position: 'relative',
 
-    '&:hover': {
+    '&:not([data-active]):hover': {
       color: 'var(--mantine-color-gray-8)',
+    },
+
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: '-1.5em',
+      bottom: 0,
+      left: 0,
+      width: '100%',
+      height: 'calc(100% + 3em)',
+      backgroundColor: 'transparent',
     },
 
     '&[data-active]': {
       color: 'var(--mantine-color-blue-6)',
-      borderBottomColor: 'var(--mantine-color-blue-6)',
+
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: 'calc(100% + 1.5em)',
+        left: 0,
+        width: '100%',
+        height: '2px',
+        backgroundColor: 'var(--mantine-color-blue-6)',
+      },
     },
   });
 
@@ -317,7 +338,6 @@ export default function Profile() {
             twoFactorEnabled={twoFactorEnabled}
             actionData={actionData}
             passkeys={passkeys}
-            showFormActions={activeTab === 'security'}
           />
         </Tabs.Panel>
       </Tabs>

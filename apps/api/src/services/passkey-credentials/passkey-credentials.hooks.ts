@@ -1,18 +1,8 @@
 import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
+import { restrictToOwner } from './hooks/restrict-to-owner';
 
 const { authenticate } = authentication.hooks;
-
-const restrictToOwner = () => (context: any) => {
-  const userId = context.params?.user?.id;
-  if (!userId) return context;
-
-  if (context.method === 'find') {
-    context.params.query = { ...context.params.query, userId };
-  }
-
-  return context;
-};
 
 export default {
   before: {

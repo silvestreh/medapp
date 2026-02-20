@@ -1,8 +1,8 @@
-import { useState, useCallback, useMemo } from 'react';
-import { Text, Group, Stack } from '@mantine/core';
+import { useState, useCallback } from 'react';
+import { Group } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
-import { StyledTextInput, StyledTextarea, StyledSelect, StyledTitle } from '~/components/forms/styles';
+import { FieldRow, StyledTextInput, StyledTextarea, StyledSelect, StyledTitle } from '~/components/forms/styles';
 import type { StudyField, StudyFieldReference, StudySelectValue } from './study-form-types';
 
 // ---------------------------------------------------------------------------
@@ -48,36 +48,6 @@ const Separator = styled('div', {
   },
 });
 
-const FieldRow = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-    padding: '1rem',
-    borderBottom: '1px solid var(--mantine-color-gray-2)',
-  },
-});
-
-const Label = styled('label', {
-  base: {
-    color: 'var(--mantine-color-gray-6)',
-    fontSize: 'var(--mantine-font-size-sm)',
-    transition: 'color 120ms ease',
-  },
-  variants: {
-    focused: {
-      true: {
-        color: 'var(--mantine-color-blue-6)',
-      },
-    },
-    clickable: {
-      true: {
-        cursor: 'pointer',
-      },
-    },
-  },
-});
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -93,28 +63,6 @@ interface StudyFormFieldProps {
 export function StudyFormField({ field, value, onChange, readOnly, showMethod }: StudyFormFieldProps) {
   const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
-  const [isFocused, setIsFocused] = useState(false);
-
-  const controlId = useMemo(() => {
-    const baseName =
-      field.name ||
-      (field.label ?? '')
-        .replace(/<[^>]+>/g, '')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
-    return `study-field-${baseName || 'unnamed'}`;
-  }, [field.label, field.name]);
-
-  const focusControl = useCallback(() => {
-    if (readOnly) return;
-    const control = document.getElementById(controlId) as
-      | HTMLInputElement
-      | HTMLTextAreaElement
-      | HTMLButtonElement
-      | null;
-    control?.focus();
-  }, [controlId, readOnly]);
 
   const validate = useCallback(
     (val: string) => {
@@ -162,13 +110,7 @@ export function StudyFormField({ field, value, onChange, readOnly, showMethod }:
 
   const hint =
     referenceStr || methodStr ? (
-      <Group
-        gap="xs"
-        mt={2}
-        wrap="nowrap"
-        style={{ cursor: readOnly ? 'default' : 'pointer' }}
-        onClick={!readOnly ? focusControl : undefined}
-      >
+      <Group gap="xs" mt={2} wrap="nowrap">
         {referenceStr && (
           <ReferenceText>
             {t('forms.reference_prefix')}: {referenceStr}
@@ -177,6 +119,27 @@ export function StudyFormField({ field, value, onChange, readOnly, showMethod }:
         {methodStr && <MethodText>({methodStr})</MethodText>}
       </Group>
     ) : null;
+
+  const labelNode = <span dangerouslySetInnerHTML={{ __html: field.label ?? '' }} />;
+
+  // -- Read-only: render plain text for all field types ----------------------
+  if (readOnly) {
+    let displayValue: string;
+    if (field.type === 'select' && field.options) {
+      displayValue =
+        typeof value === 'object' && value !== null
+          ? (value.label ?? '')
+          : (field.options.find(o => o.value === value)?.label ?? (value as string) ?? '');
+    } else {
+      displayValue = (typeof value === 'string' ? value : '') ?? '';
+    }
+
+    return (
+      <FieldRow label={labelNode} hint={hint} variant="stacked">
+        <p style={{ margin: 0, lineHeight: 1.75, minHeight: '1.5rem' }}>{displayValue}</p>
+      </FieldRow>
+    );
+  }
 
   // -- Select ----------------------------------------------------------------
   if (field.type === 'select' && field.options) {
@@ -193,48 +156,15 @@ export function StudyFormField({ field, value, onChange, readOnly, showMethod }:
       }
     };
 
-    if (readOnly) {
-      const displayLabel =
-        typeof value === 'object' && value !== null
-          ? value.label
-          : (field.options.find(o => o.value === value)?.label ?? (value as string) ?? '—');
-
-      return (
-        <Stack gap={0}>
-          <Label>
-            <span dangerouslySetInnerHTML={{ __html: field.label ?? '' }} />
-          </Label>
-          <Stack gap={0} style={{ flex: 1 }}>
-            <Text size="sm">{displayLabel}</Text>
-            {hint}
-          </Stack>
-        </Stack>
-      );
-    }
-
     return (
-      <FieldRow>
-        <Label
-          focused={isFocused}
-          clickable={!readOnly}
-          htmlFor={!readOnly ? controlId : undefined}
-          onClick={!readOnly ? focusControl : undefined}
-        >
-          <span dangerouslySetInnerHTML={{ __html: field.label ?? '' }} />
-        </Label>
-        <Stack gap={0} style={{ flex: 1 }}>
-          <StyledSelect
-            id={controlId}
-            data={field.options.map(o => ({ value: o.value, label: o.label }))}
-            value={selectValue || null}
-            onChange={handleSelectChange}
-            placeholder={field.placeholder}
-            clearable
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-          />
-          {hint}
-        </Stack>
+      <FieldRow label={labelNode} hint={hint} variant="stacked">
+        <StyledSelect
+          data={field.options.map(o => ({ value: o.value, label: o.label }))}
+          value={selectValue || null}
+          onChange={handleSelectChange}
+          placeholder={field.placeholder}
+          clearable
+        />
       </FieldRow>
     );
   }
@@ -244,31 +174,16 @@ export function StudyFormField({ field, value, onChange, readOnly, showMethod }:
     const strValue = (typeof value === 'string' ? value : '') ?? '';
 
     return (
-      <FieldRow>
-        <Label
-          focused={isFocused}
-          clickable={!readOnly}
-          htmlFor={!readOnly ? controlId : undefined}
-          onClick={!readOnly ? focusControl : undefined}
-        >
-          <span dangerouslySetInnerHTML={{ __html: field.label ?? '' }} />
-        </Label>
-        <Stack gap={0} style={{ flex: 1 }}>
-          <StyledTextarea
-            id={controlId}
-            readOnly={readOnly}
-            autosize
-            minRows={2}
-            placeholder={field.placeholder}
-            value={strValue}
-            onChange={e => onChange(e.currentTarget.value)}
-            error={error}
-            onBlur={() => validate(strValue)}
-            onFocus={!readOnly ? () => setIsFocused(true) : undefined}
-            onBlurCapture={!readOnly ? () => setIsFocused(false) : undefined}
-          />
-          {hint}
-        </Stack>
+      <FieldRow label={labelNode} hint={hint} variant="stacked">
+        <StyledTextarea
+          autosize
+          minRows={2}
+          placeholder={field.placeholder}
+          value={strValue}
+          onChange={e => onChange(e.currentTarget.value)}
+          error={error}
+          onBlur={() => validate(strValue)}
+        />
       </FieldRow>
     );
   }
@@ -277,29 +192,14 @@ export function StudyFormField({ field, value, onChange, readOnly, showMethod }:
   const strValue = (typeof value === 'string' ? value : '') ?? '';
 
   return (
-    <FieldRow gap={0}>
-      <Label
-        focused={isFocused}
-        clickable={!readOnly}
-        htmlFor={!readOnly ? controlId : undefined}
-        onClick={!readOnly ? focusControl : undefined}
-      >
-        <span dangerouslySetInnerHTML={{ __html: field.label ?? '' }} />
-      </Label>
-      <Stack gap={0} style={{ flex: 1 }}>
-        <StyledTextInput
-          id={controlId}
-          readOnly={readOnly}
-          placeholder={field.placeholder}
-          value={strValue}
-          onChange={e => onChange(e.currentTarget.value)}
-          error={error}
-          onBlur={() => validate(strValue)}
-          onFocus={!readOnly ? () => setIsFocused(true) : undefined}
-          onBlurCapture={!readOnly ? () => setIsFocused(false) : undefined}
-        />
-        {hint}
-      </Stack>
+    <FieldRow label={labelNode} hint={hint} variant="stacked">
+      <StyledTextInput
+        placeholder={field.placeholder}
+        value={strValue}
+        onChange={e => onChange(e.currentTarget.value)}
+        error={error}
+        onBlur={() => validate(strValue)}
+      />
     </FieldRow>
   );
 }
