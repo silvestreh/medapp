@@ -4,11 +4,19 @@ import { verifyTotpCode } from './utils/totp';
 
 export class TwoFactorLocalStrategy extends LocalStrategy {
   async authenticate(data: any, params: any) {
-    const result: any = await super.authenticate(data, params);
+    const usernameField = (this.configuration as any)?.usernameField || 'username';
+    console.log('[auth] local strategy: attempting login for', data?.[usernameField]);
+    let result: any;
+    try {
+      result = await super.authenticate(data, params);
+      console.log('[auth] local strategy: password check passed');
+    } catch (err: any) {
+      console.error('[auth] local strategy: password check failed:', err?.message || err);
+      throw err;
+    }
 
     const sequelize = this.app?.get('sequelizeClient');
     const usersModel = sequelize?.models?.users;
-    const usernameField = (this.configuration as any)?.usernameField || 'username';
     const username = data?.[usernameField];
 
     const persistedUser = await usersModel?.findOne({
