@@ -1,0 +1,13 @@
+{
+  "name": "evolution",
+  "formKey": "general/evolucion_consulta_internacion",
+  "label": "Evolución/Evaluación de la Consulta-internación",
+  "fields": [
+    {
+      "name": "evo_descripcion",
+      "label": "Descripción",
+      "type": "textarea",
+      "placeholder": "Escriba la evolución aquí..."
+    }
+  ]
+}

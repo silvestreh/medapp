@@ -1,0 +1,241 @@
+{
+  "name": "habits",
+  "formKey": "antecedentes/habitos",
+  "label": "Hábitos",
+  "fields": [
+    {
+      "type": "tabs",
+      "tabStyle": "pills",
+      "grow": true,
+      "tabs": [
+        {
+          "value": "food",
+          "label": "Alimentación",
+          "fields": [
+            {
+              "name": "alimentacion_cantidad", "label": "Cantidad", "type": "select", "clearable": true,
+              "options": [
+                { "value": "poca", "label": "Poca" },
+                { "value": "normal", "label": "Normal" },
+                { "value": "mucha", "label": "Mucha" }
+              ]
+            },
+            {
+              "name": "alimentacion_calidad", "label": "Calidad", "type": "select", "clearable": true,
+              "options": [
+                { "value": "mala", "label": "Mala" },
+                { "value": "regular", "label": "Regular" },
+                { "value": "buena", "label": "Buena" }
+              ]
+            },
+            { "name": "dieta_toggle", "label": "Dieta", "type": "tri-state-checkbox", "variant": "checkbox" },
+            {
+              "type": "group",
+              "indent": true,
+              "condition": { "field": "dieta_toggle", "operator": "eq", "value": true },
+              "fields": [
+                {
+                  "name": "dieta_cumple", "label": "Cumple", "type": "select", "clearable": true,
+                  "variant": "stacked",
+                  "options": [
+                    { "value": "mal", "label": "Mal" },
+                    { "value": "regular", "label": "Regular" },
+                    { "value": "bien", "label": "Bien" }
+                  ]
+                },
+                { "name": "dieta_baja_sodio", "label": "Baja en sodio", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "dieta_baja_calorias", "label": "Baja en calorías", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "dieta_baja_hidratos", "label": "Baja en hidratos de carbono", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "dieta_baja_grasas", "label": "Baja en grasas", "type": "tri-state-checkbox", "variant": "checkbox" }
+              ]
+            },
+            {
+              "name": "alcohol", "label": "Alcohol", "type": "select", "clearable": true,
+              "options": [
+                { "value": "no", "label": "No" },
+                { "value": "ocasional", "label": "Ocasional" },
+                { "value": "habitual", "label": "Habitual" }
+              ]
+            },
+            {
+              "type": "group",
+              "indent": true,
+              "condition": { "field": "alcohol", "operator": "neq", "value": "no" },
+              "fields": [
+                { "name": "alcohol_cerveza", "label": "Cerveza", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "alcohol_vino", "label": "Vino", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "alcohol_whisky", "label": "Whisky", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "alcohol_otras", "label": "Otras", "type": "tri-state-checkbox", "variant": "checkbox" }
+              ]
+            },
+            { "name": "fuma_toggle", "label": "Fuma", "type": "tri-state-checkbox", "variant": "checkbox" },
+            {
+              "type": "group",
+              "indent": true,
+              "condition": { "field": "fuma_toggle", "operator": "eq", "value": true },
+              "fields": [
+                { "name": "fuma_desde", "label": "Desde", "type": "date", "valueFormat": "YYYY", "variant": "stacked" },
+                { "name": "fuma_hasta", "label": "Hasta", "type": "date", "valueFormat": "DD/MM/YYYY", "variant": "stacked" },
+                {
+                  "name": "fuma_cantidad", "label": "Cantidad", "type": "select", "clearable": true,
+                  "variant": "stacked",
+                  "options": [
+                    { "value": "menos10", "label": "Menos de 10" },
+                    { "value": "mas10", "label": "Más de 10" },
+                    { "value": "mas20", "label": "Más de 20" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "infusiones", "label": "Infusiones", "type": "select", "clearable": true,
+              "options": [
+                { "value": "no", "label": "No" },
+                { "value": "ocasional", "label": "Ocasional" },
+                { "value": "habitual", "label": "Habitual" },
+                { "value": "frecuente", "label": "Frecuente" }
+              ]
+            },
+            {
+              "type": "group",
+              "indent": true,
+              "condition": { "field": "infusiones", "operator": "neq", "value": "no" },
+              "fields": [
+                { "name": "infusiones_te", "label": "Té", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "infusiones_cafe", "label": "Café", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "infusiones_mate", "label": "Mate", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "infusiones_hierbas", "label": "Hierbas", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "infusiones_otras", "label": "Otras", "type": "tri-state-checkbox", "variant": "checkbox" }
+              ]
+            },
+            {
+              "name": "sal", "label": "Sal", "type": "select", "clearable": true,
+              "options": [
+                { "value": "no", "label": "No" },
+                { "value": "ocasional", "label": "Bien" },
+                { "value": "habitual", "label": "Mucha" }
+              ]
+            },
+            {
+              "name": "actividad_fisica", "label": "Actividad física", "type": "select", "clearable": true,
+              "options": [
+                { "value": "no", "label": "No" },
+                { "value": "ocasional", "label": "Suave" },
+                { "value": "habitual", "label": "Intensa" }
+              ]
+            }
+          ]
+        },
+        {
+          "value": "work",
+          "label": "Trabajo",
+          "fields": [
+            {
+              "name": "trabajo_tipo", "label": "Tipo", "type": "select", "clearable": true,
+              "options": [
+                { "value": "intenso", "label": "Intelectual intenso" },
+                { "value": "intelectual", "label": "Intelectual" },
+                { "value": "fisico", "label": "Físico" },
+                { "value": "fisico_intenso", "label": "Físico intenso" }
+              ]
+            },
+            {
+              "name": "trabajo_continuidad", "label": "Continuidad", "type": "select", "clearable": true,
+              "options": [
+                { "value": "estable", "label": "Estable" },
+                { "value": "temporal", "label": "Temporal" }
+              ]
+            },
+            {
+              "name": "trabajo_educacion", "label": "Educación", "type": "select", "clearable": true,
+              "options": [
+                { "value": "ninguna", "label": "Ninguna" },
+                { "value": "primario", "label": "Primario" },
+                { "value": "secundario", "label": "Secundario" },
+                { "value": "superior", "label": "Ciclo superior" }
+              ]
+            },
+            {
+              "name": "trabajo_actividad_social", "label": "Actividad social", "type": "select", "clearable": true,
+              "options": [
+                { "value": "ninguna", "label": "Ninguna" },
+                { "value": "normal", "label": "Normal" }
+              ]
+            }
+          ]
+        },
+        {
+          "value": "sexuality",
+          "label": "Sexualidad",
+          "fields": [
+            {
+              "name": "actividad_sexual", "label": "Actividad sexual", "type": "select", "clearable": true,
+              "options": [
+                { "value": "sin_pres", "label": "Sin preservativo" },
+                { "value": "siempre_pres", "label": "Siempre con preservativo" }
+              ]
+            },
+            { "name": "sexo_parejas", "label": "Número de parejas sexuales en los últimos seis meses", "type": "input", "inputType": "number", "placeholder": "0" }
+          ]
+        },
+        {
+          "value": "addictions",
+          "label": "Adicciones",
+          "fields": [
+            {
+              "name": "adicciones_cocaina_inhalatoria", "label": "Cocaína inhalatoria", "type": "select", "clearable": true,
+              "options": [
+                { "value": "nunca", "label": "No" },
+                { "value": "ocasional", "label": "Ocasional" },
+                { "value": "frecuente", "label": "Frecuente" }
+              ]
+            },
+            {
+              "name": "adicciones_cocaina_endovenosas", "label": "Cocaína y otras endovenosas", "type": "select", "clearable": true,
+              "options": [
+                { "value": "nunca", "label": "No" },
+                { "value": "ocasional", "label": "Ocasional" },
+                { "value": "frecuente", "label": "Frecuente" }
+              ]
+            },
+            {
+              "name": "adicciones_marihuana", "label": "Marihuana", "type": "select", "clearable": true,
+              "options": [
+                { "value": "nunca", "label": "No" },
+                { "value": "ocasional", "label": "Ocasional" },
+                { "value": "frecuente", "label": "Frecuente" }
+              ]
+            },
+            { "name": "adicciones_notas_adicionales", "label": "Notas adicionales", "type": "textarea", "minRows": 1 }
+          ]
+        },
+        {
+          "value": "solar",
+          "label": "Exposición solar",
+          "fields": [
+            { "name": "exposolar_laboral", "label": "Laboral", "type": "tri-state-checkbox", "variant": "checkbox" },
+            {
+              "name": "exposolar_recreacional", "label": "Recreacional", "type": "select", "clearable": true,
+              "options": [
+                { "value": "nunca", "label": "Nunca" },
+                { "value": "finde", "label": "Fin de semana" },
+                { "value": "todosdias", "label": "Todos los días" }
+              ]
+            },
+            { "name": "exposolar_proteccion_toggle", "label": "Protección solar", "type": "tri-state-checkbox", "variant": "checkbox" },
+            {
+              "type": "group",
+              "indent": true,
+              "condition": { "field": "exposolar_proteccion_toggle", "operator": "eq", "value": true },
+              "fields": [
+                { "name": "exposolar_proteccion_horario", "label": "Horarios con bajo UV", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "exposolar_proteccion_sombraropa", "label": "Sombra/ropa", "type": "tri-state-checkbox", "variant": "checkbox" },
+                { "name": "exposolar_proteccion_cremas", "label": "Cremas protectoras", "type": "tri-state-checkbox", "variant": "checkbox" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

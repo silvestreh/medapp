@@ -74,6 +74,27 @@ export const FormCard = styled('div', {
     border: '1px solid var(--mantine-color-gray-2)',
     borderRadius: 'var(--mantine-radius-md)',
     overflow: 'hidden',
+
+    '&:has(+ [data-indented-section])': {
+      borderBottomRightRadius: 0,
+    },
+
+    '&[data-indented-card]:first-child': {
+      borderTop: 'none',
+      borderTopLeftRadius: 0,
+      borderTopRightRadius: 0,
+    },
+
+    '&[data-indented-card] + &[data-indented-card]': {
+      marginTop: 'calc(-1 * var(--mantine-spacing-md))',
+      borderTop: 'none',
+      borderTopLeftRadius: 0,
+      borderTopRightRadius: 0,
+    },
+    '&[data-indented-card]:has(+ [data-indented-card])': {
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
+    },
   },
 });
 
@@ -359,6 +380,7 @@ export const IndentedSection = styled(Stack, {
   base: {
     gap: 0,
     background: 'var(--mantine-color-gray-0)',
+    marginTop: '-1rem',
   },
   variants: {
     indented: {

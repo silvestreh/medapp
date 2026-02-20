@@ -433,8 +433,7 @@ export function Icd10Selector({
   }, [values, selectedNames, readOnly, removeValue, multiSelect]);
 
   const displayValue = useMemo(() => {
-    if (multiSelect) return '';
-    if (opened && !readOnly) return searchValue;
+    if (multiSelect || (opened && !readOnly)) return searchValue;
     return '';
   }, [multiSelect, opened, readOnly, searchValue]);
 

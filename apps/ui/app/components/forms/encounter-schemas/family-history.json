@@ -1,0 +1,84 @@
+{
+  "name": "family-history",
+  "formKey": "antecedentes/familiares",
+  "label": "Antecedentes Familiares",
+  "fields": [
+    {
+      "name": "items",
+      "type": "array",
+      "addLabel": "Agregar antecedente",
+      "itemLabel": "Antecedente #{{index}}",
+      "minItems": 1,
+      "itemFields": [
+        {
+          "name": "relationship",
+          "label": "Parentesco",
+          "type": "select",
+          "clearable": true,
+          "options": [
+            {
+              "group": "Abuelos",
+              "items": [
+                { "value": "paternal_grandfather", "label": "Abuelo paterno" },
+                { "value": "maternal_grandfather", "label": "Abuelo materno" },
+                { "value": "paternal_grandmother", "label": "Abuela paterna" },
+                { "value": "maternal_grandmother", "label": "Abuela materna" }
+              ]
+            },
+            {
+              "group": "Padres",
+              "items": [
+                { "value": "father", "label": "Padre" },
+                { "value": "mother", "label": "Madre" }
+              ]
+            },
+            {
+              "group": "Tíos",
+              "items": [
+                { "value": "uncle", "label": "Tío" },
+                { "value": "aunt", "label": "Tía" }
+              ]
+            },
+            {
+              "group": "Hermanos",
+              "items": [
+                { "value": "brother", "label": "Hermano" },
+                { "value": "sister", "label": "Hermana" }
+              ]
+            },
+            {
+              "group": "Hijos",
+              "items": [
+                { "value": "son", "label": "Hijo" },
+                { "value": "daughter", "label": "Hija" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "isAlive",
+          "label": "Vive",
+          "type": "tri-state-checkbox"
+        },
+        {
+          "name": "firstName",
+          "label": "Nombre",
+          "type": "input",
+          "placeholder": "Nombre"
+        },
+        {
+          "name": "lastName",
+          "label": "Apellido",
+          "type": "input",
+          "placeholder": "Apellido"
+        },
+        {
+          "name": "issueId",
+          "label": "Antecedente (CIE-10)",
+          "type": "icd10",
+          "multi": true
+        }
+      ]
+    }
+  ]
+}

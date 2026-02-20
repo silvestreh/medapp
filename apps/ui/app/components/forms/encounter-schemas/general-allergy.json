@@ -1,0 +1,105 @@
+{
+  "name": "general-allergy",
+  "formKey": "alergias/general",
+  "label": "Alergia (general)",
+  "fields": [
+    {
+      "type": "tabs",
+      "tabStyle": "pills",
+      "grow": true,
+      "tabs": [
+        {
+          "value": "respiratorio",
+          "label": "Síntomas respiratorios",
+          "fields": [
+            {
+              "name": "secrecion_nasal", "label": "Secreción nasal", "type": "select", "clearable": true,
+              "options": [
+                { "value": "acuosa", "label": "Acuosa" },
+                { "value": "mucosa", "label": "Mucosa" },
+                { "value": "purulenta", "label": "Purulenta" },
+                { "value": "mixta", "label": "Mixta" }
+              ]
+            },
+            { "name": "prurito_nasal", "label": "Prurito nasal", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "prurito_ocular", "label": "Prurito ocular", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "prurito_otico", "label": "Prurito ótico", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "prurito_palatino", "label": "Prurito palatino", "type": "tri-state-checkbox", "variant": "checkbox" },
+            {
+              "name": "tos", "label": "Tos", "type": "select", "clearable": true,
+              "options": [
+                { "value": "seca", "label": "Seca" },
+                { "value": "productiva", "label": "Productiva" },
+                { "value": "espasmodica", "label": "Espasmódica" },
+                { "value": "emetizante", "label": "Emetizante" }
+              ]
+            },
+            { "name": "estornudos", "label": "Estornudos", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "disnea", "label": "Disnea", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "sibilancias", "label": "Sibilancias", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "bloqueo_nasal", "label": "Bloqueo nasal", "type": "tri-state-checkbox", "variant": "checkbox" }
+          ]
+        },
+        {
+          "value": "cutaneos",
+          "label": "Síntomas cutáneos",
+          "fields": [
+            { "name": "prurito", "label": "Prurito", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "ronchas", "label": "Ronchas", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "edema", "label": "Edema", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "escamas", "label": "Escamas", "type": "tri-state-checkbox", "variant": "checkbox" }
+          ]
+        },
+        {
+          "value": "localizacion",
+          "label": "Localización",
+          "fields": [
+            { "name": "loc_cara", "label": "Cara", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "loc_cuello", "label": "Cuello", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "loc_tronco", "label": "Tronco", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "loc_miembros", "label": "Miembros", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "loc_generalizado", "label": "Generalizado", "type": "tri-state-checkbox", "variant": "checkbox" }
+          ]
+        },
+        {
+          "value": "desencadenantes",
+          "label": "Desencadenantes",
+          "fields": [
+            { "type": "text", "label": "Ambientales" },
+            { "name": "des_polvo", "label": "Polvo", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "des_humo", "label": "Humo", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "des_humedad", "label": "Humedad", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "des_cambio_temperatura", "label": "Cambio de temperatura", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "des_mascotas", "label": "Mascotas", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "type": "text", "label": "Estacionales" },
+            { "name": "primavera", "label": "Primavera", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "verano", "label": "Verano", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "otono", "label": "Otoño", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "invierno", "label": "Invierno", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "type": "text", "label": "Influencias climáticas" },
+            { "name": "inf_frio", "label": "Frío", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "inf_humedad", "label": "Humedad", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "inf_viento", "label": "Viento", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "inf_calor", "label": "Calor", "type": "tri-state-checkbox", "variant": "checkbox" },
+            { "name": "inf_tormenta", "label": "Tormenta", "type": "tri-state-checkbox", "variant": "checkbox" }
+          ]
+        },
+        {
+          "value": "alergias",
+          "label": "Alergias",
+          "fields": [
+            { "name": "al_alimentos", "label": "Alimentos", "type": "input", "placeholder": "Escriba aquí..." },
+            { "name": "al_acaros", "label": "Ácaros", "type": "input", "placeholder": "Escriba aquí..." },
+            { "name": "al_animales", "label": "Animales", "type": "input", "placeholder": "Escriba aquí..." },
+            { "name": "al_insectos_venenos", "label": "Insectos y venenos", "type": "input", "placeholder": "Escriba aquí..." },
+            { "name": "al_mohos", "label": "Mohos", "type": "input", "placeholder": "Escriba aquí..." },
+            { "name": "al_parasitos", "label": "Parásitos", "type": "input", "placeholder": "Escriba aquí..." },
+            { "name": "al_polen_arboles", "label": "Pólen de árboles", "type": "input", "placeholder": "Escriba aquí..." },
+            { "name": "al_polen_gramineas", "label": "Pólen de gramíneas", "type": "input", "placeholder": "Escriba aquí..." },
+            { "name": "al_otros", "label": "Otros", "type": "input", "placeholder": "Escriba aquí..." }
+          ]
+        }
+      ]
+    }
+  ]
+}

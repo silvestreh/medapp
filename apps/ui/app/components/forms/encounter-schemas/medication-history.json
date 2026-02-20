@@ -1,0 +1,51 @@
+{
+  "name": "medication-history",
+  "formKey": "antecedentes/medicamentosos",
+  "label": "Antecedentes Medicamentosos",
+  "fields": [
+    {
+      "name": "medications",
+      "type": "array",
+      "addLabel": "Agregar antecedente",
+      "itemLabel": "Antecedente #{{index}}",
+      "minItems": 1,
+      "itemFields": [
+        {
+          "name": "droga",
+          "label": "Droga",
+          "type": "medication",
+          "placeholder": "Escriba para buscar..."
+        },
+        {
+          "name": "ant_fecha",
+          "label": "Fecha aproximada",
+          "type": "date",
+          "placeholder": "Haga clic para seleccionar una fecha"
+        },
+        {
+          "name": "efectivo",
+          "label": "Efectivo",
+          "type": "tri-state-checkbox"
+        },
+        {
+          "name": "efecto_adverso",
+          "label": "Efecto adverso",
+          "type": "select",
+          "clearable": true,
+          "options": [
+            { "value": "no", "label": "No" },
+            { "value": "si", "label": "Sí" },
+            { "value": "sospechado", "label": "Sí, sospechado" }
+          ]
+        },
+        {
+          "name": "ant_comments",
+          "label": "Comentario",
+          "type": "textarea",
+          "placeholder": "Escriba algo... (Opcional)",
+          "minRows": 1
+        }
+      ]
+    }
+  ]
+}

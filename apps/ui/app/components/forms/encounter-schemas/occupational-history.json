@@ -1,0 +1,165 @@
+{
+  "name": "occupational-history",
+  "formKey": "antecedentes/ocupacionales",
+  "label": "Antecedentes Ocupacionales",
+  "fields": [
+    { "name": "toggle_inha_polvos", "label": "Por inhalación de polvos inorgánicos", "type": "tri-state-checkbox", "variant": "noOffset" },
+    {
+      "type": "group", "indent": true,
+      "condition": { "field": "toggle_inha_polvos", "operator": "eq", "value": true },
+      "fields": [
+        { "name": "toggle_minas", "label": "Minas, túneles, galerías y canteras", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_minas", "operator": "eq", "value": true }, "fields": [
+          { "name": "minas_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "minas_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "minas_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_piedra", "label": "Trabajos en piedra", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_piedra", "operator": "eq", "value": true }, "fields": [
+          { "name": "piedra_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "piedra_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "piedra_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_abrasivos", "label": "Abrasivos", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_abrasivos", "operator": "eq", "value": true }, "fields": [
+          { "name": "abrasivos_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "abrasivos_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "abrasivos_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_fundicion", "label": "Fundición", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_fundicion", "operator": "eq", "value": true }, "fields": [
+          { "name": "fundicion_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "fundicion_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "fundicion_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_ceramica", "label": "Cerámica, porcelana, loza, carborundo y refractarios", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_ceramica", "operator": "eq", "value": true }, "fields": [
+          { "name": "ceramica_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "ceramica_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "ceramica_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_cementos", "label": "Cementos", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_cementos", "operator": "eq", "value": true }, "fields": [
+          { "name": "cementos_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "cementos_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "cementos_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_polvo", "label": "Polvo de limpieza", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_polvo", "operator": "eq", "value": true }, "fields": [
+          { "name": "polvo_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "polvo_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "polvo_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_pigmentos", "label": "Pigmentos", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_pigmentos", "operator": "eq", "value": true }, "fields": [
+          { "name": "pigmentos_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "pigmentos_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "pigmentos_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_vidrio", "label": "Industria del vidrio", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_vidrio", "operator": "eq", "value": true }, "fields": [
+          { "name": "vidrio_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "vidrio_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "vidrio_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]}
+      ]
+    },
+    { "name": "toggle_asbesto", "label": "Por inhalación de polvos inorgánicos (minerales) ASBESTO", "type": "tri-state-checkbox", "variant": "noOffset" },
+    {
+      "type": "group", "indent": true,
+      "condition": { "field": "toggle_asbesto", "operator": "eq", "value": true },
+      "fields": [
+        { "name": "toggle_mantos", "label": "Mantos o cintas aislantes alrededor de tubos de vapor, calderas y los conductos de los hornos", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_mantos", "operator": "eq", "value": true }, "fields": [
+          { "name": "mantos_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "mantos_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "mantos_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_const", "label": "Industria de la construcción", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_const", "operator": "eq", "value": true }, "fields": [
+          { "name": "const_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "const_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "const_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_refue", "label": "Refuerzos para el revestimiento de suelos de láminas de vinilo", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_refue", "operator": "eq", "value": true }, "fields": [
+          { "name": "refue_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "refue_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "refue_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_fuego", "label": "Aislamiento a prueba de fuego", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_fuego", "operator": "eq", "value": true }, "fields": [
+          { "name": "fuego_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "fuego_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "fuego_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_textil", "label": "Industria textil", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_textil", "operator": "eq", "value": true }, "fields": [
+          { "name": "textil_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "textil_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "textil_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_naval", "label": "Industria naval", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_naval", "operator": "eq", "value": true }, "fields": [
+          { "name": "naval_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "naval_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "naval_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_acusticos", "label": "Aislantes acústicos en aerosol o material decorativo de techos y paredes", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_acusticos", "operator": "eq", "value": true }, "fields": [
+          { "name": "acusticos_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "acusticos_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "acusticos_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_forros", "label": "Forros y almohadillas para los frenos de los automóviles", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_forros", "operator": "eq", "value": true }, "fields": [
+          { "name": "forros_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "forros_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "forros_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_embrague", "label": "Revestimiento para el embrague de los automóviles", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_embrague", "operator": "eq", "value": true }, "fields": [
+          { "name": "embrague_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "embrague_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "embrague_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]},
+        { "name": "toggle_empaque", "label": "Empaques de los automóviles", "type": "tri-state-checkbox", "variant": "nested" },
+        { "type": "group", "indent": true, "condition": { "field": "toggle_empaque", "operator": "eq", "value": true }, "fields": [
+          { "name": "empaque_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+          { "name": "empaque_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+          { "name": "empaque_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+        ]}
+      ]
+    },
+    { "name": "toggle_gases", "label": "Por inhalación de gases irritantes, humos, vapores y sustancias tóxicas en general", "type": "tri-state-checkbox", "variant": "noOffset" },
+    { "type": "group", "indent": true, "condition": { "field": "toggle_gases", "operator": "eq", "value": true }, "fields": [
+      { "name": "gases_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+      { "name": "gases_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+      { "name": "gases_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+    ]},
+    { "name": "toggle_polvos", "label": "Por inhalación de polvos orgánicos", "type": "tri-state-checkbox", "variant": "noOffset" },
+    { "type": "group", "indent": true, "condition": { "field": "toggle_polvos", "operator": "eq", "value": true }, "fields": [
+      { "name": "polvos_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+      { "name": "polvos_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+      { "name": "polvos_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+    ]},
+    { "name": "toggle_rurales", "label": "Tareas rurales", "type": "tri-state-checkbox", "variant": "noOffset" },
+    { "type": "group", "indent": true, "condition": { "field": "toggle_rurales", "operator": "eq", "value": true }, "fields": [
+      { "name": "rurales_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+      { "name": "rurales_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+      { "name": "rurales_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+    ]},
+    { "name": "toggle_asma", "label": "Asma ocupacional", "type": "tri-state-checkbox", "variant": "noOffset" },
+    { "type": "group", "indent": true, "condition": { "field": "toggle_asma", "operator": "eq", "value": true }, "fields": [
+      { "name": "asma_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+      { "name": "asma_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+      { "name": "asma_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+    ]},
+    { "name": "toggle_otras", "label": "Otras enfermedades", "type": "tri-state-checkbox", "variant": "noOffset" },
+    { "type": "group", "indent": true, "condition": { "field": "toggle_otras", "operator": "eq", "value": true }, "fields": [
+      { "name": "otras_desde", "label": "Desde", "type": "date", "variant": "stacked" },
+      { "name": "otras_hasta", "label": "Hasta", "type": "date", "variant": "stacked" },
+      { "name": "otras_comments", "label": "Comentarios", "type": "textarea", "variant": "stacked", "minRows": 1, "placeholder": "Escriba algo... (Opcional)" }
+    ]}
+  ]
+}

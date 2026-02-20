@@ -1,0 +1,29 @@
+{
+  "name": "reason-for-consultation",
+  "formKey": "general/consulta_internacion",
+  "label": "Motivo de consulta-internación",
+  "fields": [
+    {
+      "name": "reasons",
+      "type": "array",
+      "addLabel": "Agregar motivo",
+      "itemLabel": "Motivo #{{index}}",
+      "minItems": 1,
+      "itemFields": [
+        {
+          "name": "reason",
+          "label": "Motivo",
+          "type": "input",
+          "placeholder": "Escriba para seleccionar un motivo"
+        },
+        {
+          "name": "description",
+          "label": "Descripción",
+          "type": "textarea",
+          "placeholder": "Descripción (opcional)",
+          "minRows": 1
+        }
+      ]
+    }
+  ]
+}
