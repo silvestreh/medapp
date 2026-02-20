@@ -3,16 +3,26 @@ import { NotAuthenticated } from '@feathersjs/errors';
 import { verifyTotpCode } from './utils/totp';
 
 export class TwoFactorLocalStrategy extends LocalStrategy {
+  async findEntity(username: string, params: any) {
+    const entity = await super.findEntity(username, params);
+    console.log('[auth] findEntity result: id =', entity?.id, '| dataValues.id =', entity?.dataValues?.id, '| username =', entity?.username);
+    return entity;
+  }
+
+  async getEntity(result: any, params: any) {
+    console.log('[auth] getEntity called with id =', result?.id, '| dataValues.id =', result?.dataValues?.id);
+    return super.getEntity(result, params);
+  }
+
   async authenticate(data: any, params: any) {
     const usernameField = (this.configuration as any)?.usernameField || 'username';
     console.log('[auth] local strategy: attempting login for', data?.[usernameField]);
     let result: any;
     try {
       result = await super.authenticate(data, params);
-      const entity = result?.user || result?.entity;
-      console.log('[auth] local strategy: password check passed, entity id:', entity?.id, 'raw:', JSON.stringify(entity?.id));
+      console.log('[auth] local strategy: auth passed, user id:', result?.user?.id);
     } catch (err: any) {
-      console.error('[auth] local strategy: password check failed:', err?.message || err);
+      console.error('[auth] local strategy: auth failed:', err?.message || err);
       throw err;
     }
 
