@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import Sentry from './sentry';
+
 // import path from 'path';
 // import favicon from 'serve-favicon';
 // import compress from 'compression';
@@ -57,6 +59,7 @@ app.configure(channels);
 
 // Configure a middleware for 404s and the error handler
 app.use(express.notFound());
+Sentry.setupExpressErrorHandler(app);
 app.use(express.errorHandler({ logger } as any));
 
 app.hooks(appHooks);

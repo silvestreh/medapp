@@ -28,6 +28,9 @@ Create a `.env` file in `apps/ui/`:
 # Required
 SESSION_SECRET=       # Secret for encrypting session cookies (any random string)
 API_URL=              # URL of the MedApp API (default: http://localhost:3030)
+
+# Error Reporting
+VITE_SENTRY_DSN=      # Sentry DSN for error reporting (omit to disable)
 ```
 
 Generate a session secret with:
@@ -79,5 +82,20 @@ Set these environment variables on your Railway UI service:
 | `SESSION_SECRET` | *(output of `openssl rand -base64 32`)*                  |
 | `API_URL`        | `https://api.example.com` (your Railway API service URL) |
 | `NODE_ENV`       | `production`                                             |
+| `VITE_SENTRY_DSN`| `https://xxx@xxx.ingest.de.sentry.io/xxx`                |
 
 The `railway.toml` in this directory handles build and start commands automatically.
+
+## Error Reporting (Sentry)
+
+The UI reports errors to [Sentry](https://sentry.io) when the `VITE_SENTRY_DSN` environment variable is set. If omitted, Sentry is effectively disabled.
+
+The `VITE_` prefix is required because Vite exposes only `VITE_`-prefixed env vars to client-side code. The same variable is used on the server side as well so you only need to set one value.
+
+Errors are captured at three levels:
+
+- **Client-side** -- via `@sentry/remix` in `entry.client.tsx` (browser tracing, session replay).
+- **Server-side** -- via `@sentry/remix` in `instrumentation.server.mjs` (auto-instrumented Remix handlers).
+- **Error boundaries** -- via `captureRemixErrorBoundaryError()` in `root.tsx`.
+
+Source maps are uploaded to Sentry during builds via the `sentryVitePlugin` in `vite.config.ts`. This requires a `SENTRY_AUTH_TOKEN` env var (generated from your Sentry account settings).
