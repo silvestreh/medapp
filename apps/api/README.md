@@ -32,6 +32,9 @@ WEBAUTHN_RP_ID=       # Domain users visit, e.g. app.example.com (default: local
 WEBAUTHN_RP_NAME=     # Display name shown in passkey prompts (default: MedApp)
 WEBAUTHN_ORIGIN=      # Full origin of the UI, e.g. https://app.example.com (default: http://localhost:5173)
 
+# Error Reporting
+SENTRY_DSN=           # Sentry DSN for error reporting (omit to disable)
+
 # Optional
 DEBUG=                # Set to "true" for verbose logging on every service method
 TOTP_ISSUER=          # Issuer label for 2FA authenticator apps (default: MedApp)
@@ -108,10 +111,21 @@ Set these environment variables on your Railway API service:
 | `WEBAUTHN_RP_NAME` | `MedApp`                                 |
 | `WEBAUTHN_ORIGIN`  | `https://app.example.com`                |
 | `NODE_ENV`         | `production`                             |
+| `SENTRY_DSN`       | `https://xxx@xxx.ingest.de.sentry.io/xxx`|
 
 In Railway, you can reference environment variables from other services, like `${{medapp-api.RAILWAY_PRIVATE_DOMAIN}}` or `${{Postgres.DATABASE_URL}}`. Use these and try to favor internal networking to avoid egress costs.
 
 If the UI and API live on different subdomains (e.g. `app.example.com` and `api.example.com`), set `WEBAUTHN_RP_ID` to the common parent domain (e.g. `example.com`).
+
+## Error Reporting (Sentry)
+
+The API reports errors to [Sentry](https://sentry.io) when the `SENTRY_DSN` environment variable is set. If omitted, Sentry is effectively disabled and the app behaves as before.
+
+Errors are captured at three levels:
+
+- **Express middleware** -- via `Sentry.setupExpressErrorHandler()` in `app.ts`.
+- **FeathersJS services** -- via a global `error.all` hook in `app.hooks.ts`.
+- **Unhandled promise rejections** -- via `Sentry.captureException()` in `index.ts`.
 
 ## Data Migration Scripts
 
