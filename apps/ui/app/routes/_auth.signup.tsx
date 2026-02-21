@@ -36,6 +36,7 @@ export const action: ActionFunction = async ({ request }) => {
       strategy: 'local',
       username,
       password,
+      roleId: 'receptionist',
     });
 
     session.set('feathers-jwt', accessToken);
