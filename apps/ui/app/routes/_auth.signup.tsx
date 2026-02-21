@@ -31,12 +31,11 @@ export const action: ActionFunction = async ({ request }) => {
   const client = createFeathersClient(process.env.API_URL ?? 'http://localhost:3030');
 
   try {
-    await client.service('users').create({ username, password });
-    const { accessToken } = await client.service('users').create({
+    await client.service('users').create({ username, password, roleId: 'receptionist' });
+    const { accessToken } = await client.authenticate({
       strategy: 'local',
       username,
       password,
-      roleId: 'receptionist',
     });
 
     session.set('feathers-jwt', accessToken);
