@@ -119,6 +119,7 @@ export const es = {
     event_remove_success_message: 'El tiempo fuera de consultorio fue eliminado.',
     event_remove_error_title: 'Error al eliminar',
     event_remove_error_message: 'No se pudo eliminar el evento.',
+    no_appointments: 'No hay turnos disponibles.',
   },
   forms: {
     'general/consulta_internacion': 'Motivo de consulta-internación',

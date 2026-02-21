@@ -120,6 +120,7 @@ export const en: typeof es = {
     event_remove_success_message: 'Time-off event was removed.',
     event_remove_error_title: 'Delete failed',
     event_remove_error_message: 'Time-off event could not be removed.',
+    no_appointments: 'No appointments available.',
   },
   forms: {
     'general/consulta_internacion': 'Reason for Consultation/Admission',
