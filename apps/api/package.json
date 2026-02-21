@@ -33,6 +33,7 @@
     "db:import-seeds": "ts-node scripts/import-seeds.ts",
     "db:import-time-off": "ts-node scripts/import-time-off-events.ts",
     "db:reset": "ts-node scripts/reset-db.ts",
+    "db:seed-test-org": "ts-node scripts/seed-test-organization.ts",
     "dev": "ts-node-dev --no-notify src/",
     "lint": "eslint src/. test/. --config .eslintrc.json --ext .ts --fix",
     "mocha": "NODE_ENV=test nyc mocha",
@@ -74,6 +75,7 @@
     "winston": "^3.16.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.3.0",
     "@feathersjs/authentication-client": "^4.5.18",
     "@feathersjs/client": "^4.5.18",
     "@feathersjs/rest-client": "^4.5.18",
