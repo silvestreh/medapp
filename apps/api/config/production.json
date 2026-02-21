@@ -1,5 +1,5 @@
 {
-  "host": "medapp-api-app.feathersjs.com",
+  "host": "HOST",
   "port": "PORT",
   "postgres": "DB_URL",
   "encryptionKey": "ENCRYPTION_KEY"
