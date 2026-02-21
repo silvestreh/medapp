@@ -11,16 +11,32 @@ type AuthenticatedApp = Application & {
   authenticate: AuthenticationClient['authenticate'];
   reAuthenticate: AuthenticationClient['reAuthenticate'];
   logout: AuthenticationClient['logout'];
+  organizationId?: string;
+  setOrganizationId: (id: string | undefined) => void;
 };
 
 const BROWSER_PROXY_URL = '/api';
 
-const createFeathersClient = (baseURL?: string, accessToken?: SessionToken) => {
+const createFeathersClient = (baseURL?: string, accessToken?: SessionToken, organizationId?: string) => {
   const resolvedURL = baseURL ?? BROWSER_PROXY_URL;
   const client = feathers() as AuthenticatedApp;
   const restClient = rest(resolvedURL);
+  const axiosInstance = axios.create();
 
-  client.configure(restClient.axios(axios));
+  client.organizationId = organizationId;
+
+  client.setOrganizationId = (id: string | undefined) => {
+    client.organizationId = id;
+  };
+
+  axiosInstance.interceptors.request.use((config) => {
+    if (client.organizationId) {
+      config.headers['organization-id'] = client.organizationId;
+    }
+    return config;
+  });
+
+  client.configure(restClient.axios(axiosInstance));
   client.configure(auth({ storageKey: 'feathers-jwt' }));
 
   if (accessToken) {

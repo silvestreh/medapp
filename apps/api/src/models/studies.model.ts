@@ -13,6 +13,14 @@ export default function (app: Application): typeof Model {
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4
     },
+    organizationId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'organizations',
+        key: 'id'
+      }
+    },
     date: {
       type: DataTypes.DATE,
       allowNull: false

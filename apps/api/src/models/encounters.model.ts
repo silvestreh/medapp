@@ -13,6 +13,14 @@ export default function (app: Application): typeof Model {
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4
     },
+    organizationId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'organizations',
+        key: 'id'
+      }
+    },
     medicId: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -48,7 +56,11 @@ export default function (app: Application): typeof Model {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   (encounters as any).associate = function (models: any): void {
-    const { users, patients } = models;
+    const { users, patients, organizations } = models;
+    encounters.belongsTo(organizations, {
+      foreignKey: 'organizationId',
+      constraints: false
+    });
     encounters.belongsTo(users, {
       foreignKey: 'medicId',
       constraints: false

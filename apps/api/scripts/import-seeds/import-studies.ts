@@ -6,6 +6,7 @@ import type { SeedStudy } from '../create-seeds/types';
 interface ImportStudiesOptions {
   studies: SeedStudy[];
   mongoToRealPatientId: Map<string, string>;
+  organizationId: string;
   bar: cliProgress.SingleBar;
 }
 
@@ -21,6 +22,7 @@ const CONCURRENCY = 20;
 export async function importStudies({
   studies,
   mongoToRealPatientId,
+  organizationId,
   bar,
 }: ImportStudiesOptions): Promise<ImportStudiesResult> {
   const studiesService = app.service('studies');
@@ -46,6 +48,7 @@ export async function importStudies({
         ...study,
         date: new Date(study.date),
         patientId: realPatientId,
+        organizationId,
       } as any);
       seedToRealStudyId.set(study.id, (created as any).id);
       importedCount++;

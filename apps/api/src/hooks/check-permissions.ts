@@ -5,9 +5,12 @@ import { getUserPermissions } from '../utils/get-user-permissions';
 interface CheckPermissionOptions {
   foreignKey?: string;
   fields?: string[];
+  scopeToOrganization?: boolean;
 }
 
 export const checkPermissions = (options: CheckPermissionOptions = {}): Hook => {
+  const { scopeToOrganization = true } = options;
+
   return async (context: HookContext): Promise<HookContext> => {
     const { app, data, params, method, id, service, path } = context;
 
@@ -38,6 +41,32 @@ export const checkPermissions = (options: CheckPermissionOptions = {}): Hook => 
           }
           return sanitized;
         }, {} as Record<string, any>);
+      }
+    }
+
+    // --- Organization scoping ---
+    if (scopeToOrganization && params.organizationId) {
+      const orgId = params.organizationId;
+
+      if (method === 'find') {
+        context.params.query = {
+          ...context.params.query,
+          organizationId: orgId
+        };
+      }
+
+      if (method === 'create') {
+        context.data = {
+          ...context.data,
+          organizationId: orgId
+        };
+      }
+
+      if (['get', 'update', 'patch', 'remove'].includes(method) && id) {
+        const record = await service.get(id, { ...params, provider: undefined });
+        if (record.organizationId && record.organizationId !== orgId) {
+          throw new Forbidden('This record belongs to a different organization');
+        }
       }
     }
 

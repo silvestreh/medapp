@@ -7,6 +7,8 @@ import { checkPermissions } from '../../hooks/check-permissions';
 import { findByPersonalData, sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import includeData from '../../hooks/include-data';
 import { encryptFields, decryptFields } from '../../hooks/encryption';
+import { scopePatientsToOrganization } from '../../hooks/scope-patients-to-organization';
+import { linkPatientToOrganization } from '../../hooks/link-patient-to-organization';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -15,10 +17,13 @@ export default {
   before: {
     all: [
       authenticate('jwt'),
-      checkPermissions(),
+      checkPermissions({ scopeToOrganization: false }),
       softDelete()
     ],
-    find: [ findByPersonalData({ junctionService: 'patient-personal-data', foreignKey: 'id' }) ],
+    find: [
+      scopePatientsToOrganization(),
+      findByPersonalData({ junctionService: 'patient-personal-data', foreignKey: 'id' })
+    ],
     get: [],
     create: [
       encryptFields('medicareNumber', 'mugshot', 'gender')
@@ -47,7 +52,8 @@ export default {
     ],
     create: [
       createPersonalData('patient'),
-      createContactData('patient')
+      createContactData('patient'),
+      linkPatientToOrganization()
     ],
     update: [],
     patch: [],

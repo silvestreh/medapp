@@ -31,14 +31,28 @@ export const action: ActionFunction = async ({ request }) => {
   const client = createFeathersClient(process.env.API_URL ?? 'http://localhost:3030');
 
   try {
-    await client.service('users').create({ username, password, roleId: 'receptionist' });
+    const user = await client.service('users').create({ username, password, roleId: 'receptionist' });
     const { accessToken } = await client.authenticate({
       strategy: 'local',
       username,
       password,
     });
 
+    const slug = String(username).toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const org = await client.service('organizations').create({
+      name: `${username}'s Clinic`,
+      slug: `${slug}-${Date.now()}`,
+      settings: {}
+    });
+
+    await client.service('organization-users').create({
+      organizationId: org.id,
+      userId: user.id,
+      role: 'admin'
+    });
+
     session.set('feathers-jwt', accessToken);
+    session.set('currentOrganizationId', org.id);
 
     return redirect('/', {
       headers: {

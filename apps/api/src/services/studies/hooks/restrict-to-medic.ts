@@ -20,6 +20,9 @@ export default function restrictToMedic(): Hook {
 
     if (method === 'create') {
       context.data = { ...context.data, medicId: user.id };
+      if (params.organizationId) {
+        context.data.organizationId = params.organizationId;
+      }
       return context;
     }
 
@@ -28,6 +31,9 @@ export default function restrictToMedic(): Hook {
         ...context.params.query,
         medicId: user.id,
       };
+      if (params.organizationId) {
+        context.params.query.organizationId = params.organizationId;
+      }
       return context;
     }
 

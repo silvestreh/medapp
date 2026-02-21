@@ -2,6 +2,7 @@
 // Don't remove this comment. It's needed to format import lines nicely.
 import { HookContext } from '@feathersjs/feathers';
 import Sentry from './sentry';
+import { setOrganizationContext } from './hooks/set-organization-context';
 
 export default {
   before: {
@@ -20,7 +21,8 @@ export default {
         if (ctx.data) {
           console.log('data =', JSON.stringify(ctx.data, null, 2));
         }
-      }
+      },
+      setOrganizationContext()
     ],
     find: [],
     get: [],

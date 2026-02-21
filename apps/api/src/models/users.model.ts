@@ -67,7 +67,9 @@ export default function (app: Application): typeof Model {
       roles,
       studies,
       time_off_events,
-      passkey_credentials
+      passkey_credentials,
+      organizations,
+      organization_users
     } = models;
 
     users.belongsToMany(personal_data, {
@@ -109,6 +111,12 @@ export default function (app: Application): typeof Model {
     users.hasMany(passkey_credentials, {
       foreignKey: 'userId',
       constraints: false
+    });
+    users.belongsToMany(organizations, {
+      through: { model: organization_users, unique: true },
+      foreignKey: 'userId',
+      otherKey: 'organizationId',
+      as: 'organizations'
     });
   };
 

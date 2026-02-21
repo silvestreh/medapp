@@ -47,6 +47,7 @@ export const es = {
     new_encounter: 'Nuevo Encuentro',
     encounter_detail: 'Detalle de Encuentro',
     users_roles: 'Usuarios & Roles',
+    organization: 'Organización',
   },
   navigation: {
     encounters: 'Encuentros',
@@ -54,6 +55,9 @@ export const es = {
     appointments: 'Turnos',
     patients: 'Pacientes',
     users_roles: 'Usuarios & Roles',
+    organization: 'Organización',
+    profile: 'Perfil',
+    logout: 'Cerrar sesión',
     language: 'Idioma',
   },
   appointments: {
@@ -500,6 +504,23 @@ export const es = {
   users: {
     page_title: 'Pagina de usuarios',
     page_description: 'Bienvenido a la pagina de usuarios y roles.',
+  },
+  organizations: {
+    page_title: 'Organización',
+    name: 'Nombre',
+    slug: 'Identificador',
+    members: 'Miembros',
+    settings: 'Configuración',
+    no_members: 'No hay miembros en esta organización.',
+    add_member: 'Agregar miembro',
+    remove_member: 'Eliminar miembro',
+    remove_member_confirm: '¿Está seguro que desea eliminar este miembro?',
+    role: 'Rol',
+    member: 'Miembro',
+    admin: 'Administrador',
+    select_organization: 'Seleccione una organización',
+    save_success: 'Organización actualizada correctamente.',
+    save_error: 'Error al actualizar la organización.',
   },
   auth: {
     welcome_back: 'Bienvenido de nuevo',

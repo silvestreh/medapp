@@ -10,6 +10,14 @@ export default function (app: Application): typeof Model {
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4
     },
+    organizationId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'organizations',
+        key: 'id'
+      }
+    },
     medicId: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -44,7 +52,8 @@ export default function (app: Application): typeof Model {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   (time_off_events as any).associate = function (models: any): void {
-    const { users } = models;
+    const { users, organizations } = models;
+    time_off_events.belongsTo(organizations, { foreignKey: 'organizationId' });
     time_off_events.belongsTo(users, { foreignKey: 'medicId' });
   };
 

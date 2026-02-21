@@ -2,7 +2,7 @@ import React, { cloneElement, isValidElement, type ReactElement } from 'react';
 import { ActionIcon, Flex, Tooltip, Image, Menu, type DefaultMantineColor } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { NavLink, useLocation, useMatches, useNavigate } from '@remix-run/react';
-import { Calendar, User, Stethoscope, FlaskConical, Shield, Languages, type LucideProps } from 'lucide-react';
+import { Calendar, User, Stethoscope, FlaskConical, Shield, Building2, Languages, type LucideProps } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
@@ -200,6 +200,13 @@ const sections: Section[] = [
     permissions: ['users:create', 'users:find', 'users:get', 'roles:find', 'roles:get', 'roles:patch'],
     path: '/users',
     color: 'red',
+  },
+  {
+    labelKey: 'organization',
+    icon: <Building2 />,
+    permissions: [],
+    path: '/organization',
+    color: 'lime',
   },
 ];
 

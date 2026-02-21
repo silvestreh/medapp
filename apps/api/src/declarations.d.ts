@@ -182,6 +182,26 @@ export interface MdSettings {
   sundayEnd: string | null;
 }
 
+export interface Organization {
+  id: Id;
+  name: string;
+  slug: string;
+  settings: Record<string, any>;
+}
+
+export interface OrganizationUser {
+  id: Id;
+  organizationId: Id;
+  userId: Id;
+  role: string;
+}
+
+export interface OrganizationPatient {
+  id: Id;
+  organizationId: Id;
+  patientId: Id;
+}
+
 export interface Study {
   id: Id;
   date: Date;

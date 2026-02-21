@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/node';
 
 const API_URL = () => process.env.API_URL ?? 'http://localhost:3030';
 
-const FORWARDED_HEADERS = ['content-type', 'authorization', 'accept'];
+const FORWARDED_HEADERS = ['content-type', 'authorization', 'accept', 'organization-id'];
 
 function buildTargetUrl(request: Request): string {
   const url = new URL(request.url);

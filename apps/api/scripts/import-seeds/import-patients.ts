@@ -5,6 +5,7 @@ import type { SeedPatient } from '../create-seeds/types';
 
 interface ImportPatientsOptions {
   patients: SeedPatient[];
+  organizationId: string;
   bar: cliProgress.SingleBar;
 }
 
@@ -18,11 +19,13 @@ const CONCURRENCY = 15;
 
 export async function importPatients({
   patients,
+  organizationId,
   bar,
 }: ImportPatientsOptions): Promise<ImportPatientsResult> {
   const personalDataService = app.service('personal-data');
   const patientPersonalDataService = app.service('patient-personal-data');
   const patientsService = app.service('patients');
+  const orgPatientsService = app.service('organization-patients');
   const validPatientIds = new Set<string>();
   const mongoToRealPatientId = new Map<string, string>();
   const skipped: ImportPatientsResult['skipped'] = [];
@@ -50,6 +53,9 @@ export async function importPatients({
             const existingPatientId = patientLink[0].ownerId;
             mongoToRealPatientId.set(patient.id, existingPatientId);
             validPatientIds.add(existingPatientId);
+            try {
+              await orgPatientsService.create({ organizationId, patientId: existingPatientId } as any);
+            } catch { /* already linked */ }
             bar.increment();
             return;
           }
@@ -63,6 +69,7 @@ export async function importPatients({
       const newPatient = (await patientsService.create(patient as any)) as any;
       validPatientIds.add(newPatient.id);
       mongoToRealPatientId.set(patient.id, newPatient.id);
+      await orgPatientsService.create({ organizationId, patientId: newPatient.id } as any);
     } catch (error: any) {
       skipped.push({
         item: patient,

@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { useNavigate } from '@remix-run/react';
 import type { Application, Params, ServiceMethods } from '@feathersjs/feathers';
 import omit from 'lodash/omit';
 import useSWR, { SWRConfig, type SWRConfiguration, mutate } from 'swr';
 import sift from 'sift';
 
-import type { Account } from '~/declarations';
+import type { Account, UserOrganization } from '~/declarations';
 import createFeathersClient from '~/feathers';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
@@ -13,6 +13,8 @@ type Status = 'idle' | 'loading' | 'success' | 'error';
 interface FeathersContextType {
   client: Application | null;
   initialUser?: Account | null;
+  currentOrganizationId?: string;
+  setCurrentOrganizationId: (id: string) => void;
 }
 
 interface UseAccountReturn {
@@ -21,11 +23,18 @@ interface UseAccountReturn {
   logout: () => Promise<void>;
 }
 
+interface UseOrganizationReturn {
+  currentOrganizationId?: string;
+  organizations: UserOrganization[];
+  switchOrganization: (id: string) => void;
+}
+
 const FeathersContext = createContext<FeathersContextType | undefined>(undefined);
 
 interface FeathersProviderProps extends PropsWithChildren {
   initialToken?: string;
   initialUser?: Account | null;
+  initialOrganizationId?: string;
   swrConfig?: SWRConfiguration;
 }
 
@@ -33,18 +42,34 @@ export const FeathersProvider: React.FC<FeathersProviderProps> = ({
   children,
   initialToken,
   initialUser,
+  initialOrganizationId,
   swrConfig = { dedupingInterval: 2000 },
 }) => {
   const [feathersClient, setFeathersClient] = useState<Application | null>(null);
+  const [currentOrganizationId, setCurrentOrgId] = useState<string | undefined>(initialOrganizationId);
 
   useEffect(() => {
-    const client = createFeathersClient(undefined, initialToken);
+    const client = createFeathersClient(undefined, initialToken, currentOrganizationId);
     setFeathersClient(client);
-  }, [initialToken]);
+  }, [initialToken, currentOrganizationId]);
+
+  const setCurrentOrganizationId = useCallback((id: string) => {
+    setCurrentOrgId(id);
+    if (feathersClient) {
+      (feathersClient as any).setOrganizationId(id);
+    }
+  }, [feathersClient]);
 
   return (
     <SWRConfig value={swrConfig}>
-      <FeathersContext.Provider value={{ client: feathersClient, initialUser }}>{children}</FeathersContext.Provider>
+      <FeathersContext.Provider value={{
+        client: feathersClient,
+        initialUser,
+        currentOrganizationId,
+        setCurrentOrganizationId
+      }}>
+        {children}
+      </FeathersContext.Provider>
     </SWRConfig>
   );
 };
@@ -98,6 +123,33 @@ export const useAccount = (): UseAccountReturn => {
     user,
     login,
     logout,
+  };
+};
+
+export const useOrganization = (): UseOrganizationReturn => {
+  const context = useContext(FeathersContext);
+
+  if (!context) {
+    throw new Error('useOrganization must be used within a FeathersProvider');
+  }
+
+  const organizations = context.initialUser?.organizations ?? [];
+
+  const switchOrganization = useCallback((id: string) => {
+    context.setCurrentOrganizationId(id);
+    fetch('/api/switch-organization', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ organizationId: id })
+    }).then(() => {
+      window.location.reload();
+    });
+  }, [context]);
+
+  return {
+    currentOrganizationId: context.currentOrganizationId,
+    organizations,
+    switchOrganization,
   };
 };
 
