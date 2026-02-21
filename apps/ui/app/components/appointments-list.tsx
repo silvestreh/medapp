@@ -2,7 +2,7 @@ import { useState, type FC } from 'react';
 import dayjs from 'dayjs';
 import { ActionIcon, Popover, Group, Button, Stack } from '@mantine/core';
 import { useClickOutside } from '@mantine/hooks';
-import { Trash } from 'lucide-react';
+import { Trash, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
@@ -138,6 +138,18 @@ const TextContent = styled('div', {
   },
 });
 
+const NoAppointments = styled('div', {
+  base: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    padding: '3rem 0',
+    gap: 'var(--mantine-spacing-md)',
+    flexDirection: 'column',
+  },
+});
+
 const AppointmentsList: FC<AppointmentsListProps> = ({
   slots: initialSlots,
   onRemove,
@@ -201,6 +213,12 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
 
   return (
     <Container className={className}>
+      {slots.length === 0 && (
+        <NoAppointments>
+          <Calendar size={48} color="var(--mantine-color-dimmed)" />
+          <Text variant="light">{t('appointments.no_appointments')}</Text>
+        </NoAppointments>
+      )}
       {slots.map((slot, index) => {
         const isExtra = slot.appointment?.extra;
         const isActiveSlot = activeSlot === slot.date;
