@@ -24,6 +24,27 @@ const populateUser = () => {
       result.settings = settings;
     }
 
+    const memberships: any[] = await app.service('organization-users').find({
+      query: { userId: result.id },
+      paginate: false
+    } as any);
+
+    if (memberships.length > 0) {
+      const orgIds = memberships.map((m: any) => m.organizationId);
+      const orgs = await Promise.all(
+        orgIds.map((id: string) => app.service('organizations').get(id))
+      );
+
+      result.organizations = orgs.map((org: any, i: number) => ({
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        role: memberships[i].role
+      }));
+    } else {
+      result.organizations = [];
+    }
+
     context.result = result;
 
     return context;

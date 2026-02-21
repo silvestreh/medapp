@@ -10,10 +10,17 @@ export default function (app: Application): typeof Model {
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4
     },
+    organizationId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'organizations',
+        key: 'id'
+      }
+    },
     userId: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
       references: {
         model: 'users',
         key: 'id'
@@ -110,7 +117,8 @@ export default function (app: Application): typeof Model {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   (md_settings as any).associate = function (models: any): void {
-    const { users } = models;
+    const { users, organizations } = models;
+    md_settings.belongsTo(organizations, { foreignKey: 'organizationId' });
     md_settings.belongsTo(users, { foreignKey: 'userId' });
   };
 

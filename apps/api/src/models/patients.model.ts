@@ -48,7 +48,9 @@ export default function (app: Application): typeof Model {
       encounters,
       patient_personal_data,
       patient_contact_data,
-      studies
+      studies,
+      organizations,
+      organization_patients
     } = models;
 
     patients.hasMany(appointments, { foreignKey: 'patientId' });
@@ -75,6 +77,12 @@ export default function (app: Application): typeof Model {
     patients.hasMany(studies, {
       foreignKey: 'patientId',
       constraints: false
+    });
+    patients.belongsToMany(organizations, {
+      through: { model: organization_patients, unique: true },
+      foreignKey: 'patientId',
+      otherKey: 'organizationId',
+      as: 'organizations'
     });
   };
 

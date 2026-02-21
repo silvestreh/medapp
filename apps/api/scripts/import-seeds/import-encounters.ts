@@ -7,6 +7,7 @@ interface ImportEncountersOptions {
   encounters: SeedEncounter[];
   validUserIds: Set<string>;
   mongoToRealPatientId: Map<string, string>;
+  organizationId: string;
   bar: cliProgress.SingleBar;
 }
 
@@ -22,6 +23,7 @@ export async function importEncounters({
   encounters,
   validUserIds,
   mongoToRealPatientId,
+  organizationId,
   bar,
 }: ImportEncountersOptions): Promise<ImportEncountersResult> {
   const encountersService = app.service('encounters');
@@ -53,6 +55,7 @@ export async function importEncounters({
         ...encounter,
         date: new Date(encounter.date),
         patientId: realPatientId,
+        organizationId,
       } as any);
       importedCount++;
     } catch (error: any) {

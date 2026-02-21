@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import dayjs from 'dayjs';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { Application } from '../declarations';
 import logger from '../logger';
 
@@ -8,7 +8,8 @@ export function scheduleAppointmentCleanup(app: Application) {
   cron.schedule('0 0 1 * *', async () => {
     try {
       const cutoff = dayjs().subtract(3, 'month').toDate();
-      const model = app.service('appointments').Model;
+      const sequelize: Sequelize = app.get('sequelizeClient');
+      const model = sequelize.models.appointments;
 
       const deleted = await model.destroy({
         where: { startDate: { [Op.lt]: cutoff } },

@@ -145,6 +145,16 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
     await seedStaticData(multibar);
     console.log('Static data seeded.\n');
 
+    // Step 2.5: Create "ColMed" organization
+    console.log('Creating ColMed organization...');
+    const org = await app.service('organizations').create({
+      name: 'ColMed',
+      slug: 'colmed',
+      settings: {},
+    } as any);
+    const organizationId = (org as any).id;
+    console.log(`Organization created: ${organizationId}\n`);
+
     // Step 3: Load seed files
     console.log('Loading seed files...');
     const [users, patients, encounters, appointments, studies, studyResults, licenses] =
@@ -167,11 +177,11 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
 
     // Step 4: Import users
     const userBar = multibar.create(users.length, 0, { title: 'Users' });
-    const usersResult = await importUsers({ users, resetPasswords, bar: userBar });
+    const usersResult = await importUsers({ users, resetPasswords, organizationId, bar: userBar });
 
     // Step 5: Import patients
     const patientBar = multibar.create(patients.length, 0, { title: 'Patients' });
-    const patientsResult = await importPatients({ patients, bar: patientBar });
+    const patientsResult = await importPatients({ patients, organizationId, bar: patientBar });
 
     // Step 6: Import encounters
     const encounterBar = multibar.create(encounters.length, 0, { title: 'Encounters' });
@@ -179,6 +189,7 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
       encounters,
       validUserIds: usersResult.validUserIds,
       mongoToRealPatientId: patientsResult.mongoToRealPatientId,
+      organizationId,
       bar: encounterBar,
     });
 
@@ -188,6 +199,7 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
       appointments,
       validUserIds: usersResult.validUserIds,
       mongoToRealPatientId: patientsResult.mongoToRealPatientId,
+      organizationId,
       bar: appointmentBar,
     });
 
@@ -196,6 +208,7 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
     const studiesResult = await importStudies({
       studies,
       mongoToRealPatientId: patientsResult.mongoToRealPatientId,
+      organizationId,
       bar: studyBar,
     });
 
@@ -212,6 +225,7 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
     const licensesResult = await importLicenses({
       licenses,
       validUserIds: usersResult.validUserIds,
+      organizationId,
       bar: licenseBar,
     });
 

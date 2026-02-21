@@ -48,6 +48,7 @@ export const en: typeof es = {
     new_encounter: 'New Encounter',
     encounter_detail: 'Encounter Details',
     users_roles: 'Users & Roles',
+    organization: 'Organization',
   },
   navigation: {
     encounters: 'Encounters',
@@ -55,6 +56,9 @@ export const en: typeof es = {
     appointments: 'Appointments',
     patients: 'Patients',
     users_roles: 'Users & Roles',
+    organization: 'Organization',
+    profile: 'Profile',
+    logout: 'Log out',
     language: 'Language',
   },
   appointments: {
@@ -498,6 +502,23 @@ export const en: typeof es = {
   users: {
     page_title: 'Users page',
     page_description: 'Welcome to the users and roles page.',
+  },
+  organizations: {
+    page_title: 'Organization',
+    name: 'Name',
+    slug: 'Identifier',
+    members: 'Members',
+    settings: 'Settings',
+    no_members: 'No members in this organization.',
+    add_member: 'Add member',
+    remove_member: 'Remove member',
+    remove_member_confirm: 'Are you sure you want to remove this member?',
+    role: 'Role',
+    member: 'Member',
+    admin: 'Admin',
+    select_organization: 'Select an organization',
+    save_success: 'Organization updated successfully.',
+    save_error: 'Failed to update organization.',
   },
   auth: {
     welcome_back: 'Welcome back',

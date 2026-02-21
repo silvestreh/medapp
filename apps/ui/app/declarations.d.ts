@@ -1,7 +1,15 @@
+export interface UserOrganization {
+  id: string;
+  name: string;
+  slug: string;
+  role: string;
+}
+
 export interface Account {
   id: string;
   username: string;
   twoFactorEnabled?: boolean;
+  organizations?: UserOrganization[];
   role: {
     id: string;
     permissions: string[];

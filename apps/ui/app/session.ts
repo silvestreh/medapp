@@ -16,3 +16,14 @@ export const { getSession, commitSession, destroySession } = createCookieSession
     maxAge: 60 * 60 * 24 * 30, // 30 days
   },
 });
+
+export async function getCurrentOrganizationId(request: Request): Promise<string | undefined> {
+  const session = await getSession(request.headers.get('Cookie'));
+  return session.get('currentOrganizationId');
+}
+
+export async function setCurrentOrganizationId(request: Request, organizationId: string) {
+  const session = await getSession(request.headers.get('Cookie'));
+  session.set('currentOrganizationId', organizationId);
+  return commitSession(session);
+}

@@ -7,6 +7,7 @@ interface ImportAppointmentsOptions {
   appointments: SeedAppointment[];
   validUserIds: Set<string>;
   mongoToRealPatientId: Map<string, string>;
+  organizationId: string;
   bar: cliProgress.SingleBar;
 }
 
@@ -22,6 +23,7 @@ export async function importAppointments({
   appointments,
   validUserIds,
   mongoToRealPatientId,
+  organizationId,
   bar,
 }: ImportAppointmentsOptions): Promise<ImportAppointmentsResult> {
   const appointmentsService = app.service('appointments');
@@ -53,6 +55,7 @@ export async function importAppointments({
         ...appointment,
         startDate: new Date(appointment.startDate),
         patientId: realPatientId,
+        organizationId,
       } as any);
       importedCount++;
     } catch (error: any) {

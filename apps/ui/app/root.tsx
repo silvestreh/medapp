@@ -15,6 +15,7 @@ import { localeCookie, resolveLocale } from '~/i18n/i18next.server';
 import { FeathersProvider } from '~/components/provider';
 import MainLayout from '~/components/main-layout';
 import { getToken, getUser } from '~/utils/auth.server';
+import { getCurrentOrganizationId, setCurrentOrganizationId } from '~/session';
 import { breakpoints } from '~/media';
 
 // Override Mantine's default breakpoints to match the ones defined in ~/media.
@@ -34,8 +35,23 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const initialUser = await getUser(request);
   const locale = await resolveLocale(request);
 
+  let currentOrganizationId = await getCurrentOrganizationId(request);
+
+  if (!currentOrganizationId && initialUser?.organizations?.length) {
+    currentOrganizationId = initialUser.organizations[0].id;
+    const cookieHeader = await setCurrentOrganizationId(request, currentOrganizationId);
+    return json(
+      { initialToken, initialUser, locale, currentOrganizationId },
+      {
+        headers: {
+          'Set-Cookie': cookieHeader,
+        },
+      }
+    );
+  }
+
   return json(
-    { initialToken, initialUser, locale },
+    { initialToken, initialUser, locale, currentOrganizationId },
     {
       headers: {
         'Set-Cookie': await localeCookie.serialize(locale),
@@ -68,10 +84,10 @@ function Document({ children }: { children: React.ReactNode }) {
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>('root');
-  const { initialToken, initialUser } = data || {};
+  const { initialToken, initialUser, currentOrganizationId } = data || {};
 
   return (
-    <FeathersProvider initialToken={initialToken} initialUser={initialUser}>
+    <FeathersProvider initialToken={initialToken} initialUser={initialUser} initialOrganizationId={currentOrganizationId}>
       <MantineProvider theme={theme}>
         <ModalsProvider>
           <Notifications position="top-right" mt="5em" />

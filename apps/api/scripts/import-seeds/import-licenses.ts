@@ -6,6 +6,7 @@ import type { SeedLicense } from '../create-seeds/types';
 interface ImportLicensesOptions {
   licenses: SeedLicense[];
   validUserIds: Set<string>;
+  organizationId: string;
   bar: cliProgress.SingleBar;
 }
 
@@ -20,6 +21,7 @@ const CONCURRENCY = 20;
 export async function importLicenses({
   licenses,
   validUserIds,
+  organizationId,
   bar,
 }: ImportLicensesOptions): Promise<ImportLicensesResult> {
   const timeOffEventsService = app.service('time-off-events');
@@ -42,6 +44,7 @@ export async function importLicenses({
         ...license,
         startDate: new Date(license.startDate),
         endDate: new Date(license.endDate),
+        organizationId,
       } as any);
       importedCount++;
     } catch (error: any) {
