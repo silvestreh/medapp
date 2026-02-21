@@ -59,11 +59,11 @@ The API will be available at `http://localhost:3030`.
 
 The app uses [`@feathersjs/configuration`](https://docs.feathersjs.com/api/configuration.html) which loads JSON config files from `config/` based on `NODE_ENV`:
 
-| File | Used when |
-|---|---|
-| `config/default.json` | Always loaded as base config |
-| `config/production.json` | Merged on top when `NODE_ENV=production` |
-| `config/test.json` | Merged on top when `NODE_ENV=test` |
+| File                    | Used when                                 |
+|-------------------------|--------------------------------------------|
+| `config/default.json`    | Always loaded as base config               |
+| `config/production.json` | Merged on top when `NODE_ENV=production`   |
+| `config/test.json`       | Merged on top when `NODE_ENV=test`         |
 
 In `production.json`, values like `"HOST"`, `"PORT"`, and `"DB_URL"` are resolved from environment variables of the same name.
 
@@ -84,30 +84,30 @@ Keep this key secure -- it is required to decrypt all existing data.
 
 ## Database Scripts
 
-| Script | Description |
-|---|---|
-| `pnpm db:init` | Create database, tables, and seed data |
-| `pnpm db:reset` | Drop and recreate all tables (destructive) |
-| `pnpm db:drop` | Drop the database entirely (destructive) |
-| `pnpm db:create-seeds` | Generate seed data |
-| `pnpm db:import-seeds` | Import seed data from files |
+| Script                 | Description                                |
+|------------------------|--------------------------------------------|
+| `pnpm db:init`         | Create database, tables, and seed data     |
+| `pnpm db:reset`        | Drop and recreate all tables (destructive) |
+| `pnpm db:drop`         | Drop the database entirely (destructive)   |
+| `pnpm db:create-seeds` | Generate seed data                         |
+| `pnpm db:import-seeds` | Import seed data from files                |
 
-If needed, you can run the `db:import-seeds` through the Railway CLI to seed the remote DB.
+If needed, you can run `db:import-seeds` through the Railway CLI to seed the remote database. Make sure the API's `DB_URL` env points to `${{Postgres.DATABASE_PUBLIC_URL}}` for this to work -- internal networking will fail since the script runs from your local machine.
 
 ## Deploying to Railway
 
 Set these environment variables on your Railway API service:
 
-| Variable | Example |
-|---|---|
-| `HOST` | `0.0.0.0` |
-| `PORT` | `8080` (or let Railway assign one) |
-| `DB_URL` | `postgres://user:pass@host:5432/railway` |
-| `ENCRYPTION_KEY` | *(output of `openssl rand -base64 32`)* |
-| `WEBAUTHN_RP_ID` | `app.example.com` |
-| `WEBAUTHN_RP_NAME` | `MedApp` |
-| `WEBAUTHN_ORIGIN` | `https://app.example.com` |
-| `NODE_ENV` | `production` |
+| Variable           | Example                                  |
+|--------------------|------------------------------------------|
+| `HOST`             | `0.0.0.0`                                |
+| `PORT`             | `8080` (or let Railway assign one)       |
+| `DB_URL`           | `postgres://user:pass@host:5432/railway` |
+| `ENCRYPTION_KEY`   | *(output of `openssl rand -base64 32`)*  |
+| `WEBAUTHN_RP_ID`   | `app.example.com`                        |
+| `WEBAUTHN_RP_NAME` | `MedApp`                                 |
+| `WEBAUTHN_ORIGIN`  | `https://app.example.com`                |
+| `NODE_ENV`         | `production`                             |
 
 In Railway, you can reference environment variables from other services, like `${{medapp-api.RAILWAY_PRIVATE_DOMAIN}}` or `${{Postgres.DATABASE_URL}}`. Use these and try to favor internal networking to avoid egress costs.
 
@@ -125,17 +125,17 @@ Pulls MongoDB collections from a remote server (via SSH) and a MongoDB Atlas clu
 ./scripts/pull-data.sh -u <mongodb_username> -w <mongodb_password> [-p <ssh_port>] [-m <mongodb_port>] -a <atlas_password>
 ```
 
-| Option | Description |
-|---|---|
-| `-u` | MongoDB username |
-| `-w` | MongoDB password |
-| `-p` | SSH port (default: 22) |
-| `-m` | MongoDB port (default: 27017) |
-| `-a` | MongoDB Atlas password |
+| Option | Description                   |
+|--------|-------------------------------|
+| `-u`   | MongoDB username              |
+| `-w`   | MongoDB password              |
+| `-p`   | SSH port (default: 22)        |
+| `-m`   | MongoDB port (default: 27017) |
+| `-a`   | MongoDB Atlas password        |
 
 ### Importing data (`scripts/import-mongo-dumps.ts`)
 
-This is the legacy import script. It mutates the MongoDB dumps into the appropriate format for the new API. It is slow, but functional. Look at the [DB scripts](#database-scripts) above. **This erases all existing data before importing.**
+This is the legacy import script. It transforms MongoDB dumps into the appropriate format for the new API. It is slow but functional. **This erases all existing data before importing.** See [Database Scripts](#database-scripts) for the newer seed-based alternative.
 
 ```bash
 npx ts-node scripts/import-mongo-dumps.ts
