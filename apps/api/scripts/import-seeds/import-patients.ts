@@ -1,3 +1,4 @@
+import pLimit from 'p-limit';
 import type cliProgress from 'cli-progress';
 import app from '../../src/app';
 import type { SeedPatient } from '../create-seeds/types';
@@ -13,6 +14,8 @@ export interface ImportPatientsResult {
   skipped: Array<{ item: SeedPatient; reason: string }>;
 }
 
+const CONCURRENCY = 15;
+
 export async function importPatients({
   patients,
   bar,
@@ -24,7 +27,9 @@ export async function importPatients({
   const mongoToRealPatientId = new Map<string, string>();
   const skipped: ImportPatientsResult['skipped'] = [];
 
-  for (const patient of patients) {
+  const limit = pLimit(CONCURRENCY);
+
+  await Promise.all(patients.map(patient => limit(async () => {
     const documentValue = patient.personalData?.documentValue;
 
     if (documentValue) {
@@ -46,7 +51,7 @@ export async function importPatients({
             mongoToRealPatientId.set(patient.id, existingPatientId);
             validPatientIds.add(existingPatientId);
             bar.increment();
-            continue;
+            return;
           }
         }
       } catch {
@@ -66,7 +71,7 @@ export async function importPatients({
     }
 
     bar.increment();
-  }
+  })));
 
   return { validPatientIds, mongoToRealPatientId, skipped };
 }

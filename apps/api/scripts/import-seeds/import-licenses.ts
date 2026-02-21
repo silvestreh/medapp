@@ -1,3 +1,4 @@
+import pLimit from 'p-limit';
 import type cliProgress from 'cli-progress';
 import app from '../../src/app';
 import type { SeedLicense } from '../create-seeds/types';
@@ -14,6 +15,8 @@ export interface ImportLicensesResult {
   skipped: Array<{ item: SeedLicense; reason: string }>;
 }
 
+const CONCURRENCY = 20;
+
 export async function importLicenses({
   licenses,
   validUserIds,
@@ -24,12 +27,14 @@ export async function importLicenses({
   let skippedCount = 0;
   const skipped: ImportLicensesResult['skipped'] = [];
 
-  for (const license of licenses) {
+  const limit = pLimit(CONCURRENCY);
+
+  await Promise.all(licenses.map(license => limit(async () => {
     if (!validUserIds.has(license.medicId)) {
       skipped.push({ item: license, reason: `medicId "${license.medicId}" not found in imported users` });
       skippedCount++;
       bar.increment();
-      continue;
+      return;
     }
 
     try {
@@ -45,7 +50,7 @@ export async function importLicenses({
     }
 
     bar.increment();
-  }
+  })));
 
   return { importedCount, skippedCount, skipped };
 }
