@@ -72,7 +72,6 @@ export const action: ActionFunction = async ({ request }) => {
   const password = String(formData.get('password') || '');
   const twoFactorCode = String(formData.get('twoFactorCode') || '');
   const apiUrl = process.env.API_URL;
-  console.log('[login] action: authenticating with', apiUrl, 'user:', username);
   const client = createFeathersClient(apiUrl);
 
   try {
