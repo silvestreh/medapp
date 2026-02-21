@@ -1,3 +1,4 @@
+import pLimit from 'p-limit';
 import type cliProgress from 'cli-progress';
 import app from '../../src/app';
 import type { SeedUser } from '../create-seeds/types';
@@ -13,15 +14,18 @@ export interface ImportUsersResult {
   skipped: Array<{ item: SeedUser; reason: string }>;
 }
 
+const CONCURRENCY = 5;
+
 export async function importUsers({ users, resetPasswords, bar }: ImportUsersOptions): Promise<ImportUsersResult> {
   const usersService = app.service('users');
   const mdSettingsService = app.service('md-settings');
+  const userRolesService = app.service('user-roles');
   const validUserIds = new Set<string>();
   const skipped: ImportUsersResult['skipped'] = [];
 
-  const userRolesService = app.service('user-roles');
+  const limit = pLimit(CONCURRENCY);
 
-  for (const user of users) {
+  await Promise.all(users.map(user => limit(async () => {
     try {
       const { mdSettings, additionalRoleIds, ...userData } = user;
       if (resetPasswords) {
@@ -44,7 +48,7 @@ export async function importUsers({ users, resetPasswords, bar }: ImportUsersOpt
     }
 
     bar.increment();
-  }
+  })));
 
   return { validUserIds, skipped };
 }

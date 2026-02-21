@@ -13,7 +13,7 @@ type WebAuthnAction =
   | 'generate-authentication-options'
   | 'verify-authentication';
 
-const getRpConfig = (app: Application) => {
+const getRpConfig = () => {
   const rpID = process.env.WEBAUTHN_RP_ID || 'localhost';
   const rpName = process.env.WEBAUTHN_RP_NAME || 'MedApp';
   const origin = process.env.WEBAUTHN_ORIGIN || 'http://localhost:5173';
@@ -47,16 +47,16 @@ export class WebAuthn {
     }
 
     switch (action) {
-      case 'generate-registration-options':
-        return this.generateRegistrationOptions(data, params);
-      case 'verify-registration':
-        return this.verifyRegistration(data, params);
-      case 'generate-authentication-options':
-        return this.generateAuthenticationOptions(data, params);
-      case 'verify-authentication':
-        return this.verifyAuthentication(data, params);
-      default:
-        throw new BadRequest('Unsupported action');
+    case 'generate-registration-options':
+      return this.generateRegistrationOptions(data, params);
+    case 'verify-registration':
+      return this.verifyRegistration(data, params);
+    case 'generate-authentication-options':
+      return this.generateAuthenticationOptions();
+    case 'verify-authentication':
+      return this.verifyAuthentication(data);
+    default:
+      throw new BadRequest('Unsupported action');
     }
   }
 
@@ -66,7 +66,7 @@ export class WebAuthn {
       throw new NotAuthenticated('Authentication required');
     }
 
-    const { rpID, rpName } = getRpConfig(this.app);
+    const { rpID, rpName } = getRpConfig();
 
     const existingCredentials = await this.getUserCredentials(String(user.id));
 
@@ -105,7 +105,7 @@ export class WebAuthn {
       throw new BadRequest('Credential response is required');
     }
 
-    const { rpID, origin } = getRpConfig(this.app);
+    const { rpID, origin } = getRpConfig();
 
     const sequelize = this.getSequelize();
     const freshUser = await sequelize.models.users.findByPk(user.id, { raw: true });
@@ -154,8 +154,8 @@ export class WebAuthn {
     }
   }
 
-  private async generateAuthenticationOptions(data: any, _params: any) {
-    const { rpID } = getRpConfig(this.app);
+  private async generateAuthenticationOptions() {
+    const { rpID } = getRpConfig();
 
     const options = await generateAuthenticationOptions({
       rpID,
@@ -174,17 +174,15 @@ export class WebAuthn {
   private cleanupExpiredChallenges() {
     if (!this._pendingChallenges) return;
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    let cleaned = 0;
     for (const [challenge, timestamp] of this._pendingChallenges) {
       if (timestamp < fiveMinutesAgo) {
         this._pendingChallenges.delete(challenge);
-        cleaned++;
       }
     }
   }
 
 
-  private async verifyAuthentication(data: any, _params: any) {
+  private async verifyAuthentication(data: any) {
     const { credential, challenge } = data;
     if (!credential) {
       throw new BadRequest('Credential response is required');
@@ -199,7 +197,7 @@ export class WebAuthn {
     }
     this._pendingChallenges.delete(challenge);
 
-    const { rpID, origin } = getRpConfig(this.app);
+    const { rpID, origin } = getRpConfig();
     const sequelize = this.getSequelize();
 
     const credentialRecord = await sequelize.models.passkey_credentials.findOne({

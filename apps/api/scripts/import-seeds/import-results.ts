@@ -1,3 +1,4 @@
+import pLimit from 'p-limit';
 import type cliProgress from 'cli-progress';
 import app from '../../src/app';
 import type { SeedResult } from '../create-seeds/types';
@@ -14,6 +15,8 @@ export interface ImportResultsResult {
   skipped: Array<{ item: SeedResult; reason: string }>;
 }
 
+const CONCURRENCY = 20;
+
 export async function importResults({
   studyResults,
   seedToRealStudyId,
@@ -24,14 +27,16 @@ export async function importResults({
   let skippedCount = 0;
   const skipped: ImportResultsResult['skipped'] = [];
 
-  for (const result of studyResults) {
+  const limit = pLimit(CONCURRENCY);
+
+  await Promise.all(studyResults.map(result => limit(async () => {
     const realStudyId = seedToRealStudyId.get(result.studyId);
 
     if (!realStudyId) {
       skipped.push({ item: result, reason: `studyId "${result.studyId}" not found in imported studies` });
       skippedCount++;
       bar.increment();
-      continue;
+      return;
     }
 
     try {
@@ -46,7 +51,7 @@ export async function importResults({
     }
 
     bar.increment();
-  }
+  })));
 
   return { importedCount, skippedCount, skipped };
 }

@@ -1,3 +1,4 @@
+import pLimit from 'p-limit';
 import type cliProgress from 'cli-progress';
 import app from '../../src/app';
 import type { SeedEncounter } from '../create-seeds/types';
@@ -15,6 +16,8 @@ export interface ImportEncountersResult {
   skipped: Array<{ item: SeedEncounter; reason: string }>;
 }
 
+const CONCURRENCY = 20;
+
 export async function importEncounters({
   encounters,
   validUserIds,
@@ -26,21 +29,23 @@ export async function importEncounters({
   let skippedCount = 0;
   const skipped: ImportEncountersResult['skipped'] = [];
 
-  for (const encounter of encounters) {
+  const limit = pLimit(CONCURRENCY);
+
+  await Promise.all(encounters.map(encounter => limit(async () => {
     const realPatientId = mongoToRealPatientId.get(encounter.patientId);
 
     if (!validUserIds.has(encounter.medicId)) {
       skipped.push({ item: encounter, reason: `medicId "${encounter.medicId}" not found in imported users` });
       skippedCount++;
       bar.increment();
-      continue;
+      return;
     }
 
     if (!realPatientId) {
       skipped.push({ item: encounter, reason: `patientId "${encounter.patientId}" not found in imported patients` });
       skippedCount++;
       bar.increment();
-      continue;
+      return;
     }
 
     try {
@@ -56,7 +61,7 @@ export async function importEncounters({
     }
 
     bar.increment();
-  }
+  })));
 
   return { importedCount, skippedCount, skipped };
 }
