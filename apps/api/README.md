@@ -97,6 +97,10 @@ Keep this key secure -- it is required to decrypt all existing data.
 
 If needed, you can run `db:import-seeds` through the Railway CLI to seed the remote database. Make sure the API's `DB_URL` env points to `${{Postgres.DATABASE_PUBLIC_URL}}` for this to work -- internal networking will fail since the script runs from your local machine.
 
+```bash
+cd apps/api && railway run bash -c 'DB_URL="<DATABASE_PUBLIC_URL>" ts-node scripts/import-seeds.ts --reset-passwords'
+```
+
 ## Deploying to Railway
 
 Set these environment variables on your Railway API service:
