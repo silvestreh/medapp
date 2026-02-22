@@ -4,6 +4,7 @@ import createPersonalData from '../../hooks/create-personal-data';
 import createContactData from '../../hooks/create-contact-data';
 import includeData from '../../hooks/include-data';
 import populateUser from './hooks/populate-user';
+import { prepareSignupOrganization, handleSignupOrganization } from './hooks/handle-signup-organization';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = feathersAuthentication.hooks;
@@ -18,7 +19,7 @@ export default {
     get: [
       authenticate('jwt')
     ],
-    create: [ hashPassword('password') ],
+    create: [ prepareSignupOrganization(), hashPassword('password') ],
     update: [
       hashPassword('password'),
       authenticate('jwt')
@@ -47,7 +48,8 @@ export default {
     ],
     create: [
       createPersonalData('user'),
-      createContactData('user')
+      createContactData('user'),
+      handleSignupOrganization()
     ],
     update: [],
     patch: [],

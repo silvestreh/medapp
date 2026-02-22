@@ -28,31 +28,26 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const username = formData.get('username');
   const password = formData.get('password');
+  const organizationName = formData.get('organizationName');
   const client = createFeathersClient(process.env.API_URL ?? 'http://localhost:3030');
 
   try {
-    const user = await client.service('users').create({ username, password, roleId: 'receptionist' });
+    const user: any = await client.service('users').create({
+      username,
+      password,
+      signupOrganization: organizationName,
+    });
+
     const { accessToken } = await client.authenticate({
       strategy: 'local',
       username,
       password,
     });
 
-    const slug = String(username).toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const org = await client.service('organizations').create({
-      name: `${username}'s Clinic`,
-      slug: `${slug}-${Date.now()}`,
-      settings: {}
-    });
-
-    await client.service('organization-users').create({
-      organizationId: org.id,
-      userId: user.id,
-      role: 'admin'
-    });
-
     session.set('feathers-jwt', accessToken);
-    session.set('currentOrganizationId', org.id);
+    if (user.signupOrganizationId) {
+      session.set('currentOrganizationId', user.signupOrganizationId);
+    }
 
     return redirect('/', {
       headers: {
@@ -82,6 +77,13 @@ export default function Login() {
 
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <Form method="post">
+          <TextInput
+            label={t('auth.organization_name')}
+            name="organizationName"
+            placeholder={t('auth.organization_name_placeholder')}
+            required
+            mb="md"
+          />
           <TextInput
             label={t('auth.username')}
             name="username"

@@ -6,6 +6,7 @@ import { Building2, ChevronDown, Check, LogOut, User } from 'lucide-react';
 
 import { styled } from '~/styled-system/jsx';
 import { useAccount, useOrganization } from '~/components/provider';
+import { Account } from '~/declarations';
 
 const Logo = styled(Image, {
   base: {
@@ -85,12 +86,10 @@ const TriggerButton = styled(UnstyledButton, {
   },
 });
 
-function getInitials(username: string): string {
-  const parts = username.replace(/[^a-zA-Z.]/g, '').split('.');
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return username.slice(0, 2).toUpperCase();
+function getInitials(user: Account): string {
+  const { firstName, lastName } = user.personalData || { firstName: '', lastName: '' };
+  const initials = `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
+  return initials || '?';
 }
 
 export default function TopNav() {
@@ -105,16 +104,16 @@ export default function TopNav() {
 
   const hasMultipleOrgs = organizations.length > 1;
 
-  const initials = useMemo(
-    () => user?.username ? getInitials(user.username) : '?',
-    [user?.username]
-  );
+  const initials = useMemo(() => (user ? getInitials(user) : '?'), [user]);
 
-  const handleSwitch = useCallback((id: string) => () => {
-    if (id !== currentOrganizationId) {
-      switchOrganization(id);
-    }
-  }, [currentOrganizationId, switchOrganization]);
+  const handleSwitch = useCallback(
+    (id: string) => () => {
+      if (id !== currentOrganizationId) {
+        switchOrganization(id);
+      }
+    },
+    [currentOrganizationId, switchOrganization]
+  );
 
   const handleLogout = useCallback(() => {
     logout();
@@ -141,12 +140,10 @@ export default function TopNav() {
         <Menu.Dropdown>
           {!hasMultipleOrgs && currentOrg && (
             <>
-              <Menu.Item
-                leftSection={<Building2 size={14} />}
-                disabled
-                style={{ opacity: 1 }}
-              >
-                <Text size="sm" fw={500}>{currentOrg.name}</Text>
+              <Menu.Item leftSection={<Building2 size={14} />} disabled style={{ opacity: 1 }}>
+                <Text size="sm" fw={500}>
+                  {currentOrg.name}
+                </Text>
               </Menu.Item>
               <Menu.Divider />
             </>
@@ -170,21 +167,13 @@ export default function TopNav() {
             </>
           )}
 
-          <Menu.Item
-            leftSection={<User size={14} />}
-            component={Link}
-            to="/profile"
-          >
+          <Menu.Item leftSection={<User size={14} />} component={Link} to="/profile">
             {t('navigation.profile')}
           </Menu.Item>
 
           <Menu.Divider />
 
-          <Menu.Item
-            leftSection={<LogOut size={14} />}
-            color="red"
-            onClick={handleLogout}
-          >
+          <Menu.Item leftSection={<LogOut size={14} />} color="red" onClick={handleLogout}>
             {t('navigation.logout')}
           </Menu.Item>
         </Menu.Dropdown>

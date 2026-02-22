@@ -14,7 +14,9 @@ export interface Account {
     id: string;
     permissions: string[];
   };
-  settings: {
+  personalData?: PersonalData;
+  contactData?: ContactData;
+  settings?: {
     medicalSpecialty: string;
     nationalLicenseNumber: string;
     stateLicense: string;

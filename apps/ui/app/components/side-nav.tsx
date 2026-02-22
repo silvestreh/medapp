@@ -2,11 +2,12 @@ import React, { cloneElement, isValidElement, type ReactElement } from 'react';
 import { ActionIcon, Flex, Tooltip, Image, Menu, type DefaultMantineColor } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { NavLink, useLocation, useMatches, useNavigate } from '@remix-run/react';
-import { Calendar, User, Stethoscope, FlaskConical, Shield, Building2, Languages, type LucideProps } from 'lucide-react';
+import { Calendar, User, Stethoscope, FlaskConical, Shield, Languages, type LucideProps } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
 import { media } from '~/media';
+import { useAccount } from '~/components/provider';
 import HasPermission from '~/components/has-permission';
 
 type Section = {
@@ -201,17 +202,11 @@ const sections: Section[] = [
     path: '/users',
     color: 'red',
   },
-  {
-    labelKey: 'organization',
-    icon: <Building2 />,
-    permissions: [],
-    path: '/organization',
-    color: 'lime',
-  },
 ];
 
 const SideNav: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const { user } = useAccount();
   const matches = useMatches();
   const location = useLocation();
   const navigate = useNavigate();
@@ -232,7 +227,7 @@ const SideNav: React.FC = () => {
     <Container>
       <StickyContent>
         <Logo src="/logo.webp" alt="Logo" />
-        {sections.map((section: Section) => {
+        {user && sections.map((section: Section) => {
           const isActive = matches.at(-1)?.pathname.startsWith(section.path);
           const label = t(`navigation.${section.labelKey}` as any);
 
