@@ -49,6 +49,10 @@ export const FeathersProvider: React.FC<FeathersProviderProps> = ({
   const [currentOrganizationId, setCurrentOrgId] = useState<string | undefined>(initialOrganizationId);
 
   useEffect(() => {
+    setCurrentOrgId(initialOrganizationId);
+  }, [initialOrganizationId]);
+
+  useEffect(() => {
     const client = createFeathersClient(undefined, initialToken, currentOrganizationId);
     setFeathersClient(client);
   }, [initialToken, currentOrganizationId]);
