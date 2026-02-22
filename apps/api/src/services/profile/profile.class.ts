@@ -196,14 +196,14 @@ export class Profile {
             },
             internalParams as any
           );
-        } else {
+        } else if (personalDataPayload.documentValue) {
           const newPersonal = await this.app.service('personal-data').create(
             {
               firstName: personalDataPayload.firstName ?? undefined,
               lastName: personalDataPayload.lastName ?? undefined,
               nationality: personalDataPayload.nationality ?? undefined,
               documentType: personalDataPayload.documentType ?? undefined,
-              documentValue: personalDataPayload.documentValue ?? undefined,
+              documentValue: personalDataPayload.documentValue,
               maritalStatus: personalDataPayload.maritalStatus ?? undefined,
               birthDate: personalDataPayload.birthDate ?? undefined,
             },

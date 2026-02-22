@@ -42,16 +42,13 @@ export async function getUser(request: Request) {
 
   try {
     const apiUrl = process.env.API_URL ?? 'http://localhost:3030';
-    console.log('[auth.server] getUser: authenticating with', apiUrl);
     const client = createFeathersClient(apiUrl);
     const auth = await client.authenticate({
       strategy: 'jwt',
       accessToken: token,
     });
-    console.log('[auth.server] getUser: success, user id:', auth.user?.id);
     return auth.user;
   } catch (error: any) {
-    console.error('[auth.server] getUser: failed', error?.message || error);
     return null;
   }
 }
@@ -64,11 +61,7 @@ export async function getAuthenticatedClient(request: Request): Promise<{ client
   }
 
   const organizationId = await getCurrentOrganizationId(request);
-  const client = createFeathersClient(
-    process.env.API_URL ?? 'http://localhost:3030',
-    undefined,
-    organizationId
-  );
+  const client = createFeathersClient(process.env.API_URL ?? 'http://localhost:3030', undefined, organizationId);
 
   try {
     const { user } = await client.authenticate({

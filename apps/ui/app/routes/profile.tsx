@@ -9,6 +9,7 @@ import { Tabs } from '@mantine/core';
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { FormContainer } from '~/components/forms/styles';
 import { ProfileForm } from '~/components/profile-form';
+import { ProfileOrganization } from '~/components/profile-organization';
 import { ProfileSecurity } from '~/components/profile-security';
 import Portal from '~/components/portal';
 import { css } from '~/styled-system/css';
@@ -107,6 +108,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       // passkey-credentials table may not exist yet
     }
 
+    let isOrgOwner = false;
+    let currentOrg: { id: string; name: string; slug: string } | null = null;
+    const orgs = (fullUser as any).organizations as
+      | Array<{ id: string; name: string; slug: string; role: string }>
+      | undefined;
+    if (orgs?.length) {
+      const ownerMembership = orgs.find(o => o.role === 'owner');
+      if (ownerMembership) {
+        isOrgOwner = true;
+        currentOrg = { id: ownerMembership.id, name: ownerMembership.name, slug: ownerMembership.slug };
+      }
+    }
+
     return json({
       username: user.username,
       twoFactorEnabled: Boolean(profile.twoFactorEnabled),
@@ -114,6 +128,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       isMedic,
       mdSettings: mdSettingsRecord,
       passkeys,
+      isOrgOwner,
+      currentOrg,
     });
   } catch (error) {
     throw redirect('/login');
@@ -199,6 +215,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ ok: true, intent });
     }
 
+    if (intent === 'update-organization') {
+      const orgId = String(formData.get('orgId') || '');
+      const name = String(formData.get('name') || '');
+      await client.service('organizations').patch(orgId, { name });
+      return json({ ok: true, intent });
+    }
+
     return json({ ok: false, intent, error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
     return json(
@@ -217,7 +240,8 @@ function buildSelectOptions(obj: Record<string, string>) {
 }
 
 export default function Profile() {
-  const { username, twoFactorEnabled, user, isMedic, mdSettings, passkeys } = useLoaderData<typeof loader>();
+  const { username, twoFactorEnabled, user, isMedic, mdSettings, passkeys, isOrgOwner, currentOrg } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const revalidator = useRevalidator();
@@ -317,6 +341,7 @@ export default function Profile() {
           <Tabs.List>
             <Tabs.Tab value="profile">{t('profile.tab_profile')}</Tabs.Tab>
             <Tabs.Tab value="security">{t('profile.tab_security')}</Tabs.Tab>
+            {isOrgOwner && <Tabs.Tab value="organization">{t('profile.tab_organization')}</Tabs.Tab>}
           </Tabs.List>
         </Portal>
 
@@ -340,6 +365,11 @@ export default function Profile() {
             passkeys={passkeys}
           />
         </Tabs.Panel>
+        {isOrgOwner && currentOrg && (
+          <Tabs.Panel value="organization" pt="md">
+            <ProfileOrganization currentOrg={currentOrg} showFormActions={activeTab === 'organization'} />
+          </Tabs.Panel>
+        )}
       </Tabs>
     </FormContainer>
   );

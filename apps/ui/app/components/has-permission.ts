@@ -10,11 +10,15 @@ interface HasPermissionProps {
 const HasPermission: React.FC<HasPermissionProps> = ({ permissions, children }) => {
   const { user } = useAccount();
 
+  if (!user) {
+    return null;
+  }
+
   if (permissions.length === 0) {
     return children;
   }
 
-  const hasPermission = intersection(permissions, user?.role.permissions || []).length > 0;
+  const hasPermission = intersection(permissions, user.role?.permissions || []).length > 0;
 
   return hasPermission ? children : null;
 };

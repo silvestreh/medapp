@@ -62,7 +62,7 @@ async function main() {
   for (const user of users) {
     await sequelize.query(
       `INSERT INTO organization_users (id, "organizationId", "userId", role, "createdAt", "updatedAt")
-       VALUES (:id, :orgId, :userId, 'admin', NOW(), NOW())`,
+       VALUES (:id, :orgId, :userId, 'owner', NOW(), NOW())`,
       { replacements: { id: uuid(), orgId, userId: user.id }, type: QueryTypes.INSERT }
     );
   }

@@ -292,7 +292,7 @@ function buildStudyResult(studyType: string): { type: string; data: string } {
     const orgUsersService = app.service('organization-users');
 
     const userSpecs = [
-      { username: 'admin.sur', roleId: 'admin' as const, orgRole: 'admin' },
+      { username: 'admin.sur', roleId: 'admin' as const, orgRole: 'owner' },
       { username: 'dr.ramirez', roleId: 'medic' as const, orgRole: 'member' },
       { username: 'dra.gonzalez', roleId: 'medic' as const, orgRole: 'member' },
       { username: 'recep.sur', roleId: 'receptionist' as const, orgRole: 'member' },

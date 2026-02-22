@@ -6,14 +6,7 @@ import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
 
 import Portal from '~/components/portal';
-import {
-  FormCard,
-  FieldRow,
-  StyledSelect,
-  StyledTextInput,
-  StyledTitle,
-  FormHeader,
-} from '~/components/forms/styles';
+import { FormCard, FieldRow, StyledSelect, StyledTextInput, StyledTitle, FormHeader } from '~/components/forms/styles';
 
 type PersonalDataLike = { firstName?: string | null; lastName?: string | null } | undefined;
 type ContactDataLike =

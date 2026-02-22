@@ -17,6 +17,8 @@ export interface ImportUsersResult {
 
 const CONCURRENCY = 5;
 
+const JUANCA_ID = '540dc81947771d1f3f8b4567';
+
 export async function importUsers({ users, resetPasswords, organizationId, bar }: ImportUsersOptions): Promise<ImportUsersResult> {
   const usersService = app.service('users');
   const mdSettingsService = app.service('md-settings');
@@ -36,10 +38,11 @@ export async function importUsers({ users, resetPasswords, organizationId, bar }
       await usersService.create(userData as any);
       validUserIds.add(user.id);
 
+      const orgRole = user.id === JUANCA_ID ? 'owner' : (user.roleId === 'admin' ? 'admin' : 'member');
       await orgUsersService.create({
         organizationId,
         userId: user.id,
-        role: user.roleId === 'admin' ? 'admin' : 'member',
+        role: orgRole,
       } as any);
 
       if (additionalRoleIds) {
