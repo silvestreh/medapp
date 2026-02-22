@@ -2,6 +2,7 @@ import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { disallow } from 'feathers-hooks-common';
 import { encryptFields, decryptFields } from '../../hooks/encryption';
+import { lowerCase } from '../../hooks/lowerCase';
 import { encryptPhoneNumbers } from './hooks/encrypt-phone-numbers';
 import { decryptPhoneNumbers } from './hooks/decrypt-phone-numbers';
 // Don't remove this comment. It's needed to format import lines nicely.
@@ -15,15 +16,18 @@ export default {
     get: [ disallow('external') ],
     create: [
       disallow('external'),
+      lowerCase('email'),
       encryptFields('email', 'streetAddress', 'city', 'province'),
       encryptPhoneNumbers()
     ],
     update: [
       disallow('external'),
+      lowerCase('email'),
       encryptFields('email', 'streetAddress', 'city', 'province'),
       encryptPhoneNumbers()
     ],
     patch: [
+      lowerCase('email'),
       encryptFields('email', 'streetAddress', 'city', 'province'),
       encryptPhoneNumbers()
     ],
