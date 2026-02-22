@@ -7,6 +7,7 @@ import QRCode from 'qrcode';
 import { Tabs } from '@mantine/core';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
+import { getCurrentOrganizationId } from '~/session';
 import { FormContainer } from '~/components/forms/styles';
 import { ProfileForm } from '~/components/profile-form';
 import { ProfileOrganization } from '~/components/profile-organization';
@@ -110,14 +111,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     let isOrgOwner = false;
     let currentOrg: { id: string; name: string; slug: string } | null = null;
+    const currentOrganizationId = await getCurrentOrganizationId(request);
     const orgs = (fullUser as any).organizations as
       | Array<{ id: string; name: string; slug: string; role: string }>
       | undefined;
-    if (orgs?.length) {
-      const ownerMembership = orgs.find(o => o.role === 'owner');
-      if (ownerMembership) {
+    if (orgs?.length && currentOrganizationId) {
+      const membership = orgs.find(o => o.id === currentOrganizationId);
+      if (membership?.role === 'owner') {
         isOrgOwner = true;
-        currentOrg = { id: ownerMembership.id, name: ownerMembership.name, slug: ownerMembership.slug };
+        currentOrg = { id: membership.id, name: membership.name, slug: membership.slug };
       }
     }
 
