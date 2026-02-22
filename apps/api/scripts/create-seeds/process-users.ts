@@ -152,7 +152,7 @@ export async function processUsers({
 
     seedUsers.push({
       id: userId,
-      username: user.username ?? 'weird_user',
+      username: user.username?.toLowerCase?.() ?? 'weird_user',
       password: user.bf_password || 'retrete',
       roleId,
       additionalRoleIds,
