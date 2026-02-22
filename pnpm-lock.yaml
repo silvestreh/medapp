@@ -58,12 +58,18 @@ importers:
       feathers-sequelize:
         specifier: ^6.4.0
         version: 6.4.0
+      form-data:
+        specifier: ^4.0.3
+        version: 4.0.3
       helmet:
         specifier: ^5.1.1
         version: 5.1.1
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      mailgun.js:
+        specifier: ^10.4.0
+        version: 10.4.0
       node-cron:
         specifier: ^4.2.1
         version: 4.2.1
@@ -4042,6 +4048,9 @@ packages:
   bare-url@2.3.2:
     resolution: {integrity: sha512-ZMq4gd9ngV5aTMa5p9+UfY0b3skwhHELaDkhEHetMdX0LRkW9kzaym4oo/Eh+Ghm0CCDuMTsRIGM/ytUc1ZYmw==}
 
+  base-64@1.0.0:
+    resolution: {integrity: sha512-kwDPIFCGx0NZHog36dj+tHiwP4QMzsZ3AgMViUBKI0+V5n4U0ufTCUMhnQ04diaRI8EX/QcPfql7zlhZ7j4zgg==}
+
   base64-arraybuffer@0.1.2:
     resolution: {integrity: sha512-ewBKKVVPIl78B26mYQHYlaxR7NydMiD/GxwLNIwTAfLIE4xhN2Gxcy30//azq5UrejXjzGpWjcBu3NUJxzMMzg==}
     engines: {node: '>= 0.6.0'}
@@ -7782,6 +7791,10 @@ packages:
     resolution: {integrity: sha512-ISQTe55T2ao7XtlAStud6qwYPZjE4GK1S/BeVPus4jrq6JuOnQ00YKQC581RWhR122W7msZV263KzVeLoqidyQ==}
     engines: {node: '>=12'}
 
+  mailgun.js@10.4.0:
+    resolution: {integrity: sha512-YrdaZEAJwwjXGBTfZTNQ1LM7tmkdUaz2NpZEu7+zULcG4Wrlhd7cWSNZW0bxT3bP48k5N0mZWz8C2f9gc2+Geg==}
+    engines: {node: '>=18.0.0'}
+
   make-dir@3.1.0:
     resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
     engines: {node: '>=8'}
@@ -10946,6 +10959,9 @@ packages:
   urix@0.1.0:
     resolution: {integrity: sha512-Am1ousAhSLBeB9cG/7k7r2R0zj50uDRlZHPGbazid5s9rlF1F/QKYObEKSIunSjIOkJZqwRRLpvewjEkM7pSqg==}
     deprecated: Please see https://github.com/lydell/urix#deprecated
+
+  url-join@4.0.1:
+    resolution: {integrity: sha512-jk1+QP6ZJqyOiuEI9AEWQfju/nB2Pw466kbA0LEZljHwKeMgd9WrAEgEGxjPDD2+TNbbb37rTyhEfrCXfuKXnA==}
 
   url-loader@0.5.7:
     resolution: {integrity: sha512-csNKGdBlIrGe2X0fqw/DXxyWorGH48pnpIC9uYoTXKkESCBhLvEF/7zjFZ66VJFxjKCyd2753ummXtCKrTzCAQ==}
@@ -15673,6 +15689,8 @@ snapshots:
       bare-path: 3.0.0
     optional: true
 
+  base-64@1.0.0: {}
+
   base64-arraybuffer@0.1.2: {}
 
   base64-js@1.5.1: {}
@@ -19940,6 +19958,14 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
 
+  mailgun.js@10.4.0:
+    dependencies:
+      axios: 1.9.0
+      base-64: 1.0.0
+      url-join: 4.0.1
+    transitivePeerDependencies:
+      - debug
+
   make-dir@3.1.0:
     dependencies:
       semver: 6.3.1
@@ -23844,6 +23870,8 @@ snapshots:
       punycode: 2.3.1
 
   urix@0.1.0: {}
+
+  url-join@4.0.1: {}
 
   url-loader@0.5.7(file-loader@0.9.0):
     dependencies:

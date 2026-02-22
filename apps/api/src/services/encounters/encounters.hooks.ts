@@ -4,6 +4,7 @@ import { disallow } from 'feathers-hooks-common';
 
 import { omitForDeleted } from '../../hooks/omit-for-deleted';
 import { checkPermissions } from '../../hooks/check-permissions';
+import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { includeDecryptedAttributes } from '../../hooks/include-decrypted-attributes';
 import { parseDecryptedAttributes } from '../../hooks/parse-decrypted-attributes';
 import { sanitizeEncryptedData } from '../../hooks/sanitize-encrypted-data';
@@ -16,6 +17,7 @@ export default {
   before: {
     all: [
       authenticate('jwt'),
+      verifyOrganizationMembership(),
       checkPermissions({ foreignKey: 'medicId' })
     ],
     find: [includeDecryptedAttributes()],

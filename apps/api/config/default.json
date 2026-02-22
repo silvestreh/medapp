@@ -29,5 +29,10 @@
     }
   },
   "postgres": "postgres://postgres:@localhost:5432/medapp_api",
-  "encryptionKey": "ENCRYPTION_KEY"
+  "encryptionKey": "ENCRYPTION_KEY",
+  "mailgun": {
+    "apiKey": "",
+    "domain": "",
+    "from": "MedApp <noreply@example.com>"
+  }
 }

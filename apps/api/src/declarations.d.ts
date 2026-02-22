@@ -202,6 +202,19 @@ export interface OrganizationPatient {
   patientId: Id;
 }
 
+export interface Invite {
+  id: Id;
+  email: string;
+  organizationId: Id;
+  role: string;
+  invitedBy: Id;
+  userId: Id | null;
+  token: string;
+  status: 'pending' | 'accepted' | 'expired' | 'cancelled';
+  expiresAt: Date;
+  isNewUser: boolean;
+}
+
 export interface Study {
   id: Id;
   date: Date;

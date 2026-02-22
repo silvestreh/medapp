@@ -1,16 +1,9 @@
 import { HooksObject } from '@feathersjs/feathers';
-import * as authentication from '@feathersjs/authentication';
-import { checkPermissions } from '../../hooks/check-permissions';
-// Don't remove this comment. It's needed to format import lines nicely.
-
-const { authenticate } = authentication.hooks;
+import { disallow } from 'feathers-hooks-common';
 
 export default {
   before: {
-    all: [
-      authenticate('jwt'),
-      checkPermissions({ scopeToOrganization: false })
-    ],
+    all: [disallow('external')],
     find: [],
     get: [],
     create: [],

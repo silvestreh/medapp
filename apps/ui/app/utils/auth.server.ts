@@ -60,7 +60,7 @@ export async function getAuthenticatedClient(request: Request): Promise<{ client
     throw new Error('Token is required to authenticate the client');
   }
 
-  const organizationId = await getCurrentOrganizationId(request);
+  let organizationId = await getCurrentOrganizationId(request);
   const client = createFeathersClient(process.env.API_URL ?? 'http://localhost:3030', undefined, organizationId);
 
   try {
@@ -68,6 +68,11 @@ export async function getAuthenticatedClient(request: Request): Promise<{ client
       strategy: 'jwt',
       accessToken: token,
     });
+
+    if (!organizationId && user?.organizations?.length) {
+      organizationId = user.organizations[0].id;
+      client.setOrganizationId(organizationId);
+    }
 
     return { client, user };
   } catch (error) {

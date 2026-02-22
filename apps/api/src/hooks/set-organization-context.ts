@@ -1,17 +1,19 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
-import { Forbidden } from '@feathersjs/errors';
 
 /**
- * Reads the `organization-id` header from external requests and validates
- * that the authenticated user belongs to that organization.  The resolved
- * organizationId is stored at `params.organizationId` so downstream hooks
- * and services can use it for scoping.
+ * Reads the `organization-id` header (or query param) from external requests
+ * and stores it at `params.organizationId` so downstream hooks can use it
+ * for scoping.
+ *
+ * This runs as an app-level before hook (before service-level authenticate),
+ * so params.user is not yet available. Membership validation should happen
+ * in service-level hooks that run after authenticate.
  */
 export const setOrganizationContext = (): Hook => {
   return async (context: HookContext): Promise<HookContext> => {
-    const { app, params } = context;
+    const { params } = context;
 
-    if (params.provider === undefined || !params.user) {
+    if (params.provider === undefined) {
       return context;
     }
 
@@ -21,15 +23,6 @@ export const setOrganizationContext = (): Hook => {
 
     if (!organizationId) {
       return context;
-    }
-
-    const memberships: any[] = await app.service('organization-users').find({
-      query: { userId: params.user.id, organizationId },
-      paginate: false
-    } as any);
-
-    if (memberships.length === 0) {
-      throw new Forbidden('You are not a member of this organization');
     }
 
     params.organizationId = organizationId;

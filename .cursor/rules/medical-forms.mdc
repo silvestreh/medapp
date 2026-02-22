@@ -13,6 +13,7 @@ alwaysApply: true
   ```
 
   Always memoize functions to avoid them being re-created.
+4. Don't use `as any` to get out of a TS compilation error. Always have proper types.
 
 # Code Style
 

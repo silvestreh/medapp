@@ -1,6 +1,7 @@
 import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { checkPermissions } from '../../hooks/check-permissions';
+import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import populateResults from './hooks/populate-results';
 import populatePatient from './hooks/populate-patient';
 import autoProtocol from './hooks/auto-protocol';
@@ -18,6 +19,7 @@ export default {
   before: {
     all: [
       authenticate('jwt'),
+      verifyOrganizationMembership(),
       checkPermissions()
     ],
     find: [restrictToMedic(), searchStudies()],

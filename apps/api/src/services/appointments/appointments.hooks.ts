@@ -1,6 +1,7 @@
 import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { checkPermissions } from '../../hooks/check-permissions';
+import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { includePatient } from './hooks/include-patient';
 import { addDuration } from './hooks/add-duration';
 import { omitForDeleted } from '../../hooks/omit-for-deleted';
@@ -12,6 +13,7 @@ export default {
   before: {
     all: [
       authenticate('jwt'),
+      verifyOrganizationMembership(),
       checkPermissions()
     ],
     find: [],
