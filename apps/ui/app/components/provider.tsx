@@ -135,16 +135,14 @@ export const useOrganization = (): UseOrganizationReturn => {
 
   const organizations = context.initialUser?.organizations ?? [];
 
-  const switchOrganization = useCallback((id: string) => {
-    context.setCurrentOrganizationId(id);
-    fetch('/api/switch-organization', {
+  const switchOrganization = useCallback(async (id: string) => {
+    await fetch('/api/switch-organization', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ organizationId: id })
-    }).then(() => {
-      window.location.reload();
+      body: JSON.stringify({ organizationId: id }),
     });
-  }, [context]);
+    window.location.reload();
+  }, []);
 
   return {
     currentOrganizationId: context.currentOrganizationId,
