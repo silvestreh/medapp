@@ -26,6 +26,8 @@ import webauthn from './webauthn/webauthn.service';
 import organizations from './organizations/organizations.service';
 import organizationUsers from './organization-users/organization-users.service';
 import organizationPatients from './organization-patients/organization-patients.service';
+import mailer from './mailer/mailer.service';
+import invites from './invites/invites.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -56,4 +58,6 @@ export default function (app: Application): void {
   app.configure(organizations);
   app.configure(organizationUsers);
   app.configure(organizationPatients);
+  app.configure(mailer);
+  app.configure(invites);
 }

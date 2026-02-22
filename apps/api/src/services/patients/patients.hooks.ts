@@ -4,6 +4,7 @@ import { disallow, softDelete } from 'feathers-hooks-common';
 import createPersonalData from '../../hooks/create-personal-data';
 import createContactData from '../../hooks/create-contact-data';
 import { checkPermissions } from '../../hooks/check-permissions';
+import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { findByPersonalData, sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import includeData from '../../hooks/include-data';
 import { encryptFields, decryptFields } from '../../hooks/encryption';
@@ -17,6 +18,7 @@ export default {
   before: {
     all: [
       authenticate('jwt'),
+      verifyOrganizationMembership(),
       checkPermissions({ scopeToOrganization: false }),
       softDelete()
     ],

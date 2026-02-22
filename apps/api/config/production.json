@@ -2,5 +2,10 @@
   "host": "HOST",
   "port": "PORT",
   "postgres": "DB_URL",
-  "encryptionKey": "ENCRYPTION_KEY"
+  "encryptionKey": "ENCRYPTION_KEY",
+  "mailgun": {
+    "apiKey": "MAILGUN_API_KEY",
+    "domain": "MAILGUN_DOMAIN",
+    "from": "MAILGUN_FROM"
+  }
 }
