@@ -156,7 +156,37 @@ function Calendar({
     });
   }, [allDays]);
 
-  // Add position information to each day
+  const weekMultiDaySlots = useMemo(() => {
+    return displayedWeeks.map(week => {
+      const seen = new Map<string, CalendarEvent>();
+
+      for (const day of week) {
+        for (const event of day.events) {
+          if (!event.id) continue;
+          const startDate = dayjs(event.startDate);
+          const endDate = dayjs(event.endDate);
+          const isMultiDay = endDate.diff(startDate, 'hour') > 24 || !startDate.isSame(endDate, 'day');
+          if (isMultiDay) {
+            seen.set(event.id, event);
+          }
+        }
+      }
+
+      return Array.from(seen.values())
+        .sort((a, b) => {
+          if (a.variant === 'pink' && b.variant !== 'pink') return -1;
+          if (a.variant !== 'pink' && b.variant === 'pink') return 1;
+          const startDiff = dayjs(a.startDate).valueOf() - dayjs(b.startDate).valueOf();
+          if (startDiff !== 0) return startDiff;
+          const aDur = dayjs(a.endDate).diff(dayjs(a.startDate));
+          const bDur = dayjs(b.endDate).diff(dayjs(b.startDate));
+          if (aDur !== bDur) return bDur - aDur;
+          return a.title.localeCompare(b.title);
+        })
+        .map(e => e.id!);
+    });
+  }, [displayedWeeks]);
+
   const daysWithPosition = displayedWeeks.map((week, weekIndex) =>
     week.map((day, dayIndex) => ({
       ...day,
@@ -164,6 +194,7 @@ function Calendar({
       isFirstRow: weekIndex === 0,
       isFirstInRow: dayIndex === 0,
       isLastInRow: dayIndex === 6,
+      multiDayEventSlots: weekMultiDaySlots[weekIndex],
     }))
   );
 

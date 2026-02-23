@@ -22,6 +22,7 @@ interface DayProps {
   selectedDate: dayjs.Dayjs | null;
   medicId: string;
   isFocused: boolean;
+  multiDayEventSlots: string[];
 }
 
 const DayCell = styled(Link, {
@@ -147,6 +148,17 @@ const DayCell = styled(Link, {
   ],
 });
 
+const MultiDayEventSpacer = styled('div', {
+  base: {
+    height: '1.5em',
+    flexShrink: 0,
+    display: 'none',
+    lg: {
+      display: 'block',
+    },
+  },
+});
+
 const EventsContainer = styled('div', {
   base: {
     flex: 1,
@@ -191,6 +203,7 @@ export function Day({
   selectedDate,
   medicId,
   isFocused,
+  multiDayEventSlots,
 }: DayProps) {
   const isTablet = useMediaQuery(media.lg);
   const isToday = date.isSame(dayjs(), 'day');
@@ -259,16 +272,22 @@ export function Day({
         {date.date()}
       </Text>
 
-      {multiDayEvents.map(event => (
-        <Event
-          key={event.id}
-          event={event}
-          variant={event.variant}
-          date={date}
-          isFirstInRow={isFirstInRow}
-          isLastInRow={isLastInRow}
-        />
-      ))}
+      {multiDayEventSlots.map(eventId => {
+        const event = multiDayEvents.find(e => e.id === eventId);
+        if (!event) {
+          return <MultiDayEventSpacer key={eventId} />;
+        }
+        return (
+          <Event
+            key={event.id}
+            event={event}
+            variant={event.variant}
+            date={date}
+            isFirstInRow={isFirstInRow}
+            isLastInRow={isLastInRow}
+          />
+        );
+      })}
       <EventsContainer>
         {sortedEvents.map(event => (
           <Event
