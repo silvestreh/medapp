@@ -224,30 +224,38 @@ export function Day({
     return 'gray';
   };
 
-  const sortedEvents = events
-    .filter(event => {
-      const startDate = dayjs(event.startDate);
-      const endDate = dayjs(event.endDate);
-      const duration = endDate.diff(startDate, 'hour');
-      return duration <= 24 && startDate.isSame(endDate, 'day') && !event.allDay;
-    })
-    .sort((a, b) => {
-      // Sort by start date first
-      const startDiff = dayjs(a.startDate).valueOf() - dayjs(b.startDate).valueOf();
-      if (startDiff !== 0) return startDiff;
-
-      // If start dates are equal, sort by duration (end - start)
-      const aDuration = dayjs(a.endDate).diff(dayjs(a.startDate));
-      const bDuration = dayjs(b.endDate).diff(dayjs(b.startDate));
-      return bDuration - aDuration; // Longer events first
-    });
-
   const multiDayEvents = events.filter(event => {
     const startDate = dayjs(event.startDate);
     const endDate = dayjs(event.endDate);
     const duration = endDate.diff(startDate, 'hour');
-    return duration > 24 || !startDate.isSame(endDate, 'day') || event.allDay;
+    return duration > 24 || !startDate.isSame(endDate, 'day');
   });
+
+  const singleDayAllDayEvents = events
+    .filter(event => {
+      if (!event.allDay) return false;
+      const startDate = dayjs(event.startDate);
+      const endDate = dayjs(event.endDate);
+      const duration = endDate.diff(startDate, 'hour');
+      return duration <= 24 && startDate.isSame(endDate, 'day');
+    })
+    .sort((a, b) => a.title.localeCompare(b.title));
+
+  const sortedEvents = events
+    .filter(event => {
+      if (event.allDay) return false;
+      const startDate = dayjs(event.startDate);
+      const endDate = dayjs(event.endDate);
+      const duration = endDate.diff(startDate, 'hour');
+      return duration <= 24 && startDate.isSame(endDate, 'day');
+    })
+    .sort((a, b) => {
+      const startDiff = dayjs(a.startDate).valueOf() - dayjs(b.startDate).valueOf();
+      if (startDiff !== 0) return startDiff;
+      const aDuration = dayjs(a.endDate).diff(dayjs(a.startDate));
+      const bDuration = dayjs(b.endDate).diff(dayjs(b.startDate));
+      return bDuration - aDuration;
+    });
 
   return (
     <DayCell
@@ -288,6 +296,16 @@ export function Day({
           />
         );
       })}
+      {singleDayAllDayEvents.map(event => (
+        <Event
+          key={event.id}
+          event={event}
+          variant={event.variant}
+          date={date}
+          isFirstInRow={isFirstInRow}
+          isLastInRow={isLastInRow}
+        />
+      ))}
       <EventsContainer>
         {sortedEvents.map(event => (
           <Event
