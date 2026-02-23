@@ -67,7 +67,7 @@ describe('\'roles\' service', () => {
         patientId: patient.id,
         medicId: medicUser.id,
         date: new Date(),
-        data: { notes: 'Test encounter' }
+        data: { clinicalNotes: { values: { notes: 'Test encounter' } } }
       });
 
       assert.ok(encounter.id, 'Created an encounter');
@@ -90,7 +90,7 @@ describe('\'roles\' service', () => {
           patientId: patient.id,
           medicId: receptionistUser.id,
           date: new Date(),
-          data: { notes: 'Test encounter' }
+          data: { clinicalNotes: { values: { notes: 'Test encounter' } } }
         });
         assert.fail('Should not allow receptionist to create encounter');
       } catch (error: any) {

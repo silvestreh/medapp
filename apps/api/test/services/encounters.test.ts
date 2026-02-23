@@ -26,8 +26,16 @@ describe('\'encounters\' service', () => {
 
   it('encrypts data before saving to the database', async () => {
     const service = app.service('encounters');
+    const formData = {
+      clinicalNotes: {
+        values: {
+          notes: 'Sensitive information',
+          diagnosis: 'type 2 diabetes'
+        }
+      }
+    };
     const testData = {
-      data: { notes: 'Sensitive information', diagnosis: 'type 2 diabetes' },
+      data: formData,
       date: new Date(),
       medicId: medic.id,
       patientId: patient.id
@@ -42,15 +50,23 @@ describe('\'encounters\' service', () => {
 
     assert.notStrictEqual(
       result.data.toString(),
-      JSON.stringify(testData.data),
+      JSON.stringify(formData),
       'Data should be encrypted in the database'
     );
   });
 
   it('decrypts data when retrieving from the database', async () => {
     const service = app.service('encounters');
+    const formData = {
+      clinicalNotes: {
+        values: {
+          notes: 'Sensitive information',
+          diagnosis: 'type 2 diabetes'
+        }
+      }
+    };
     const testData = {
-      data: { notes: 'Sensitive information', diagnosis: 'type 2 diabetes' },
+      data: formData,
       date: new Date(),
       medicId: medic.id,
       patientId: patient.id
@@ -59,11 +75,9 @@ describe('\'encounters\' service', () => {
     const createdRecord = await service.create(testData);
     const retrievedRecord = await service.get(createdRecord.id);
 
-    console.log(retrievedRecord);
-
     assert.deepStrictEqual(
-      { notes: 'Sensitive information', diagnosis: 'type 2 diabetes' },
       retrievedRecord.data,
+      formData,
     );
   });
 });

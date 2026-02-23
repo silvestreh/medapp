@@ -52,15 +52,19 @@ export default function (app: Application): void {
   }
 
   app.set('sequelizeClient', sequelize);
+  let associationsInitialized = false;
   (app as any).setup = function (server?: any): Application {
     const result = (oldSetup as any).call(this, server) as Application;
-    const models = sequelize.models;
 
-    Object.keys(models).forEach(name => {
-      if ('associate' in models[name]) {
-        (models[name] as any).associate(models);
-      }
-    });
+    if (!associationsInitialized) {
+      const models = sequelize.models;
+      Object.keys(models).forEach(name => {
+        if ('associate' in models[name]) {
+          (models[name] as any).associate(models);
+        }
+      });
+      associationsInitialized = true;
+    }
 
     const syncWithSearchColumns = async () => {
       // Drop generated columns before sync to avoid conflicts with alter
