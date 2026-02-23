@@ -8,7 +8,7 @@ interface StudyResultInput {
 export default function extractStudyResults(): Hook {
   return async (context: HookContext) => {
     const data = context.data || {};
-    const { results, id, ...rest } = data;
+    const { results, ...rest } = data;
 
     if (Array.isArray(results)) {
       const normalizedResults = results

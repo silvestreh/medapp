@@ -1,4 +1,3 @@
-import { HookContext } from '@feathersjs/feathers';
 import { searchMedications } from './hooks/search-medications';
 
 export default {

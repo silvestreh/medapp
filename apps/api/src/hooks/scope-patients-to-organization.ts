@@ -19,7 +19,7 @@ export const scopePatientsToOrganization = (): Hook => {
     const sequelize: Sequelize = app.get('sequelizeClient');
 
     const rows = await sequelize.query<{ patientId: string }>(
-      `SELECT "patientId" FROM "organization_patients" WHERE "organizationId" = :orgId`,
+      'SELECT "patientId" FROM "organization_patients" WHERE "organizationId" = :orgId',
       {
         replacements: { orgId: organizationId },
         type: QueryTypes.SELECT
