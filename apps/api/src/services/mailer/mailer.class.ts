@@ -2,19 +2,28 @@ import type { Application } from '../../declarations';
 
 import * as orgInviteTemplate from './templates/org-invite';
 import * as orgInviteNewUserTemplate from './templates/org-invite-new-user';
+import * as medicalHistoryExportTemplate from './templates/medical-history-export';
 
 const templates: Record<string, { render: (data: any) => string }> = {
   'org-invite': orgInviteTemplate,
   'org-invite-new-user': orgInviteNewUserTemplate,
+  'medical-history-export': medicalHistoryExportTemplate,
 };
 
 const isProduction = process.env.NODE_ENV === 'production';
+
+export interface MailerAttachment {
+  filename: string;
+  data: Buffer;
+  contentType?: string;
+}
 
 export interface MailerCreateData {
   template: string;
   to: string;
   subject: string;
   data: Record<string, any>;
+  attachments?: MailerAttachment[];
 }
 
 export interface MailerResult {
@@ -30,7 +39,7 @@ export class Mailer {
   }
 
   async create(data: MailerCreateData): Promise<MailerResult> {
-    const { template, to, subject, data: templateData } = data;
+    const { template, to, subject, data: templateData, attachments } = data;
     const tpl = templates[template];
     if (!tpl) {
       throw new Error(`Unknown email template: ${template}`);
@@ -62,12 +71,22 @@ export class Mailer {
       key: mailgunConfig.apiKey,
     });
 
-    await mg.messages.create(mailgunConfig.domain, {
+    const messageData: any = {
       from: mailgunConfig.from,
       to: [to],
       subject,
       html,
-    });
+    };
+
+    if (attachments?.length) {
+      messageData.attachment = attachments.map((att) => ({
+        filename: att.filename,
+        data: att.data,
+        contentType: att.contentType || 'application/octet-stream',
+      }));
+    }
+
+    await mg.messages.create(mailgunConfig.domain, messageData);
 
     return { sent: true };
   }

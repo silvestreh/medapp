@@ -10,7 +10,8 @@
     "emitDecoratorMetadata": true,
     "resolveJsonModule": true,
     "composite": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "jsx": "react"
   },
   "include": ["src"],
   "exclude": ["test", "scripts", "data", "lib"]
