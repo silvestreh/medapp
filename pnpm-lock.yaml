@@ -442,8 +442,16 @@ importers:
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
+    devDependencies:
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
 
-  packages/translations: {}
+  packages/translations:
+    devDependencies:
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
 
 packages:
 

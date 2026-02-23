@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "pnpm --filter medapp-api build"
+buildCommand = "pnpm --filter medapp-api... build"
 watchPatterns = ["apps/api/**"]
 
 [deploy]

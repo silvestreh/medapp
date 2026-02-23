@@ -2,9 +2,15 @@
   "name": "@medapp/encounter-schemas",
   "version": "1.0.0",
   "private": true,
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && cp -r src/schemas dist/schemas && cp -r src/study-schemas dist/study-schemas"
+  },
   "dependencies": {
     "dayjs": "^1.11.13"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
   }
 }
