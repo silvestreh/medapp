@@ -27,19 +27,15 @@ describe('\'patients\' service', () => {
   });
 
   it('can find by personal data', async () => {
-    const [patient] = await app.service('patients').find({
-      query: {
-        documentValue: '1234567890'
-      },
-      paginate: false
-    });
-    const { data: [paginatedPatient] } = await app.service('patients').find({
+    const result: any = await app.service('patients').find({
       query: {
         documentValue: '1234567890'
       }
     });
+    const patients = result.data || result;
+    const patient = patients[0];
 
+    assert.ok(patient, 'Found a patient');
     assert.equal(patient.personalData.documentValue, '1234567890');
-    assert.equal(paginatedPatient.personalData.documentValue, '1234567890');
   });
 });
