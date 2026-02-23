@@ -229,7 +229,7 @@ export function Day({
       const startDate = dayjs(event.startDate);
       const endDate = dayjs(event.endDate);
       const duration = endDate.diff(startDate, 'hour');
-      return duration <= 24 && startDate.isSame(endDate, 'day');
+      return duration <= 24 && startDate.isSame(endDate, 'day') && !event.allDay;
     })
     .sort((a, b) => {
       // Sort by start date first
@@ -246,7 +246,7 @@ export function Day({
     const startDate = dayjs(event.startDate);
     const endDate = dayjs(event.endDate);
     const duration = endDate.diff(startDate, 'hour');
-    return duration > 24 || !startDate.isSame(endDate, 'day');
+    return duration > 24 || !startDate.isSame(endDate, 'day') || event.allDay;
   });
 
   return (
