@@ -44,7 +44,8 @@ export default function(app: Application): void {
     }
   });
 
-  app.publish((data: any, hook: HookContext) => {
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
+  app.publish((data: any, _hook: HookContext) => {
     if (data.organizationId) {
       return app.channel(`organizations/${data.organizationId}`);
     }
