@@ -15,6 +15,7 @@ alwaysApply: true
   Always memoize functions to avoid them being re-created.
 4. Don't use `as any` to get out of a TS compilation error. Always have proper types.
 5. When defining feathers hooks, these must go in their own file. If the hook is meant to work in multiple services, then create it in `apps/api/src/hooks`. If the hook is server-specific, then `apps/api/src/services/:service-name/hooks`
+6. When running tests, these must use the `medapp_api_test` database instead of the actual DB used by the app (`medapp_api`)
 
 # Code Style
 

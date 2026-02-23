@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Group, Title, Stack, Button, ActionIcon, Tooltip, Tabs, Text } from '@mantine/core';
-import { X } from 'lucide-react';
+import { useDisclosure } from '@mantine/hooks';
+import { X, FileDown } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import EncounterTree from '~/components/encounter-tree';
@@ -16,6 +17,7 @@ import { studySchemas } from '~/components/forms/study-schemas';
 import { PatientOverview } from '~/components/patient-overview';
 import type { StudyResultData } from '~/components/forms/study-form-types';
 import { getPageTitle } from '~/utils/meta';
+import { ExportSignedPdfDialog } from '~/components/export-signed-pdf-dialog';
 
 const Container = styled('div', {
   base: {
@@ -86,6 +88,8 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     throw new Response('Patient ID is required', { status: 400 });
   }
 
+  const isMedic = (user as any).roleId === 'medic';
+
   const [patient, encounters, studies] = await Promise.all([
     client.service('patients').get(patientId),
     client.service('encounters').find({
@@ -103,17 +107,45 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     }),
   ]);
 
+  let hasCertificate = false;
+  if (isMedic) {
+    try {
+      const certs = await client.service('signing-certificates' as any).find({ query: { $limit: 1 } });
+      const certList = Array.isArray(certs) ? certs : (certs as any)?.data || [];
+      hasCertificate = certList.length > 0;
+    } catch {
+      // signing-certificates may not exist yet
+    }
+  }
+
   return {
     user,
     patient,
     encounters: (encounters as any).data || encounters,
     studies: (studies as any).data || studies,
+    isMedic,
+    hasCertificate,
   };
 });
 
 export default function PatientEncounterDetail() {
   const { t } = useTranslation();
   const data = useLoaderData<typeof loader>();
+  const [exportOpened, { open: openExport, close: closeExport }] = useDisclosure(false);
+
+  const dateRange = useMemo(() => {
+    const encounters = data?.encounters || [];
+    const studies = data?.studies || [];
+    const allDates = [
+      ...encounters.map((e: any) => new Date(e.date)),
+      ...studies.map((s: any) => new Date(s.date || s.createdAt)),
+    ];
+    if (allDates.length === 0) return { min: null, max: null };
+    return {
+      min: new Date(Math.min(...allDates.map((d: Date) => d.getTime()))),
+      max: new Date(Math.max(...allDates.map((d: Date) => d.getTime()))),
+    };
+  }, [data?.encounters, data?.studies]);
 
   // Encounter selection
   const [selectedEncounter, setSelectedEncounter] = useState<any>(null);
@@ -159,11 +191,33 @@ export default function PatientEncounterDetail() {
           <Title order={2} m={0} lh={1}>
             {data.patient.personalData.firstName} {data.patient.personalData.lastName}
           </Title>
-          <Button component={Link} to={`/encounters/${data.patient.id}/new`}>
-            {t('encounters.new')}
-          </Button>
+          <Group gap="sm">
+            {data.isMedic && (
+              <Button
+                variant="light"
+                leftSection={<FileDown size={16} />}
+                onClick={openExport}
+              >
+                {t('export_pdf.button')}
+              </Button>
+            )}
+            <Button component={Link} to={`/encounters/${data.patient.id}/new`}>
+              {t('encounters.new')}
+            </Button>
+          </Group>
         </Group>
       </Portal>
+
+      {data.isMedic && (
+        <ExportSignedPdfDialog
+          opened={exportOpened}
+          onClose={closeExport}
+          patientId={data.patient.id}
+          patientName={`${data.patient.personalData.firstName || ''} ${data.patient.personalData.lastName || ''}`.trim()}
+          hasCertificate={data.hasCertificate}
+          dateRange={dateRange}
+        />
+      )}
 
       <Sidebar>
         <EncounterTree

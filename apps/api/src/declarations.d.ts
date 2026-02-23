@@ -235,3 +235,10 @@ export interface StudyResult {
     [key: string]: any;
   } | string;
 }
+
+export interface SigningCertificate {
+  id: Id;
+  userId: Id;
+  certificate: string;
+  fileName: string | null;
+}

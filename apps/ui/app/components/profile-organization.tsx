@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useFetcher, useRevalidator } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
-import type { action } from '~/routes/profile';
+import type { action } from '~/routes/profile.organization';
 import Portal from '~/components/portal';
 import { FormCard, FieldRow, StyledTextInput, StyledTitle, FormHeader } from '~/components/forms/styles';
 
@@ -19,7 +19,12 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
   const orgFetcher = useFetcher<typeof action>();
   const [orgName, setOrgName] = useState(currentOrg.name);
 
+  const lastHandledData = useRef(orgFetcher.data);
+
   useEffect(() => {
+    if (orgFetcher.data === lastHandledData.current) return;
+    lastHandledData.current = orgFetcher.data;
+
     if (orgFetcher.data?.ok && orgFetcher.data.intent === 'update-organization') {
       notifications.show({ message: t('profile.org_saved'), color: 'green' });
       revalidator.revalidate();

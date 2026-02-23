@@ -1,36 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { Application } from '@feathersjs/feathers';
-import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { useActionData, useLoaderData, useNavigation, useRevalidator } from '@remix-run/react';
+import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
+import { NavLink, Outlet, useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import QRCode from 'qrcode';
-import { Tabs } from '@mantine/core';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
 import { FormContainer } from '~/components/forms/styles';
-import { ProfileForm } from '~/components/profile-form';
-import { ProfileOrganization } from '~/components/profile-organization';
-import { ProfileSecurity } from '~/components/profile-security';
 import Portal from '~/components/portal';
 import { css } from '~/styled-system/css';
 
-const buildTwoFactorSetupPayload = async (result: { secret: string; otpauthUri: string }) => {
-  const qrCodeDataUrl = await QRCode.toDataURL(result.otpauthUri, {
-    errorCorrectionLevel: 'M',
-    margin: 1,
-    width: 220,
-  });
-
-  return {
-    secret: result.secret,
-    otpauthUri: result.otpauthUri,
-    qrCodeDataUrl,
-  };
-};
-
-export const meta: MetaFunction = () => {
-  return [{ title: 'Profile | MedApp' }];
+type MdSettingsProfile = {
+  id: string;
+  medicalSpecialty: string | null;
+  nationalLicenseNumber: string | null;
+  stateLicense: string | null;
+  stateLicenseNumber: string | null;
 };
 
 function normalizeArray<T>(value: unknown): T[] {
@@ -42,12 +25,8 @@ function normalizeArray<T>(value: unknown): T[] {
   return [];
 }
 
-type MdSettingsProfile = {
-  id: string;
-  medicalSpecialty: string | null;
-  nationalLicenseNumber: string | null;
-  stateLicense: string | null;
-  stateLicenseNumber: string | null;
+export const meta: MetaFunction = () => {
+  return [{ title: 'Profile | MedApp' }];
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -109,6 +88,25 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       // passkey-credentials table may not exist yet
     }
 
+    let signingCertificate: { id: string; fileName: string | null; createdAt: string } | null = null;
+    if (isMedic) {
+      try {
+        const certResponse = await client.service('signing-certificates' as any).find({
+          query: { $limit: 1 },
+        });
+        const certs = Array.isArray(certResponse) ? certResponse : (certResponse as any)?.data || [];
+        if (certs.length > 0) {
+          signingCertificate = {
+            id: certs[0].id,
+            fileName: certs[0].fileName,
+            createdAt: certs[0].createdAt,
+          };
+        }
+      } catch {
+        // signing-certificates table may not exist yet
+      }
+    }
+
     let isOrgOwner = false;
     let currentOrg: { id: string; name: string; slug: string } | null = null;
     const currentOrganizationId = await getCurrentOrganizationId(request);
@@ -132,247 +130,95 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       passkeys,
       isOrgOwner,
       currentOrg,
+      signingCertificate,
     });
   } catch (error) {
     throw redirect('/login');
   }
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const formData = await request.formData();
-  const intent = String(formData.get('intent') || '');
-  let client: Application;
-  try {
-    const authenticated = await getAuthenticatedClient(request);
-    client = authenticated.client;
-  } catch (error) {
-    throw redirect('/login');
-  }
+const tabListClass = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 'var(--mantine-spacing-xl)',
+});
 
-  try {
-    if (intent === 'setup-2fa') {
-      const result = await client.service('profile').create({ action: 'setup-2fa' });
-      const setup = await buildTwoFactorSetupPayload(result);
-      return json({ ok: true, intent, result: setup });
-    }
+const tabLinkClass = css({
+  padding: '0.5em 0',
+  border: 'none',
+  background: 'transparent',
+  color: 'var(--mantine-color-gray-6)',
+  cursor: 'pointer',
+  fontSize: 'inherit',
+  fontWeight: 500,
+  transition: 'color 0.15s ease, border-color 0.15s ease',
+  textDecoration: 'none',
+  position: 'relative',
 
-    if (intent === 'enable-2fa') {
-      const twoFactorCode = String(formData.get('twoFactorCode') || '');
-      const result = await client.service('profile').create({ action: 'enable-2fa', twoFactorCode });
-      return json({ ok: true, intent, result });
-    }
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '-1.5em',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    height: 'calc(100% + 3em)',
+    backgroundColor: 'transparent',
+  },
 
-    if (intent === 'change-password') {
-      const currentPassword = String(formData.get('currentPassword') || '');
-      const newPassword = String(formData.get('newPassword') || '');
-      const twoFactorCode = String(formData.get('twoFactorCode') || '');
+  '&:hover': {
+    color: 'var(--mantine-color-gray-8)',
+  },
+});
 
-      const result = await client.service('profile').create({
-        action: 'change-password',
-        currentPassword,
-        newPassword,
-        twoFactorCode,
-      });
+const activeIndicatorClass = css({
+  position: 'absolute',
+  top: 'calc(100% + 1.125em)',
+  left: 0,
+  width: '100%',
+  height: '2px',
+  backgroundColor: 'var(--mantine-color-blue-6)',
+  pointerEvents: 'none',
+});
 
-      return json({ ok: true, intent, result });
-    }
-
-    if (intent === 'passkey-register-options') {
-      const result = await client.service('webauthn').create({
-        action: 'generate-registration-options',
-      });
-      return json({ ok: true, intent, result });
-    }
-
-    if (intent === 'passkey-register-verify') {
-      const credential = JSON.parse(String(formData.get('credential') || '{}'));
-      const deviceName = String(formData.get('deviceName') || '');
-      const result = await client.service('webauthn').create({
-        action: 'verify-registration',
-        credential,
-        deviceName,
-      });
-      return json({ ok: true, intent, result });
-    }
-
-    if (intent === 'passkey-remove') {
-      const passkeyId = String(formData.get('passkeyId') || '');
-      await client.service('passkey-credentials').remove(passkeyId);
-      return json({ ok: true, intent });
-    }
-
-    if (intent === 'update-profile') {
-      const payloadRaw = String(formData.get('payload') || '{}');
-      const payload = JSON.parse(payloadRaw) as {
-        personalData?: Record<string, unknown>;
-        contactData?: Record<string, unknown>;
-        mdSettings?: Record<string, unknown>;
-      };
-      await client.service('profile').create({
-        action: 'update-profile',
-        personalData: payload.personalData,
-        contactData: payload.contactData,
-        mdSettings: payload.mdSettings,
-      });
-      return json({ ok: true, intent });
-    }
-
-    if (intent === 'update-organization') {
-      const orgId = String(formData.get('orgId') || '');
-      const name = String(formData.get('name') || '');
-      await client.service('organizations').patch(orgId, { name });
-      return json({ ok: true, intent });
-    }
-
-    return json({ ok: false, intent, error: 'Invalid action' }, { status: 400 });
-  } catch (error: any) {
-    return json(
-      {
-        ok: false,
-        intent,
-        error: error?.message || 'Operation failed',
-      },
-      { status: 400 }
-    );
-  }
-};
-
-function buildSelectOptions(obj: Record<string, string>) {
-  return Object.entries(obj).map(([value, label]) => ({ value, label }));
+function TabLink({ to, end, children }: { to: string; end?: boolean; children: React.ReactNode }) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={tabLinkClass}
+      style={({ isActive }) => (isActive ? { color: 'var(--mantine-color-blue-6)' } : {})}
+    >
+      {({ isActive }) => (
+        <>
+          {children}
+          {isActive && <span className={activeIndicatorClass} />}
+        </>
+      )}
+    </NavLink>
+  );
 }
 
-export default function Profile() {
-  const { username, twoFactorEnabled, user, isMedic, mdSettings, passkeys, isOrgOwner, currentOrg } =
-    useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
-  const navigation = useNavigation();
-  const revalidator = useRevalidator();
+export default function ProfileLayout() {
+  const { isMedic, isOrgOwner } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
-
-  const isSavingProfile = navigation.state === 'submitting' && navigation.formData?.get('intent') === 'update-profile';
-  const countryOptions = useMemo(
-    () => buildSelectOptions(t('countries', { returnObjects: true }) as Record<string, string>),
-    [t]
-  );
-  const provinceOptions = useMemo(
-    () => buildSelectOptions(t('provinces', { returnObjects: true }) as Record<string, string>),
-    [t]
-  );
-
-  const [activeTab, setActiveTab] = useState<string | null>('profile');
-  const hasEnableSuccess = actionData?.ok && actionData.intent === 'enable-2fa';
-  const hasProfileSuccess = actionData?.ok && actionData.intent === 'update-profile';
-  const hasPasskeyChange =
-    actionData?.ok && (actionData.intent === 'passkey-register-verify' || actionData.intent === 'passkey-remove');
-
-  useEffect(() => {
-    if (hasEnableSuccess) {
-      revalidator.revalidate();
-    }
-  }, [hasEnableSuccess, revalidator]);
-
-  useEffect(() => {
-    if (hasProfileSuccess) {
-      revalidator.revalidate();
-    }
-  }, [hasProfileSuccess, revalidator]);
-
-  useEffect(() => {
-    if (hasPasskeyChange) {
-      revalidator.revalidate();
-    }
-  }, [hasPasskeyChange, revalidator]);
-
-  const profileTabListClass = css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'var(--mantine-spacing-xl)',
-  });
-
-  const profileTabClass = css({
-    padding: '0.5em 0',
-    border: 'none',
-    borderBottom: '2px solid transparent',
-    background: 'transparent',
-    color: 'var(--mantine-color-gray-6)',
-    cursor: 'pointer',
-    fontSize: 'inherit',
-    fontWeight: 500,
-    transition: 'color 0.15s ease, border-color 0.15s ease',
-    position: 'relative',
-
-    '&:not([data-active]):hover': {
-      color: 'var(--mantine-color-gray-8)',
-    },
-
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: '-1.5em',
-      bottom: 0,
-      left: 0,
-      width: '100%',
-      height: 'calc(100% + 3em)',
-      backgroundColor: 'transparent',
-    },
-
-    '&[data-active]': {
-      color: 'var(--mantine-color-blue-6)',
-
-      '&::after': {
-        content: '""',
-        position: 'absolute',
-        top: 'calc(100% + 1.5em)',
-        left: 0,
-        width: '100%',
-        height: '2px',
-        backgroundColor: 'var(--mantine-color-blue-6)',
-      },
-    },
-  });
 
   return (
     <FormContainer style={{ padding: '2rem', maxWidth: 720, margin: '0 auto' }}>
-      <Tabs
-        value={activeTab}
-        onChange={setActiveTab}
-        variant="unstyled"
-        classNames={{ list: profileTabListClass, tab: profileTabClass }}
-      >
-        <Portal id="toolbar">
-          <Tabs.List>
-            <Tabs.Tab value="profile">{t('profile.tab_profile')}</Tabs.Tab>
-            <Tabs.Tab value="security">{t('profile.tab_security')}</Tabs.Tab>
-            {isOrgOwner && <Tabs.Tab value="organization">{t('profile.tab_organization')}</Tabs.Tab>}
-          </Tabs.List>
-        </Portal>
+      <Portal id="toolbar">
+        <nav className={tabListClass}>
+          <TabLink to="/profile" end>
+            {t('profile.tab_profile')}
+          </TabLink>
+          <TabLink to="/profile/security">{t('profile.tab_security')}</TabLink>
+          {isMedic && <TabLink to="/profile/signature">{t('profile.tab_signature')}</TabLink>}
+          {isOrgOwner && <TabLink to="/profile/organization">{t('profile.tab_organization')}</TabLink>}
+        </nav>
+      </Portal>
 
-        <Tabs.Panel value="profile" pt="md">
-          <ProfileForm
-            user={user}
-            mdSettings={mdSettings}
-            isMedic={isMedic}
-            actionData={actionData}
-            countryOptions={countryOptions}
-            provinceOptions={provinceOptions}
-            isSavingProfile={isSavingProfile}
-            showFormActions={activeTab === 'profile'}
-          />
-        </Tabs.Panel>
-        <Tabs.Panel value="security" pt="md">
-          <ProfileSecurity
-            username={username}
-            twoFactorEnabled={twoFactorEnabled}
-            actionData={actionData}
-            passkeys={passkeys}
-          />
-        </Tabs.Panel>
-        {isOrgOwner && currentOrg && (
-          <Tabs.Panel value="organization" pt="md">
-            <ProfileOrganization currentOrg={currentOrg} showFormActions={activeTab === 'organization'} />
-          </Tabs.Panel>
-        )}
-      </Tabs>
+      <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>
+        <Outlet />
+      </div>
     </FormContainer>
   );
 }

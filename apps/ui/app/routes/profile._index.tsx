@@ -1,0 +1,79 @@
+import { useMemo } from 'react';
+import { json, redirect, type ActionFunctionArgs } from '@remix-run/node';
+import { useActionData, useNavigation, useRouteLoaderData } from '@remix-run/react';
+import { useTranslation } from 'react-i18next';
+
+import { getAuthenticatedClient } from '~/utils/auth.server';
+import { ProfileForm } from '~/components/profile-form';
+import type { loader as profileLoader } from '~/routes/profile';
+
+function buildSelectOptions(obj: Record<string, string>) {
+  return Object.entries(obj).map(([value, label]) => ({ value, label }));
+}
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const intent = String(formData.get('intent') || '');
+
+  let client;
+  try {
+    const authenticated = await getAuthenticatedClient(request);
+    client = authenticated.client;
+  } catch (error) {
+    throw redirect('/login');
+  }
+
+  try {
+    if (intent === 'update-profile') {
+      const payloadRaw = String(formData.get('payload') || '{}');
+      const payload = JSON.parse(payloadRaw) as {
+        personalData?: Record<string, unknown>;
+        contactData?: Record<string, unknown>;
+        mdSettings?: Record<string, unknown>;
+      };
+      await client.service('profile').create({
+        action: 'update-profile',
+        personalData: payload.personalData,
+        contactData: payload.contactData,
+        mdSettings: payload.mdSettings,
+      });
+      return json({ ok: true, intent });
+    }
+
+    return json({ ok: false, intent, error: 'Invalid action' }, { status: 400 });
+  } catch (error: any) {
+    return json({ ok: false, intent, error: error?.message || 'Operation failed' }, { status: 400 });
+  }
+};
+
+export default function ProfileIndex() {
+  const parentData = useRouteLoaderData<typeof profileLoader>('routes/profile');
+  const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
+  const { t } = useTranslation();
+
+  const isSavingProfile = navigation.state === 'submitting' && navigation.formData?.get('intent') === 'update-profile';
+
+  const countryOptions = useMemo(
+    () => buildSelectOptions(t('countries', { returnObjects: true }) as Record<string, string>),
+    [t]
+  );
+  const provinceOptions = useMemo(
+    () => buildSelectOptions(t('provinces', { returnObjects: true }) as Record<string, string>),
+    [t]
+  );
+
+  if (!parentData) return null;
+
+  return (
+    <ProfileForm
+      user={parentData.user}
+      mdSettings={parentData.mdSettings}
+      isMedic={parentData.isMedic}
+      actionData={actionData}
+      countryOptions={countryOptions}
+      provinceOptions={provinceOptions}
+      isSavingProfile={isSavingProfile}
+    />
+  );
+}
