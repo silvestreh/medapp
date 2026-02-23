@@ -22,8 +22,8 @@ export const loader = async () => {
       return {
         id: event.uid,
         title: event.summary,
-        startDate: dayjs(event.startDate.toString()).startOf('day').add(1, 'hour').toISOString(),
-        endDate: dayjs(event.startDate.toString()).endOf('day').subtract(1, 'hour').toISOString(),
+        startDate: dayjs(event.startDate.toString()).startOf('day').add(6, 'hours').toISOString(),
+        endDate: dayjs(event.startDate.toString()).endOf('day').subtract(6, 'hours').toISOString(),
         allDay: true,
         variant: 'green',
       };
