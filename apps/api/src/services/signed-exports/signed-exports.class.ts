@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 
 import type { Application } from '../../declarations';
 import { renderMedicalHistoryPdf, PdfRenderOptions, PdfEncounter, PdfStudy } from './pdf-renderer';
+import { getPdfTranslations } from '@medapp/translations';
 
 export type ExportContent = 'encounters' | 'studies' | 'both';
 
@@ -19,6 +20,7 @@ export interface SignedExportCreateData {
   certificatePassword?: string;
   delivery: 'download' | 'email';
   emailTo?: string;
+  locale?: string;
 }
 
 export interface SignedExportResult {
@@ -36,8 +38,9 @@ export class SignedExports {
   }
 
   async create(data: SignedExportCreateData, params: any): Promise<SignedExportResult> {
-    const { patientId, startDate, endDate, content = 'both', certificatePassword, delivery, emailTo } = data;
+    const { patientId, startDate, endDate, content = 'both', certificatePassword, delivery, emailTo, locale } = data;
     const user = params.user;
+    const t = getPdfTranslations(locale);
 
     if (!user) throw new Forbidden('Authentication required');
     if ((user as any).roleId !== 'medic') throw new Forbidden('Only medics can export medical history');
@@ -114,16 +117,16 @@ export class SignedExports {
       try {
         const medicUser = await this.app.service('users').get(medicId, internal());
         const pd = (medicUser as any).personalData || {};
-        doctorNames[medicId] = [pd.firstName, pd.lastName].filter(Boolean).join(' ') || (medicUser as any).username || 'Desconocido';
+        doctorNames[medicId] = [pd.firstName, pd.lastName].filter(Boolean).join(' ') || (medicUser as any).username || t.unknown;
       } catch {
-        doctorNames[medicId] = 'Desconocido';
+        doctorNames[medicId] = t.unknown;
       }
     }
 
     const pdfEncounters: PdfEncounter[] = encounters.map((enc: any) => ({
       id: enc.id,
       date: enc.date,
-      doctorName: doctorNames[enc.medicId] || 'Desconocido',
+      doctorName: doctorNames[enc.medicId] || t.unknown,
       data: typeof enc.data === 'string' ? JSON.parse(enc.data) : (enc.data || {}),
     }));
 
@@ -131,7 +134,7 @@ export class SignedExports {
       id: study.id,
       date: study.date,
       protocol: study.protocol,
-      doctorName: doctorNames[study.medicId] || 'Desconocido',
+      doctorName: doctorNames[study.medicId] || t.unknown,
       referringDoctor: study.referringDoctor || null,
       results: (study.results || []).map((r: any) => ({
         type: r.type,
@@ -163,23 +166,25 @@ export class SignedExports {
       startDate,
       endDate,
       isSigned: wantSign,
+      locale,
+      patientGender: patientPersonalData.gender || undefined,
     };
 
     let pdfBuffer = await renderMedicalHistoryPdf(renderOptions);
 
     if (wantSign) {
-      pdfBuffer = await this.signPdf(pdfBuffer, user.id, certificatePassword!, renderOptions.doctor.fullName);
+      pdfBuffer = await this.signPdf(pdfBuffer, user.id, certificatePassword!, renderOptions.doctor.fullName, locale);
     }
 
-    const patientName = renderOptions.patient.fullName.replace(/\s+/g, '_') || 'paciente';
+    const patientName = renderOptions.patient.fullName.replace(/\s+/g, '_') || t.patientFallback;
     const dateStr = dayjs().format('YYYY-MM-DD');
-    const fileName = `historia_clinica_${patientName}_${dateStr}.pdf`;
+    const fileName = `${t.filePrefix}_${patientName}_${dateStr}.pdf`;
 
     if (delivery === 'email') {
       await this.app.service('mailer').create({
         template: 'medical-history-export',
         to: emailTo!,
-        subject: `Historia Clínica — ${renderOptions.patient.fullName}`,
+        subject: `${t.emailSubjectPrefix} — ${renderOptions.patient.fullName}`,
         data: {
           patientName: renderOptions.patient.fullName,
           doctorName: renderOptions.doctor.fullName,
@@ -193,7 +198,7 @@ export class SignedExports {
         }],
       } as any);
 
-      return { success: true, message: `PDF enviado a ${emailTo}` };
+      return { success: true, message: `${t.pdfSentTo} ${emailTo}` };
     }
 
     return { success: true, pdf: pdfBuffer, fileName };
@@ -204,6 +209,7 @@ export class SignedExports {
     userId: string,
     certificatePassword: string,
     doctorName: string,
+    locale?: string,
   ): Promise<Buffer> {
     const certRecords = await this.app.service('signing-certificates').find({
       query: { userId },
@@ -225,10 +231,11 @@ export class SignedExports {
     const pages = pdfDoc.getPages();
     const lastPage = pages[pages.length - 1];
 
+    const signT = getPdfTranslations(locale);
     pdflibAddPlaceholder({
       pdfDoc,
       pdfPage: lastPage,
-      reason: `Historia clínica firmada por Dr. ${doctorName}`,
+      reason: `${signT.signingReason} ${doctorName}`,
       contactInfo: '',
       name: `Dr. ${doctorName}`,
       location: 'Argentina',

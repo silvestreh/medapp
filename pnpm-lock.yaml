@@ -37,6 +37,9 @@ importers:
       '@medapp/encounter-schemas':
         specifier: workspace:*
         version: link:../../packages/encounter-schemas
+      '@medapp/translations':
+        specifier: workspace:*
+        version: link:../../packages/translations
       '@react-pdf/renderer':
         specifier: ^4.3.2
         version: 4.3.2(react@18.3.1)
@@ -439,6 +442,8 @@ importers:
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
+
+  packages/translations: {}
 
 packages:
 

@@ -1,0 +1,543 @@
+const enLabels: Record<string, string> = {
+  // ── Encounter schema titles ──────────────────────────────────────────
+  'Motivo de consulta-internación': 'Reason for Consultation/Hospitalization',
+  'Enfermedad Actual': 'Current Illness',
+  'Antecedentes Familiares': 'Family History',
+  'Antecedentes Habitacionales': 'Housing History',
+  'Antecedentes personales': 'Personal History',
+  'Hábitos': 'Habits',
+  'Antecedentes Medicamentosos': 'Medication History',
+  'Antecedentes Ocupacionales': 'Occupational History',
+  'Alergia (general)': 'General Allergy',
+  'Alergia a medicamentos': 'Drug Allergy',
+  'Asma': 'Asthma',
+  'Cardiología': 'Cardiology',
+  'Evolución/Evaluación de la Consulta-internación': 'Evolution/Evaluation',
+
+  // ── Study schema titles ──────────────────────────────────────────────
+  'Estudio de Anemia': 'Anemia Study',
+  'Anticoagulación': 'Anticoagulation',
+  'Compatibilidad Matrimonial': 'Marital Compatibility',
+  'Hemostasia': 'Hemostasis',
+  'Mielograma Descriptivo': 'Descriptive Myelogram',
+  'Estudio de Trombofilia': 'Thrombophilia Study',
+
+  // ── Item label patterns (before {{index}} substitution) ──────────────
+  'Motivo #{{index}}': 'Reason #{{index}}',
+  'Antecedente #{{index}}': 'Record #{{index}}',
+  'Medicamento #{{index}}': 'Medication #{{index}}',
+  'Síntoma #{{index}}': 'Symptom #{{index}}',
+  'Soplo #{{index}}': 'Murmur #{{index}}',
+
+  // ── Reason for Consultation fields ───────────────────────────────────
+  'Motivo': 'Reason',
+  'Descripción': 'Description',
+
+  // ── Current Illness fields ───────────────────────────────────────────
+  'Síntoma': 'Symptom',
+  'Notas': 'Notes',
+  'Aparato respiratorio': 'Respiratory system',
+  'Aparato cardiovascular': 'Cardiovascular system',
+  'Aparato digestivo': 'Digestive system',
+  'Aparato urogenital': 'Urogenital system',
+  'Aparato locomotor': 'Musculoskeletal system',
+  'Piel y faneras': 'Skin and appendages',
+  'Otro': 'Other',
+
+  // ── Family History fields ────────────────────────────────────────────
+  'Parentesco': 'Relationship',
+  'Vive': 'Alive',
+  'Nombre': 'First name',
+  'Apellido': 'Last name',
+  'Antecedente (CIE-10)': 'Condition (ICD-10)',
+  'Antecedente': 'Condition',
+
+  // Family History – select option groups
+  'Abuelos': 'Grandparents',
+  'Padres': 'Parents',
+  'Tíos': 'Uncles/Aunts',
+  'Hermanos': 'Siblings',
+  'Hijos': 'Children',
+
+  // Family History – select option labels
+  'Abuelo paterno': 'Paternal grandfather',
+  'Abuelo materno': 'Maternal grandfather',
+  'Abuela paterna': 'Paternal grandmother',
+  'Abuela materna': 'Maternal grandmother',
+  'Padre': 'Father',
+  'Madre': 'Mother',
+  'Tío': 'Uncle',
+  'Tía': 'Aunt',
+  'Hermano': 'Brother',
+  'Hermana': 'Sister',
+  'Hijo': 'Son',
+  'Hija': 'Daughter',
+
+  // ── Personal History fields ──────────────────────────────────────────
+  'Fecha': 'Date',
+
+  // ── Medication History fields ────────────────────────────────────────
+  'Droga': 'Drug',
+  'Fecha aproximada': 'Approximate date',
+  'Efectivo': 'Effective',
+  'Efecto adverso': 'Adverse effect',
+  'Comentario': 'Comment',
+  'Sospechado': 'Suspected',
+  'Confirmado': 'Confirmed',
+  'Sí, sospechado': 'Yes, suspected',
+
+  // ── Housing History tabs ─────────────────────────────────────────────
+  'Antecedentes sociales': 'Social background',
+  'Servicios básicos': 'Basic services',
+  'Equipamiento': 'Equipment',
+  'Antecedentes médicos': 'Medical background',
+
+  // Housing History – Social fields
+  'Cohabita con': 'Lives with',
+  'Cantidad de ambientes': 'Number of rooms',
+  'Tipo de piso': 'Floor type',
+  'Paredes de': 'Wall material',
+  'Techo de': 'Roof material',
+  'Aberturas puertas': 'Doors',
+  'Aberturas ventanas': 'Windows',
+  'Humedad': 'Humidity',
+  'Ventilación': 'Ventilation',
+
+  // Housing History – Social select options
+  'Madera': 'Wood',
+  'Cemento': 'Cement',
+  'Mosaico': 'Tile',
+  'Tierra': 'Dirt',
+  'Ladrillo': 'Brick',
+  'Chapa': 'Sheet metal',
+  'Sí, poca': 'Yes, some',
+  'Sí, mucha': 'Yes, a lot',
+
+  // Housing History – Basic services fields
+  'Tipo': 'Type',
+  'Cañerías': 'Piping',
+  'Sanitarios': 'Sanitary',
+  'Estufas': 'Heaters',
+  'Electricidad': 'Electricity',
+  'Segura': 'Safe',
+  'Legal': 'Legal',
+
+  // Housing History – Basic services select options
+  'Superficie (tajamar/río/lago)': 'Surface water (dam/river/lake)',
+  'Red': 'Public network',
+  'Pozo': 'Well',
+  'Por cañería dentro de la vivienda': 'Indoor piping',
+  'Por cañería fuera de la vivienda': 'Outdoor piping',
+  'A red pública': 'Public sewer network',
+  'Pozo ciego': 'Cesspool',
+  'Fosa séptica': 'Septic tank',
+  'Gas natural': 'Natural gas',
+  'Garrafa': 'Gas cylinder',
+  'Tiro balanceado': 'Balanced flue',
+  'Kerosene': 'Kerosene',
+  'Leña': 'Firewood',
+
+  // Housing History – Equipment fields
+  'Cocina': 'Kitchen',
+  'Teléfono de línea': 'Landline',
+  'Teléfono celular': 'Mobile phone',
+  'Heladera': 'Refrigerator',
+  'Lavarropas': 'Washing machine',
+  'Televisor': 'Television',
+  'Antena satelital': 'Satellite antenna',
+  'Internet': 'Internet',
+  'Automóvil': 'Car',
+  'Moto': 'Motorcycle',
+  'Sí, con freezer': 'Yes, with freezer',
+  'Sí, sin freezer': 'Yes, without freezer',
+  'Sí, blanco y negro': 'Yes, black & white',
+  'Sí, de tubo': 'Yes, CRT',
+  'Sí, LCD': 'Yes, LCD',
+  'Sí, LED': 'Yes, LED',
+  'Sí, Plasma': 'Yes, Plasma',
+
+  // Housing History – Medical background fields
+  'Alfombras': 'Carpets',
+  'Colchón lana/espuma más de 4 años': 'Wool/foam mattress over 4 years',
+  'Almohada pluma/lana/espuma más de 2 años': 'Feather/wool/foam pillow over 2 years',
+  'Cortinados gruesos': 'Heavy curtains',
+  'Empapelado': 'Wallpaper',
+  'Biblioteca': 'Bookcase',
+  'Peluche': 'Stuffed animals',
+  'Rellenos (pluma/lana/tapizado/etc)': 'Stuffing (feather/wool/upholstery/etc)',
+  'Frazadas o colchón de lana o douset': 'Wool blankets or duvet',
+  'Mascotas': 'Pets',
+  'Cucarachas': 'Cockroaches',
+  'Zona endémica de chagas': 'Chagas endemic area',
+
+  // ── Habits tabs ──────────────────────────────────────────────────────
+  'Alimentación': 'Diet',
+  'Trabajo': 'Work',
+  'Sexualidad': 'Sexuality',
+  'Adicciones': 'Addictions',
+  'Exposición solar': 'Sun exposure',
+
+  // Habits – Diet fields
+  'Cantidad': 'Amount',
+  'Calidad': 'Quality',
+  'Dieta': 'Diet',
+  'Cumple': 'Compliance',
+  'Baja en sodio': 'Low sodium',
+  'Baja en calorías': 'Low calorie',
+  'Baja en hidratos de carbono': 'Low carbohydrate',
+  'Baja en grasas': 'Low fat',
+  'Alcohol': 'Alcohol',
+  'Cerveza': 'Beer',
+  'Vino': 'Wine',
+  'Whisky': 'Whisky',
+  'Otras': 'Other',
+  'Fuma': 'Smokes',
+  'Desde': 'From',
+  'Hasta': 'To',
+  'Infusiones': 'Infusions',
+  'Té': 'Tea',
+  'Café': 'Coffee',
+  'Mate': 'Mate',
+  'Hierbas': 'Herbs',
+  'Sal': 'Salt',
+  'Actividad física': 'Physical activity',
+
+  // Habits – Diet select options
+  'Poca': 'Little',
+  'Mala': 'Poor',
+  'Regular': 'Fair',
+  'Buena': 'Good',
+  'Mal': 'Poorly',
+  'Bien': 'Well',
+  'Ocasional': 'Occasional',
+  'Habitual': 'Habitual',
+  'Frecuente': 'Frequent',
+  'Menos de 10': 'Less than 10',
+  'Más de 10': 'More than 10',
+  'Más de 20': 'More than 20',
+  'Suave': 'Light',
+  'Intensa': 'Intense',
+
+  // Habits – Work fields & options
+  'Continuidad': 'Continuity',
+  'Educación': 'Education',
+  'Actividad social': 'Social activity',
+  'Intelectual intenso': 'Intensive intellectual',
+  'Intelectual': 'Intellectual',
+  'Físico': 'Physical',
+  'Físico intenso': 'Intensive physical',
+  'Estable': 'Stable',
+  'Temporal': 'Temporary',
+  'Ninguna': 'None',
+  'Primario': 'Primary',
+  'Secundario': 'Secondary',
+  'Ciclo superior': 'Higher education',
+
+  // Habits – Sexuality fields & options
+  'Actividad sexual': 'Sexual activity',
+  'Número de parejas sexuales en los últimos seis meses': 'Number of sexual partners in the last six months',
+  'Sin preservativo': 'Without condom',
+  'Siempre con preservativo': 'Always with condom',
+
+  // Habits – Addictions fields & options
+  'Cocaína inhalatoria': 'Inhaled cocaine',
+  'Cocaína y otras endovenosas': 'Intravenous cocaine and others',
+  'Marihuana': 'Marijuana',
+  'Notas adicionales': 'Additional notes',
+  'Nunca': 'Never',
+
+  // Habits – Sun exposure fields & options
+  'Laboral': 'Occupational',
+  'Recreacional': 'Recreational',
+  'Protección solar': 'Sun protection',
+  'Horarios con bajo UV': 'Low UV hours',
+  'Sombra/ropa': 'Shade/clothing',
+  'Cremas protectoras': 'Sunscreen',
+  'Fin de semana': 'Weekends',
+  'Todos los días': 'Every day',
+
+  // ── General Allergy tabs ─────────────────────────────────────────────
+  'Síntomas respiratorios': 'Respiratory symptoms',
+  'Síntomas cutáneos': 'Skin symptoms',
+  'Localización': 'Location',
+  'Desencadenantes': 'Triggers',
+  'Alergias': 'Allergies',
+
+  // General Allergy – Respiratory fields & options
+  'Secreción nasal': 'Nasal discharge',
+  'Prurito nasal': 'Nasal itching',
+  'Prurito ocular': 'Ocular itching',
+  'Prurito ótico': 'Ear itching',
+  'Prurito palatino': 'Palate itching',
+  'Tos': 'Cough',
+  'Estornudos': 'Sneezing',
+  'Disnea': 'Dyspnea',
+  'Sibilancias': 'Wheezing',
+  'Bloqueo nasal': 'Nasal congestion',
+  'Acuosa': 'Watery',
+  'Mucosa': 'Mucous',
+  'Purulenta': 'Purulent',
+  'Mixta': 'Mixed',
+  'Seca': 'Dry',
+  'Productiva': 'Productive',
+  'Espasmódica': 'Spasmodic',
+  'Emetizante': 'Emetizing',
+
+  // General Allergy – Skin fields
+  'Prurito': 'Itching',
+  'Ronchas': 'Hives',
+  'Edema': 'Edema',
+  'Escamas': 'Scales',
+
+  // General Allergy – Location fields
+  'Cara': 'Face',
+  'Cuello': 'Neck',
+  'Tronco': 'Torso',
+  'Miembros': 'Limbs',
+  'Generalizado': 'Generalized',
+
+  // General Allergy – Triggers fields
+  'Polvo': 'Dust',
+  'Humo': 'Smoke',
+  'Cambio de temperatura': 'Temperature change',
+  'Primavera': 'Spring',
+  'Verano': 'Summer',
+  'Otoño': 'Autumn',
+  'Invierno': 'Winter',
+  'Frío': 'Cold',
+  'Viento': 'Wind',
+  'Calor': 'Heat',
+  'Tormenta': 'Storm',
+
+  // General Allergy – Allergy fields
+  'Alimentos': 'Food',
+  'Ácaros': 'Dust mites',
+  'Animales': 'Animals',
+  'Insectos y venenos': 'Insects and venom',
+  'Mohos': 'Molds',
+  'Parásitos': 'Parasites',
+  'Pólen de árboles': 'Tree pollen',
+  'Pólen de gramíneas': 'Grass pollen',
+  'Otros': 'Others',
+
+  // ── Drug Allergy fields & options ────────────────────────────────────
+  'Estado': 'Status',
+
+  // ── Asthma fields & options ──────────────────────────────────────────
+  'Severidad clínica': 'Clinical severity',
+  'Presenta síntomas': 'Presents symptoms',
+  'Frecuencia anual': 'Annual frequency',
+  'Tipo de exacerbaciones': 'Type of exacerbations',
+  'Presenta síntomas de asma nocturno': 'Presents nocturnal asthma symptoms',
+  'Frecuencia días por semana': 'Frequency days per week',
+  'Teórico': 'Theoretical',
+  'Variabilidad': 'Variability',
+  'Reversibilidad': 'Reversibility',
+  'Que afectan la actividad y el sueño': 'Affecting activity and sleep',
+  'Que pueden llegar a afectar la actividad y el sueño': 'May affect activity and sleep',
+  'Breves (desde unas 48 a menos de 72 hs)': 'Brief (48 to under 72 hours)',
+  'Prolongadas (más de 72 hs)': 'Prolonged (over 72 hours)',
+
+  // ── Cardiology tabs ──────────────────────────────────────────────────
+  'Tensión arterial': 'Blood pressure',
+  'Pulsos periféricos': 'Peripheral pulses',
+  'Palpación precordial': 'Precordial palpation',
+  'Auscultación': 'Auscultation',
+
+  // Cardiology – Blood pressure
+  'Sistólica': 'Systolic',
+  'Diastólica': 'Diastolic',
+
+  // Cardiology – Peripheral pulses
+  'Radial derecho': 'Right radial',
+  'Radial izquierdo': 'Left radial',
+  'Femoral derecho': 'Right femoral',
+  'Femoral izquierdo': 'Left femoral',
+  'Tibial posterior derecho': 'Right posterior tibial',
+  'Tibial posterior izquierdo': 'Left posterior tibial',
+  'Pedio derecho': 'Right dorsalis pedis',
+  'Pedio izquierdo': 'Left dorsalis pedis',
+  'Carotídeo derecho': 'Right carotid',
+  'Carotídeo izquierdo': 'Left carotid',
+
+  // Cardiology – Palpation fields & options
+  'Choque de punta': 'Apex beat',
+  'Frémito': 'Thrill',
+  'Presente': 'Present',
+  'Ausente': 'Absent',
+  'Amplio': 'Broad',
+  'Sostenido': 'Sustained',
+
+  // Cardiology – Auscultation tabs & fields
+  'Auscultación general': 'General auscultation',
+  'Auscultación de cuello': 'Neck auscultation',
+  'Soplos': 'Murmurs',
+  'R1 Característica': 'S1 Characteristic',
+  'R2 Característica': 'S2 Characteristic',
+  'R3 Característica': 'S3 Characteristic',
+  'R4 Característica': 'S4 Characteristic',
+  'Característica': 'Characteristic',
+  'Intensidad': 'Intensity',
+
+  // Cardiology – Auscultation select options
+  'Normal': 'Normal',
+  'Aumentado': 'Increased',
+  'Disminuido': 'Decreased',
+  'Desdoblado': 'Split',
+  'Soplo': 'Murmur',
+
+  // Cardiology – Murmur fields & options
+  'Sistólico': 'Systolic',
+  'Diastólico': 'Diastolic',
+  'Continuo': 'Continuous',
+  'Foco mitral': 'Mitral focus',
+  'Foco aórtico': 'Aortic focus',
+  'Foco pulmonar': 'Pulmonary focus',
+  'Foco tricúspideo': 'Tricuspid focus',
+
+  // Cardiology – Neck auscultation text labels
+  'Auscultación de Cuello Carotídeo Derecho': 'Right carotid neck auscultation',
+  'Auscultación de Cuello Carotídeo Izquierdo': 'Left carotid neck auscultation',
+
+  // ── Occupational History fields ──────────────────────────────────────
+  'Por inhalación de polvos inorgánicos': 'By inhalation of inorganic dust',
+  'Minas, túneles, galerías y canteras': 'Mines, tunnels, galleries and quarries',
+  'Comentarios': 'Comments',
+  'Trabajos en piedra': 'Stonework',
+  'Abrasivos': 'Abrasives',
+  'Fundición': 'Foundry',
+  'Cerámica, porcelana, loza, carborundo y refractarios': 'Ceramics, porcelain, earthenware, carborundum and refractories',
+  'Cementos': 'Cements',
+  'Polvo de limpieza': 'Cleaning dust',
+  'Pigmentos': 'Pigments',
+  'Industria del vidrio': 'Glass industry',
+  'Por inhalación de polvos inorgánicos (minerales) ASBESTO': 'By inhalation of inorganic dust (mineral) ASBESTOS',
+  'Mantos o cintas aislantes alrededor de tubos de vapor, calderas y los conductos de los hornos': 'Insulating blankets or tapes around steam pipes, boilers and furnace ducts',
+  'Industria de la construcción': 'Construction industry',
+  'Refuerzos para el revestimiento de suelos de láminas de vinilo': 'Reinforcement for vinyl sheet flooring',
+  'Aislamiento a prueba de fuego': 'Fireproof insulation',
+  'Industria textil': 'Textile industry',
+  'Industria naval': 'Naval industry',
+  'Aislantes acústicos en aerosol o material decorativo de techos y paredes': 'Spray acoustic insulation or decorative ceiling/wall material',
+  'Forros y almohadillas para los frenos de los automóviles': 'Automobile brake linings and pads',
+  'Revestimiento para el embrague de los automóviles': 'Automobile clutch lining',
+  'Empaques de los automóviles': 'Automobile gaskets',
+  'Por inhalación de gases irritantes, humos, vapores y sustancias tóxicas en general': 'By inhalation of irritant gases, fumes, vapors and toxic substances',
+  'Por inhalación de polvos orgánicos': 'By inhalation of organic dust',
+  'Tareas rurales': 'Rural tasks',
+  'Asma ocupacional': 'Occupational asthma',
+  'Otras enfermedades': 'Other diseases',
+
+  // ── Study fields – Anemia ────────────────────────────────────────────
+  'Hematíes x 10<sup>6</sup>/µL': 'RBC x 10<sup>6</sup>/µL',
+  'Hematócrito %': 'Hematocrit %',
+  'Hemoglobina grs./dL': 'Hemoglobin g/dL',
+  'Reticulocitos %': 'Reticulocytes %',
+  'VCM fL': 'MCV fL',
+  'HCM pg': 'MCH pg',
+  'CHCM %': 'MCHC %',
+  'Ferremia (sideremia) µg/dL': 'Serum iron µg/dL',
+  'TIBC (transferrina) µg/dL': 'TIBC (transferrin) µg/dL',
+  'Saturación de Transferrina %': 'Transferrin saturation %',
+  'Leucocitos x 10<sup>3</sup>/µL': 'WBC x 10<sup>3</sup>/µL',
+  'Eritrosedimentación mm': 'ESR mm',
+  'Plaquetas x 10<sup>3</sup>/µL': 'Platelets x 10<sup>3</sup>/µL',
+  'Coombs Directa': 'Direct Coombs',
+  'Leucocitos Recuento Diferencial': 'Differential WBC count',
+  'Neutrófilos en Cayado': 'Band neutrophils',
+  'Neutrófilos Segmentados': 'Segmented neutrophils',
+  'Eosinófilos': 'Eosinophils',
+  'Basófilos': 'Basophils',
+  'Monocitos': 'Monocytes',
+  'Formas Inmaduras - Blastos': 'Immature forms - Blasts',
+  'Linfocitos': 'Lymphocytes',
+
+  // ── Study fields – Hemostasis ────────────────────────────────────────
+  'Tiempo de Protrombina (Quick) seg.': 'Prothrombin time (Quick) sec.',
+  'Concentración de Protrombina %': 'Prothrombin concentration %',
+  'R.I.N.': 'INR',
+  'aPTT seg.': 'aPTT sec.',
+  'T.T.D seg.': 'TT sec.',
+  'Fibrinógeno gr/L.': 'Fibrinogen g/L',
+  'Factor V Funcional %': 'Functional Factor V %',
+  'Dímero D ng UEF/mL': 'D-dimer ng FEU/mL',
+  'P.D.F. µg/dL': 'FDP µg/dL',
+  'Factor VIII Funcional %': 'Functional Factor VIII %',
+  'Factor Von Willebrand antigénico %': 'Von Willebrand factor antigen %',
+  'Co Factor de Ristocetina %': 'Ristocetin cofactor %',
+  'Complejo II, VII, IX, X': 'Complex II, VII, IX, X',
+  'Hemoglobina grs/dL': 'Hemoglobin g/dL',
+  'Rto. Plaquetas x 10<sup>3</sup>/µL': 'Platelet count x 10<sup>3</sup>/µL',
+  'Tiempo de lisis de euglobulinas': 'Euglobulin lysis time',
+  'Corrección con plasma normal': 'Correction with normal plasma',
+
+  // ── Study fields – Anticoagulation ───────────────────────────────────
+  // (uses same labels as hemostasis – already covered)
+
+  // ── Study fields – Compatibility ─────────────────────────────────────
+  'Mujer': 'Woman',
+  'Hombre': 'Man',
+  'Grupo sanguíneo': 'Blood group',
+  'Factor Rh<sub>0</sub> D': 'Rh<sub>0</sub> D factor',
+  'Genotipo más probable': 'Most likely genotype',
+  'Coombs Indirecta': 'Indirect Coombs',
+  'Heterocigosidad %': 'Heterozygosity %',
+  'Homocigosidad %': 'Homozygosity %',
+  'Positivo': 'Positive',
+  'Negativo': 'Negative',
+  'Positiva': 'Positive',
+  'Negativa': 'Negative',
+
+  // ── Study fields – Myelogram ─────────────────────────────────────────
+  'Procedimiento': 'Procedure',
+  'Microscopía': 'Microscopy',
+  'Serie Mielopoyética': 'Myelopoietic series',
+  'Serie Eritropoyética': 'Erythropoietic series',
+  'Serie Trombopoyética': 'Thrombopoietic series',
+  'Series Reticular, Linfocitaria y Plasmática': 'Reticular, Lymphocytic and Plasma cell series',
+  'Relación Mielo-eritroide': 'Myeloid-erythroid ratio',
+  'Citoquímica': 'Cytochemistry',
+  'Hemosiderina': 'Hemosiderin',
+  'Sideroblastos': 'Sideroblasts',
+  'Peroxidasa': 'Peroxidase',
+
+  // ── Study fields – Thrombophilia ─────────────────────────────────────
+  'Tiempo de Protrombina (Quick)': 'Prothrombin time (Quick)',
+  'Porcentaje': 'Percentage',
+  'aPTT': 'aPTT',
+  'Fibrinógeno': 'Fibrinogen',
+  'Resistencia a la Proteína C Activada': 'Activated Protein C resistance',
+  'Sistema de la Proteína C, Factor V': 'Protein C system, Factor V',
+  'Proteína C, Razón Normalizada': 'Protein C, Normalized ratio',
+  'Proteína C Funcional': 'Functional Protein C',
+  'Proteína S Libre': 'Free Protein S',
+  'Antitrombina III': 'Antithrombin III',
+  'Antic. Lúpico, APTT': 'Lupus anticoag., aPTT',
+  'Antic. Lúpico Screening': 'Lupus anticoag. Screening',
+  'Antic. Lúpico Confirmatorio': 'Lupus anticoag. Confirmatory',
+  'Antic. Lúpico, Razón Normalizada': 'Lupus anticoag., Normalized ratio',
+  'Antic. Lúpico, Índice de TTI': 'Lupus anticoag., TTI index',
+  'Anticuerpos Anti beta2 GPI Clase IgM': 'Anti-beta2 GPI antibodies IgM',
+  'Anticuerpos Anti beta2 GPI Clase IgG': 'Anti-beta2 GPI antibodies IgG',
+  'Anticuerpos Anticardiolipina Clase IgM': 'Anticardiolipin antibodies IgM',
+  'Anticuerpos Anticardiolipina Clase IgG': 'Anticardiolipin antibodies IgG',
+  'PAI 4G/5G': 'PAI 4G/5G',
+  'Homocisteína': 'Homocysteine',
+  'Factor VIII': 'Factor VIII',
+  'Factor V. Leiden': 'Factor V Leiden',
+  'Protrombina 20210 G-A': 'Prothrombin 20210 G-A',
+  'Presenta': 'Present',
+  'No presenta': 'Not present',
+
+  // ── Study select options (shared) ────────────────────────────────────
+  'Mucha': 'A lot',
+};
+
+/**
+ * Translate a schema/field label to the target locale.
+ * Spanish labels are used as keys; if no translation exists the original is returned.
+ */
+export function translateLabel(locale: string | undefined, label: string): string {
+  if (!locale || locale === 'es') return label;
+  return enLabels[label] || label;
+}
