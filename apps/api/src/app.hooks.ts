@@ -58,7 +58,11 @@ export default {
     all: [
       (ctx: HookContext) => {
         if (ctx.error) {
-          Sentry.captureException(ctx.error);
+          const isExpectedError = ctx.error.code === 401;
+
+          if (!isExpectedError) {
+            Sentry.captureException(ctx.error);
+          }
         }
       },
     ],
