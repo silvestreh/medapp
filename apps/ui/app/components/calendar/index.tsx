@@ -165,8 +165,8 @@ function Calendar({
           if (!event.id) continue;
           const startDate = dayjs(event.startDate);
           const endDate = dayjs(event.endDate);
-          const isAllDayOrMultiDay = endDate.diff(startDate, 'hour') > 24 || !startDate.isSame(endDate, 'day') || event.allDay;
-          if (isAllDayOrMultiDay) {
+          const isMultiDay = endDate.diff(startDate, 'hour') > 24 || !startDate.isSame(endDate, 'day');
+          if (isMultiDay) {
             seen.set(event.id, event);
           }
         }
