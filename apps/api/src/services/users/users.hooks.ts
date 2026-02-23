@@ -7,7 +7,7 @@ import { verifyOrganizationMembership } from '../../hooks/verify-organization-me
 import { lowerCase } from '../../hooks/lowerCase';
 import populateUser from './hooks/populate-user';
 import { prepareSignupOrganization, handleSignupOrganization } from './hooks/handle-signup-organization';
-import { scopeUsersToOrganization } from './hooks/scope-to-organization';
+import { scopeUsersToOrganization } from './hooks/scope-users-to-organization';
 import { disallow } from 'feathers-hooks-common';
 // Don't remove this comment. It's needed to format import lines nicely.
 
