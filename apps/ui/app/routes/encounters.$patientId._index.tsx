@@ -193,11 +193,7 @@ export default function PatientEncounterDetail() {
           </Title>
           <Group gap="sm">
             {data.isMedic && (
-              <Button
-                variant="light"
-                leftSection={<FileDown size={16} />}
-                onClick={openExport}
-              >
+              <Button variant="light" leftSection={<FileDown size={16} />} onClick={openExport}>
                 {t('export_pdf.button')}
               </Button>
             )}

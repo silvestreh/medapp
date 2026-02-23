@@ -145,11 +145,11 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
     await seedStaticData(multibar);
     console.log('Static data seeded.\n');
 
-    // Step 2.5: Create "ColMed" organization
-    console.log('Creating ColMed organization...');
+    // Step 2.5: Create "Hematología Herrera" organization
+    console.log('Creating Hematología Herrera organization...');
     const org = await app.service('organizations').create({
-      name: 'ColMed',
-      slug: 'colmed',
+      name: 'Hematología Herrera',
+      slug: 'hematologia-herrera',
       settings: {},
     } as any);
     const organizationId = (org as any).id;

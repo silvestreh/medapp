@@ -13,7 +13,7 @@ import {
   TextInput,
 } from '@mantine/core';
 import { MonthPickerInput } from '@mantine/dates';
-import { FileDown, Info, Send, Download } from 'lucide-react';
+import { FileDown, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { useFeathers } from '~/components/provider';
@@ -37,11 +37,11 @@ export function ExportSignedPdfDialog({
   hasCertificate,
   dateRange,
 }: ExportSignedPdfDialogProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const client = useFeathers();
   const [content, setContent] = useState<ExportContent>('both');
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
   const [signDigitally, setSignDigitally] = useState(hasCertificate);
   const [certificatePassword, setCertificatePassword] = useState('');
   const [delivery, setDelivery] = useState<string>('download');
@@ -51,8 +51,10 @@ export function ExportSignedPdfDialog({
   const [success, setSuccess] = useState<string | null>(null);
 
   const handleSelectAll = useCallback(() => {
-    setStartDate(dateRange.min ? dayjs(dateRange.min).startOf('month').toDate() : null);
-    setEndDate(dateRange.max ? dayjs(dateRange.max).startOf('month').toDate() : dayjs().startOf('month').toDate());
+    setStartDate(dateRange.min ? dayjs(dateRange.min).startOf('month').toISOString() : null);
+    setEndDate(
+      dateRange.max ? dayjs(dateRange.max).startOf('month').toISOString() : dayjs().startOf('month').toISOString()
+    );
   }, [dateRange]);
 
   const isValid = useMemo(() => {
@@ -76,6 +78,7 @@ export function ExportSignedPdfDialog({
         endDate: dayjs(endDate).endOf('month').format('YYYY-MM-DD'),
         content,
         delivery,
+        locale: i18n.language,
       };
 
       if (signDigitally && certificatePassword) {
@@ -124,7 +127,20 @@ export function ExportSignedPdfDialog({
     } finally {
       setIsLoading(false);
     }
-  }, [isValid, client, patientId, startDate, endDate, signDigitally, certificatePassword, delivery, emailTo, patientName, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isValid,
+    client,
+    patientId,
+    startDate,
+    endDate,
+    signDigitally,
+    certificatePassword,
+    delivery,
+    emailTo,
+    patientName,
+    onClose,
+  ]);
 
   const buttonLabel = useMemo(() => {
     if (signDigitally) {
@@ -161,7 +177,7 @@ export function ExportSignedPdfDialog({
 
         <SegmentedControl
           value={content}
-          onChange={(val) => setContent(val as ExportContent)}
+          onChange={val => setContent(val as ExportContent)}
           data={[
             { label: t('export_pdf.content_encounters'), value: 'encounters' },
             { label: t('export_pdf.content_studies'), value: 'studies' },
@@ -175,7 +191,7 @@ export function ExportSignedPdfDialog({
             <Checkbox
               label={t('export_pdf.sign_digitally')}
               checked={signDigitally}
-              onChange={(event) => setSignDigitally(event.currentTarget.checked)}
+              onChange={event => setSignDigitally(event.currentTarget.checked)}
             />
             {signDigitally && (
               <PasswordInput
@@ -183,7 +199,7 @@ export function ExportSignedPdfDialog({
                 description={t('export_pdf.certificate_password_description')}
                 placeholder={t('export_pdf.certificate_password_placeholder')}
                 value={certificatePassword}
-                onChange={(event) => setCertificatePassword(event.currentTarget.value)}
+                onChange={event => setCertificatePassword(event.currentTarget.value)}
                 required
               />
             )}
@@ -201,14 +217,10 @@ export function ExportSignedPdfDialog({
           </Alert>
         )}
 
-        <Radio.Group
-          label={t('export_pdf.delivery_label')}
-          value={delivery}
-          onChange={setDelivery}
-        >
+        <Radio.Group label={t('export_pdf.delivery_label')} value={delivery} onChange={setDelivery}>
           <Group mt="xs">
-            <Radio value="download" label={t('export_pdf.delivery_download')} icon={() => <Download size={12} />} />
-            <Radio value="email" label={t('export_pdf.delivery_email')} icon={() => <Send size={12} />} />
+            <Radio value="download" label={t('export_pdf.delivery_download')} />
+            <Radio value="email" label={t('export_pdf.delivery_email')} />
           </Group>
         </Radio.Group>
 
@@ -218,7 +230,7 @@ export function ExportSignedPdfDialog({
             placeholder={t('export_pdf.recipient_email_placeholder')}
             type="email"
             value={emailTo}
-            onChange={(event) => setEmailTo(event.currentTarget.value)}
+            onChange={event => setEmailTo(event.currentTarget.value)}
             required
           />
         )}
