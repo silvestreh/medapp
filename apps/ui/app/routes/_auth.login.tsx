@@ -115,6 +115,11 @@ export const action: ActionFunction = async ({ request }) => {
       return json({ requireTwoFactor: true, errorKey: 'auth.otp_invalid' });
     }
 
+    const statusCode = error?.response?.status || error?.code;
+    if (statusCode === 429 || message.includes('too many login attempts')) {
+      return json({ requireTwoFactor: false, errorKey: 'auth.too_many_attempts' });
+    }
+
     return json({ requireTwoFactor: false, errorKey: 'auth.invalid_credentials' });
   }
 };

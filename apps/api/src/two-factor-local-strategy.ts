@@ -1,6 +1,7 @@
 import { LocalStrategy } from '@feathersjs/authentication-local';
 import { NotAuthenticated } from '@feathersjs/errors';
 import { verifyTotpCode } from './utils/totp';
+import { isPasswordValid } from './utils/validate-password';
 
 export class TwoFactorLocalStrategy extends LocalStrategy {
   async authenticate(data: any, params: any) {
@@ -11,6 +12,11 @@ export class TwoFactorLocalStrategy extends LocalStrategy {
       result = await super.authenticate(data, params);
     } catch (err: any) {
       throw err;
+    }
+
+    const passwordField = (this.configuration as any)?.passwordField || 'password';
+    if (!isPasswordValid(data?.[passwordField] || '')) {
+      result.user.hasWeakPassword = true;
     }
 
     const sequelize = this.app?.get('sequelizeClient');

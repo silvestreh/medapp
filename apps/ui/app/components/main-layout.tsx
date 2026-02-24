@@ -1,9 +1,13 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Flex, Box, LoadingOverlay } from '@mantine/core';
+import React, { PropsWithChildren, useCallback, useEffect, useState } from 'react';
+import { Flex, Box, LoadingOverlay, Alert, CloseButton, Anchor } from '@mantine/core';
+import { Link } from '@remix-run/react';
+import { ShieldAlert } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
 import SideNav from '~/components/side-nav';
 import TopNav from '~/components/top-nav';
+import { useAccount } from '~/components/provider';
 
 const MainLayoutContainer = styled(Flex, {
   base: {
@@ -61,20 +65,49 @@ const ContentContainer = styled(Box, {
 
 const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const [isMounted, setIsMounted] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const { user } = useAccount();
+  const { t } = useTranslation();
 
   useEffect(() => {
     setIsMounted(true);
+  }, []);
+
+  const handleDismissBanner = useCallback(() => {
+    setBannerDismissed(true);
   }, []);
 
   if (!isMounted) {
     return <LoadingOverlay visible />;
   }
 
+  const showWeakPasswordBanner = !!user?.hasWeakPassword && !bannerDismissed;
+
   return (
     <MainLayoutContainer>
       <SideNav />
       <Box flex={1}>
         <TopNav />
+        {showWeakPasswordBanner && (
+          <Alert
+            color="orange"
+            icon={<ShieldAlert size={18} />}
+            py="sm"
+            px="md"
+            radius={0}
+            styles={{ root: { position: 'relative' } }}
+          >
+            {t('common.weak_password_warning', 'Your password doesn\'t meet the current security policy.')}{' '}
+            <Anchor component={Link} to="/profile/security" fw={600}>
+              {t('common.update_password', 'Update it now')}
+            </Anchor>
+            <CloseButton
+              onClick={handleDismissBanner}
+              size="sm"
+              style={{ position: 'absolute', top: 8, right: 8 }}
+            />
+          </Alert>
+        )}
         <ContentContainer>{children}</ContentContainer>
       </Box>
     </MainLayoutContainer>

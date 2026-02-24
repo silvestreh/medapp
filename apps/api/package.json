@@ -71,6 +71,7 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",
     "escape-html": "^1.0.3",
+    "express-rate-limit": "^8.2.1",
     "feathers-hooks-common": "^6.1.5",
     "feathers-sequelize": "^6.4.0",
     "form-data": "^4.0.3",

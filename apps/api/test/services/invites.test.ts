@@ -16,7 +16,7 @@ describe('\'invites\' service', () => {
 
     adminUser = await app.service('users').create({
       username: 'invite.admin',
-      password: 'supersecret',
+      password: 'SuperSecret1',
       roleId: 'admin'
     });
 
@@ -28,7 +28,7 @@ describe('\'invites\' service', () => {
 
     existingUser = await app.service('users').create({
       username: 'invite.existing',
-      password: 'supersecret',
+      password: 'SuperSecret1',
       roleId: 'medic',
       contactData: { email: 'existing@example.com' }
     });
@@ -122,7 +122,7 @@ describe('\'invites\' service', () => {
     it('rejects invite if user is already an org member', async () => {
       const memberUser: any = await app.service('users').create({
         username: 'invite.already.member',
-        password: 'supersecret',
+        password: 'SuperSecret1',
         roleId: 'medic',
         contactData: { email: 'already-member@example.com' }
       });
@@ -222,7 +222,7 @@ describe('\'invites\' service', () => {
 
       const accepted: any = await invitesSvc.patch(
         invite.id,
-        { action: 'accept', password: 'my-new-password-123' },
+        { action: 'accept', password: 'MyNewPass123' },
         { provider: 'rest' }
       );
 

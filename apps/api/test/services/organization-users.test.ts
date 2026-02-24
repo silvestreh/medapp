@@ -13,7 +13,7 @@ describe('\'organization-users\' service', () => {
 
     user = await app.service('users').create({
       username: 'org.member.test',
-      password: 'supersecret',
+      password: 'SuperSecret1',
       roleId: 'medic'
     });
   });
@@ -39,7 +39,7 @@ describe('\'organization-users\' service', () => {
   it('defaults role to member', async () => {
     const anotherUser = await app.service('users').create({
       username: 'org.default.role',
-      password: 'supersecret',
+      password: 'SuperSecret1',
       roleId: 'receptionist'
     });
 
@@ -54,7 +54,7 @@ describe('\'organization-users\' service', () => {
   it('enforces unique organization-user pair', async () => {
     const uniqueUser = await app.service('users').create({
       username: 'org.unique.pair',
-      password: 'supersecret',
+      password: 'SuperSecret1',
       roleId: 'medic'
     });
 
