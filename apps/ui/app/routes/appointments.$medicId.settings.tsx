@@ -52,12 +52,6 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const settingsRecord = normalizeArray<MdSettingsRecord>(mdSettingsResponse)[0] ?? null;
   const timeOffEvents = normalizeArray<TimeOffEvent>(timeOffResponse);
 
-  console.log('[appointments/settings loader] medic settings', {
-    medicId,
-    settingsRecord,
-    timeOffCount: timeOffEvents.length,
-  });
-
   return json({ medicId, settingsRecord, timeOffEvents });
 };
 
@@ -136,14 +130,6 @@ const AppointmentsSettings = () => {
   const isSubmitting = navigation.state === 'submitting';
   const submittingIntent = navigation.formData?.get('_intent');
   const removingId = submittingIntent === 'remove-time-off' ? String(navigation.formData?.get('id') || '') : null;
-
-  useEffect(() => {
-    console.log('[appointments/settings route] loader settings snapshot', {
-      medicId,
-      settingsRecord,
-      timeOffEvents,
-    });
-  }, [medicId, settingsRecord, timeOffEvents]);
 
   useEffect(() => {
     if (!actionData) {
