@@ -8,6 +8,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { X, FileDown } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
+import { parseFormJson } from '~/utils/parse-form-json';
 import EncounterTree from '~/components/encounter-tree';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
@@ -68,7 +69,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   const { client, user } = await getAuthenticatedClient(request);
   const formData = await request.formData();
-  const data = JSON.parse(formData.get('data') as string);
+  const data = parseFormJson(formData.get('data'));
 
   await client.service('encounters').create({
     patientId,

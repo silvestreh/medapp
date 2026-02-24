@@ -25,7 +25,15 @@ export default function (app: Application): void {
     logging: false,
     define: {
       freezeTableName: true
-    }
+    },
+    ...(isProduction && {
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      },
+    }),
   });
 
   if (!isProduction) {

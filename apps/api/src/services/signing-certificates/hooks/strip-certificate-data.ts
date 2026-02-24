@@ -1,11 +1,12 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
+import { omit } from 'lodash';
 
 export const stripCertificateData = (): Hook => async (context: HookContext): Promise<HookContext> => {
   if (!context.params.provider) return context;
 
   const strip = (item: any) => {
     if (!item) return item;
-    const { certificate, ...rest } = item.toJSON ? item.toJSON() : item;
+    const rest = omit(item.toJSON ? item.toJSON() : item, 'certificate');
     return rest;
   };
 

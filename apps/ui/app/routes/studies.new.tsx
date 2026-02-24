@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Save, ArrowLeft } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
+import { parseFormJson } from '~/utils/parse-form-json';
 import { useGet } from '~/components/provider';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
@@ -22,7 +23,7 @@ export const loader = authenticatedLoader();
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
   const formData = await request.formData();
-  const payload = JSON.parse(formData.get('data') as string);
+  const payload = parseFormJson<Record<string, any>>(formData.get('data'));
 
   const study = await client.service('studies').create(payload);
 

@@ -9,6 +9,7 @@ import { showNotification } from '@mantine/notifications';
 
 import { media } from '~/media';
 import { getAuthenticatedClient } from '~/utils/auth.server';
+import { parseFormJson } from '~/utils/parse-form-json';
 import { RouteDrawer } from '~/components/route-drawer';
 import { SettingsTab, type MdSettingsRecord, type SettingsSavePayload } from '~/components/appointments/settings-tab';
 import { TimeOffTab, type TimeOffEvent } from '~/components/appointments/time-off-tab';
@@ -67,8 +68,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     }
 
     if (intent === 'save-settings') {
-      const rawPayload = String(formData.get('payload') || '{}');
-      const payload = JSON.parse(rawPayload) as SettingsSavePayload;
+      const payload = parseFormJson<SettingsSavePayload>(formData.get('payload'));
       const settingsResponse = await client.service('md-settings').find({
         query: { userId: medicId },
         paginate: false,
@@ -85,12 +85,11 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     }
 
     if (intent === 'create-time-off') {
-      const rawPayload = String(formData.get('payload') || '{}');
-      const payload = JSON.parse(rawPayload) as {
+      const payload = parseFormJson<{
         startDate: string;
         endDate: string;
         type: 'vacation' | 'cancelDay' | 'other';
-      };
+      }>(formData.get('payload'));
 
       await client.service('time-off-events').create({
         medicId,

@@ -4,6 +4,7 @@ import { useActionData, useNavigation, useRouteLoaderData } from '@remix-run/rea
 import { useTranslation } from 'react-i18next';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
+import { parseFormJson } from '~/utils/parse-form-json';
 import { ProfileForm } from '~/components/profile-form';
 import type { loader as profileLoader } from '~/routes/profile';
 
@@ -25,12 +26,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try {
     if (intent === 'update-profile') {
-      const payloadRaw = String(formData.get('payload') || '{}');
-      const payload = JSON.parse(payloadRaw) as {
+      const payload = parseFormJson<{
         personalData?: Record<string, unknown>;
         contactData?: Record<string, unknown>;
         mdSettings?: Record<string, unknown>;
-      };
+      }>(formData.get('payload'));
       await client.service('profile').create({
         action: 'update-profile',
         personalData: payload.personalData,
