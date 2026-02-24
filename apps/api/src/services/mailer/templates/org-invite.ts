@@ -1,3 +1,5 @@
+import escape from 'escape-html';
+
 export interface OrgInviteData {
   organizationName: string;
   inviteUrl: string;
@@ -5,6 +7,10 @@ export interface OrgInviteData {
 }
 
 export function render(data: OrgInviteData): string {
+  const orgName = escape(data.organizationName);
+  const inviter = escape(data.inviterName);
+  const url = escape(data.inviteUrl);
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,11 +28,11 @@ export function render(data: OrgInviteData): string {
 </head>
 <body>
   <div class="container">
-    <h1>You've been invited to ${data.organizationName}</h1>
-    <p><strong>${data.inviterName}</strong> has invited you to join <strong>${data.organizationName}</strong> on MedApp.</p>
+    <h1>You've been invited to ${orgName}</h1>
+    <p><strong>${inviter}</strong> has invited you to join <strong>${orgName}</strong> on MedApp.</p>
     <p>Click the button below to accept the invitation:</p>
     <p style="text-align: center; margin: 28px 0;">
-      <a href="${data.inviteUrl}" class="btn">Accept Invitation</a>
+      <a href="${url}" class="btn">Accept Invitation</a>
     </p>
     <p class="footer">If you didn't expect this invitation, you can safely ignore this email.</p>
   </div>

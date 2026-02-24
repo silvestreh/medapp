@@ -50,7 +50,8 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const intent = String(formData.get('intent') || 'login');
   const url = new URL(request.url);
-  const redirectTo = url.searchParams.get('redirect') || '/';
+  const rawRedirect = url.searchParams.get('redirect') || '/';
+  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/';
 
   if (intent === 'passkey') {
     const accessToken = String(formData.get('accessToken') || '');
