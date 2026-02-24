@@ -8,6 +8,7 @@ import { authenticatedLoader } from '~/utils/auth.server';
 import PatientSearchTable from '~/components/patient-search-table';
 import Portal from '~/components/portal';
 import { media } from '~/media';
+import { displayDocumentValue } from '~/utils';
 
 export const loader = authenticatedLoader();
 
@@ -32,7 +33,15 @@ export default function PatientsIndex() {
         </Group>
       </Portal>
 
-      <PatientSearchTable basePath="/patients" />
+      <PatientSearchTable
+        basePath="/patients"
+        columns={[
+          { key: 'personalData.firstName' },
+          { key: 'personalData.lastName' },
+          { key: 'personalData.documentValue', render: v => displayDocumentValue(v as string) },
+          { key: 'medicare', render: v => v || 'Particular' },
+        ]}
+      />
     </>
   );
 }

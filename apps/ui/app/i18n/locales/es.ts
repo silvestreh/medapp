@@ -500,6 +500,28 @@ export const es = {
       first_name_required: 'El nombre es requerido',
       last_name_required: 'El apellido es requerido',
     },
+    columns: {
+      personalData: {
+        firstName: 'Nombre',
+        lastName: 'Apellido',
+        documentValue: 'Documento',
+        documentType: 'Tipo de Documento',
+        nationality: 'Nacionalidad',
+        birthDate: 'Fecha de Nacimiento',
+        gender: 'Género',
+        maritalStatus: 'Estado Civil',
+      },
+      contactData: {
+        email: 'Email',
+        phoneNumber: 'Teléfono',
+        streetAddress: 'Dirección',
+        city: 'Ciudad',
+        province: 'Provincia',
+        country: 'País',
+      },
+      medicare: 'Obra Social',
+      medicareNumber: 'Nro. de Afiliado',
+    },
   },
   users: {
     page_title: 'Usuarios y Roles',
