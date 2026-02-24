@@ -10,6 +10,7 @@ import { Save, ArrowLeft, AlertCircle, RotateCcw } from 'lucide-react';
 import omit from 'lodash/omit';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
+import { parseFormJson } from '~/utils/parse-form-json';
 import { useFind, useMutation } from '~/components/provider';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
@@ -30,9 +31,9 @@ export const loader = authenticatedLoader();
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
   const formData = await request.formData();
-  const payload = JSON.parse(formData.get('data') as string);
+  const payload = parseFormJson(formData.get('data'));
 
-  const { existingPersonalDataId, personalData, contactData, patientFields } = payload;
+  const { existingPersonalDataId, personalData, contactData, patientFields } = payload as any;
 
   if (existingPersonalDataId) {
     const patchable = omit(personalData, ['documentValue']);

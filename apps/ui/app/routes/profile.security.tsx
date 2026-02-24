@@ -3,6 +3,7 @@ import { useActionData, useRouteLoaderData } from '@remix-run/react';
 import QRCode from 'qrcode';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
+import { parseFormJson } from '~/utils/parse-form-json';
 import { ProfileSecurity } from '~/components/profile-security';
 import type { loader as profileLoader } from '~/routes/profile';
 
@@ -68,7 +69,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
 
     if (intent === 'passkey-register-verify') {
-      const credential = JSON.parse(String(formData.get('credential') || '{}'));
+      const credential = parseFormJson(formData.get('credential'));
       const deviceName = String(formData.get('deviceName') || '');
       const result = await client.service('webauthn').create({
         action: 'verify-registration',

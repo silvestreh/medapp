@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Title, Stack, Center, Text } from '@mantine/core';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
+import { parseFormJson } from '~/utils/parse-form-json';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { EncounterForm } from '~/components/forms/encounter-form';
@@ -68,7 +69,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   const { client, user } = await getAuthenticatedClient(request);
   const formData = await request.formData();
-  const data = JSON.parse(formData.get('data') as string);
+  const data = parseFormJson(formData.get('data'));
 
   await client.service('encounters').create({
     patientId,

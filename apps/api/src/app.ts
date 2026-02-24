@@ -35,14 +35,14 @@ app.configure(configuration());
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", 'data:', 'blob:'],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      frameAncestors: ["'none'"],
+      defaultSrc: ['\'self\''],
+      scriptSrc: ['\'self\'', '\'unsafe-inline\''],
+      styleSrc: ['\'self\'', '\'unsafe-inline\''],
+      imgSrc: ['\'self\'', 'data:', 'blob:'],
+      connectSrc: ['\'self\''],
+      fontSrc: ['\'self\''],
+      objectSrc: ['\'none\''],
+      frameAncestors: ['\'none\''],
     },
   },
 }));
