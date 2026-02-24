@@ -33,7 +33,7 @@ export async function importUsers({ users, resetPasswords, organizationId, bar }
     try {
       const { mdSettings, additionalRoleIds, ...userData } = user;
       if (resetPasswords) {
-        userData.password = 'retrete';
+        userData.password = 'Retrete4u!';
       }
       await usersService.create(userData as any);
       validUserIds.add(user.id);

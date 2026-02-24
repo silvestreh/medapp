@@ -1,9 +1,10 @@
-import { useState, useMemo, type FC, useEffect, useRef } from 'react';
+import { useState, useMemo, type FC, type ReactNode, useEffect, useRef } from 'react';
 import { Table, TextInput, Stack, Loader, Text as BaseText, Pagination, Group, Button } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Search, User } from 'lucide-react';
 import { useNavigate, useSearchParams } from '@remix-run/react';
+import get from 'lodash/get';
 
 import { useFind } from '~/components/provider';
 import type { Patient } from '~/declarations';
@@ -93,11 +94,23 @@ const Title = styled('h1', {
   },
 });
 
-interface PatientSearchTableProps {
-  basePath?: string;
+export interface ColumnDef {
+  key: string;
+  render?: (value: any, patient: Patient) => ReactNode;
 }
 
-const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounters' }) => {
+const DEFAULT_COLUMNS: ColumnDef[] = [
+  { key: 'personalData.firstName' },
+  { key: 'personalData.lastName' },
+  { key: 'personalData.documentValue', render: v => displayDocumentValue(v as string) },
+];
+
+interface PatientSearchTableProps {
+  basePath?: string;
+  columns?: ColumnDef[];
+}
+
+const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounters', columns = DEFAULT_COLUMNS }) => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('q') || '';
@@ -153,6 +166,12 @@ const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounte
   const total = (response as any).total || 0;
   const totalPages = Math.ceil(total / 10);
 
+  const renderCellValue = (col: ColumnDef, patient: Patient) => {
+    const raw = get(patient, col.key);
+    if (col.render) return col.render(raw, patient);
+    return raw || '—';
+  };
+
   const rows = patients.map((patient: Patient) => (
     <Table.Tr
       key={patient.id}
@@ -160,15 +179,11 @@ const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounte
       styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
       style={{ cursor: 'pointer' }}
     >
-      <Table.Td>
-        <CellText>{patient.personalData.firstName || '—'}</CellText>
-      </Table.Td>
-      <Table.Td>
-        <CellText>{patient.personalData.lastName || '—'}</CellText>
-      </Table.Td>
-      <Table.Td>
-        <CellText>{displayDocumentValue(patient.personalData.documentValue)}</CellText>
-      </Table.Td>
+      {columns.map(col => (
+        <Table.Td key={col.key}>
+          <CellText>{renderCellValue(col, patient)}</CellText>
+        </Table.Td>
+      ))}
     </Table.Tr>
   ));
 
@@ -208,25 +223,25 @@ const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounte
         >
           <Table.Thead>
             <Table.Tr bg="blue.0">
-              <Table.Th
-                style={{ border: '1px solid var(--mantine-color-blue-1)', borderLeft: 'none' }}
-                fw={500}
-                fz="md"
-                py="0.5em"
-              >
-                {t('patients.col_first_name')}
-              </Table.Th>
-              <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
-                {t('patients.col_last_name')}
-              </Table.Th>
-              <Table.Th
-                style={{ border: '1px solid var(--mantine-color-blue-1)', borderRight: 'none' }}
-                fw={500}
-                fz="md"
-                py="0.5em"
-              >
-                {t('patients.col_document')}
-              </Table.Th>
+              {columns.map((col, idx) => {
+                const isFirst = idx === 0;
+                const isLast = idx === columns.length - 1;
+                return (
+                  <Table.Th
+                    key={col.key}
+                    style={{
+                      border: '1px solid var(--mantine-color-blue-1)',
+                      ...(isFirst && { borderLeft: 'none' }),
+                      ...(isLast && { borderRight: 'none' }),
+                    }}
+                    fw={500}
+                    fz="md"
+                    py="0.5em"
+                  >
+                    {t(`patients.columns.${col.key}`, { defaultValue: col.key })}
+                  </Table.Th>
+                );
+              })}
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -236,7 +251,7 @@ const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounte
                 styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
                 onClick={() => inputRef.current?.focus()}
               >
-                <Table.Td colSpan={3}>
+                <Table.Td colSpan={columns.length}>
                   <EmptyState>
                     {inputValue && !isLoading ? (
                       <User size={48} color="var(--mantine-color-dimmed)" />

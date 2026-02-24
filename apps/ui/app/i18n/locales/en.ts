@@ -498,6 +498,28 @@ export const en: typeof es = {
       first_name_required: 'First name is required',
       last_name_required: 'Last name is required',
     },
+    columns: {
+      personalData: {
+        firstName: 'First Name',
+        lastName: 'Last Name',
+        documentValue: 'Document',
+        documentType: 'Document Type',
+        nationality: 'Nationality',
+        birthDate: 'Birth Date',
+        gender: 'Gender',
+        maritalStatus: 'Marital Status',
+      },
+      contactData: {
+        email: 'Email',
+        phoneNumber: 'Phone',
+        streetAddress: 'Street Address',
+        city: 'City',
+        province: 'Province',
+        country: 'Country',
+      },
+      medicare: 'Insurance Provider',
+      medicareNumber: 'Member Number',
+    },
   },
   users: {
     page_title: 'Users & Roles',
