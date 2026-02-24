@@ -576,6 +576,7 @@ export const es = {
     organization_name: 'Nombre de la organización',
     organization_name_placeholder: 'Ej: Clínica San Martín',
     invalid_credentials: 'Usuario o contraseña inválidos',
+    too_many_attempts: 'Demasiados intentos de inicio de sesión, por favor intente más tarde',
     otp_prompt: 'Por favor, ingrese su código de verificación',
     otp_label: 'Código de verificación',
     otp_invalid: 'Código de verificación inválido',

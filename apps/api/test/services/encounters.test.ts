@@ -9,7 +9,7 @@ describe('\'encounters\' service', () => {
   before(async () => {
     medic = await app.service('users').create({
       username: 'test.medic.encounter',
-      password: 'supersecret',
+      password: 'SuperSecret1',
       roleId: 'medic'
     });
 

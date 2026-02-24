@@ -16,7 +16,7 @@ describe('\'study-results\' service', () => {
 
     medic = await app.service('users').create({
       username: 'medic-study-results',
-      password: 'password123',
+      password: 'Password123',
       roleId: 'medic'
     });
 

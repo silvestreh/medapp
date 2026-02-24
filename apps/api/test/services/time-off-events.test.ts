@@ -8,7 +8,7 @@ describe('\'time-off-events\' service', () => {
   before(async () => {
     medic = await app.service('users').create({
       username: 'timeoff.medic',
-      password: 'supersecret',
+      password: 'SuperSecret1',
       roleId: 'medic'
     });
   });

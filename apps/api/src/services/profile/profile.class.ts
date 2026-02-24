@@ -1,6 +1,7 @@
 import { BadRequest, Forbidden, NotAuthenticated } from '@feathersjs/errors';
 import type { Application, User } from '../../declarations';
 import { buildTotpAuthUri, generateTotpSecret, verifyTotpCode } from '../../utils/totp';
+import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from '../../utils/validate-password';
 
 type ProfileAction = 'setup-2fa' | 'enable-2fa' | 'change-password' | 'update-profile';
 
@@ -135,8 +136,8 @@ export class Profile {
         throw new BadRequest('Current and new password are required');
       }
 
-      if (newPassword.length < 8) {
-        throw new BadRequest('New password must be at least 8 characters');
+      if (!isPasswordValid(newPassword)) {
+        throw new BadRequest(PASSWORD_POLICY_MESSAGE);
       }
 
       if (user.twoFactorEnabled && !twoFactorCode) {

@@ -574,6 +574,7 @@ export const en: typeof es = {
     organization_name: 'Organization name',
     organization_name_placeholder: 'e.g. San Martin Clinic',
     invalid_credentials: 'Invalid username/password',
+    too_many_attempts: 'Too many login attempts, please try again later',
     otp_prompt: 'Please enter your one-time password',
     otp_label: 'Verification code',
     otp_invalid: 'Invalid verification code',

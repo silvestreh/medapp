@@ -8,6 +8,7 @@ import Sentry from './sentry';
 // import compress from 'compression';
 import helmet from 'helmet';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import feathers from '@feathersjs/feathers';
 import configuration from '@feathersjs/configuration';
 import express from '@feathersjs/express';
@@ -45,7 +46,12 @@ app.use(helmet({
     },
   },
 }));
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
+    : '*',
+  credentials: true,
+}));
 // app.use(compress());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -59,6 +65,21 @@ app.configure(express.rest());
 
 app.configure(sequelize);
 
+
+// Rate-limit login attempts (disabled during tests).
+// Only count requests using the 'local' strategy (credential-based logins).
+// JWT re-authentication happens on every page load and must not be throttled.
+if (process.env.NODE_ENV !== 'test') {
+  const authLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: parseInt(process.env.AUTH_RATE_LIMIT_MAX || '10', 10),
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => req.body?.strategy !== 'local',
+    message: { message: 'Too many login attempts, please try again later' },
+  });
+  app.use('/authentication', authLimiter);
+}
 
 // Configure other middleware (see `middleware/index.ts`)
 app.configure(middleware);

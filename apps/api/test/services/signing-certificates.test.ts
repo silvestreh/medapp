@@ -14,7 +14,7 @@ describe('\'signing-certificates\' service', () => {
 
     medic = await app.service('users').create({
       username: 'cert.test.medic',
-      password: 'supersecret',
+      password: 'SuperSecret1',
       roleId: 'medic',
     });
   });

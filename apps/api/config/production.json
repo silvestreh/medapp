@@ -7,5 +7,27 @@
     "apiKey": "MAILGUN_API_KEY",
     "domain": "MAILGUN_DOMAIN",
     "from": "MAILGUN_FROM"
+  },
+  "authentication": {
+    "entity": "user",
+    "service": "users",
+    "secret": "AUTH_SECRET",
+    "authStrategies": [
+      "jwt",
+      "local"
+    ],
+    "jwtOptions": {
+      "header": {
+        "typ": "access"
+      },
+      "audience": "AUTH_AUDIENCE",
+      "issuer": "feathers",
+      "algorithm": "HS256",
+      "expiresIn": "1d"
+    },
+    "local": {
+      "usernameField": "username",
+      "passwordField": "password"
+    }
   }
 }

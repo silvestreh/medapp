@@ -9,6 +9,7 @@ export interface Account {
   id: string;
   username: string;
   twoFactorEnabled?: boolean;
+  hasWeakPassword?: boolean;
   organizations?: UserOrganization[];
   role: {
     id: string;
