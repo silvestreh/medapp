@@ -2,7 +2,6 @@ import { type FC, useCallback, useMemo } from 'react';
 import { Accordion, Text, Stack } from '@mantine/core';
 import dayjs from 'dayjs';
 import groupBy from 'lodash/groupBy';
-import omit from 'lodash/omit';
 import mapValues from 'lodash/mapValues';
 import { useTranslation } from 'react-i18next';
 import { useRouteLoaderData } from '@remix-run/react';
@@ -165,7 +164,6 @@ const EncounterTree: FC<EncounterTreeProps> = ({
   const handleFormItemClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>, encounter: Encounter, key: string) => {
       e.stopPropagation();
-      console.log(JSON.stringify(omit(encounter.data[key], '__class'), null, 2));
       onFormClick?.(encounter, key);
     },
     [onFormClick]

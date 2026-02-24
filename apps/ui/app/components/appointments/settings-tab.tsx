@@ -186,8 +186,6 @@ export function SettingsTab({ medicId, initialSettings, isSaving, onSave }: Sett
 
   useEffect(() => {
     const parsed = parseInitialSettings(initialSettings);
-    console.log('[appointments/settings] loaded settings from DB', initialSettings);
-    console.log('[appointments/settings] parsed initial UI state', parsed);
     setUseDifferentTimes(parsed.useDifferentTimes);
     setActiveDay(parsed.activeDay);
     setEncounterDuration(parsed.encounterDuration);
@@ -196,18 +194,6 @@ export function SettingsTab({ medicId, initialSettings, isSaving, onSave }: Sett
     setDaySettings(parsed.daySettings);
     setSelectedDays(parsed.selectedDays);
   }, [initialSettings]);
-
-  useEffect(() => {
-    console.log('[appointments/settings] state changed', {
-      useDifferentTimes,
-      activeDay,
-      encounterDuration,
-      commonStart,
-      commonEnd,
-      selectedDays,
-      daySettings,
-    });
-  }, [useDifferentTimes, activeDay, encounterDuration, commonStart, commonEnd, selectedDays, daySettings]);
 
   const selectedCount = useMemo(() => Object.values(selectedDays).filter(Boolean).length, [selectedDays]);
   const selectedDayList = useMemo(() => dayOrder.filter(day => selectedDays[day]), [selectedDays]);
@@ -290,7 +276,6 @@ export function SettingsTab({ medicId, initialSettings, isSaving, onSave }: Sett
       }
     }
 
-    console.log('[appointments/settings] payload before submit', payload);
     onSave(payload);
   };
 

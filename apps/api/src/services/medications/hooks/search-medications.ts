@@ -25,8 +25,6 @@ export const searchMedications = () => {
       return context;
     }
 
-    console.log('Searching medications for:', searchWords);
-
     // Build a query where EACH word must match the unaccented searchText column
     // We use Sequelize.where with unaccent on the concatenated columns as a fallback
     // or just search the searchText column if it's populated.
