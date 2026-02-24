@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 
 import { FormContainer, FormCard, FormHeader, FieldRow, StyledTextarea } from '~/components/forms/styles';
+import { SafeHtml } from '~/components/safe-html';
 import { StudyFormField } from './study-form-field';
 import type { StudySchema, StudyField, StudyResultData, StudySelectValue } from './study-form-types';
 
@@ -188,7 +189,7 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
           {section.titleField && (
             <FormHeader>
               <StyledTitle>
-                <span dangerouslySetInnerHTML={{ __html: section.titleField.label ?? '' }} />
+                <SafeHtml html={section.titleField.label ?? ''} />
                 {section.titleField.unit && (
                   <span style={{ color: 'var(--mantine-color-gray-5)', fontSize: '0.75em', marginLeft: '0.5rem' }}>
                     ({section.titleField.unit})

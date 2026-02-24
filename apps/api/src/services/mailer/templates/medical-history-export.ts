@@ -1,3 +1,5 @@
+import escape from 'escape-html';
+
 export interface MedicalHistoryExportData {
   patientName: string;
   doctorName: string;
@@ -6,6 +8,10 @@ export interface MedicalHistoryExportData {
 }
 
 export function render(data: MedicalHistoryExportData): string {
+  const patient = escape(data.patientName);
+  const doctor = escape(data.doctorName);
+  const orgName = escape(data.organizationName);
+
   const signedNote = data.isSigned
     ? '<p style="color: #16a34a; font-weight: 500;">Este documento fue firmado digitalmente y puede ser verificado en <a href="https://validadordefirmas.gob.ar/upload" style="color: #228be6;">validadordefirmas.gob.ar</a> o con Adobe Reader.</p>'
     : '<p style="color: #9ca3af; font-style: italic;">Este documento no cuenta con firma digital.</p>';
@@ -27,7 +33,7 @@ export function render(data: MedicalHistoryExportData): string {
 <body>
   <div class="container">
     <h1>Historia Clínica</h1>
-    <p>Adjunto encontrará la historia clínica de <strong>${data.patientName}</strong>, generada por el Dr. <strong>${data.doctorName}</strong> desde <strong>${data.organizationName}</strong>.</p>
+    <p>Adjunto encontrará la historia clínica de <strong>${patient}</strong>, generada por el Dr. <strong>${doctor}</strong> desde <strong>${orgName}</strong>.</p>
     ${signedNote}
     <p class="footer">Este email fue generado automáticamente por MedApp.</p>
   </div>

@@ -3,6 +3,7 @@ import { Group } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 import { FieldRow, StyledTextInput, StyledTextarea, StyledSelect, StyledTitle } from '~/components/forms/styles';
+import { SafeHtml } from '~/components/safe-html';
 import type { StudyField, StudyFieldReference, StudySelectValue } from './study-form-types';
 
 // ---------------------------------------------------------------------------
@@ -70,10 +71,14 @@ export function StudyFormField({ field, value, onChange, readOnly, showMethod }:
         setError(null);
         return;
       }
-      const pattern = new RegExp(field.pattern);
-      if (!pattern.test(val)) {
-        setError(t('forms.invalid_format'));
-      } else {
+      try {
+        const pattern = new RegExp(field.pattern);
+        if (!pattern.test(val)) {
+          setError(t('forms.invalid_format'));
+        } else {
+          setError(null);
+        }
+      } catch {
         setError(null);
       }
     },
@@ -94,7 +99,7 @@ export function StudyFormField({ field, value, onChange, readOnly, showMethod }:
   if (field.type === 'title') {
     return (
       <StyledTitle order={4}>
-        <span dangerouslySetInnerHTML={{ __html: field.label ?? '' }} />
+        <SafeHtml html={field.label ?? ''} />
       </StyledTitle>
     );
   }
@@ -120,7 +125,7 @@ export function StudyFormField({ field, value, onChange, readOnly, showMethod }:
       </Group>
     ) : null;
 
-  const labelNode = <span dangerouslySetInnerHTML={{ __html: field.label ?? '' }} />;
+  const labelNode = <SafeHtml html={field.label ?? ''} />;
 
   // -- Read-only: render plain text for all field types ----------------------
   if (readOnly) {

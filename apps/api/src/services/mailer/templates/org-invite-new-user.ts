@@ -1,3 +1,5 @@
+import escape from 'escape-html';
+
 export interface OrgInviteNewUserData {
   organizationName: string;
   inviteUrl: string;
@@ -6,6 +8,11 @@ export interface OrgInviteNewUserData {
 }
 
 export function render(data: OrgInviteNewUserData): string {
+  const orgName = escape(data.organizationName);
+  const inviter = escape(data.inviterName);
+  const url = escape(data.inviteUrl);
+  const username = escape(data.username);
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,13 +33,13 @@ export function render(data: OrgInviteNewUserData): string {
 <body>
   <div class="container">
     <h1>Welcome to MedApp</h1>
-    <p><strong>${data.inviterName}</strong> has created an account for you at <strong>${data.organizationName}</strong>.</p>
+    <p><strong>${inviter}</strong> has created an account for you at <strong>${orgName}</strong>.</p>
     <div class="info">
-      <p style="margin:0"><strong>Username:</strong> ${data.username}</p>
+      <p style="margin:0"><strong>Username:</strong> ${username}</p>
     </div>
     <p>Click the button below to set your password and get started:</p>
     <p style="text-align: center; margin: 28px 0;">
-      <a href="${data.inviteUrl}" class="btn">Set Password &amp; Join</a>
+      <a href="${url}" class="btn">Set Password &amp; Join</a>
     </p>
     <p class="footer">If you didn't expect this invitation, you can safely ignore this email.</p>
   </div>
