@@ -25,6 +25,36 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ ok: true, intent });
     }
 
+    if (intent === 'save-llm-provider-key') {
+      const provider = String(formData.get('provider') || '');
+      const apiKey = String(formData.get('apiKey') || '');
+      await client.service('llm-provider-keys').create({
+        provider,
+        apiKey,
+      });
+      return json({ ok: true, intent });
+    }
+
+    if (intent === 'remove-llm-provider-key') {
+      const provider = String(formData.get('provider') || '');
+      await client.service('llm-provider-keys').remove(provider);
+      return json({ ok: true, intent });
+    }
+
+    if (intent === 'update-llm-chat-settings') {
+      const orgId = String(formData.get('orgId') || '');
+      const provider = String(formData.get('provider') || '');
+      const model = String(formData.get('model') || '');
+      const org = await client.service('organizations').get(orgId);
+      const settings = { ...((org as any)?.settings || {}) };
+      settings.llmChat = {
+        preferredProvider: provider || undefined,
+        model: model || undefined,
+      };
+      await client.service('organizations').patch(orgId, { settings });
+      return json({ ok: true, intent });
+    }
+
     return json({ ok: false, intent, error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
     return json({ ok: false, intent, error: error?.message || 'Operation failed' }, { status: 400 });

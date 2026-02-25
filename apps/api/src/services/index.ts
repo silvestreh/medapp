@@ -32,6 +32,9 @@ import signingCertificates from './signing-certificates/signing-certificates.ser
 import signedExports from './signed-exports/signed-exports.service';
 import stats from './stats/stats.service';
 import practitionerVerification from './practitioner-verification/practitioner-verification.service';
+import encounterAiChat from './encounter-ai-chat/encounter-ai-chat.service';
+import llmProviderKeys from './llm-provider-keys/llm-provider-keys.service';
+import llmModels from './llm-models/llm-models.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -68,4 +71,7 @@ export default function (app: Application): void {
   app.configure(signedExports);
   app.configure(stats);
   app.configure(practitionerVerification);
+  app.configure(encounterAiChat);
+  app.configure(llmProviderKeys);
+  app.configure(llmModels);
 }

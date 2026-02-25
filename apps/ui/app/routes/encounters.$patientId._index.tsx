@@ -23,6 +23,7 @@ import { ExportSignedPdfDialog } from '~/components/export-signed-pdf-dialog';
 import { PrintPdfDialog } from '~/components/print-pdf-dialog';
 import { Fab, FabItem } from '~/components/fab';
 import { ToolbarTitle } from '~/components/toolbar-title';
+import { EncounterAiChatPanel } from '~/components/encounter-ai-chat-panel';
 
 const Container = styled('div', {
   base: {
@@ -349,6 +350,10 @@ export default function PatientEncounterDetail() {
         ) : (
           <PatientOverview patient={data.patient} encounters={data.encounters} />
         )}
+        <EncounterAiChatPanel
+          patientId={String(data.patient.id)}
+          encounterDraft={selectedEncounter?.data || {}}
+        />
       </Content>
 
       {!isDesktop && (
