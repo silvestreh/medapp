@@ -71,7 +71,7 @@ const FabTrigger = styled('button', {
 const FabBackdrop = styled('div', {
   base: {
     position: 'fixed',
-    bottom: '4.5rem',
+    bottom: '4.55rem',
     height: '40vh',
     right: 0,
     left: 0,
