@@ -111,7 +111,8 @@
       "studies:find:all",
       "studies:get:all",
       "studies:patch:all",
-      "studies:remove:all"
+      "studies:remove:all",
+      "stats:find:all"
     ]
   }
 ]

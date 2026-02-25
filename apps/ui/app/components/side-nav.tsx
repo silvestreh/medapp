@@ -2,7 +2,16 @@ import React, { cloneElement, isValidElement, type ReactElement } from 'react';
 import { ActionIcon, Flex, Tooltip, Image, Menu, type DefaultMantineColor } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { NavLink, useLocation, useMatches, useNavigate } from '@remix-run/react';
-import { Calendar, User, Stethoscope, FlaskConical, Shield, Languages, type LucideProps } from 'lucide-react';
+import {
+  Calendar,
+  User,
+  Stethoscope,
+  FlaskConical,
+  Shield,
+  Languages,
+  BarChart3,
+  type LucideProps,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
@@ -86,6 +95,7 @@ const NavItem = styled(ActionIcon, {
       pink: {},
       yellow: {},
       red: {},
+      teal: {},
     },
     active: {
       true: {},
@@ -130,6 +140,14 @@ const NavItem = styled(ActionIcon, {
       active: true,
       css: {
         backgroundColor: 'var(--mantine-color-red-6)',
+        color: 'white',
+      },
+    },
+    {
+      tone: 'teal',
+      active: true,
+      css: {
+        backgroundColor: 'var(--mantine-color-teal-6)',
         color: 'white',
       },
     },
@@ -202,6 +220,13 @@ const sections: Section[] = [
     path: '/users',
     color: 'red',
   },
+  {
+    labelKey: 'stats',
+    icon: <BarChart3 />,
+    permissions: ['stats:find:all'],
+    path: '/stats',
+    color: 'teal',
+  },
 ];
 
 const SideNav: React.FC = () => {
@@ -227,30 +252,31 @@ const SideNav: React.FC = () => {
     <Container>
       <StickyContent>
         <Logo src="/logo.webp" alt="Logo" />
-        {user && sections.map((section: Section) => {
-          const isActive = matches.at(-1)?.pathname.startsWith(section.path);
-          const label = t(`navigation.${section.labelKey}` as any);
+        {user &&
+          sections.map((section: Section) => {
+            const isActive = matches.at(-1)?.pathname.startsWith(section.path);
+            const label = t(`navigation.${section.labelKey}` as any);
 
-          return (
-            <HasPermission key={section.labelKey} permissions={section.permissions}>
-              <Tooltip label={label} position="right">
-                <NavItem
-                  tone={section.color}
-                  active={isActive}
-                  component={NavLink}
-                  prefetch="intent"
-                  to={isActive ? '#' : section.path}
-                  variant="subtle"
-                  size="3em"
-                  className={isActive ? 'active' : ''}
-                >
-                  {isValidElement(section.icon) &&
-                    cloneElement(section.icon as ReactElement<LucideProps>, { size: isMobile ? 18 : 22 })}
-                </NavItem>
-              </Tooltip>
-            </HasPermission>
-          );
-        })}
+            return (
+              <HasPermission key={section.labelKey} permissions={section.permissions}>
+                <Tooltip label={label} position="right">
+                  <NavItem
+                    tone={section.color}
+                    active={isActive}
+                    component={NavLink}
+                    prefetch="intent"
+                    to={isActive ? '#' : section.path}
+                    variant="subtle"
+                    size="3em"
+                    className={isActive ? 'active' : ''}
+                  >
+                    {isValidElement(section.icon) &&
+                      cloneElement(section.icon as ReactElement<LucideProps>, { size: isMobile ? 18 : 22 })}
+                  </NavItem>
+                </Tooltip>
+              </HasPermission>
+            );
+          })}
       </StickyContent>
       <LanguageSwitcherContainer>
         <Menu withArrow position={isMobile ? 'top-end' : 'right-end'} shadow="xs">
