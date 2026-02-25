@@ -113,7 +113,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
 
     let isOrgOwner = false;
-    let currentOrg: { id: string; name: string; slug: string } | null = null;
+    let currentOrg: { id: string; name: string; slug: string; settings?: Record<string, any> } | null = null;
     const currentOrganizationId = await getCurrentOrganizationId(request);
     const orgs = (fullUser as any).organizations as
       | Array<{ id: string; name: string; slug: string; role: string }>
@@ -122,7 +122,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       const membership = orgs.find(o => o.id === currentOrganizationId);
       if (membership?.role === 'owner') {
         isOrgOwner = true;
-        currentOrg = { id: membership.id, name: membership.name, slug: membership.slug };
+        try {
+          const org = await client.service('organizations').get(membership.id);
+          currentOrg = {
+            id: org.id,
+            name: org.name,
+            slug: org.slug,
+            settings: (org as any)?.settings || {},
+          };
+        } catch {
+          currentOrg = { id: membership.id, name: membership.name, slug: membership.slug, settings: {} };
+        }
       }
     }
 

@@ -11,6 +11,7 @@ import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { EncounterForm } from '~/components/forms/encounter-form';
 import NewEncounterSidebar from '~/components/new-encounter-sidebar';
+import { EncounterAiChatPanel } from '~/components/encounter-ai-chat-panel';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
 
@@ -193,20 +194,22 @@ export default function NewEncounter() {
       </Sidebar>
 
       <Content>
-        {activeFormKey ? (
-          <Stack key={activeFormKey}>
+        <Stack key={activeFormKey ?? 'no-active-form'}>
+          {activeFormKey && (
             <EncounterForm
               encounter={{ patientId: patient.id, data: formValues }}
               readOnly={false}
               activeFormKey={activeFormKey}
               onValuesChange={handleValuesChange}
             />
-          </Stack>
-        ) : (
-          <Center style={{ height: '100%' }}>
-            <Text color="dimmed">{t('encounters.select_form_instruction')}</Text>
-          </Center>
-        )}
+          )}
+          {!activeFormKey && (
+            <Center style={{ height: '100%' }}>
+              <Text color="dimmed">{t('encounters.select_form_instruction')}</Text>
+            </Center>
+          )}
+        </Stack>
+        <EncounterAiChatPanel patientId={String(patient.id)} encounterDraft={formValues} />
       </Content>
     </Container>
   );
