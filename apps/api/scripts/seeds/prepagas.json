@@ -3148,5 +3148,11 @@
     "enemp": null,
     "denomination": "OBRA SOCIAL DE LA CIUDAD DE BUENOS AIRES",
     "shortName": "OBSBA"
+  },
+  {
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO NACIONAL DE SERVICIOS SOCIALES PARA JUBILADOS Y PENSIONADOS",
+    "shortName": "PAMI"
   }
 ]
