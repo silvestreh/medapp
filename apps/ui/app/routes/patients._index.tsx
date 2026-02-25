@@ -1,7 +1,7 @@
 import { Link } from '@remix-run/react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Button, ActionIcon, Group } from '@mantine/core';
+import { Button, Group } from '@mantine/core';
 import { Plus } from 'lucide-react';
 
 import { authenticatedLoader } from '~/utils/auth.server';
@@ -9,6 +9,7 @@ import PatientSearchTable from '~/components/patient-search-table';
 import Portal from '~/components/portal';
 import { media } from '~/media';
 import { displayDocumentValue } from '~/utils';
+import { Fab } from '~/components/fab';
 
 export const loader = authenticatedLoader();
 
@@ -18,20 +19,17 @@ export default function PatientsIndex() {
 
   return (
     <>
-      <Portal id="form-actions">
-        <Group>
-          {isDesktop && (
+      {isDesktop && (
+        <Portal id="form-actions">
+          <Group>
             <Button component={Link} to="/patients/new" leftSection={<Plus size={16} />}>
               {t('patients.new_patient')}
             </Button>
-          )}
-          {!isDesktop && (
-            <ActionIcon component={Link} to="/patients/new">
-              <Plus size={16} />
-            </ActionIcon>
-          )}
-        </Group>
-      </Portal>
+          </Group>
+        </Portal>
+      )}
+
+      {!isDesktop && <Fab to="/patients/new" />}
 
       <PatientSearchTable
         basePath="/patients"

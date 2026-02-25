@@ -9,6 +9,7 @@ const CERT_PASSWORD = 'test1234';
 describe('\'signed-exports\' service', () => {
   let medic: any;
   let patient: any;
+  let study: any;
   let p12Buffer: Buffer;
 
   before(async () => {
@@ -59,7 +60,7 @@ describe('\'signed-exports\' service', () => {
       },
     });
 
-    const study = await app.service('studies').create({
+    study = await app.service('studies').create({
       date: new Date('2024-03-10'),
       protocol: 5001,
       studies: ['anemia'],
@@ -219,6 +220,151 @@ describe('\'signed-exports\' service', () => {
         assert.fail('Should throw Forbidden');
       } catch (error: any) {
         assert.strictEqual(error.name, 'Forbidden');
+      }
+    });
+  });
+
+  describe('print (unsigned download) flow', () => {
+    it('generates an unsigned PDF with both encounters and studies for printing', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        content: 'both',
+        delivery: 'download',
+      }, { user: medic } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.pdf, 'PDF buffer is present');
+      assert.ok(Buffer.isBuffer(result.pdf), 'PDF is a Buffer');
+      assert.ok(result.pdf.length > 0, 'PDF is non-empty');
+      assert.ok(
+        result.pdf.toString('utf-8', 0, 5).startsWith('%PDF'),
+        'Starts with %PDF header'
+      );
+      assert.ok(result.fileName, 'File name is present');
+      assert.ok(result.fileName.endsWith('.pdf'), 'File name ends with .pdf');
+    });
+
+    it('produces unsigned PDF without signature artifacts', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        content: 'both',
+        delivery: 'download',
+      }, { user: medic } as any);
+
+      const pdfText = result.pdf.toString('utf-8');
+      assert.strictEqual(pdfText.includes('/Type /Sig'), false, 'No /Type /Sig in unsigned PDF');
+      assert.strictEqual(pdfText.includes('/SubFilter'), false, 'No /SubFilter in unsigned PDF');
+    });
+
+    it('generates unsigned PDF with encounters only for printing', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        content: 'encounters',
+        delivery: 'download',
+      }, { user: medic } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.pdf, 'PDF buffer is present');
+      assert.ok(
+        result.pdf.toString('utf-8', 0, 5).startsWith('%PDF'),
+        'Starts with %PDF header'
+      );
+    });
+
+    it('generates unsigned PDF with studies only for printing', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        content: 'studies',
+        delivery: 'download',
+      }, { user: medic } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.pdf, 'PDF buffer is present');
+      assert.ok(
+        result.pdf.toString('utf-8', 0, 5).startsWith('%PDF'),
+        'Starts with %PDF header'
+      );
+    });
+
+    it('generates unsigned PDF with date range filtering for printing', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        startDate: '2024-01-01',
+        endDate: '2024-03-31',
+        content: 'both',
+        delivery: 'download',
+      }, { user: medic } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.pdf, 'PDF buffer is present');
+      assert.ok(
+        result.pdf.toString('utf-8', 0, 5).startsWith('%PDF'),
+        'PDF starts with %PDF header'
+      );
+      assert.ok(result.fileName, 'File name is present');
+    });
+
+    it('generates unsigned PDF with locale parameter for printing', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        content: 'both',
+        delivery: 'download',
+        locale: 'es',
+      }, { user: medic } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.pdf, 'PDF buffer is present');
+      assert.ok(result.fileName, 'File name is present');
+    });
+  });
+
+  describe('single study export via studyId', () => {
+    it('generates PDF for a single study by studyId', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        studyId: study.id,
+        delivery: 'download',
+      }, { user: medic } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.pdf, 'PDF buffer is present');
+      assert.ok(Buffer.isBuffer(result.pdf), 'PDF is a Buffer');
+      assert.ok(result.pdf.length > 0, 'PDF is non-empty');
+      assert.ok(
+        result.pdf.toString('utf-8', 0, 5).startsWith('%PDF'),
+        'Starts with %PDF header'
+      );
+      assert.ok(result.fileName, 'File name is present');
+      assert.ok(result.fileName.endsWith('.pdf'), 'File name ends with .pdf');
+    });
+
+    it('ignores date range when studyId is provided', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        studyId: study.id,
+        startDate: '2099-01-01',
+        endDate: '2099-12-31',
+        delivery: 'download',
+      }, { user: medic } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.pdf, 'PDF is still generated despite out-of-range dates');
+      assert.ok(
+        result.pdf.toString('utf-8', 0, 5).startsWith('%PDF'),
+        'Starts with %PDF header'
+      );
+    });
+
+    it('returns error for non-existent studyId', async () => {
+      try {
+        await app.service('signed-exports').create({
+          patientId: patient.id,
+          studyId: '00000000-0000-0000-0000-000000000000',
+          delivery: 'download',
+        }, { user: medic } as any);
+        assert.fail('Should throw NotFound');
+      } catch (error: any) {
+        assert.strictEqual(error.name, 'NotFound');
       }
     });
   });

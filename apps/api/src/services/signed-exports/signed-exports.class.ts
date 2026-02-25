@@ -14,6 +14,7 @@ export type ExportContent = 'encounters' | 'studies' | 'both';
 
 export interface SignedExportCreateData {
   patientId: string;
+  studyId?: string;
   startDate?: string;
   endDate?: string;
   content?: ExportContent;
@@ -38,7 +39,7 @@ export class SignedExports {
   }
 
   async create(data: SignedExportCreateData, params: any): Promise<SignedExportResult> {
-    const { patientId, startDate, endDate, content = 'both', certificatePassword, delivery, emailTo, locale } = data;
+    const { patientId, studyId, startDate, endDate, content = 'both', certificatePassword, delivery, emailTo, locale } = data;
     const user = params.user;
     const t = getPdfTranslations(locale);
 
@@ -59,29 +60,35 @@ export class SignedExports {
     if (endDate) dateFilter.$lte = dayjs(endDate).endOf('day').toISOString();
 
     let encounters: any[] = [];
-    if (includeEncounters) {
-      const encounterQuery: any = { patientId, $sort: { date: 1 }, $limit: 500 };
-      if (Object.keys(dateFilter).length > 0) encounterQuery.date = dateFilter;
-
-      const encountersResult = await this.app.service('encounters').find({
-        query: encounterQuery,
-        paginate: false,
-        ...internal(),
-      } as any);
-      encounters = Array.isArray(encountersResult) ? encountersResult : (encountersResult as any).data || [];
-    }
-
     let studies: any[] = [];
-    if (includeStudies) {
-      const studyQuery: any = { patientId, $sort: { date: 1 }, $limit: 500 };
-      if (Object.keys(dateFilter).length > 0) studyQuery.date = dateFilter;
 
-      const studiesResult = await this.app.service('studies').find({
-        query: studyQuery,
-        paginate: false,
-        ...internal(),
-      } as any);
-      studies = Array.isArray(studiesResult) ? studiesResult : (studiesResult as any).data || [];
+    if (studyId) {
+      const singleStudy = await this.app.service('studies').get(studyId, internal());
+      studies = [singleStudy];
+    } else {
+      if (includeEncounters) {
+        const encounterQuery: any = { patientId, $sort: { date: 1 }, $limit: 500 };
+        if (Object.keys(dateFilter).length > 0) encounterQuery.date = dateFilter;
+
+        const encountersResult = await this.app.service('encounters').find({
+          query: encounterQuery,
+          paginate: false,
+          ...internal(),
+        } as any);
+        encounters = Array.isArray(encountersResult) ? encountersResult : (encountersResult as any).data || [];
+      }
+
+      if (includeStudies) {
+        const studyQuery: any = { patientId, $sort: { date: 1 }, $limit: 500 };
+        if (Object.keys(dateFilter).length > 0) studyQuery.date = dateFilter;
+
+        const studiesResult = await this.app.service('studies').find({
+          query: studyQuery,
+          paginate: false,
+          ...internal(),
+        } as any);
+        studies = Array.isArray(studiesResult) ? studiesResult : (studiesResult as any).data || [];
+      }
     }
 
     const doctorUser = await this.app.service('users').get(user.id, internal());

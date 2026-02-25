@@ -220,7 +220,14 @@ function extractStudyLines(
   const tl = (label: string) => translateLabel(locale, label);
 
   for (const field of schema.fields) {
-    if (field.type === 'title' || field.type === 'separator') continue;
+    if (field.type === 'separator') continue;
+
+    if (field.type === 'title') {
+      if (field.label) {
+        lines.push({ kind: 'heading', label: tl(field.label).replace(/<[^>]*>/g, '') });
+      }
+      continue;
+    }
 
     if (field.type === 'title-input') {
       if (field.label) {
@@ -371,7 +378,7 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
     },
     fieldLabel: {
       fontFamily: 'Helvetica-Bold',
-      width: 140,
+      flex: 1,
       color: '#6b7280',
       fontSize: 9,
     },
@@ -489,6 +496,14 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
 
       const data = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
       const lines = extractStudyLines(schema, data, options.patientGender, options.locale);
+
+      if (data.comments) {
+        lines.push({ kind: 'field', label: t.comments, value: String(data.comments) });
+      }
+      if (data.conclusion) {
+        lines.push({ kind: 'field', label: t.conclusion, value: String(data.conclusion) });
+      }
+
       if (lines.length === 0) continue;
 
       resultSections.push({ label: translateLabel(options.locale, schema.label), lines });
@@ -505,15 +520,15 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
     );
 
     return (
-      <View style={styles.encounterCard} wrap={false}>
-        <View style={[styles.encounterHeader, { backgroundColor: '#f0fdf4' }]}>
+      <View style={styles.encounterCard}>
+        <View style={[styles.encounterHeader, { backgroundColor: '#f0fdf4' }]} wrap={false}>
           <Text style={[styles.encounterDate, { color: '#166534' }]}>
             {dayjs(study.date).format('DD/MM/YYYY')} — {t.protocol} #{study.protocol}
           </Text>
           <Text style={styles.encounterDoctor}>{doctorLine}</Text>
         </View>
         {resultSections.map((section, i) => (
-          <View key={i} style={styles.formSection}>
+          <View key={i} style={styles.formSection} wrap={false}>
             <Text style={styles.formTitle}>{section.label}</Text>
             <RenderedLines lines={section.lines} showReference={hasAnyReference} />
           </View>

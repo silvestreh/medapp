@@ -25,6 +25,8 @@ export interface PdfStrings {
   emailSubjectPrefix: string;
   signingReason: string;
   pdfSentTo: string;
+  comments: string;
+  conclusion: string;
 }
 
 const es: PdfStrings = {
@@ -52,6 +54,8 @@ const es: PdfStrings = {
   emailSubjectPrefix: 'Historia Clínica',
   signingReason: 'Historia clínica firmada por Dr.',
   pdfSentTo: 'PDF enviado a',
+  comments: 'Comentarios',
+  conclusion: 'Conclusión',
 };
 
 const en: PdfStrings = {
@@ -79,6 +83,8 @@ const en: PdfStrings = {
   emailSubjectPrefix: 'Medical History',
   signingReason: 'Medical history signed by Dr.',
   pdfSentTo: 'PDF sent to',
+  comments: 'Comments',
+  conclusion: 'Conclusion',
 };
 
 const pdfTranslations: Record<PdfLocale, PdfStrings> = { es, en };

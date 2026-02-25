@@ -3,7 +3,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { redirect } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Title, Stack, Center, Text } from '@mantine/core';
+import { Stack, Center, Text } from '@mantine/core';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -12,6 +12,7 @@ import { styled } from '~/styled-system/jsx';
 import { EncounterForm } from '~/components/forms/encounter-form';
 import NewEncounterSidebar from '~/components/new-encounter-sidebar';
 import { getPageTitle } from '~/utils/meta';
+import { ToolbarTitle } from '~/components/toolbar-title';
 
 const Container = styled('div', {
   base: {
@@ -36,15 +37,6 @@ const Sidebar = styled('div', {
       minHeight: 'calc(100vh - 5em)',
       minWidth: '300px',
     },
-  },
-});
-
-const Patient = styled('p', {
-  base: {
-    fontSize: 'var(--mantine-font-size-md)',
-    color: 'var(--mantine-color-gray-6)',
-    margin: 0,
-    lineHeight: 1,
   },
 });
 
@@ -170,14 +162,10 @@ export default function NewEncounter() {
   return (
     <Container className="encounters-container">
       <Portal id="toolbar">
-        <Stack gap={5}>
-          <Title order={2} m={0} lh={1}>
-            {t('encounters.new')}
-          </Title>
-          <Patient>
-            {patient.personalData.firstName} {patient.personalData.lastName}
-          </Patient>
-        </Stack>
+        <ToolbarTitle
+          title={t('encounters.new')}
+          subTitle={`${patient.personalData.firstName} ${patient.personalData.lastName}`}
+        />
       </Portal>
 
       <Sidebar>

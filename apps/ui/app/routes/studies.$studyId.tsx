@@ -2,13 +2,14 @@ import { useState, useCallback, useEffect } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useNavigate, useParams } from '@remix-run/react';
-import { Group, Button, Tabs, Text, Loader, Title, ActionIcon, Flex } from '@mantine/core';
+import { Group, Button, Tabs, Text, Loader, Modal } from '@mantine/core';
+import { useMediaQuery, useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Printer, Save } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
-import { useGet } from '~/components/provider';
+import { useGet, useFeathers } from '~/components/provider';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { studySchemas } from '~/components/forms/study-schemas';
@@ -17,6 +18,11 @@ import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 import type { StudyResultData } from '~/components/forms/study-form-types';
 import { StyledTitle } from '~/components/forms/styles';
 import { getPageTitle } from '~/utils/meta';
+import { media } from '~/media';
+import { pdfDataToBlob, printPdfBlob } from '~/utils/print-pdf';
+import { Fab, FabItem } from '~/components/fab';
+import { ToolbarTitle } from '~/components/toolbar-title';
+import { useUnsavedGuard } from '~/hooks/use-unsaved-guard';
 
 export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'study') }];
@@ -75,12 +81,40 @@ const PageContainer = styled('div', {
 // ---------------------------------------------------------------------------
 
 export default function StudyDetail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { studyId } = useParams();
   const navigate = useNavigate();
   const fetcher = useFetcher();
+  const client = useFeathers();
+  const isDesktop = useMediaQuery(media.md);
 
   const { data: study, isLoading: studyLoading } = useGet('studies', studyId!);
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  const handleBack = useCallback(() => navigate(-1), [navigate]);
+
+  const handlePrint = useCallback(async () => {
+    if (!client || !studyId || !study?.patientId) return;
+
+    setIsPrinting(true);
+    try {
+      const result = await client.service('signed-exports' as any).create({
+        patientId: study.patientId,
+        studyId,
+        content: 'studies',
+        delivery: 'download',
+        locale: i18n.language,
+      });
+
+      if (result.pdf) {
+        printPdfBlob(pdfDataToBlob(result));
+      }
+    } catch {
+      // silent — printing is best-effort
+    } finally {
+      setIsPrinting(false);
+    }
+  }, [client, studyId, study?.patientId, i18n.language]);
 
   // Local draft state for result forms (saved through the unified study save action)
   const [resultDrafts, setResultDrafts] = useState<Record<string, StudyResultData>>({});
@@ -144,6 +178,25 @@ export default function StudyDetail() {
     []
   );
 
+  const isDirty = metaDirty || Object.keys(resultDrafts).length > 0;
+  const [fabOpen, { toggle: toggleFab, close: closeFab }] = useDisclosure(false);
+
+  const handleFabPrint = useCallback(() => {
+    closeFab();
+    handlePrint();
+  }, [closeFab, handlePrint]);
+
+  const handleFabSave = useCallback(() => {
+    if (!isDirty) return;
+    closeFab();
+    handleSave();
+  }, [closeFab, isDirty, handleSave]);
+
+  const { blocker, handleDiscard, handleCancel, handleSaveAndLeave } = useUnsavedGuard({
+    isDirty,
+    onSave: handleSave,
+  });
+
   if (studyLoading || !study?.id) {
     return (
       <PageContainer>
@@ -155,7 +208,6 @@ export default function StudyDetail() {
   }
 
   const isSavingMeta = fetcher.state !== 'idle';
-  const isDirty = metaDirty || Object.keys(resultDrafts).length > 0;
   const currentStudies = selectedStudies || study.studies || [];
   const extractionDate = date ?? (study.date ? new Date(study.date) : null);
   const canEditResults = !!study.id;
@@ -163,28 +215,34 @@ export default function StudyDetail() {
   return (
     <PageContainer>
       <Portal id="toolbar">
-        <Group align="center" flex={1}>
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate(-1)}>
-            <ArrowLeft size={20} />
-          </ActionIcon>
-          <Flex direction="column" gap={0}>
-            <Title m={0} lh={1} fz="sm">
-              {t('studies.study_title')}
-            </Title>
-            <Text c="dimmed" size="h4" fw={600}>
-              #{study.protocol}
-            </Text>
-          </Flex>
-        </Group>
+        <ToolbarTitle title={t('studies.study_title')} subTitle={`#${study.protocol}`} onBack={handleBack} />
       </Portal>
 
-      <Portal id="form-actions">
-        <Group>
-          <Button onClick={handleSave} loading={isSavingMeta} disabled={!isDirty} leftSection={<Save size={16} />}>
+      {isDesktop && (
+        <Portal id="form-actions">
+          <Group>
+            <Button variant="light" onClick={handlePrint} loading={isPrinting} leftSection={<Printer size={16} />}>
+              {t('print_pdf.print')}
+            </Button>
+            <Button onClick={handleSave} loading={isSavingMeta} disabled={!isDirty} leftSection={<Save size={16} />}>
+              {t('studies.save_changes')}
+            </Button>
+          </Group>
+        </Portal>
+      )}
+
+      {!isDesktop && (
+        <Fab open={fabOpen} onToggle={toggleFab} onClose={closeFab}>
+          <FabItem onClick={handleFabPrint} index={1}>
+            <Printer size={18} />
+            {t('print_pdf.print')}
+          </FabItem>
+          <FabItem onClick={handleFabSave} index={0} disabled={!isDirty}>
+            <Save size={18} />
             {t('studies.save_changes')}
-          </Button>
-        </Group>
-      </Portal>
+          </FabItem>
+        </Fab>
+      )}
 
       <StudyMetadataForm
         mode="edit"
@@ -246,6 +304,15 @@ export default function StudyDetail() {
           </Tabs>
         </>
       )}
+      <Modal opened={blocker.state === 'blocked'} onClose={handleCancel} title={t('common.unsaved_title')}>
+        <Text mb="lg">{t('common.unsaved_body')}</Text>
+        <Group justify="flex-end">
+          <Button variant="default" onClick={handleDiscard}>
+            {t('common.discard')}
+          </Button>
+          <Button onClick={handleSaveAndLeave}>{t('common.save_and_leave')}</Button>
+        </Group>
+      </Modal>
     </PageContainer>
   );
 }
