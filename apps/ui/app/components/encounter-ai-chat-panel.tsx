@@ -1,5 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
-import { ActionIcon, Badge, Box, Button, Group, Paper, Select, Stack, Text, Textarea, Title } from '@mantine/core';
+import {
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Group,
+  Loader,
+  Paper,
+  Select,
+  Stack,
+  Text,
+  Textarea,
+  Title,
+} from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { Copy, Bot, Minimize2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -17,8 +30,12 @@ interface Suggestion {
 }
 
 interface ChatMessage {
+  id: string;
   role: Role;
   content: string;
+  fullContent?: string;
+  isStreaming?: boolean;
+  isThinking?: boolean;
   suggestions?: {
     differentials: Suggestion[];
     suggestedNextSteps: Suggestion[];
@@ -87,20 +104,31 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
   const { currentOrganizationId } = useOrganization();
   const loadModelsRef = useRef(loadModels);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const messageIdRef = useRef(0);
   const isDesktop = useMediaQuery(media.md);
   const [isOpen, setIsOpen] = useState(false);
   const [draftMessage, setDraftMessage] = useState('');
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [streamingMessage, setStreamingMessage] = useState<{ id: string; fullContent: string } | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
+      id: 'msg-0',
       role: 'assistant',
       content: t('ai_chat.initial_message'),
     },
   ]);
 
+  const nextMessageId = useCallback(() => {
+    messageIdRef.current += 1;
+    return `msg-${messageIdRef.current}`;
+  }, []);
+
   const requestMessages = useMemo(
-    () => messages.map(message => ({ role: message.role, content: message.content })),
+    () =>
+      messages
+        .filter(message => !message.isThinking)
+        .map(message => ({ role: message.role, content: message.fullContent || message.content })),
     [messages]
   );
 
@@ -108,7 +136,12 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
     const content = draftMessage.trim();
     if (!content || isLoading) return;
 
-    const nextMessages: ChatMessage[] = [...messages, { role: 'user', content }];
+    const thinkingId = nextMessageId();
+    const nextMessages: ChatMessage[] = [
+      ...messages,
+      { id: nextMessageId(), role: 'user', content },
+      { id: thinkingId, role: 'assistant', content: t('ai_chat.thinking'), isThinking: true },
+    ];
     setMessages(nextMessages);
     setDraftMessage('');
 
@@ -120,32 +153,58 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
         messages: [...requestMessages, { role: 'user', content }],
       });
 
-      setMessages(previous => [
-        ...previous,
-        {
-          role: 'assistant',
-          content: String(result?.message || t('ai_chat.no_response')),
-          suggestions: {
-            differentials: Array.isArray(result?.differentials) ? result.differentials : [],
-            suggestedNextSteps: Array.isArray(result?.suggestedNextSteps) ? result.suggestedNextSteps : [],
-            treatmentIdeas: Array.isArray(result?.treatmentIdeas) ? result.treatmentIdeas : [],
-            warnings: Array.isArray(result?.warnings) ? result.warnings : [],
-            rationale: String(result?.rationale || ''),
-            confidence: typeof result?.confidence === 'number' ? result.confidence : 0,
-            citations: Array.isArray(result?.citations) ? result.citations : [],
-          },
-        },
-      ]);
+      const assistantMessageId = thinkingId;
+      const assistantMessage = String(result?.message || t('ai_chat.no_response'));
+      setMessages(previous =>
+        previous.map(message =>
+          message.id === assistantMessageId
+            ? {
+                id: assistantMessageId,
+                role: 'assistant',
+                content: '',
+                fullContent: assistantMessage,
+                isStreaming: true,
+                isThinking: false,
+                suggestions: {
+                  differentials: Array.isArray(result?.differentials) ? result.differentials : [],
+                  suggestedNextSteps: Array.isArray(result?.suggestedNextSteps) ? result.suggestedNextSteps : [],
+                  treatmentIdeas: Array.isArray(result?.treatmentIdeas) ? result.treatmentIdeas : [],
+                  warnings: Array.isArray(result?.warnings) ? result.warnings : [],
+                  rationale: String(result?.rationale || ''),
+                  confidence: typeof result?.confidence === 'number' ? result.confidence : 0,
+                  citations: Array.isArray(result?.citations) ? result.citations : [],
+                },
+              }
+            : message
+        )
+      );
+      setStreamingMessage({ id: assistantMessageId, fullContent: assistantMessage });
     } catch (_error) {
-      setMessages(previous => [
-        ...previous,
-        {
-          role: 'assistant',
-          content: t('ai_chat.request_error'),
-        },
-      ]);
+      setMessages(previous =>
+        previous.map(message =>
+          message.id === thinkingId
+            ? {
+                id: thinkingId,
+                role: 'assistant',
+                content: t('ai_chat.request_error'),
+                isThinking: false,
+              }
+            : message
+        )
+      );
     }
-  }, [create, draftMessage, encounterDraft, isLoading, messages, patientId, requestMessages, selectedModel, t]);
+  }, [
+    create,
+    draftMessage,
+    encounterDraft,
+    isLoading,
+    messages,
+    nextMessageId,
+    patientId,
+    requestMessages,
+    selectedModel,
+    t,
+  ]);
 
   const handleDraftChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => {
     setDraftMessage(event.currentTarget.value);
@@ -230,6 +289,54 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
     }
     window.localStorage.setItem(storageKey, selectedModel);
   }, [selectedModel, storageKey]);
+
+  useEffect(() => {
+    if (!streamingMessage) return;
+    const tokens = streamingMessage.fullContent.split(/(\s+)/).filter(Boolean);
+    if (tokens.length === 0) {
+      setMessages(previous =>
+        previous.map(message =>
+          message.id === streamingMessage.id
+            ? {
+                ...message,
+                content: streamingMessage.fullContent,
+                isStreaming: false,
+                fullContent: undefined,
+              }
+            : message
+        )
+      );
+      setStreamingMessage(null);
+      return;
+    }
+
+    let tokenIndex = 0;
+    const intervalId = window.setInterval(() => {
+      tokenIndex = Math.min(tokens.length, tokenIndex + 1);
+      const nextContent = tokens.slice(0, tokenIndex).join('');
+      const isDone = tokenIndex >= tokens.length;
+      setMessages(previous =>
+        previous.map(message =>
+          message.id === streamingMessage.id
+            ? {
+                ...message,
+                content: nextContent,
+                isStreaming: !isDone,
+                fullContent: isDone ? undefined : message.fullContent,
+              }
+            : message
+        )
+      );
+      if (isDone) {
+        window.clearInterval(intervalId);
+        setStreamingMessage(null);
+      }
+    }, 24);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [streamingMessage]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -341,21 +448,35 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
               }}
             >
               <Box style={{ marginTop: 'auto' }} />
-              {messages.map((message, index) => (
-                <Box key={`${message.role}-${index}`}>
+              {messages.map(message => (
+                <Box key={message.id}>
                   <Paper withBorder p="sm" radius="md" bg={message.role === 'assistant' ? 'gray.0' : 'blue.0'}>
                     <Text size="sm" fw={600} mb={4}>
                       {message.role === 'assistant' ? t('ai_chat.assistant') : t('ai_chat.you')}
                     </Text>
+                    {message.role === 'assistant' && message.isThinking && (
+                      <Group gap="xs">
+                        <Loader size="xs" />
+                        <Text size="sm" c="dimmed">
+                          {t('ai_chat.thinking')}
+                        </Text>
+                      </Group>
+                    )}
                     {message.role === 'assistant' && (
-                      <Box style={{ fontSize: '0.875rem', lineHeight: 1.5 }}>
+                      <Box
+                        style={{
+                          display: message.isThinking ? 'none' : 'block',
+                          fontSize: '0.875rem',
+                          lineHeight: 1.5,
+                        }}
+                      >
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
                       </Box>
                     )}
                     {message.role === 'user' && <Text size="sm">{message.content}</Text>}
                   </Paper>
 
-                  {message.suggestions && (
+                  {message.suggestions && !message.isStreaming && !message.isThinking && (
                     <Stack mt="xs" gap="xs">
                       <SuggestionGroup title={t('ai_chat.differentials')} items={message.suggestions.differentials} />
                       <SuggestionGroup

@@ -741,6 +741,7 @@ export const es = {
   },
   ai_chat: {
     title: 'Asistente IA',
+    thinking: 'Pensando...',
     open_assistant: 'Abrir asistente IA de encuentros',
     minimize_assistant: 'Minimizar asistente de chat',
     model_label: 'Modelo ({{provider}})',
