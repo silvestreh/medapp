@@ -79,3 +79,21 @@ export async function getAuthenticatedClient(request: Request): Promise<{ client
     throw new Error('Failed to authenticate the client');
   }
 }
+
+export async function isMedicVerified(client: Application, userId: string, roleId?: string): Promise<boolean> {
+  if (roleId !== 'medic') {
+    return true;
+  }
+
+  const settingsResponse = await client.service('md-settings').find({
+    query: { userId, $limit: 1 },
+    paginate: false,
+  });
+
+  const list = Array.isArray(settingsResponse)
+    ? settingsResponse
+    : ((settingsResponse as { data?: unknown[] }).data ?? []);
+
+  const record = list[0] as { isVerified?: boolean } | undefined;
+  return record?.isVerified === true;
+}

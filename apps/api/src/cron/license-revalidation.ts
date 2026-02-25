@@ -17,6 +17,7 @@ async function processRecords(app: Application, records: any[]) {
     try {
       await verificationService.verifyByUserId(record.userId);
       logger.info(`License revalidation: verified user ${record.userId}`);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: any) {
       const retries = (record.verificationRetries || 0) + 1;
 

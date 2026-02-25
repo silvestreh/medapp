@@ -1,13 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useFetcher, useNavigate, useParams } from '@remix-run/react';
+import { useFetcher, useLoaderData, useNavigate, useParams } from '@remix-run/react';
 import { Group, Button, Tabs, Text, Loader, Modal } from '@mantine/core';
 import { useMediaQuery, useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Printer, Save } from 'lucide-react';
 
-import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
+import { getAuthenticatedClient, authenticatedLoader, isMedicVerified } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { useGet, useFeathers } from '~/components/provider';
 import Portal from '~/components/portal';
@@ -28,13 +28,22 @@ export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'study') }];
 };
 
-export const loader = authenticatedLoader();
+export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
+  const { client, user } = await getAuthenticatedClient(request);
+  const isVerified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  return json({ isVerified });
+});
 
 export const action = async ({ params, request }: ActionFunctionArgs) => {
   const { studyId } = params;
   if (!studyId) throw new Response('Study ID is required', { status: 400 });
 
-  const { client } = await getAuthenticatedClient(request);
+  const { client, user } = await getAuthenticatedClient(request);
+  const verified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  if (!verified) {
+    return json({ success: false }, { status: 403 });
+  }
+
   const formData = await request.formData();
   const payload = parseFormJson<Record<string, any>>(formData.get('data'));
 
@@ -82,6 +91,7 @@ const PageContainer = styled('div', {
 
 export default function StudyDetail() {
   const { t, i18n } = useTranslation();
+  const { isVerified } = useLoaderData<typeof loader>();
   const { studyId } = useParams();
   const navigate = useNavigate();
   const fetcher = useFetcher();
@@ -178,7 +188,7 @@ export default function StudyDetail() {
     []
   );
 
-  const isDirty = metaDirty || Object.keys(resultDrafts).length > 0;
+  const isDirty = isVerified && (metaDirty || Object.keys(resultDrafts).length > 0);
   const [fabOpen, { toggle: toggleFab, close: closeFab }] = useDisclosure(false);
 
   const handleFabPrint = useCallback(() => {
@@ -210,7 +220,7 @@ export default function StudyDetail() {
   const isSavingMeta = fetcher.state !== 'idle';
   const currentStudies = selectedStudies || study.studies || [];
   const extractionDate = date ?? (study.date ? new Date(study.date) : null);
-  const canEditResults = !!study.id;
+  const canEditResults = !!study.id && isVerified;
 
   return (
     <PageContainer>
@@ -224,7 +234,12 @@ export default function StudyDetail() {
             <Button variant="light" onClick={handlePrint} loading={isPrinting} leftSection={<Printer size={16} />}>
               {t('print_pdf.print')}
             </Button>
-            <Button onClick={handleSave} loading={isSavingMeta} disabled={!isDirty} leftSection={<Save size={16} />}>
+            <Button
+              onClick={handleSave}
+              loading={isSavingMeta}
+              disabled={!isDirty || !isVerified}
+              leftSection={<Save size={16} />}
+            >
               {t('studies.save_changes')}
             </Button>
           </Group>
@@ -237,7 +252,7 @@ export default function StudyDetail() {
             <Printer size={18} />
             {t('print_pdf.print')}
           </FabItem>
-          <FabItem onClick={handleFabSave} index={0} disabled={!isDirty}>
+          <FabItem onClick={handleFabSave} index={0} disabled={!isDirty || !isVerified}>
             <Save size={18} />
             {t('studies.save_changes')}
           </FabItem>
@@ -263,6 +278,7 @@ export default function StudyDetail() {
         dateReadOnly
         patient={patient}
         referringDoctor={study.referringDoctor ?? ''}
+        readOnly={!isVerified}
       />
 
       {/* Results section */}
@@ -296,7 +312,7 @@ export default function StudyDetail() {
                     schema={schema}
                     initialData={initialResultData}
                     onChange={handleResultDraftChange(type)}
-                    readOnly={false}
+                    readOnly={!isVerified}
                   />
                 </Tabs.Panel>
               );

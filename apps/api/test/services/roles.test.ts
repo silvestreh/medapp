@@ -17,6 +17,11 @@ describe('\'roles\' service', () => {
       password: 'SuperSecret1',
       roleId: 'medic'
     });
+    await app.service('md-settings').create({
+      userId: medicUser.id,
+      encounterDuration: 20,
+      isVerified: true,
+    });
 
     receptionistUser = await app.service('users').create({
       username: 'test.receptionist',
@@ -112,6 +117,11 @@ describe('\'roles\' service', () => {
         username: 'another.medic',
         password: 'SuperSecret1',
         roleId: 'medic'
+      });
+      await app.service('md-settings').create({
+        userId: anotherMedic.id,
+        encounterDuration: 20,
+        isVerified: true,
       });
 
       await client.authenticate({
