@@ -62,7 +62,7 @@ export class Stats {
     }
 
     const orgFilter = organizationId
-      ? `AND s."organizationId" = :organizationId`
+      ? 'AND s."organizationId" = :organizationId'
       : '';
 
     const replacements: Record<string, string> = {

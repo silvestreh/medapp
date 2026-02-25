@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Button } from '@mantine/core';
+import { Button, Tooltip } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { Form } from '@remix-run/react';
 import { useForm } from '@mantine/form';
@@ -9,7 +9,9 @@ import { User, Mail, Stethoscope } from 'lucide-react';
 import Portal from '~/components/portal';
 import { FormCard, FieldRow, StyledSelect, StyledTextInput, SectionTitle } from '~/components/forms/styles';
 
-type PersonalDataLike = { firstName?: string | null; lastName?: string | null } | undefined;
+type PersonalDataLike =
+  | { firstName?: string | null; lastName?: string | null; documentType?: string | null; documentValue?: string | null }
+  | undefined;
 type ContactDataLike =
   | {
       email?: string | null;
@@ -26,6 +28,7 @@ type MdSettingsLike =
       nationalLicenseNumber?: string | null;
       stateLicense?: string | null;
       stateLicenseNumber?: string | null;
+      isVerified?: boolean;
     }
   | undefined;
 
@@ -40,6 +43,8 @@ function getInitialProfileValues(
   return {
     firstName: pd?.firstName ?? '',
     lastName: pd?.lastName ?? '',
+    documentType: pd?.documentType ?? '',
+    documentValue: pd?.documentValue ?? '',
     email: cd?.email ?? '',
     phone,
     streetAddress: cd?.streetAddress ?? '',
@@ -67,6 +72,7 @@ type ProfileFormProps = {
   countryOptions: { value: string; label: string }[];
   provinceOptions: { value: string; label: string }[];
   isSavingProfile: boolean;
+  isVerifyingLicense: boolean;
   showFormActions?: boolean;
 };
 
@@ -78,6 +84,7 @@ export function ProfileForm({
   countryOptions,
   provinceOptions,
   isSavingProfile,
+  isVerifyingLicense,
   showFormActions = true,
 }: ProfileFormProps) {
   const { t } = useTranslation();
@@ -98,13 +105,22 @@ export function ProfileForm({
 
   const hasProfileSuccess = actionData?.ok && actionData.intent === 'update-profile';
   const isProfileError = actionData?.ok === false && actionData.intent === 'update-profile';
+  const hasVerificationSuccess = actionData?.ok && actionData.intent === 'verify-license';
+  const isVerificationError = actionData?.ok === false && actionData.intent === 'verify-license';
   const errorMessage = actionData?.ok === false && actionData && 'error' in actionData ? actionData.error : '';
 
   useEffect(() => {
     if (hasProfileSuccess) {
       showNotification({ color: 'teal', message: t('profile.profile_saved') });
     }
-  }, [hasProfileSuccess, t]);
+    if (hasVerificationSuccess) {
+      showNotification({ color: 'teal', message: t('verification.success_message') });
+      // Refresh the page to update the banner and button state
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    }
+  }, [hasProfileSuccess, hasVerificationSuccess, t]);
 
   useEffect(() => {
     if (isProfileError) {
@@ -113,14 +129,23 @@ export function ProfileForm({
         message: typeof errorMessage === 'string' ? errorMessage : t('profile.profile_save_error'),
       });
     }
-  }, [isProfileError, errorMessage, t]);
+    if (isVerificationError) {
+      showNotification({
+        color: 'red',
+        message: typeof errorMessage === 'string' ? errorMessage : t('verification.error_message'),
+      });
+    }
+  }, [isProfileError, isVerificationError, errorMessage, t]);
 
   const payload = useMemo(() => {
     const values = profileForm.values;
     return {
+      documentValue: values.documentValue,
       personalData: {
         firstName: values.firstName || undefined,
         lastName: values.lastName || undefined,
+        documentType: values.documentType || undefined,
+        documentValue: values.documentValue || undefined,
       },
       contactData: {
         email: values.email || undefined,
@@ -154,6 +179,21 @@ export function ProfileForm({
         </FieldRow>
         <FieldRow label={`${t('profile.last_name')}:`} variant="stacked">
           <StyledTextInput {...profileForm.getInputProps('lastName')} />
+        </FieldRow>
+        <FieldRow label={`${t('patients.document_type')}:`} variant="stacked">
+          <StyledSelect
+            data={[
+              { value: 'DNI', label: 'DNI' },
+              { value: 'CI', label: 'CI' },
+              { value: 'LE', label: 'LE' },
+              { value: 'LC', label: 'LC' },
+              { value: 'passport', label: 'Pasaporte' },
+            ]}
+            {...profileForm.getInputProps('documentType')}
+          />
+        </FieldRow>
+        <FieldRow label={`${t('patients.document_value')}:`} variant="stacked">
+          <StyledTextInput {...profileForm.getInputProps('documentValue')} />
         </FieldRow>
       </FormCard>
 
@@ -195,6 +235,42 @@ export function ProfileForm({
             <FieldRow label={`${t('profile.state_license_number')}:`} variant="stacked">
               <StyledTextInput {...profileForm.getInputProps('stateLicenseNumber')} />
             </FieldRow>
+            {!mdSettings?.isVerified && (
+              <FieldRow label="" variant="stacked">
+                <Tooltip
+                  label={t(
+                    'verification.document_required',
+                    'Please complete your personal data with your document number first.'
+                  )}
+                  disabled={!!(payload as any).documentValue}
+                >
+                  <div style={{ display: 'inline-block' }}>
+                    <Button
+                      variant="outline"
+                      color="yellow"
+                      loading={isVerifyingLicense}
+                      disabled={!(payload as any).documentValue || isSavingProfile}
+                      onClick={() => {
+                        const form = document.getElementById('profile-update-form') as HTMLFormElement;
+                        if (form) {
+                          const intentInput = form.querySelector('input[name="intent"]') as HTMLInputElement;
+                          if (intentInput) {
+                            intentInput.value = 'verify-license';
+                            form.requestSubmit();
+                            // Reset intent back to update-profile after submission
+                            setTimeout(() => {
+                              intentInput.value = 'update-profile';
+                            }, 100);
+                          }
+                        }
+                      }}
+                    >
+                      {t('verification.verify_button', 'Verify License')}
+                    </Button>
+                  </div>
+                </Tooltip>
+              </FieldRow>
+            )}
           </FormCard>
         </>
       )}

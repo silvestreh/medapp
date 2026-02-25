@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 import SideNav from '~/components/side-nav';
 import TopNav from '~/components/top-nav';
-import { useAccount } from '~/components/provider';
+import { useAccount, useFeathers } from '~/components/provider';
+import { VerificationBanner } from '~/components/verification-banner';
 
 const MainLayoutContainer = styled(Flex, {
   base: {
@@ -68,10 +69,35 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const { user } = useAccount();
   const { t } = useTranslation();
+  const feathers = useFeathers();
+  const [isVerified, setIsVerified] = useState<boolean | undefined>(true);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    const checkVerification = async () => {
+      if (user && (user as any).roleId === 'medic') {
+        try {
+          const mdSettingsResponse = await feathers.service('md-settings').find({
+            query: { userId: user.id },
+            paginate: false,
+          });
+          const settings = Array.isArray(mdSettingsResponse) ? mdSettingsResponse[0] : (mdSettingsResponse as any)?.data?.[0];
+          setIsVerified(settings?.isVerified);
+        } catch (error) {
+          console.error('Error checking verification status:', error);
+        }
+      } else {
+        setIsVerified(true); // Don't show banner for non-medics
+      }
+    };
+
+    if (isMounted && user) {
+      checkVerification();
+    }
+  }, [isMounted, user, feathers]);
 
   const handleDismissBanner = useCallback(() => {
     setBannerDismissed(true);
@@ -88,6 +114,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
       <SideNav />
       <Box flex={1}>
         <TopNav />
+        <VerificationBanner isVerified={isVerified} />
         {showWeakPasswordBanner && (
           <Alert
             color="orange"

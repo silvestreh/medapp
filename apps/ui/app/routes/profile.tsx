@@ -14,6 +14,7 @@ type MdSettingsProfile = {
   nationalLicenseNumber: string | null;
   stateLicense: string | null;
   stateLicenseNumber: string | null;
+  isVerified: boolean;
 };
 
 function normalizeArray<T>(value: unknown): T[] {
@@ -45,6 +46,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           nationalLicenseNumber?: string | null;
           stateLicense?: string | null;
           stateLicenseNumber?: string | null;
+          isVerified?: boolean;
         };
         mdSettingsRecord = {
           id: s.id,
@@ -52,6 +54,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           nationalLicenseNumber: s.nationalLicenseNumber ?? null,
           stateLicense: s.stateLicense ?? null,
           stateLicenseNumber: s.stateLicenseNumber ?? null,
+          isVerified: s.isVerified ?? false,
         };
       } else {
         const mdResponse = await client.service('md-settings').find({
@@ -67,6 +70,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             nationalLicenseNumber: first.nationalLicenseNumber ?? null,
             stateLicense: first.stateLicense ?? null,
             stateLicenseNumber: first.stateLicenseNumber ?? null,
+            isVerified: (first as any).isVerified ?? false,
           };
         }
       }

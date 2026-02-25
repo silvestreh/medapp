@@ -802,4 +802,14 @@ export const en: typeof es = {
     bucket_65_plus: '65+',
     count: 'Count',
   },
+    verification: {
+    unverified_title: 'Unverified Practitioner',
+    unverified_message: 'Your medical license has not been verified. Please go to your Profile to verify your license.',
+    verify_button: 'Verify License',
+    success_title: 'Verification Successful',
+    success_message: 'Your license has been verified.',
+    error_title: 'Verification Failed',
+    error_message: 'Could not verify license. Please try again.',
+    document_required: 'Please complete your personal data with your document number first.',
+  },
 };

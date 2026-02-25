@@ -31,6 +31,7 @@ import invites from './invites/invites.service';
 import signingCertificates from './signing-certificates/signing-certificates.service';
 import signedExports from './signed-exports/signed-exports.service';
 import stats from './stats/stats.service';
+import practitionerVerification from './practitioner-verification/practitioner-verification.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -66,4 +67,5 @@ export default function (app: Application): void {
   app.configure(signingCertificates);
   app.configure(signedExports);
   app.configure(stats);
+  app.configure(practitionerVerification);
 }

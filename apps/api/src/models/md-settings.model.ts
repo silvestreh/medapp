@@ -42,6 +42,24 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING,
       allowNull: true
     },
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    licenseExpirationDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+    verificationRetries: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    nextVerificationRetry: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     scheduleAllWeekCustomTime: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
