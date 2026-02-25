@@ -527,191 +527,202 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
     return null;
   }
 
+  const fabTransition = 'opacity 180ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
+  const chatTransition =
+    'opacity 220ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0ms linear 220ms';
+
   return (
     <>
-      {!isOpen && (
-        <ActionIcon
-          size={56}
-          radius="xl"
-          variant="filled"
-          color="violet"
-          onClick={handleToggleChat}
-          style={{
-            position: 'fixed',
-            right: '1.5rem',
-            bottom: '1.5rem',
-            zIndex: 1300,
-            boxShadow: '0 10px 24px rgba(0,0,0,0.2)',
-          }}
-          aria-label={t('ai_chat.open_assistant')}
-        >
-          <Bot size={24} />
-        </ActionIcon>
-      )}
+      <ActionIcon
+        size={56}
+        radius="xl"
+        variant="filled"
+        color="violet"
+        onClick={handleToggleChat}
+        style={{
+          position: 'fixed',
+          right: '1.5rem',
+          bottom: '1.5rem',
+          zIndex: 1301,
+          boxShadow: '0 10px 24px rgba(0,0,0,0.2)',
+          opacity: isOpen ? 0 : 1,
+          transform: isOpen ? 'scale(0.78)' : 'scale(1)',
+          transformOrigin: 'bottom right',
+          pointerEvents: isOpen ? 'none' : 'auto',
+          transition: fabTransition,
+        }}
+        aria-label={t('ai_chat.open_assistant')}
+      >
+        <Bot size={24} />
+      </ActionIcon>
 
-      {isOpen && (
-        <Paper
-          withBorder
-          radius="md"
-          style={{
-            position: 'fixed',
-            right: '1.5rem',
-            bottom: '1.5rem',
-            width: 'min(420px, calc(100vw - 3rem))',
-            height: 'min(72vh, 720px)',
-            zIndex: 1300,
-            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            backgroundColor: 'white',
-          }}
+      <Paper
+        withBorder
+        radius="md"
+        style={{
+          position: 'fixed',
+          right: '1.5rem',
+          bottom: '1.5rem',
+          width: 'min(420px, calc(100vw - 3rem))',
+          height: 'min(72vh, 720px)',
+          zIndex: 1300,
+          boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          backgroundColor: 'white',
+          opacity: isOpen ? 1 : 0,
+          transform: isOpen ? 'translateY(0) scale(1)' : 'translateY(18px) scale(0.94)',
+          transformOrigin: 'bottom right',
+          pointerEvents: isOpen ? 'auto' : 'none',
+          visibility: isOpen ? 'visible' : 'hidden',
+          transition: isOpen
+            ? 'opacity 220ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0ms linear 0ms'
+            : chatTransition,
+        }}
+        aria-hidden={!isOpen}
+      >
+        <Group
+          justify="space-between"
+          align="center"
+          px="md"
+          py="sm"
+          bg="violet.5"
+          style={{ borderBottom: '1px solid var(--mantine-color-gray-2)' }}
         >
-          <Group
-            justify="space-between"
-            align="center"
-            px="md"
-            py="sm"
-            bg="violet.5"
-            style={{ borderBottom: '1px solid var(--mantine-color-gray-2)' }}
-          >
-            <Group gap="xs" align="center">
-              <Title size="h4" c="white">
-                {t('ai_chat.title')}
-              </Title>
-            </Group>
-            <ActionIcon
-              variant="subtle"
-              color="white"
-              onClick={handleCloseChat}
-              aria-label={t('ai_chat.minimize_assistant')}
-            >
-              <Minimize2 size={16} />
-            </ActionIcon>
+          <Group gap="xs" align="center">
+            <Title size="h4" c="white">
+              {t('ai_chat.title')}
+            </Title>
           </Group>
+          <ActionIcon
+            variant="subtle"
+            color="white"
+            onClick={handleCloseChat}
+            aria-label={t('ai_chat.minimize_assistant')}
+          >
+            <Minimize2 size={16} />
+          </ActionIcon>
+        </Group>
 
-          <Stack gap={0} style={{ flex: 1, minHeight: 0 }}>
-            <Group align="end" px="md">
-              <Select
-                // label={t('ai_chat.model_label', { provider: modelsProvider })}
-                value={selectedModel}
-                onChange={handleModelChange}
-                data={availableModels.map(model => ({ value: model, label: model }))}
-                placeholder={isLoadingModels ? t('ai_chat.loading_models') : t('ai_chat.no_models')}
-                searchable
-                clearable
-                disabled={isLoadingModels || availableModels.length === 0}
-                variant="unstyled"
-                style={{
-                  borderBottom: '1px solid var(--mantine-color-gray-2)',
-                  marginLeft: '-1rem',
-                  marginRight: '-1rem',
-                  padding: '.5rem 1rem',
-                  flex: 1,
-                }}
-              />
-            </Group>
-            <Stack
-              ref={messagesContainerRef}
-              gap="sm"
-              px="md"
-              pb="md"
-              onScroll={handleMessagesScroll}
-              style={{
-                overflowY: 'auto',
-                flex: 1,
-                borderBottom: '1px solid var(--mantine-color-gray-2)',
-              }}
-            >
-              {isLoadingOlder && (
-                <Group justify="center" pt="xs">
-                  <Loader size="xs" />
-                  <Text size="xs" c="dimmed">
-                    {t('ai_chat.loading_previous_messages')}
-                  </Text>
-                </Group>
-              )}
-              <Box style={{ marginTop: 'auto' }} />
-              {isHistoryLoading && (
-                <Group justify="center" py="md">
-                  <Loader size="sm" />
-                </Group>
-              )}
-              {messages.map(message => (
-                <Box key={message.id}>
-                  <Paper withBorder p="sm" radius="md" bg={message.role === 'assistant' ? 'gray.0' : 'blue.0'}>
-                    <Group justify="space-between" align="center" mb={4}>
-                      <Text size="sm" fw={600}>
-                        {message.role === 'assistant' ? t('ai_chat.assistant') : t('ai_chat.you')}
-                      </Text>
-                      {message.role === 'assistant' && !!message.model && (
-                        <Badge variant="light" color="grape" size="sm">
-                          {t('ai_chat.model_badge', { model: message.model })}
-                        </Badge>
-                      )}
-                    </Group>
-                    {message.role === 'assistant' && message.isThinking && (
-                      <Group gap="xs">
-                        <Loader size="xs" />
-                        <Text size="sm" c="dimmed">
-                          {t('ai_chat.thinking')}
-                        </Text>
-                      </Group>
-                    )}
-                    {message.role === 'assistant' && (
-                      <Box
-                        style={{
-                          display: message.isThinking ? 'none' : 'block',
-                          fontSize: '0.875rem',
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-                      </Box>
-                    )}
-                    {message.role === 'user' && <Text size="sm">{message.content}</Text>}
-                  </Paper>
-
-                  {message.suggestions && !message.isStreaming && !message.isThinking && (
-                    <Stack mt="xs" gap="xs">
-                      <SuggestionGroup title={t('ai_chat.differentials')} items={message.suggestions.differentials} />
-                      <SuggestionGroup
-                        title={t('ai_chat.suggested_next_steps')}
-                        items={message.suggestions.suggestedNextSteps}
-                      />
-                      <SuggestionGroup
-                        title={t('ai_chat.treatment_ideas')}
-                        items={message.suggestions.treatmentIdeas}
-                      />
-                    </Stack>
-                  )}
-                </Box>
-              ))}
-            </Stack>
-
-            <Textarea
-              value={draftMessage}
-              onChange={handleDraftChange}
-              onKeyDown={handleTextareaKeyDown}
-              minRows={1}
-              placeholder={t('ai_chat.ask_placeholder')}
+        <Stack gap={0} style={{ flex: 1, minHeight: 0 }}>
+          <Group align="end" px="md">
+            <Select
+              // label={t('ai_chat.model_label', { provider: modelsProvider })}
+              value={selectedModel}
+              onChange={handleModelChange}
+              data={availableModels.map(model => ({ value: model, label: model }))}
+              placeholder={isLoadingModels ? t('ai_chat.loading_models') : t('ai_chat.no_models')}
+              searchable
+              clearable
+              disabled={isLoadingModels || availableModels.length === 0}
               variant="unstyled"
-              autosize
-              px="md"
+              style={{
+                borderBottom: '1px solid var(--mantine-color-gray-2)',
+                marginLeft: '-1rem',
+                marginRight: '-1rem',
+                padding: '.5rem 1rem',
+                flex: 1,
+              }}
             />
-            <Group justify="space-between" align="center" px="md" mb="sm">
-              <Text size="xs" c="gray.5">
-                {t('ai_chat.assistive_warning')}
-              </Text>
-            </Group>
-            {error && (
-              <Text size="xs" c="red">
-                {String((error as any)?.message || t('ai_chat.error_requesting_suggestions'))}
-              </Text>
+          </Group>
+          <Stack
+            ref={messagesContainerRef}
+            gap="sm"
+            px="md"
+            pb="md"
+            onScroll={handleMessagesScroll}
+            style={{
+              overflowY: 'auto',
+              flex: 1,
+              borderBottom: '1px solid var(--mantine-color-gray-2)',
+            }}
+          >
+            {isLoadingOlder && (
+              <Group justify="center" pt="xs">
+                <Loader size="xs" />
+                <Text size="xs" c="dimmed">
+                  {t('ai_chat.loading_previous_messages')}
+                </Text>
+              </Group>
             )}
+            <Box style={{ marginTop: 'auto' }} />
+            {isHistoryLoading && (
+              <Group justify="center" py="md">
+                <Loader size="sm" />
+              </Group>
+            )}
+            {messages.map(message => (
+              <Box key={message.id}>
+                <Paper withBorder p="sm" radius="md" bg={message.role === 'assistant' ? 'gray.0' : 'blue.0'}>
+                  <Group justify="space-between" align="center" mb={4}>
+                    <Text size="sm" fw={600}>
+                      {message.role === 'assistant' ? t('ai_chat.assistant') : t('ai_chat.you')}
+                    </Text>
+                    {message.role === 'assistant' && !!message.model && (
+                      <Badge variant="light" color="grape" size="sm">
+                        {t('ai_chat.model_badge', { model: message.model })}
+                      </Badge>
+                    )}
+                  </Group>
+                  {message.role === 'assistant' && message.isThinking && (
+                    <Group gap="xs">
+                      <Loader size="xs" />
+                      <Text size="sm" c="dimmed">
+                        {t('ai_chat.thinking')}
+                      </Text>
+                    </Group>
+                  )}
+                  {message.role === 'assistant' && (
+                    <Box
+                      style={{
+                        display: message.isThinking ? 'none' : 'block',
+                        fontSize: '0.875rem',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                    </Box>
+                  )}
+                  {message.role === 'user' && <Text size="sm">{message.content}</Text>}
+                </Paper>
+
+                {message.suggestions && !message.isStreaming && !message.isThinking && (
+                  <Stack mt="xs" gap="xs">
+                    <SuggestionGroup title={t('ai_chat.differentials')} items={message.suggestions.differentials} />
+                    <SuggestionGroup
+                      title={t('ai_chat.suggested_next_steps')}
+                      items={message.suggestions.suggestedNextSteps}
+                    />
+                    <SuggestionGroup title={t('ai_chat.treatment_ideas')} items={message.suggestions.treatmentIdeas} />
+                  </Stack>
+                )}
+              </Box>
+            ))}
           </Stack>
-        </Paper>
-      )}
+
+          <Textarea
+            value={draftMessage}
+            onChange={handleDraftChange}
+            onKeyDown={handleTextareaKeyDown}
+            minRows={1}
+            placeholder={t('ai_chat.ask_placeholder')}
+            variant="unstyled"
+            autosize
+            px="md"
+          />
+          <Group justify="space-between" align="center" px="md" mb="sm">
+            <Text size="xs" c="gray.5">
+              {t('ai_chat.assistive_warning')}
+            </Text>
+          </Group>
+          {error && (
+            <Text size="xs" c="red">
+              {String((error as any)?.message || t('ai_chat.error_requesting_suggestions'))}
+            </Text>
+          )}
+        </Stack>
+      </Paper>
     </>
   );
 }

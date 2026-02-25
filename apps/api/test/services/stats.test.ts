@@ -419,6 +419,12 @@ describe('\'stats\' service', () => {
     );
     assert.ok(thrombo, 'Wide range includes old thrombophilia study');
     assert.strictEqual(thrombo.count, 1);
+
+    const monthlyBucketed = result.studiesOverTime.every((entry: any) => {
+      const monthStart = dayjs(entry.period).date() === 1;
+      return monthStart;
+    });
+    assert.ok(monthlyBucketed, 'Wide range trend is quantized to monthly buckets');
   });
 
   it('returns empty arrays when no studies match', async () => {

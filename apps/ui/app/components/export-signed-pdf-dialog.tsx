@@ -12,11 +12,11 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
-import { MonthPickerInput } from '@mantine/dates';
 import { FileDown, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { useFeathers } from '~/components/provider';
+import { DateRangeFilterState, DateRangePopover, resolveDateRange } from '~/components/date-range-popover';
 
 type ExportContent = 'encounters' | 'studies' | 'both';
 
@@ -42,8 +42,16 @@ export function ExportSignedPdfDialog({
   const { t, i18n } = useTranslation();
   const client = useFeathers();
   const [content, setContent] = useState<ExportContent>('both');
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
+  const [rangeFilter, setRangeFilter] = useState<DateRangeFilterState>({
+    mode: 'between',
+    lastAmount: 12,
+    lastUnit: 'month',
+    singleDate: dayjs().format('YYYY-MM-DD'),
+    betweenRange: [
+      dateRange.min ? dayjs(dateRange.min).startOf('month').format('YYYY-MM-DD') : null,
+      dateRange.max ? dayjs(dateRange.max).startOf('month').format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+    ],
+  });
   const [signDigitally, setSignDigitally] = useState(hasCertificate);
   const [encryptionPin, setEncryptionPin] = useState('');
   const [certificatePassword, setCertificatePassword] = useState('');
@@ -53,20 +61,61 @@ export function ExportSignedPdfDialog({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const dateRangeLabels = useMemo(
+    () => ({
+      modeInLast: t('stats.mode_in_last'),
+      modeAfter: t('stats.mode_after'),
+      modeBefore: t('stats.mode_before'),
+      modeBetween: t('stats.mode_between'),
+      rangeMode: t('stats.range_mode'),
+      lastValue: t('stats.last_value'),
+      lastUnit: t('stats.last_unit'),
+      unitDays: t('stats.unit_days'),
+      unitWeeks: t('stats.unit_weeks'),
+      unitMonths: t('stats.unit_months'),
+      unitYears: t('stats.unit_years'),
+      pickDate: t('stats.pick_date'),
+      pickRange: t('stats.pick_range'),
+      invalidRange: t('stats.invalid_range'),
+      apply: t('stats.apply'),
+    }),
+    [t]
+  );
+
+  const resolvedRange = useMemo(
+    () =>
+      resolveDateRange(rangeFilter, {
+        minRangeStart: dateRange.min ? dayjs(dateRange.min).startOf('month').format('YYYY-MM-DD') : '1900-01-01',
+        maxDate: dayjs().format('YYYY-MM-DD'),
+        precision: 'month',
+      }),
+    [dateRange.min, rangeFilter]
+  );
+
   const handleSelectAll = useCallback(() => {
-    setStartDate(dateRange.min ? dayjs(dateRange.min).startOf('month').toISOString() : null);
-    setEndDate(
-      dateRange.max ? dayjs(dateRange.max).startOf('month').toISOString() : dayjs().startOf('month').toISOString()
-    );
+    setRangeFilter({
+      mode: 'between',
+      lastAmount: 12,
+      lastUnit: 'month',
+      singleDate: dayjs().format('YYYY-MM-DD'),
+      betweenRange: [
+        dateRange.min ? dayjs(dateRange.min).startOf('month').format('YYYY-MM-DD') : null,
+        dateRange.max ? dayjs(dateRange.max).startOf('month').format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+      ],
+    });
   }, [dateRange]);
 
+  const handleApplyRange = useCallback((nextState: DateRangeFilterState) => {
+    setRangeFilter(nextState);
+  }, []);
+
   const isValid = useMemo(() => {
-    if (!startDate || !endDate) return false;
+    if (!resolvedRange) return false;
     if (signDigitally && !certificatePassword) return false;
     if (signDigitally && isCertificateEncrypted && !encryptionPin) return false;
     if (delivery === 'email' && !emailTo) return false;
     return true;
-  }, [startDate, endDate, signDigitally, certificatePassword, isCertificateEncrypted, encryptionPin, delivery, emailTo]);
+  }, [resolvedRange, signDigitally, certificatePassword, isCertificateEncrypted, encryptionPin, delivery, emailTo]);
 
   const handleSubmit = useCallback(async () => {
     if (!isValid || !client) return;
@@ -78,8 +127,8 @@ export function ExportSignedPdfDialog({
     try {
       const payload: any = {
         patientId,
-        startDate: dayjs(startDate).startOf('month').format('YYYY-MM-DD'),
-        endDate: dayjs(endDate).endOf('month').format('YYYY-MM-DD'),
+        startDate: resolvedRange!.from.format('YYYY-MM-DD'),
+        endDate: resolvedRange!.to.format('YYYY-MM-DD'),
         content,
         delivery,
         locale: i18n.language,
@@ -140,8 +189,7 @@ export function ExportSignedPdfDialog({
     isValid,
     client,
     patientId,
-    startDate,
-    endDate,
+    resolvedRange,
     signDigitally,
     encryptionPin,
     certificatePassword,
@@ -162,24 +210,15 @@ export function ExportSignedPdfDialog({
   return (
     <Modal opened={opened} onClose={onClose} title={t('export_pdf.title')} size="md">
       <Stack gap="md">
-        <Group gap="sm" grow>
-          <MonthPickerInput
-            label={t('export_pdf.from')}
-            placeholder={t('export_pdf.month_placeholder')}
-            value={startDate}
-            onChange={setStartDate}
-            valueFormat="MM/YYYY"
-            maxDate={endDate || undefined}
-          />
-          <MonthPickerInput
-            label={t('export_pdf.to')}
-            placeholder={t('export_pdf.month_placeholder')}
-            value={endDate}
-            onChange={setEndDate}
-            valueFormat="MM/YYYY"
-            minDate={startDate || undefined}
-          />
-        </Group>
+        <DateRangePopover
+          value={rangeFilter}
+          onApply={handleApplyRange}
+          labels={dateRangeLabels}
+          minRangeStart={dateRange.min ? dayjs(dateRange.min).startOf('month').format('YYYY-MM-DD') : '1900-01-01'}
+          maxDate={dayjs().format('YYYY-MM-DD')}
+          precision="month"
+          fullWidth
+        />
 
         <Button variant="light" size="xs" onClick={handleSelectAll}>
           {t('export_pdf.all_history')}
