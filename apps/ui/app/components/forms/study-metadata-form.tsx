@@ -44,6 +44,7 @@ interface StudyMetadataFormProps {
   medicId?: string | null;
   onMedicIdChange?: (value: string | null) => void;
   showEmptyStudyHint?: boolean;
+  readOnly?: boolean;
 }
 
 const STUDY_TYPE_TRANSLATION_KEY_BY_CODE = {
@@ -105,6 +106,7 @@ export function StudyMetadataForm({
   onReferringDoctorChange,
   onMedicIdChange,
   showEmptyStudyHint,
+  readOnly = false,
 }: StudyMetadataFormProps) {
   const { t } = useTranslation();
   const isCreateMode = mode === 'create';
@@ -186,6 +188,7 @@ export function StudyMetadataForm({
             checked={noOrder}
             onChange={e => onNoOrderChange(e.currentTarget.checked)}
             color="blue"
+            disabled={readOnly}
           />
         </FieldRow>
 
@@ -196,6 +199,8 @@ export function StudyMetadataForm({
             onChange={e => onCommentChange(e.currentTarget.value)}
             autosize
             minRows={2}
+            readOnly={readOnly}
+            disabled={readOnly}
           />
         </FieldRow>
       </FormCard>
@@ -217,6 +222,7 @@ export function StudyMetadataForm({
                 checked={selectedStudies.includes(key)}
                 onChange={() => onToggleStudy(key)}
                 color="blue"
+                disabled={readOnly}
               />
             ))}
           </TypeGrid>

@@ -7,7 +7,7 @@ import { Group, Stack, Button, ActionIcon, Tooltip, Tabs, Text } from '@mantine/
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { X, FileDown, Printer, Plus } from 'lucide-react';
 
-import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
+import { getAuthenticatedClient, authenticatedLoader, isMedicVerified } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
 import EncounterTree from '~/components/encounter-tree';
 import Portal from '~/components/portal';
@@ -99,7 +99,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 
   const isMedic = (user as any).roleId === 'medic';
 
-  const [patient, encounters, studies] = await Promise.all([
+  const [patient, encounters, studies, isVerified] = await Promise.all([
     client.service('patients').get(patientId),
     client.service('encounters').find({
       query: {
@@ -114,6 +114,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
         $sort: { createdAt: -1 },
       },
     }),
+    isMedicVerified(client, String((user as any).id), (user as any).roleId),
   ]);
 
   let hasCertificate = false;
@@ -137,6 +138,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     encounters: (encounters as any).data || encounters,
     studies: (studies as any).data || studies,
     isMedic,
+    isVerified,
     hasCertificate,
     isCertificateEncrypted,
   };
@@ -241,9 +243,11 @@ export default function PatientEncounterDetail() {
                   {t('export_pdf.button')}
                 </Button>
               )}
-              <Button component={Link} to={`/encounters/${data.patient.id}/new`} leftSection={<Plus size={16} />}>
-                {t('encounters.new')}
-              </Button>
+              {data.isVerified && (
+                <Button component={Link} to={`/encounters/${data.patient.id}/new`} leftSection={<Plus size={16} />}>
+                  {t('encounters.new')}
+                </Button>
+              )}
             </Group>
           )}
         </Group>
@@ -361,10 +365,12 @@ export default function PatientEncounterDetail() {
               {t('export_pdf.button')}
             </FabItem>
           )}
-          <FabItem onClick={handleFabNewEncounter} index={0}>
-            <Plus size={18} />
-            {t('encounters.new')}
-          </FabItem>
+          {data.isVerified && (
+            <FabItem onClick={handleFabNewEncounter} index={0}>
+              <Plus size={18} />
+              {t('encounters.new')}
+            </FabItem>
+          )}
         </Fab>
       )}
     </Container>

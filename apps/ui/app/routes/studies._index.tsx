@@ -1,19 +1,25 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import type { LoaderFunctionArgs } from '@remix-run/node';
+import { json } from '@remix-run/node';
 import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Search, Plus } from 'lucide-react';
-import { Link, useSearchParams } from '@remix-run/react';
+import { Link, useLoaderData, useSearchParams } from '@remix-run/react';
 import { TextInput, Stack, Loader, Group, Button } from '@mantine/core';
 
 import { useFind } from '~/components/provider';
-import { authenticatedLoader } from '~/utils/auth.server';
+import { authenticatedLoader, getAuthenticatedClient, isMedicVerified } from '~/utils/auth.server';
 import Portal from '~/components/portal';
 import { media } from '~/media';
 import { StudiesTable, toStudyItems } from '~/components/studies-table';
 import type { Study } from '~/components/studies-table';
 import { Fab } from '~/components/fab';
 
-export const loader = authenticatedLoader();
+export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
+  const { client, user } = await getAuthenticatedClient(request);
+  const isVerified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  return json({ isVerified });
+});
 
 // ---------------------------------------------------------------------------
 // Types
@@ -34,6 +40,7 @@ const PAGE_SIZE = 15;
 
 export default function StudiesIndex() {
   const { t } = useTranslation();
+  const { isVerified } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('q') || '';
   const [inputValue, setInputValue] = useState(initialSearch);
@@ -109,7 +116,7 @@ export default function StudiesIndex() {
             autoComplete="off"
             data-1p-ignore
           />
-          {isDesktop && (
+          {isDesktop && isVerified && (
             <Button component={Link} to="/studies/new" leftSection={<Plus size={16} />}>
               {t('studies.new_study')}
             </Button>
@@ -117,7 +124,7 @@ export default function StudiesIndex() {
         </Group>
       </Portal>
 
-      {!isDesktop && <Fab to="/studies/new" />}
+      {!isDesktop && isVerified && <Fab to="/studies/new" />}
 
       <StudiesTable
         items={studyItems}

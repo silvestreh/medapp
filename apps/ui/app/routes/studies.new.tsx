@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
-import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 import { useFetcher, useNavigate } from '@remix-run/react';
 import { Group, Button } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { Save } from 'lucide-react';
 
-import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
+import { getAuthenticatedClient, authenticatedLoader, isMedicVerified } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { useGet } from '~/components/provider';
 import Portal from '~/components/portal';
@@ -19,10 +19,24 @@ export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'new_study') }];
 };
 
-export const loader = authenticatedLoader();
+export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
+  const { client, user } = await getAuthenticatedClient(request);
+  const verified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+
+  if (!verified) {
+    throw redirect('/studies');
+  }
+
+  return null;
+});
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { client } = await getAuthenticatedClient(request);
+  const { client, user } = await getAuthenticatedClient(request);
+  const verified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  if (!verified) {
+    return redirect('/studies');
+  }
+
   const formData = await request.formData();
   const payload = parseFormJson<Record<string, any>>(formData.get('data'));
 

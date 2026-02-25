@@ -5,7 +5,7 @@ import { useLoaderData, useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Stack, Center, Text } from '@mantine/core';
 
-import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
+import { getAuthenticatedClient, authenticatedLoader, isMedicVerified } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
@@ -60,6 +60,11 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   }
 
   const { client, user } = await getAuthenticatedClient(request);
+  const verified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  if (!verified) {
+    return redirect(`/encounters/${patientId}`);
+  }
+
   const formData = await request.formData();
   const data = parseFormJson(formData.get('data'));
 
@@ -74,11 +79,16 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 };
 
 export const loader = authenticatedLoader(async ({ params, request }: LoaderFunctionArgs) => {
-  const { client } = await getAuthenticatedClient(request);
+  const { client, user } = await getAuthenticatedClient(request);
   const { patientId } = params;
 
   if (!patientId) {
     throw new Response('Patient ID is required', { status: 400 });
+  }
+
+  const verified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  if (!verified) {
+    throw redirect(`/encounters/${patientId}`);
   }
 
   const patient = await client.service('patients').get(patientId);

@@ -11,6 +11,7 @@ import { clearReferringDoctor, populateReferringDoctor } from './hooks/resolve-r
 import restrictToMedic from './hooks/restrict-to-medic';
 import { sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import searchStudies from './hooks/search-studies';
+import { requireVerifiedLicense } from '../../hooks/require-verified-license';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -24,9 +25,9 @@ export default {
     ],
     find: [restrictToMedic(), searchStudies()],
     get: [restrictToMedic()],
-    create: [restrictToMedic(), clearReferringDoctor(), autoProtocol(), extractStudyResults()],
+    create: [requireVerifiedLicense(), restrictToMedic(), clearReferringDoctor(), autoProtocol(), extractStudyResults()],
     update: [],
-    patch: [restrictToMedic(), clearReferringDoctor(), extractStudyResults()],
+    patch: [requireVerifiedLicense(), restrictToMedic(), clearReferringDoctor(), extractStudyResults()],
     remove: [restrictToMedic()]
   },
 
