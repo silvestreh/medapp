@@ -26,6 +26,7 @@ interface ExportSignedPdfDialogProps {
   patientId: string;
   patientName: string;
   hasCertificate: boolean;
+  isCertificateEncrypted: boolean;
   dateRange: { min: Date | null; max: Date | null };
 }
 
@@ -35,6 +36,7 @@ export function ExportSignedPdfDialog({
   patientId,
   patientName,
   hasCertificate,
+  isCertificateEncrypted,
   dateRange,
 }: ExportSignedPdfDialogProps) {
   const { t, i18n } = useTranslation();
@@ -43,6 +45,7 @@ export function ExportSignedPdfDialog({
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const [signDigitally, setSignDigitally] = useState(hasCertificate);
+  const [encryptionPin, setEncryptionPin] = useState('');
   const [certificatePassword, setCertificatePassword] = useState('');
   const [delivery, setDelivery] = useState<string>('download');
   const [emailTo, setEmailTo] = useState('');
@@ -60,9 +63,10 @@ export function ExportSignedPdfDialog({
   const isValid = useMemo(() => {
     if (!startDate || !endDate) return false;
     if (signDigitally && !certificatePassword) return false;
+    if (signDigitally && isCertificateEncrypted && !encryptionPin) return false;
     if (delivery === 'email' && !emailTo) return false;
     return true;
-  }, [startDate, endDate, signDigitally, certificatePassword, delivery, emailTo]);
+  }, [startDate, endDate, signDigitally, certificatePassword, isCertificateEncrypted, encryptionPin, delivery, emailTo]);
 
   const handleSubmit = useCallback(async () => {
     if (!isValid || !client) return;
@@ -83,6 +87,10 @@ export function ExportSignedPdfDialog({
 
       if (signDigitally && certificatePassword) {
         payload.certificatePassword = certificatePassword;
+      }
+
+      if (signDigitally && isCertificateEncrypted && encryptionPin) {
+        payload.encryptionPin = encryptionPin;
       }
 
       if (delivery === 'email') {
@@ -135,7 +143,9 @@ export function ExportSignedPdfDialog({
     startDate,
     endDate,
     signDigitally,
+    encryptionPin,
     certificatePassword,
+    isCertificateEncrypted,
     delivery,
     emailTo,
     patientName,
@@ -194,14 +204,26 @@ export function ExportSignedPdfDialog({
               onChange={event => setSignDigitally(event.currentTarget.checked)}
             />
             {signDigitally && (
-              <PasswordInput
-                label={t('export_pdf.certificate_password_label')}
-                description={t('export_pdf.certificate_password_description')}
-                placeholder={t('export_pdf.certificate_password_placeholder')}
-                value={certificatePassword}
-                onChange={event => setCertificatePassword(event.currentTarget.value)}
-                required
-              />
+              <Stack gap="xs">
+                {isCertificateEncrypted && (
+                  <PasswordInput
+                    label={t('export_pdf.encryption_pin_label')}
+                    description={t('export_pdf.encryption_pin_description')}
+                    placeholder={t('export_pdf.encryption_pin_placeholder')}
+                    value={encryptionPin}
+                    onChange={event => setEncryptionPin(event.currentTarget.value)}
+                    required
+                  />
+                )}
+                <PasswordInput
+                  label={t('export_pdf.certificate_password_label')}
+                  description={t('export_pdf.certificate_password_description')}
+                  placeholder={t('export_pdf.certificate_password_placeholder')}
+                  value={certificatePassword}
+                  onChange={event => setCertificatePassword(event.currentTarget.value)}
+                  required
+                />
+              </Stack>
             )}
           </Stack>
         )}

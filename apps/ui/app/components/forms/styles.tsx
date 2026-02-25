@@ -1,5 +1,5 @@
-import { forwardRef, useCallback, useRef, useState, type ReactNode } from 'react';
-import { TextInput, Textarea, PasswordInput, Title, Stack, Select, Checkbox, Text } from '@mantine/core';
+import { cloneElement, forwardRef, isValidElement, useCallback, useRef, useState, type ReactNode } from 'react';
+import { Group, TextInput, Textarea, PasswordInput, Title, Stack, Select, Checkbox, Text } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { styled } from '~/styled-system/jsx';
 
@@ -366,6 +366,30 @@ export const StyledTitle = styled(Title, {
     },
   },
 });
+
+type SectionTitleProps = React.ComponentPropsWithoutRef<typeof StyledTitle> & {
+  icon?: ReactNode;
+};
+
+export function SectionTitle({ icon, children }: SectionTitleProps) {
+  if (!icon) {
+    return <StyledTitle>{children}</StyledTitle>;
+  }
+
+  const styledIcon = isValidElement(icon)
+    ? cloneElement(icon as React.ReactElement<{ size?: number; color?: string }>, {
+        size: 28,
+        color: 'var(--mantine-color-blue-4)',
+      })
+    : icon;
+
+  return (
+    <Group gap="xs" align="center">
+      {styledIcon}
+      <StyledTitle>{children}</StyledTitle>
+    </Group>
+  );
+}
 
 export const FormHeader = styled('div', {
   base: {

@@ -4,9 +4,10 @@ import { showNotification } from '@mantine/notifications';
 import { Form } from '@remix-run/react';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
+import { User, Mail, Stethoscope } from 'lucide-react';
 
 import Portal from '~/components/portal';
-import { FormCard, FieldRow, StyledSelect, StyledTextInput, StyledTitle, FormHeader } from '~/components/forms/styles';
+import { FormCard, FieldRow, StyledSelect, StyledTextInput, SectionTitle } from '~/components/forms/styles';
 
 type PersonalDataLike = { firstName?: string | null; lastName?: string | null } | undefined;
 type ContactDataLike =
@@ -143,13 +144,11 @@ export function ProfileForm({
   }, [profileForm.values, isMedic]);
 
   return (
-    <Form id="profile-update-form" method="post">
+    <Form id="profile-update-form" method="post" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <input type="hidden" name="intent" value="update-profile" />
       <input type="hidden" name="payload" value={JSON.stringify(payload)} />
-      <FormHeader>
-        <StyledTitle>{t('profile.personal_data')}</StyledTitle>
-      </FormHeader>
-      <FormCard>
+      <SectionTitle icon={<User />}>{t('profile.personal_data')}</SectionTitle>
+      <FormCard style={{ marginBottom: '1rem' }}>
         <FieldRow label={`${t('profile.first_name')}:`} variant="stacked">
           <StyledTextInput {...profileForm.getInputProps('firstName')} />
         </FieldRow>
@@ -158,10 +157,8 @@ export function ProfileForm({
         </FieldRow>
       </FormCard>
 
-      <FormHeader>
-        <StyledTitle style={{ marginTop: '2rem' }}>{t('profile.contact_data')}</StyledTitle>
-      </FormHeader>
-      <FormCard>
+      <SectionTitle icon={<Mail />}>{t('profile.contact_data')}</SectionTitle>
+      <FormCard style={{ marginBottom: '1rem' }}>
         <FieldRow label={`${t('profile.email')}:`} variant="stacked">
           <StyledTextInput type="email" {...profileForm.getInputProps('email')} />
         </FieldRow>
@@ -184,9 +181,7 @@ export function ProfileForm({
 
       {isMedic && (
         <>
-          <FormHeader>
-            <StyledTitle style={{ marginTop: '2rem' }}>{t('profile.professional_info')}</StyledTitle>
-          </FormHeader>
+          <SectionTitle icon={<Stethoscope />}>{t('profile.professional_info')}</SectionTitle>
           <FormCard>
             <FieldRow label={`${t('profile.medical_specialty')}:`} variant="stacked">
               <StyledTextInput {...profileForm.getInputProps('medicalSpecialty')} />

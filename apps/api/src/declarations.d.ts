@@ -241,4 +241,5 @@ export interface SigningCertificate {
   userId: Id;
   certificate: string;
   fileName: string | null;
+  isClientEncrypted: boolean;
 }

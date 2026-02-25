@@ -726,8 +726,11 @@ export const en: typeof es = {
     content_studies: 'Studies',
     content_both: 'All',
     sign_digitally: 'Sign digitally',
+    encryption_pin_label: 'Certificate PIN',
+    encryption_pin_description: 'The PIN you chose when uploading your certificate',
+    encryption_pin_placeholder: 'Enter your certificate PIN',
     certificate_password_label: 'Certificate password',
-    certificate_password_description: 'The password for your .pfx/.p12 file (not your MedApp password)',
+    certificate_password_description: 'The password set when your certificate was issued (not your MedApp password)',
     certificate_password_placeholder: 'Enter your certificate password',
     no_certificate_notice: 'No digital certificate uploaded. The PDF will be exported without a digital signature.',
     upload_certificate_link: 'Upload certificate',
@@ -754,11 +757,24 @@ export const en: typeof es = {
     info_notice:
       'Upload your digital certificate (.pfx or .p12) issued by an Argentine Certificate Authority to digitally sign exported medical histories. The certificate is stored encrypted and your password is never saved.',
     certificate_loaded: 'Certificate uploaded',
+    certificate_pin_protected: 'Protected with PIN',
     remove: 'Remove',
     file_label: 'Digital certificate',
     file_placeholder: 'Select .pfx or .p12 file',
     upload: 'Upload certificate',
     upload_error: 'Failed to upload certificate',
     remove_error: 'Failed to remove certificate',
+    security_notice:
+      'Your certificate is stored with strong encryption. Signing can only be performed with your certificate password, which is never stored on our servers. This means nobody can sign on your behalf — not even us.',
+    pin_protect_label: 'Protect with a PIN',
+    pin_protect_description:
+      'Add an extra security layer. Signing will require two passwords: this PIN and your certificate password, set when your certificate was issued.',
+    pin_label: 'PIN',
+    pin_confirm_label: 'Confirm PIN',
+    pin_placeholder: 'Choose a PIN',
+    pin_confirm_placeholder: 'Re-enter PIN',
+    pin_mismatch: 'PINs do not match',
+    pin_warning:
+      'This PIN will be required every time you sign a document. It is never stored. If you forget it, you will need to re-upload your certificate.',
   },
 };

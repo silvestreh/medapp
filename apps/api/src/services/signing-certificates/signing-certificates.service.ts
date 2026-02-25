@@ -24,6 +24,7 @@ export default function (app: Application): void {
     upload.single('certificate'),
     (req: any, _res: any, next: any) => {
       req.feathers.file = req.file;
+      req.feathers.isClientEncrypted = req.body?.isClientEncrypted === 'true';
       next();
     },
     new SigningCertificates(options, app)
