@@ -1,7 +1,14 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Stack, Group, Text, Loader, Alert, Paper, SimpleGrid } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import {
+  Stack,
+  Group,
+  Text,
+  Loader,
+  Alert,
+  Paper,
+  SimpleGrid,
+} from '@mantine/core';
 import { AreaChart, BarChart, DonutChart } from '@mantine/charts';
 import { Info } from 'lucide-react';
 import dayjs from 'dayjs';
@@ -10,6 +17,11 @@ import { authenticatedLoader } from '~/utils/auth.server';
 import { useFind } from '~/components/provider';
 import Portal from '~/components/portal';
 import { ToolbarTitle } from '~/components/toolbar-title';
+import {
+  DateRangeFilterState,
+  DateRangePopover,
+  resolveDateRange,
+} from '~/components/date-range-popover';
 
 export const loader = authenticatedLoader();
 
@@ -25,6 +37,7 @@ const STUDY_TYPE_COLORS: Record<string, string> = {
 const AGE_BUCKETS = ['0-17', '18-34', '35-49', '50-64', '65+'] as const;
 
 const LARGE_RANGE_DAYS = 90;
+const MIN_RANGE_START = '1900-01-01';
 
 interface StudyTypeCount {
   studyType: string;
@@ -79,6 +92,7 @@ interface StatsResponse {
 export default function StatsIndex() {
   const { t } = useTranslation();
   const countries = useMemo(() => t('countries', { returnObjects: true }) as Record<string, string>, [t]);
+  const formatPercent = useCallback((value: number) => `${(value * 100).toFixed(2)}%`, []);
   const getLabel = useCallback(
     (type: string) => {
       const key = `stats.type_${type}`;
@@ -87,24 +101,63 @@ export default function StatsIndex() {
     [t]
   );
 
-  const [dateRange, setDateRange] = useState<[string | null, string | null]>([
-    dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
-    dayjs().format('YYYY-MM-DD'),
-  ]);
+  const [rangeFilter, setRangeFilter] = useState<DateRangeFilterState>({
+    mode: 'in_last',
+    lastAmount: 30,
+    lastUnit: 'day',
+    singleDate: dayjs().format('YYYY-MM-DD'),
+    betweenRange: [
+      dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
+      dayjs().format('YYYY-MM-DD'),
+    ],
+  });
 
-  const [from, to] = dateRange;
+  const resolvedRange = useMemo(
+    () => resolveDateRange(rangeFilter, {
+      minRangeStart: MIN_RANGE_START,
+      maxDate: dayjs().format('YYYY-MM-DD'),
+      precision: 'day',
+    }),
+    [rangeFilter]
+  );
 
-  const rangeIsValid = from && to && dayjs(to).isAfter(dayjs(from));
-  const rangeDays = from && to ? dayjs(to).diff(dayjs(from), 'day') : 0;
+  const rangeIsValid = !!resolvedRange;
+  const rangeDays = resolvedRange ? resolvedRange.to.diff(resolvedRange.from, 'day') : 0;
   const isLargeRange = rangeDays > LARGE_RANGE_DAYS;
+  const trendDateFormat = rangeDays >= 365 ? 'YYYY-MM' : 'YYYY-MM-DD';
+
+  const dateRangeLabels = useMemo(
+    () => ({
+      modeInLast: t('stats.mode_in_last'),
+      modeAfter: t('stats.mode_after'),
+      modeBefore: t('stats.mode_before'),
+      modeBetween: t('stats.mode_between'),
+      rangeMode: t('stats.range_mode'),
+      lastValue: t('stats.last_value'),
+      lastUnit: t('stats.last_unit'),
+      unitDays: t('stats.unit_days'),
+      unitWeeks: t('stats.unit_weeks'),
+      unitMonths: t('stats.unit_months'),
+      unitYears: t('stats.unit_years'),
+      pickDate: t('stats.pick_date'),
+      pickRange: t('stats.pick_range'),
+      invalidRange: t('stats.invalid_range'),
+      apply: t('stats.apply'),
+    }),
+    [t]
+  );
+
+  const handleApplyRange = useCallback((nextState: DateRangeFilterState) => {
+    setRangeFilter(nextState);
+  }, []);
 
   const query = useMemo(() => {
-    if (!rangeIsValid) return null;
+    if (!resolvedRange) return null;
     return {
-      from: dayjs(from).startOf('day').toISOString(),
-      to: dayjs(to).endOf('day').toISOString(),
+      from: resolvedRange.from.toISOString(),
+      to: resolvedRange.to.toISOString(),
     };
-  }, [from, to, rangeIsValid]);
+  }, [resolvedRange]);
 
   const { response, isLoading } = useFind('stats', query ?? undefined, {
     enabled: !!query,
@@ -178,10 +231,10 @@ export default function StatsIndex() {
     if (!stats?.studiesOverTime) return [];
 
     return stats.studiesOverTime.map(row => ({
-      period: dayjs(row.period).format('YYYY-MM-DD'),
+      period: dayjs(row.period).format(trendDateFormat),
       [t('stats.count')]: row.count,
     }));
-  }, [stats, t]);
+  }, [stats, t, trendDateFormat]);
 
   const noOrderDonutData = useMemo(() => {
     if (!stats?.noOrderRate) return [];
@@ -226,12 +279,13 @@ export default function StatsIndex() {
           <ToolbarTitle title={t('stats.title')} />
           <Group align="center" justify="center" gap="md" wrap="wrap">
             <Text c="dimmed">{t('stats.date_range')}</Text>
-            <DatePickerInput
-              type="range"
-              value={dateRange}
-              onChange={setDateRange}
+            <DateRangePopover
+              value={rangeFilter}
+              onApply={handleApplyRange}
+              labels={dateRangeLabels}
+              minRangeStart={MIN_RANGE_START}
               maxDate={dayjs().format('YYYY-MM-DD')}
-              clearable={false}
+              precision="day"
             />
             {isLoading && <Loader size="sm" />}
           </Group>
@@ -239,7 +293,7 @@ export default function StatsIndex() {
       </Portal>
 
       {isLargeRange && (
-        <Alert icon={<Info size={16} />} color="yellow" variant="light" mt="sm">
+        <Alert icon={<Info size={16} />} color="yellow" variant="light">
           {t('stats.large_range_warning')}
         </Alert>
       )}
@@ -266,7 +320,7 @@ export default function StatsIndex() {
                 </Text>
                 <Group justify="space-between" align="center">
                   <DonutChart data={noOrderDonutData} />
-                  <Text fw={700}>{(stats?.noOrderRate?.rate || 0) * 100}%</Text>
+                  <Text fw={700}>{formatPercent(stats?.noOrderRate?.rate || 0)}</Text>
                 </Group>
               </Paper>
             )}
@@ -287,7 +341,7 @@ export default function StatsIndex() {
                 </Text>
                 <Group justify="space-between" align="center">
                   <DonutChart data={completionDonutData} />
-                  <Text fw={700}>{(stats?.completionRate?.rate || 0) * 100}%</Text>
+                  <Text fw={700}>{formatPercent(stats?.completionRate?.rate || 0)}</Text>
                 </Group>
               </Paper>
             )}

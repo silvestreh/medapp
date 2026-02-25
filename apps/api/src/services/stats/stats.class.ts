@@ -121,7 +121,13 @@ export class Stats {
       { type: QueryTypes.SELECT, replacements }
     );
 
-    const trendGranularity = toDate.diff(fromDate, 'day') > 90 ? 'week' : 'day';
+    const rangeDays = toDate.diff(fromDate, 'day');
+    let trendGranularity: 'day' | 'week' | 'month' = 'day';
+    if (rangeDays >= 365) {
+      trendGranularity = 'month';
+    } else if (rangeDays > 90) {
+      trendGranularity = 'week';
+    }
     const studiesOverTime = await sequelize.query<StudiesOverTimeEntry>(
       `
       SELECT DATE_TRUNC(:trendGranularity, s.date)::date::text AS period, COUNT(*)::int AS count
