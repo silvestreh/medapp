@@ -163,11 +163,8 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const storageKey = `llm-chat-model:${currentOrg.id}:${provider}`;
-    if (model) {
-      window.localStorage.setItem(storageKey, model);
-      return;
-    }
-    window.localStorage.removeItem(storageKey);
+    if (!model) return;
+    window.localStorage.setItem(storageKey, model);
   }, [currentOrg.id, model, provider]);
 
   const handleSaveLlmDefaults = useCallback(() => {

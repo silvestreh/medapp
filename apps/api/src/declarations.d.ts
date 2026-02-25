@@ -247,3 +247,16 @@ export interface SigningCertificate {
   fileName: string | null;
   isClientEncrypted: boolean;
 }
+
+export interface EncounterAiChatMessage {
+  id: Id;
+  organizationId: Id;
+  patientId: Id;
+  medicId: Id;
+  role: 'user' | 'assistant';
+  content: string;
+  model?: string | null;
+  suggestions?: Record<string, any> | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
