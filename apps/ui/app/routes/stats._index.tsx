@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Stack, Group, Text, Loader, Alert, Paper } from '@mantine/core';
+import { Stack, Group, Text, Loader, Alert, Paper, SimpleGrid } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
-import { BarChart } from '@mantine/charts';
+import { AreaChart, BarChart, DonutChart } from '@mantine/charts';
 import { Info } from 'lucide-react';
 import dayjs from 'dayjs';
 
@@ -37,13 +37,48 @@ interface AgeGroupEntry {
   count: number;
 }
 
+interface GenderGroupEntry {
+  studyType: string;
+  gender: 'male' | 'female' | 'other';
+  count: number;
+}
+
+interface StudiesOverTimeEntry {
+  period: string;
+  count: number;
+}
+
+interface NoOrderRate {
+  total: number;
+  noOrder: number;
+  rate: number;
+}
+
+interface CompletionRate {
+  total: number;
+  withResults: number;
+  rate: number;
+}
+
+interface NationalityDistributionEntry {
+  nationality: string;
+  count: number;
+}
+
 interface StatsResponse {
   studyTypeCounts: StudyTypeCount[];
   ageGroups: AgeGroupEntry[];
+  genderGroups: GenderGroupEntry[];
+  studiesOverTime: StudiesOverTimeEntry[];
+  noOrderRate: NoOrderRate;
+  avgStudiesPerPatient: number;
+  completionRate: CompletionRate;
+  nationalityDistribution: NationalityDistributionEntry[];
 }
 
 export default function StatsIndex() {
   const { t } = useTranslation();
+  const countries = useMemo(() => t('countries', { returnObjects: true }) as Record<string, string>, [t]);
   const getLabel = useCallback(
     (type: string) => {
       const key = `stats.type_${type}`;
@@ -115,6 +150,75 @@ export default function StatsIndex() {
     }));
   }, [stats, getLabel]);
 
+  const genderChartData = useMemo(() => {
+    if (!stats?.genderGroups || stats.genderGroups.length === 0) return [];
+
+    const byType = new Map<string, Record<string, string | number>>();
+    for (const row of stats.genderGroups) {
+      if (!byType.has(row.studyType)) {
+        byType.set(row.studyType, { type: getLabel(row.studyType) });
+      }
+      const entry = byType.get(row.studyType)!;
+      entry[t(`stats.gender_${row.gender}`)] = row.count;
+    }
+
+    return Array.from(byType.values());
+  }, [stats, getLabel, t]);
+
+  const genderChartSeries = useMemo(
+    () => [
+      { name: t('stats.gender_male'), color: 'blue.6' },
+      { name: t('stats.gender_female'), color: 'pink.6' },
+      { name: t('stats.gender_other'), color: 'violet.6' },
+    ],
+    [t]
+  );
+
+  const studiesOverTimeChartData = useMemo(() => {
+    if (!stats?.studiesOverTime) return [];
+
+    return stats.studiesOverTime.map(row => ({
+      period: dayjs(row.period).format('YYYY-MM-DD'),
+      [t('stats.count')]: row.count,
+    }));
+  }, [stats, t]);
+
+  const noOrderDonutData = useMemo(() => {
+    if (!stats?.noOrderRate) return [];
+
+    const withOrder = Math.max(stats.noOrderRate.total - stats.noOrderRate.noOrder, 0);
+    return [
+      { name: t('stats.no_order_with'), value: withOrder, color: 'teal.6' },
+      { name: t('stats.no_order_without'), value: stats.noOrderRate.noOrder, color: 'orange.6' },
+    ];
+  }, [stats, t]);
+
+  const completionDonutData = useMemo(() => {
+    if (!stats?.completionRate) return [];
+
+    const pending = Math.max(stats.completionRate.total - stats.completionRate.withResults, 0);
+    return [
+      {
+        name: t('stats.completion_with_results'),
+        value: stats.completionRate.withResults,
+        color: 'green.6',
+      },
+      { name: t('stats.completion_pending'), value: pending, color: 'gray.6' },
+    ];
+  }, [stats, t]);
+
+  const nationalityChartData = useMemo(() => {
+    if (!stats?.nationalityDistribution) return [];
+
+    return [...stats.nationalityDistribution]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
+      .map(row => ({
+        nationality: countries[row.nationality] ?? row.nationality,
+        [t('stats.count')]: row.count,
+      }));
+  }, [countries, stats, t]);
+
   return (
     <Stack gap="lg" p={{ base: '1rem', md: '2rem' }}>
       <Portal id="toolbar">
@@ -154,6 +258,41 @@ export default function StatsIndex() {
 
       {hasData && (
         <>
+          <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
+            {noOrderDonutData.length > 0 && (
+              <Paper p="md" withBorder>
+                <Text fw={600} mb="md">
+                  {t('stats.no_order_rate')}
+                </Text>
+                <Group justify="space-between" align="center">
+                  <DonutChart data={noOrderDonutData} />
+                  <Text fw={700}>{(stats?.noOrderRate?.rate || 0) * 100}%</Text>
+                </Group>
+              </Paper>
+            )}
+
+            <Paper p="md" withBorder>
+              <Text fw={600} mb="md">
+                {t('stats.avg_studies_per_patient')}
+              </Text>
+              <Text size="2rem" fw={700}>
+                {stats?.avgStudiesPerPatient || 0}
+              </Text>
+            </Paper>
+
+            {completionDonutData.length > 0 && (
+              <Paper p="md" withBorder>
+                <Text fw={600} mb="md">
+                  {t('stats.completion_rate')}
+                </Text>
+                <Group justify="space-between" align="center">
+                  <DonutChart data={completionDonutData} />
+                  <Text fw={700}>{(stats?.completionRate?.rate || 0) * 100}%</Text>
+                </Group>
+              </Paper>
+            )}
+          </SimpleGrid>
+
           <Paper p="md" withBorder>
             <Text fw={600} mb="md">
               {t('stats.study_type_totals')}
@@ -178,6 +317,52 @@ export default function StatsIndex() {
                 dataKey="bucket"
                 type="stacked"
                 series={ageChartSeries}
+                tickLine="y"
+              />
+            </Paper>
+          )}
+
+          {genderChartData.length > 0 && (
+            <Paper p="md" withBorder>
+              <Text fw={600} mb="md">
+                {t('stats.gender_breakdown')}
+              </Text>
+              <BarChart
+                h={300}
+                data={genderChartData}
+                dataKey="type"
+                type="stacked"
+                series={genderChartSeries}
+                tickLine="y"
+              />
+            </Paper>
+          )}
+
+          {studiesOverTimeChartData.length > 0 && (
+            <Paper p="md" withBorder>
+              <Text fw={600} mb="md">
+                {t('stats.studies_over_time')}
+              </Text>
+              <AreaChart
+                h={300}
+                data={studiesOverTimeChartData}
+                dataKey="period"
+                series={[{ name: t('stats.count'), color: 'cyan.6' }]}
+                tickLine="y"
+              />
+            </Paper>
+          )}
+
+          {nationalityChartData.length > 0 && (
+            <Paper p="md" withBorder>
+              <Text fw={600} mb="md">
+                {t('stats.nationality_distribution')}
+              </Text>
+              <BarChart
+                h={300}
+                data={nationalityChartData}
+                dataKey="nationality"
+                series={[{ name: t('stats.count'), color: 'indigo.6' }]}
                 tickLine="y"
               />
             </Paper>
