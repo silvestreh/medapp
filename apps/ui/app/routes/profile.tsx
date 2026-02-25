@@ -88,7 +88,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       // passkey-credentials table may not exist yet
     }
 
-    let signingCertificate: { id: string; fileName: string | null; createdAt: string } | null = null;
+    let signingCertificate: { id: string; fileName: string | null; isClientEncrypted?: boolean; createdAt: string } | null = null;
     if (isMedic) {
       try {
         const certResponse = await client.service('signing-certificates' as any).find({
@@ -99,6 +99,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           signingCertificate = {
             id: certs[0].id,
             fileName: certs[0].fileName,
+            isClientEncrypted: !!certs[0].isClientEncrypted,
             createdAt: certs[0].createdAt,
           };
         }

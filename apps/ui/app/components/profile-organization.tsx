@@ -3,10 +3,11 @@ import { Button } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useFetcher, useRevalidator } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
+import { Building2 } from 'lucide-react';
 
 import type { action } from '~/routes/profile.organization';
 import Portal from '~/components/portal';
-import { FormCard, FieldRow, StyledTextInput, StyledTitle, FormHeader } from '~/components/forms/styles';
+import { FormCard, FieldRow, StyledTextInput, SectionTitle, FormHeader } from '~/components/forms/styles';
 
 interface ProfileOrganizationProps {
   currentOrg: { id: string; name: string; slug: string };
@@ -45,7 +46,9 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
   return (
     <>
       <FormHeader>
-        <StyledTitle>{t('profile.tab_organization')}</StyledTitle>
+        <SectionTitle icon={<Building2 />}>
+          {t('profile.tab_organization')}
+        </SectionTitle>
       </FormHeader>
       <FormCard>
         <FieldRow label={`${t('profile.org_name')}:`} variant="stacked">

@@ -29,6 +29,11 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    isClientEncrypted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   }, {
     encryptedFields: ['certificate'],
     hooks: {

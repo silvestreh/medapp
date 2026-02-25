@@ -17,12 +17,12 @@ import { useClickOutside } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
 import { Form, useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Check, InfoIcon, KeyRound, Pencil, Trash2, X } from 'lucide-react';
+import { Check, InfoIcon, KeyRound, Lock, Pencil, ShieldCheck, Trash2, X } from 'lucide-react';
 import { startRegistration } from '@simplewebauthn/browser';
 
 import { useFeathers } from '~/components/provider';
 import { css } from '~/styled-system/css';
-import { FieldRow, StyledPasswordInput, StyledTextInput, StyledTitle, FormHeader } from '~/components/forms/styles';
+import { FieldRow, StyledPasswordInput, StyledTextInput, SectionTitle, FormHeader } from '~/components/forms/styles';
 import { styled } from '~/styled-system/jsx';
 
 const FormActions = styled('div', {
@@ -386,7 +386,9 @@ export function ProfileSecurity({
   return (
     <>
       <FormHeader>
-        <StyledTitle>{t('profile.setup_2fa_title')}</StyledTitle>
+        <SectionTitle icon={<ShieldCheck />}>
+          {t('profile.setup_2fa_title')}
+        </SectionTitle>
       </FormHeader>
       <PasswordFormContainer>
         <FieldRow label={`${t('profile.username')}:`} variant="stacked">
@@ -461,7 +463,9 @@ export function ProfileSecurity({
       </Modal>
 
       <FormHeader>
-        <StyledTitle style={{ marginTop: '2rem' }}>{t('profile.passkeys_title')}</StyledTitle>
+        <SectionTitle icon={<KeyRound />} style={{ marginTop: '2rem' }}>
+          {t('profile.passkeys_title')}
+        </SectionTitle>
       </FormHeader>
 
       <Text size="sm" c="dimmed" mb="md">
@@ -493,7 +497,9 @@ export function ProfileSecurity({
       </FormActions>
 
       <FormHeader>
-        <StyledTitle style={{ marginTop: '2rem' }}>{t('profile.change_password')}</StyledTitle>
+        <SectionTitle icon={<Lock />} style={{ marginTop: '2rem' }}>
+          {t('profile.change_password')}
+        </SectionTitle>
       </FormHeader>
 
       <Form

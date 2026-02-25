@@ -729,8 +729,11 @@ export const es = {
     content_studies: 'Estudios',
     content_both: 'Todo',
     sign_digitally: 'Firmar digitalmente',
+    encryption_pin_label: 'PIN del certificado',
+    encryption_pin_description: 'El PIN que eligió al cargar su certificado',
+    encryption_pin_placeholder: 'Ingrese el PIN de su certificado',
     certificate_password_label: 'Clave del certificado digital',
-    certificate_password_description: 'La clave de su archivo .pfx/.p12 (no es su contraseña de MedApp)',
+    certificate_password_description: 'La clave establecida cuando fue emitido su certificado (no es su contraseña de MedApp)',
     certificate_password_placeholder: 'Ingrese la clave de su certificado',
     no_certificate_notice: 'No tiene un certificado digital cargado. El PDF se exportará sin firma digital.',
     upload_certificate_link: 'Cargar certificado',
@@ -757,11 +760,24 @@ export const es = {
     info_notice:
       'Suba su certificado digital (.pfx o .p12) emitido por una Autoridad Certificante argentina para poder firmar digitalmente las historias clínicas exportadas. El certificado se almacena cifrado y su clave nunca se guarda.',
     certificate_loaded: 'Certificado cargado',
+    certificate_pin_protected: 'Protegido con PIN',
     remove: 'Eliminar',
     file_label: 'Certificado digital',
     file_placeholder: 'Seleccionar archivo .pfx o .p12',
     upload: 'Subir certificado',
     upload_error: 'Error al subir el certificado',
     remove_error: 'Error al eliminar el certificado',
+    security_notice:
+      'Su certificado se almacena con encriptación de alto nivel. La firma solo puede realizarse con su contraseña del certificado, la cual nunca se almacena en nuestros servidores. Esto significa que nadie puede firmar en su nombre — ni siquiera nosotros.',
+    pin_protect_label: 'Proteger con PIN',
+    pin_protect_description:
+      'Agregue una capa extra de seguridad. Firmar requerirá dos contraseñas: este PIN y la clave de su certificado, establecida cuando fue emitido.',
+    pin_label: 'PIN',
+    pin_confirm_label: 'Confirmar PIN',
+    pin_placeholder: 'Elija un PIN',
+    pin_confirm_placeholder: 'Re-ingrese el PIN',
+    pin_mismatch: 'Los PINs no coinciden',
+    pin_warning:
+      'Este PIN será requerido cada vez que firme un documento. Nunca se almacena. Si lo olvida, deberá volver a cargar su certificado.',
   },
 };

@@ -1,10 +1,22 @@
 import assert from 'assert';
+import { randomBytes, pbkdf2Sync, createCipheriv } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import app from '../../src/app';
 
 const CERT_PATH = path.join(__dirname, '../fixtures/test-certificate.p12');
 const CERT_PASSWORD = 'test1234';
+const TEST_PIN = 'mySecurePin99';
+
+function encryptWithPin(data: Buffer, pin: string): Buffer {
+  const salt = randomBytes(16);
+  const iv = randomBytes(12);
+  const key = pbkdf2Sync(pin, salt, 100_000, 32, 'sha256');
+  const cipher = createCipheriv('aes-256-gcm', key, iv);
+  const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return Buffer.concat([salt, iv, encrypted, authTag]);
+}
 
 describe('\'signed-exports\' service', () => {
   let medic: any;
@@ -396,6 +408,105 @@ describe('\'signed-exports\' service', () => {
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
+    });
+  });
+
+  describe('client-encrypted certificate signing', () => {
+    let encryptedMedic: any;
+
+    before(async () => {
+      encryptedMedic = await app.service('users').create({
+        username: 'export.encrypted.medic',
+        password: 'SuperSecret1',
+        roleId: 'medic',
+        personalData: {
+          firstName: 'Encrypted',
+          lastName: 'Doctor',
+          documentType: 'DNI',
+          documentValue: '77000333',
+        },
+      });
+
+      const encryptedCert = encryptWithPin(p12Buffer, TEST_PIN);
+
+      await app.service('signing-certificates').create(
+        { userId: encryptedMedic.id, isClientEncrypted: true } as any,
+        {
+          file: {
+            originalname: 'test-certificate.p12',
+            buffer: encryptedCert,
+          },
+          isClientEncrypted: true,
+        } as any
+      );
+    });
+
+    after(async () => {
+      const certs = await app.service('signing-certificates').find({
+        query: { userId: encryptedMedic.id },
+        paginate: false,
+      } as any) as any[];
+      for (const cert of certs) {
+        await app.service('signing-certificates').remove(cert.id);
+      }
+    });
+
+    it('signs PDF when correct PIN and certificate password are provided', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        content: 'both',
+        certificatePassword: CERT_PASSWORD,
+        encryptionPin: TEST_PIN,
+        delivery: 'download',
+      }, { user: encryptedMedic } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.pdf, 'PDF buffer is present');
+      assert.ok(
+        result.pdf.toString('utf-8', 0, 5).startsWith('%PDF'),
+        'Signed PDF starts with %PDF header'
+      );
+    });
+
+    it('fails with wrong PIN', async () => {
+      try {
+        await app.service('signed-exports').create({
+          patientId: patient.id,
+          content: 'both',
+          certificatePassword: CERT_PASSWORD,
+          encryptionPin: 'wrong-pin',
+          delivery: 'download',
+        }, { user: encryptedMedic } as any);
+        assert.fail('Should throw BadRequest');
+      } catch (error: any) {
+        assert.strictEqual(error.name, 'BadRequest');
+        assert.ok(error.message.includes('PIN'), 'Error mentions PIN');
+      }
+    });
+
+    it('fails when PIN is omitted for an encrypted certificate', async () => {
+      try {
+        await app.service('signed-exports').create({
+          patientId: patient.id,
+          content: 'both',
+          certificatePassword: CERT_PASSWORD,
+          delivery: 'download',
+        }, { user: encryptedMedic } as any);
+        assert.fail('Should throw BadRequest');
+      } catch (error: any) {
+        assert.strictEqual(error.name, 'BadRequest');
+        assert.ok(error.message.includes('PIN'), 'Error mentions PIN');
+      }
+    });
+
+    it('stores isClientEncrypted flag on the certificate record', async () => {
+      const certs = await app.service('signing-certificates').find({
+        query: { userId: encryptedMedic.id },
+        paginate: false,
+      } as any) as any[];
+
+      assert.strictEqual(certs.length, 1);
+      assert.strictEqual(certs[0].isClientEncrypted, true);
     });
   });
 });

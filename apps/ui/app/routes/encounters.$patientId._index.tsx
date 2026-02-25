@@ -117,11 +117,15 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
   ]);
 
   let hasCertificate = false;
+  let isCertificateEncrypted = false;
   if (isMedic) {
     try {
       const certs = await client.service('signing-certificates' as any).find({ query: { $limit: 1 } });
       const certList = Array.isArray(certs) ? certs : (certs as any)?.data || [];
       hasCertificate = certList.length > 0;
+      if (certList.length > 0) {
+        isCertificateEncrypted = !!(certList[0] as any).isClientEncrypted;
+      }
     } catch {
       // signing-certificates may not exist yet
     }
@@ -134,6 +138,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     studies: (studies as any).data || studies,
     isMedic,
     hasCertificate,
+    isCertificateEncrypted,
   };
 });
 
@@ -160,6 +165,10 @@ export default function PatientEncounterDetail() {
     closeFab();
     navigate(`/encounters/${data.patient.id}/new`);
   }, [closeFab, navigate, data.patient.id]);
+
+  const handleGoBack = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
 
   const dateRange = useMemo(() => {
     const encounters = data?.encounters || [];
@@ -216,7 +225,10 @@ export default function PatientEncounterDetail() {
     <Container className="encounters-container">
       <Portal id="toolbar">
         <Group justify="space-between" align="center" style={{ width: '100%' }}>
-          <ToolbarTitle title={`${data.patient.personalData.firstName} ${data.patient.personalData.lastName}`} />
+          <ToolbarTitle
+            title={`${data.patient.personalData.firstName} ${data.patient.personalData.lastName}`}
+            onBack={handleGoBack}
+          />
           {isDesktop && (
             <Group gap="sm">
               {data.isMedic && (
@@ -244,6 +256,7 @@ export default function PatientEncounterDetail() {
           patientId={data.patient.id}
           patientName={`${data.patient.personalData.firstName || ''} ${data.patient.personalData.lastName || ''}`.trim()}
           hasCertificate={data.hasCertificate}
+          isCertificateEncrypted={data.isCertificateEncrypted}
           dateRange={dateRange}
         />
       )}

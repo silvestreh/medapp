@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { useLoaderData, useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Stack, Center, Text } from '@mantine/core';
 
@@ -117,9 +117,8 @@ function cleanSeparators(list: (string | null)[]): (string | null)[] {
 export default function NewEncounter() {
   const { t } = useTranslation();
   const data = useLoaderData<typeof loader>();
-
+  const navigate = useNavigate();
   const { patient } = data;
-
   const [formValues, setFormValues] = useState<any>({});
   const [activeFormKey, setActiveFormKey] = useState<string | undefined>(undefined);
 
@@ -155,6 +154,10 @@ export default function NewEncounter() {
     [activeFormKey]
   );
 
+  const handleGoBack = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
+
   if (!data) {
     return null;
   }
@@ -165,6 +168,7 @@ export default function NewEncounter() {
         <ToolbarTitle
           title={t('encounters.new')}
           subTitle={`${patient.personalData.firstName} ${patient.personalData.lastName}`}
+          onBack={handleGoBack}
         />
       </Portal>
 

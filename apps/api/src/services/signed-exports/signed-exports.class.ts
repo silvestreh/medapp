@@ -4,6 +4,7 @@ import { P12Signer } from '@signpdf/signer-p12';
 import signpdf from '@signpdf/signpdf';
 import { pdflibAddPlaceholder } from '@signpdf/placeholder-pdf-lib';
 import { SUBFILTER_ETSI_CADES_DETACHED } from '@signpdf/utils';
+import { pbkdf2Sync, createDecipheriv } from 'crypto';
 import dayjs from 'dayjs';
 
 import type { Application } from '../../declarations';
@@ -19,6 +20,7 @@ export interface SignedExportCreateData {
   endDate?: string;
   content?: ExportContent;
   certificatePassword?: string;
+  encryptionPin?: string;
   delivery: 'download' | 'email';
   emailTo?: string;
   locale?: string;
@@ -39,7 +41,7 @@ export class SignedExports {
   }
 
   async create(data: SignedExportCreateData, params: any): Promise<SignedExportResult> {
-    const { patientId, studyId, startDate, endDate, content = 'both', certificatePassword, delivery, emailTo, locale } = data;
+    const { patientId, studyId, startDate, endDate, content = 'both', certificatePassword, encryptionPin, delivery, emailTo, locale } = data;
     const user = params.user;
     const t = getPdfTranslations(locale);
 
@@ -180,7 +182,7 @@ export class SignedExports {
     let pdfBuffer = await renderMedicalHistoryPdf(renderOptions);
 
     if (wantSign) {
-      pdfBuffer = await this.signPdf(pdfBuffer, user.id, certificatePassword!, renderOptions.doctor.fullName, locale);
+      pdfBuffer = await this.signPdf(pdfBuffer, user.id, certificatePassword!, renderOptions.doctor.fullName, locale, encryptionPin);
     }
 
     const patientName = renderOptions.patient.fullName.replace(/\s+/g, '_') || t.patientFallback;
@@ -217,6 +219,7 @@ export class SignedExports {
     certificatePassword: string,
     doctorName: string,
     locale?: string,
+    encryptionPin?: string,
   ): Promise<Buffer> {
     const certRecords = await this.app.service('signing-certificates').find({
       query: { userId },
@@ -229,10 +232,20 @@ export class SignedExports {
       throw new BadRequest('No signing certificate found. Upload one in your profile.');
     }
 
+    if (certRecord.isClientEncrypted && !encryptionPin) {
+      throw new BadRequest('Encryption PIN is required for PIN-protected certificates.');
+    }
+
     const certBase64 = Buffer.isBuffer(certRecord.certificate)
       ? certRecord.certificate.toString('utf-8')
       : certRecord.certificate;
-    const p12Buffer = Buffer.from(certBase64, 'base64');
+
+    let p12Buffer: Buffer;
+    if (certRecord.isClientEncrypted) {
+      p12Buffer = this.decryptClientEncryptedCert(certBase64, encryptionPin!);
+    } else {
+      p12Buffer = Buffer.from(certBase64, 'base64');
+    }
 
     const pdfDoc = await PDFDocument.load(pdfBuffer);
     const pages = pdfDoc.getPages();
@@ -254,5 +267,35 @@ export class SignedExports {
 
     const signer = new P12Signer(p12Buffer, { passphrase: certificatePassword });
     return signpdf.sign(pdfWithPlaceholder, signer);
+  }
+
+  private decryptClientEncryptedCert(base64Data: string, pin: string): Buffer {
+    const SALT_LENGTH = 16;
+    const IV_LENGTH = 12;
+    const TAG_LENGTH = 16;
+
+    const packed = Buffer.from(base64Data, 'base64');
+    if (packed.length < SALT_LENGTH + IV_LENGTH + TAG_LENGTH + 1) {
+      throw new BadRequest('Encrypted certificate data is corrupted.');
+    }
+
+    const salt = packed.subarray(0, SALT_LENGTH);
+    const iv = packed.subarray(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
+    const ciphertextWithTag = packed.subarray(SALT_LENGTH + IV_LENGTH);
+
+    const ciphertext = ciphertextWithTag.subarray(0, ciphertextWithTag.length - TAG_LENGTH);
+    const authTag = ciphertextWithTag.subarray(ciphertextWithTag.length - TAG_LENGTH);
+
+    const key = pbkdf2Sync(pin, salt, 100_000, 32, 'sha256');
+
+    const decipher = createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAuthTag(authTag);
+
+    try {
+      const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+      return decrypted;
+    } catch {
+      throw new BadRequest('Invalid PIN. Could not decrypt the certificate.');
+    }
   }
 }

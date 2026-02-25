@@ -30,7 +30,7 @@ interface ToolbarTitleProps {
 
 export function ToolbarTitle({ title, subTitle, onBack }: ToolbarTitleProps) {
   return (
-    <TitleGroup>
+    <TitleGroup maxW={{ base: 'calc(100vw - 11rem)', md: 'none' }}>
       {onBack && (
         <ActionIcon variant="subtle" color="gray" size="lg" onClick={onBack}>
           <ArrowLeft size={20} />
@@ -40,7 +40,7 @@ export function ToolbarTitle({ title, subTitle, onBack }: ToolbarTitleProps) {
         <Title
           m={0}
           lh={1}
-          fz="h3"
+          fz={{ base: 'h3', md: 'h2' }}
           style={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -53,7 +53,7 @@ export function ToolbarTitle({ title, subTitle, onBack }: ToolbarTitleProps) {
       )}
       {subTitle && (
         <TitleStack>
-          <Title m={0} lh={1} fz="h3">
+          <Title m={0} lh={1} fz={{ base: 'h4', md: 'h3' }}>
             {title}
           </Title>
           <Text c="dimmed" fz="sm" lh={1}>
