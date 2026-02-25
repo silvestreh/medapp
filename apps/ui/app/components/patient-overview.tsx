@@ -110,13 +110,21 @@ export function PatientOverview({ patient, encounters }: PatientOverviewProps) {
 
           {patient.personalData?.nationality && (
             <FieldRow label={`${t('overview.nationality')}:`}>
-              <Text>{patient.personalData.nationality}</Text>
+              <Text>
+                {(t('countries', { returnObjects: true }) as Record<string, string>)[
+                  patient.personalData.nationality
+                ] ?? patient.personalData.nationality}
+              </Text>
             </FieldRow>
           )}
 
           {patient.personalData?.maritalStatus && (
             <FieldRow label={`${t('overview.marital_status')}:`}>
-              <Text>{patient.personalData.maritalStatus}</Text>
+              <Text>
+                {(t('patients.marital_statuses', { returnObjects: true }) as Record<string, string>)[
+                  patient.personalData.maritalStatus
+                ] ?? patient.personalData.maritalStatus}
+              </Text>
             </FieldRow>
           )}
         </FormCard>
