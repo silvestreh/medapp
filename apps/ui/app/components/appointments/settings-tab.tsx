@@ -43,6 +43,7 @@ export interface MdSettingsRecord {
   saturdayEnd: string | null;
   sundayStart: string | null;
   sundayEnd: string | null;
+  isVerified?: boolean;
 }
 
 export interface SettingsSavePayload {

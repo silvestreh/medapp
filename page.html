@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+	<meta content=WEB name=author/>
+	<meta charset="utf-8">
+	<title>Superintendencia de Servicios de Salud</title>
+	<link rel=icon type="image/ico" href="imagenes/favicon.ico">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<script type="text/javascript" src="distr/jquery-2.2.3.min.js"></script>
+	<script type="text/javascript" src="distr/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="distr/bootstrap_datepicker/bootstrap-datepicker.js"></script>
+	<script type="text/javascript" src="js/function.js"></script>
+	<!-- GOOGLE RECAPTCHA -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <!-- GOOGLE RECAPTCHA -->
+	<!-- Fancy Box -->
+	<script type="text/javascript" src="js/jquery.mousewheel-3.0.6.pack.js"></script>
+	<script type="text/javascript" src="js/jquery.fancybox.js?v=2.1.5"></script>
+	<!-- Fancy Box -->
+	<link rel="stylesheet" type="text/css" href="css/jquery.fancybox.css?v=2.1.5" media="screen" />
+	<link rel="stylesheet" type="text/css" href="distr/font-awesome-4.5.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="distr/bootstrap-3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="distr/bootstrap_datepicker/datepicker.css">
+    <link rel="stylesheet" type="text/css" href="css/style_argentina.css" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="css/style.css" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="css/print.css" media="print"/>
+	<link rel="stylesheet" type="text/css" href="calendario/calendar/calendar.css"/>
+	<link href='https://code.cdn.mozilla.net/fonts/fira.css' rel='stylesheet' type='text/css' />
+    <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300italic,300,100italic,100,400italic,500,500italic,700,700italic,900,900italic" media="all">
+    <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,400italic,700,700italic" media="all">
+    <link type="text/css" rel="stylesheet" media="all" href="https://www.argentina.gob.ar/sites/default/files/css/css_mQwA-ttkGu3TsplMrYJgiSofLC1q38Nbsd6QZ3XOH_A.css">
+
+</head>
+<body>
+        
+   <!--section id="campaign" role="dialog" aria-labelledby="campaign01" aria-describedby="campaign02" style="padding:0px">
+      <a href="https://www.argentina.gob.ar/salud/coronavirus-COVID-19" title="Enlace a Campaña Nacional" id="js-titulo" target="_blank">
+         <div class="container-fluid bg-primary" style="background-color: #0072bb !important;">
+            <header class="sr-only">
+               <h1 id="campaign01">Campañas Nacionales</h1>
+            </header>
+            <div class="container">
+                <h2 id="campaign02" class="tituloContainerCam" style="margin: 15px 0 15px 0 !important; font-weight: normal !important; font-size: larger;"> 
+                    <strong style="font-size: 18px !important;">Coronavirus COVID-19</strong>
+                    <span class="c_bajada" style="font-size: 18px !important;">conocé información y recomendaciones del Ministerio de Salud.</span>
+                </h2>
+            </div>
+         </div>
+      </a>
+   </section-->
+
+<nav class="navbar navbar-top navbar-default" role="navigation" >
+    <div class="container">
+        <div>
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/" aria-label="Argentina.gob.ar Presidencia de la Nación">
+                    <img src="https://www.argentina.gob.ar/profiles/argentinagobar/themes/argentinagobar/argentinagobar_theme/logo_argentina-blanco.svg" alt="Argentina.gob.ar" height="50">
+                    <h1 class="sr-only">Argentina.gob.ar <small>Presidencia de la Nación</small></h1>
+                </a>
+                <a onclick="jQuery('.navbar.navbar-top').addClass('state-search');" class="btn btn-primary btn-login visible-xs" href="#" aria-labelledby="edit-keys"><span class="fa fa-search fa-fw"></span></a>
+                <a class="btn btn-link btn-login visible-xs" href="https://mi.argentina.gob.ar" aria-label="Ingresar a Mi Argentina" target="_blank"><i class="icono-arg-mi-argentina fa-fw"></i></a>
+            </div>
+            <ul class="nav navbar-nav navbar-right hidden-xs"> <a onclick="jQuery('.navbar.navbar-top').removeClass('state-search');" href="#" class="btn btn-link visible-xs"> <i class="fa fa-times"></i> </a>
+                <div id="cd-login">
+                    <a id="cd-login" href="https://mi.argentina.gob.ar" class="btn btn-link hidden-xs" aria-label="Ingresar a Mi Argentina"> 
+                        <i class="icono-arg-mi-argentina"></i>
+                        miArgentina
+                    </a>
+                </div>
+                
+            </ul>
+        </div>
+    </div>
+</nav><main class="page-row page-row-expanded" style="margin-top:70px; background-color: #f2f3f4;">
+    <div class="container">
+	<div class="volanta listado_links">
+    <br>
+    <a href="https://argentina.gob.ar"></i>&nbsp;Inicio</a>&nbsp;/&nbsp;
+    <a href="https://argentina.gob.ar/salud">Ministerio de Salud</a>&nbsp;/&nbsp;
+    <a href="https://argentina.gob.ar/sssalud">Superintendencia de Servicios de Salud</a>&nbsp;/&nbsp;
+    <a href="https://www.argentina.gob.ar/sssalud/consultas-web">Consultas Web</a>&nbsp;/&nbsp;
+    Registro de Profesionales Inscriptos</div>
+<div class="titulo-arg">Consulta de Profesionales</div>
+
+<br><br>
+
+<div class="col-xs-12 col-md-8 col-md-offset-2 text-justify listado_links" style="margin-top: 5px;">
+	 <img src="../imagenes/cuadmenu.gif" alt="">
+	 <form action="index.php?page=busmed&cat=prestadores" METHOD="POST" title="Ingrese los datos de b&uacute;squeda">
+		
+		 <div class="input-group">
+  			<span class="input-group-addon" id="basic-addon1"> Nro de Certificado</span>
+		 	<input type="text" class="form-control" size="10" id="txtnroinscripcion" name="txtnroinscripcion">
+		</div>
+		<br>
+		<div class="input-group">
+			<span class="input-group-addon" id="basic-addon1"> Nro Documento&nbsp;&nbsp;&nbsp;&nbsp;</span>
+		    <input type="text" class="form-control" size="10"  id="txtnrodoc" name="txtnrodoc">
+		</div>
+	    <br>
+            <div class="input-group">
+			<span class="input-group-addon" id="basic-addon1"> Nombre&nbsp;&nbsp;&nbsp;&nbsp;</span>
+		    <input type="text" class="form-control" size="50"  id="txtnombre" name="txtnombre">
+		</div>
+	    <br>
+            <div class="input-group">
+			<span class="input-group-addon" id="basic-addon1"> Apellido&nbsp;&nbsp;&nbsp;&nbsp;</span>
+		    <input type="text" class="form-control" size="50"  id="txtapellido" name="txtapellido">
+		</div>
+	    <br>
+	    <span class="alert"></span>
+	    <br>
+            <!----------------------------------CAPTCHA--------------------------------------->
+           
+                   <img id="siimage"  src="simage/securimage_show.php?sid=d93cc144b437d8e5c019dff30f4f6ee3" />
+
+                    <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="19" height="19" id="SecurImage_as3" align="middle">
+        			    <param name="allowScriptAccess" value="sameDomain" />
+        			    <param name="allowFullScreen" value="false" />
+        			    <param name="movie" value="simage/securimage_play.swf?audio=securimage_play.php&bgColor1=#777&bgColor2=#fff&iconColor=#000&roundedCorner=5" />
+        			    <param name="quality" value="high" />
+
+        			    <param name="bgcolor" value="#ffffff" />
+        			    <embed src="simage/securimage_play.swf?audio=simage/securimage_play.php&bgColor1=#777&bgColor2=#fff&iconColor=#000&roundedCorner=5" quality="high" bgcolor="#ffffff" width="19" height="19" name="SecurImage_as3" align="middle" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" />
+        			  </object>
+
+                      <!-- pass a session id to the query string of the script to prevent ie caching -->
+                      <a tabindex="-1"  href="#" title="Refresh Image" onclick="document.getElementById('siimage').src = 'simage/securimage_show.php?sid=' + Math.random(); return false"><img src="simage/images/refresh.gif" alt="Reload Image" border="0" onclick="this.blur()" align="bottom" /></a>
+
+	 
+            <!----------------------------------CAPTCHA--------------------------------------->
+        
+                      <br> Código Mostrado:<br>
+                      <br>
+                      <!-- NOTE: the "name" attribute is "code" so that $img->check($_POST['code']) will check the submitted form field -->
+                      <input type="text" name="code" size="12" />
+	     		      <br>
+					  <br>
+		<input type="submit" value="Buscar" name="buscar" id="buscar" title="Buscar prestador" class="botong">
+	</form>
+	<br>
+    Fecha de actualizaci&oacute;n: 24-02-2026<br><br><font color='red'><b>Complete nro. de certificado o nro. de documento para consultar</b></font><br><br>	<br>
+</div>
+
+<script type="text/javascript" src="prestadores/validacionesBusmed.js"></script>   </div>
+</main>
+
+        <footer class="main-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-sm-6">
+                <div class="region region-footer1">
+                    <section id="block-menu-menu-footer-1" class="block block-menu clearfix">
+                        <h2 class="block-title h3 section-title h3 section-title">Trámites</h2>
+                        <ul class="menu nav">
+                            <li class="first leaf"><a href="https://www.argentina.gob.ar/turnos" target="_blank">Turnos</a></li>
+                            <li class="leaf"><a href="https://www.argentina.gob.ar/jefatura/innovacion-publica/administrativa/tramites-a-distancia" target="_blank">Trámites a distancia</a></li>
+                            <li class="last leaf"><a href="https://www.argentina.gob.ar/miargentina/mesadeayuda" target="_blank">Atención al ciudadano</a></li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="region region-footer2">
+                    <section id="block-menu-menu-footer-2" class="block block-menu clearfix">
+                        <h2 class="block-title h3 section-title h3 section-title">Acerca de la República Argentina</h2>
+                        <ul class="menu nav">
+                            <li class="first leaf"><a href="https://www.argentina.gob.ar/pais" target="_blank">Nuestro país</a></li>
+                            <li class="leaf"><a href="https://www.argentina.gob.ar/normativa" target="_blank">Leyes argentinas</a></li>
+                            <li class="leaf"><a href="https://www.argentina.gob.ar/organismos" target="_blank">Organismos</a></li>
+                            <li class="last leaf"><a href="https://www.argentina.gob.ar/jefatura/mapa-del-estado" target="_blank">Mapa del Estado</a></li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="region region-footer3">
+                    <section id="block-menu-menu-footer-3" class="block block-menu clearfix">
+                        <h2 class="block-title h3 section-title h3 section-title">Acerca de Argentina.gob.ar</h2>
+                        <ul class="menu nav">
+                            <li class="first leaf"><a href="https://www.argentina.gob.ar/acerca" target="_blank">Acerca de este sitio</a></li>
+                            <li class="leaf"><a href="https://www.argentina.gob.ar/terminos-y-condiciones" target="_blank">Términos y condiciones</a></li>
+                            <li class="last leaf"><a href="https://www.argentina.gob.ar/sugerencias" target="_blank">Sugerencias</a></li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <section>
+            <div class="row sub-footer">
+                <div class="container">
+                    <div class="col-sm-6 col-sm-12">
+                        <section class="block block-block clearfix">
+                            <!--<img class="image-responsive" src="https://www.argentina.gob.ar/profiles/argentinagobar/themes/argentinagobar/argentinagobar_theme/logo_argentina_unida-blanco.svg" alt="Argentina Unida" width="55%">-->
+                        </section>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <!--                     <div class="region region-footer2">
+                            <section id="block-menu-menu-footer-2" class="block block-menu clearfix">
+                                <ul class="menu nav">
+                                    <li class="first leaf"><a href="https://www.argentina.gob.ar/turnos" target="_blank">Turnos</a></li>
+                                    <li class="leaf"><a href="/organismos">Organismos del Estado</a></li>
+                                    <li class="last leaf"><a href="http://mapadelestado.jefatura.gob.ar/" target="_blank">Mapa del Estado</a></li>
+                                </ul>
+                            </section>
+                        </div> -->
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <!-- <div class="region region-footer3">
+                            <section id="block-menu-menu-footer-3" class="block block-menu clearfix">
+                                <ul class="menu nav">
+                                    <li class="first leaf"><a href="https://www.argentina.gob.ar/normativa" target="_blank">Leyes argentinas</a></li>
+                                    <li class="leaf"><a href="https://www.argentina.gob.ar/acerca" target="_blank">Acerca de este sitio</a></li>
+                                    <li class="last leaf"><a href="https://www.argentina.gob.ar/terminos-y-condiciones" target="_blank">Términos y condiciones</a></li>
+                                </ul>
+                            </section>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</footer>
+</body>
+<script src="fwb/df_lib.js"></script><script>var fp=new fingerprint,df_id,stable_df_id,post_details=0;fp.isUAMac()||fp.isUAMobile()?(post_details=1,stable_df_id=df_id=2):(post_details=1,df_id=0);postItems();function postItems(){if(0!=post_details){0==df_id&&(df_id=fp.getFingerprint().MD5,stable_df_id=fp.getFingerprint().Stable_MD5);var b=fp.getPostItems();b.df_id=df_id;b.stable_df_id=stable_df_id;post("/fwb/first_submit.df",b)}}
+function post(b,d){var a;a=window.XMLHttpRequest?new XMLHttpRequest:new ActiveXObject("Microsoft.XMLHTTP");a.onreadystatechange=function(){4==a.readyState&&200==a.status&&eval(a.responseText)};a.open("POST",b,!0);a.setRequestHeader("Content-type","application/x-www-form-urlencoded");var e="",c;for(c in d)value=c+"="+encodeURIComponent(d[c])+"&",e+=value;a.send(e)};</script>
+</html>
+
+
+

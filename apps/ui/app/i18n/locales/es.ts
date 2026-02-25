@@ -805,4 +805,14 @@ export const es = {
     bucket_65_plus: '65+',
     count: 'Cantidad',
   },
+    verification: {
+    unverified_title: 'Profesional no verificado',
+    unverified_message: 'Su licencia médica no ha sido verificada. Por favor vaya a su Perfil para verificar su licencia.',
+    verify_button: 'Verificar Licencia',
+    success_title: 'Verificación Exitosa',
+    success_message: 'Su licencia ha sido verificada.',
+    error_title: 'Verificación Fallida',
+    error_message: 'No se pudo verificar la licencia. Por favor intente nuevamente.',
+    document_required: 'Por favor complete sus datos personales con su número de documento primero.',
+  },
 };

@@ -164,6 +164,10 @@ export interface MdSettings {
   nationalLicenseNumber: string | null;
   stateLicense: string | null;
   stateLicenseNumber: string | null;
+  isVerified: boolean;
+  licenseExpirationDate: string | null;
+  verificationRetries: number;
+  nextVerificationRetry: Date | null;
   scheduleAllWeekCustomTime: boolean;
   encounterDuration: number;
   mondayStart: string | null;

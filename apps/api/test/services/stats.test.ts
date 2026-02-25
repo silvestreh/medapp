@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import app from '../../src/app';
 import client from '../test-client';
 
-describe("'stats' service", () => {
+describe('\'stats\' service', () => {
   let labOwner: any;
   let medic: any;
   let patient1: any;
@@ -88,8 +88,8 @@ describe("'stats' service", () => {
       lastName: 'Patient',
       documentType: 'DNI',
       documentValue: 'stats-pd-001',
-      birthDate: '1998-06-15',
-    });
+      birthDate: new Date('1998-06-15'),
+    } as any);
 
     await app.service('patient-personal-data').create({
       ownerId: patient1.id,
@@ -101,8 +101,8 @@ describe("'stats' service", () => {
       lastName: 'Patient',
       documentType: 'DNI',
       documentValue: 'stats-pd-002',
-      birthDate: '1955-01-10',
-    });
+      birthDate: new Date('1955-01-10'),
+    } as any);
 
     await app.service('patient-personal-data').create({
       ownerId: patient2.id,

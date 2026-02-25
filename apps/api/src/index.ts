@@ -2,6 +2,7 @@ import logger from './logger';
 import Sentry from './sentry';
 import app from './app';
 import { scheduleAppointmentCleanup } from './cron/cleanup-appointments';
+import { scheduleLicenseRevalidation } from './cron/license-revalidation';
 
 const port = app.get('port');
 const server = app.listen(port);
@@ -14,4 +15,5 @@ process.on('unhandledRejection', (reason, p) => {
 server.on('listening', () => {
   logger.info('Feathers application started on http://%s:%d', app.get('host'), port);
   scheduleAppointmentCleanup(app);
+  scheduleLicenseRevalidation(app);
 });
