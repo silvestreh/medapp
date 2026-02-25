@@ -19,10 +19,11 @@ import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { useMutation, useOrganization } from '~/components/provider';
+import { useFeathers, useMutation, useOrganization } from '~/components/provider';
 import { media } from '~/media';
 
 type Role = 'assistant' | 'user';
+const CHAT_PAGE_SIZE = 20;
 interface Suggestion {
   title: string;
   detail: string;
@@ -33,9 +34,11 @@ interface ChatMessage {
   id: string;
   role: Role;
   content: string;
+  model?: string | null;
   fullContent?: string;
   isStreaming?: boolean;
   isThinking?: boolean;
+  isLocalOnly?: boolean;
   suggestions?: {
     differentials: Suggestion[];
     suggestedNextSteps: Suggestion[];
@@ -45,6 +48,15 @@ interface ChatMessage {
     confidence: number;
     citations: string[];
   };
+}
+
+interface PersistedChatMessage {
+  id: string;
+  role: Role;
+  content: string;
+  model?: string | null;
+  suggestions?: ChatMessage['suggestions'] | null;
+  createdAt?: string;
 }
 
 interface EncounterAiChatPanelProps {
@@ -99,23 +111,30 @@ function SuggestionGroup({ title, items }: { title: string; items: Suggestion[] 
 
 export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiChatPanelProps) {
   const { t } = useTranslation();
+  const client = useFeathers();
   const { create, isLoading, error } = useMutation('encounter-ai-chat');
   const { create: loadModels, isLoading: isLoadingModels } = useMutation('llm-models');
   const { currentOrganizationId } = useOrganization();
   const loadModelsRef = useRef(loadModels);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const messageIdRef = useRef(0);
+  const isPrependingHistoryRef = useRef(false);
   const isDesktop = useMediaQuery(media.md);
   const [isOpen, setIsOpen] = useState(false);
   const [draftMessage, setDraftMessage] = useState('');
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [streamingMessage, setStreamingMessage] = useState<{ id: string; fullContent: string } | null>(null);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  const [hasMoreHistory, setHasMoreHistory] = useState(false);
+  const [oldestCursor, setOldestCursor] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'msg-0',
       role: 'assistant',
       content: t('ai_chat.initial_message'),
+      isLocalOnly: true,
     },
   ]);
 
@@ -124,25 +143,152 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
     return `msg-${messageIdRef.current}`;
   }, []);
 
+  const toChatMessage = useCallback((record: PersistedChatMessage): ChatMessage => {
+    return {
+      id: String(record.id),
+      role: record.role,
+      content: String(record.content || ''),
+      model: record.model ? String(record.model) : null,
+      suggestions: record.suggestions || undefined,
+    };
+  }, []);
+
+  const mergeUniqueById = useCallback((items: ChatMessage[]): ChatMessage[] => {
+    const seen = new Set<string>();
+    return items.filter(item => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  }, []);
+
+  const appendMessage = useCallback(
+    (message: ChatMessage) => {
+      setMessages(previous => {
+        const withoutLocalOnly = previous.filter(item => !item.isLocalOnly);
+        return mergeUniqueById([...withoutLocalOnly, message]);
+      });
+    },
+    [mergeUniqueById]
+  );
+
   const requestMessages = useMemo(
     () =>
       messages
-        .filter(message => !message.isThinking)
+        .filter(message => !message.isThinking && !message.isLocalOnly)
         .map(message => ({ role: message.role, content: message.fullContent || message.content })),
     [messages]
   );
 
+  const fetchHistory = useCallback(
+    async (before?: string) => {
+      const response = await client.service('encounter-ai-chat-messages').find({
+        query: {
+          patientId,
+          $limit: CHAT_PAGE_SIZE,
+          $sort: { createdAt: -1 },
+          ...(before ? { createdAt: { $lt: before } } : {}),
+        },
+      } as any);
+
+      const page = Array.isArray(response) ? response : (response as any)?.data || [];
+      const rows = page as PersistedChatMessage[];
+      const nextOldest = rows.length ? String(rows[rows.length - 1]?.createdAt || '') : '';
+      return {
+        rows,
+        nextOldest: nextOldest || null,
+        hasMore: rows.length === CHAT_PAGE_SIZE,
+      };
+    },
+    [client, patientId]
+  );
+
+  const loadInitialHistory = useCallback(async () => {
+    if (!isDesktop || !isOpen || !patientId) return;
+    setIsHistoryLoading(true);
+    try {
+      const { rows, nextOldest, hasMore } = await fetchHistory();
+      const ordered = rows.slice().reverse().map(toChatMessage);
+      setMessages(
+        ordered.length
+          ? ordered
+          : [
+              {
+                id: 'msg-0',
+                role: 'assistant',
+                content: t('ai_chat.initial_message'),
+                isLocalOnly: true,
+              },
+            ]
+      );
+      setOldestCursor(nextOldest);
+      setHasMoreHistory(hasMore);
+    } catch (_error) {
+      setMessages([
+        {
+          id: 'msg-0',
+          role: 'assistant',
+          content: t('ai_chat.initial_message'),
+          isLocalOnly: true,
+        },
+      ]);
+      setOldestCursor(null);
+      setHasMoreHistory(false);
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  }, [fetchHistory, isDesktop, isOpen, patientId, t, toChatMessage]);
+
+  const loadOlderHistory = useCallback(async () => {
+    if (!isOpen || !oldestCursor || isLoadingOlder || !hasMoreHistory || !messagesContainerRef.current) return;
+    const container = messagesContainerRef.current;
+    const previousHeight = container.scrollHeight;
+    const previousTop = container.scrollTop;
+    setIsLoadingOlder(true);
+    try {
+      const { rows, nextOldest, hasMore } = await fetchHistory(oldestCursor);
+      if (!rows.length) {
+        setHasMoreHistory(false);
+        return;
+      }
+      const older = rows.slice().reverse().map(toChatMessage);
+      isPrependingHistoryRef.current = true;
+      setMessages(previous => mergeUniqueById([...older, ...previous]));
+      setOldestCursor(nextOldest);
+      setHasMoreHistory(hasMore);
+      window.requestAnimationFrame(() => {
+        const current = messagesContainerRef.current;
+        if (!current) return;
+        current.scrollTop = current.scrollHeight - previousHeight + previousTop;
+        isPrependingHistoryRef.current = false;
+      });
+    } catch (_error) {
+      // keep existing messages on transient failures
+    } finally {
+      setIsLoadingOlder(false);
+    }
+  }, [fetchHistory, hasMoreHistory, isLoadingOlder, isOpen, mergeUniqueById, oldestCursor, toChatMessage]);
+
   const handleSend = useCallback(async () => {
     const content = draftMessage.trim();
-    if (!content || isLoading) return;
+    if (!content || isLoading || !patientId) return;
+
+    let persistedUserMessage: ChatMessage;
+    try {
+      const saved = await client.service('encounter-ai-chat-messages').create({
+        patientId,
+        role: 'user',
+        content,
+      });
+      persistedUserMessage = toChatMessage(saved as PersistedChatMessage);
+    } catch (_error) {
+      persistedUserMessage = { id: nextMessageId(), role: 'user', content };
+    }
+
+    appendMessage(persistedUserMessage);
 
     const thinkingId = nextMessageId();
-    const nextMessages: ChatMessage[] = [
-      ...messages,
-      { id: nextMessageId(), role: 'user', content },
-      { id: thinkingId, role: 'assistant', content: t('ai_chat.thinking'), isThinking: true },
-    ];
-    setMessages(nextMessages);
+    appendMessage({ id: thinkingId, role: 'assistant', content: t('ai_chat.thinking'), isThinking: true });
     setDraftMessage('');
 
     try {
@@ -155,30 +301,48 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
 
       const assistantMessageId = thinkingId;
       const assistantMessage = String(result?.message || t('ai_chat.no_response'));
+      const assistantModel = String((result as any)?.meta?.model || '');
+      const assistantSuggestions = {
+        differentials: Array.isArray(result?.differentials) ? result.differentials : [],
+        suggestedNextSteps: Array.isArray(result?.suggestedNextSteps) ? result.suggestedNextSteps : [],
+        treatmentIdeas: Array.isArray(result?.treatmentIdeas) ? result.treatmentIdeas : [],
+        warnings: Array.isArray(result?.warnings) ? result.warnings : [],
+        rationale: String(result?.rationale || ''),
+        confidence: typeof result?.confidence === 'number' ? result.confidence : 0,
+        citations: Array.isArray(result?.citations) ? result.citations : [],
+      };
+
+      let persistedAssistantId = assistantMessageId;
+      try {
+        const savedAssistant = await client.service('encounter-ai-chat-messages').create({
+          patientId,
+          role: 'assistant',
+          content: assistantMessage,
+          model: assistantModel || null,
+          suggestions: assistantSuggestions,
+        });
+        persistedAssistantId = String((savedAssistant as PersistedChatMessage).id || assistantMessageId);
+      } catch (_error) {
+        // keep temporary message id when persistence fails
+      }
+
       setMessages(previous =>
         previous.map(message =>
           message.id === assistantMessageId
             ? {
-                id: assistantMessageId,
+                id: persistedAssistantId,
                 role: 'assistant',
                 content: '',
+                model: assistantModel || null,
                 fullContent: assistantMessage,
                 isStreaming: true,
                 isThinking: false,
-                suggestions: {
-                  differentials: Array.isArray(result?.differentials) ? result.differentials : [],
-                  suggestedNextSteps: Array.isArray(result?.suggestedNextSteps) ? result.suggestedNextSteps : [],
-                  treatmentIdeas: Array.isArray(result?.treatmentIdeas) ? result.treatmentIdeas : [],
-                  warnings: Array.isArray(result?.warnings) ? result.warnings : [],
-                  rationale: String(result?.rationale || ''),
-                  confidence: typeof result?.confidence === 'number' ? result.confidence : 0,
-                  citations: Array.isArray(result?.citations) ? result.citations : [],
-                },
+                suggestions: assistantSuggestions,
               }
             : message
         )
       );
-      setStreamingMessage({ id: assistantMessageId, fullContent: assistantMessage });
+      setStreamingMessage({ id: persistedAssistantId, fullContent: assistantMessage });
     } catch (_error) {
       setMessages(previous =>
         previous.map(message =>
@@ -194,16 +358,18 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
       );
     }
   }, [
+    appendMessage,
+    client,
     create,
     draftMessage,
     encounterDraft,
     isLoading,
-    messages,
     nextMessageId,
     patientId,
     requestMessages,
     selectedModel,
     t,
+    toChatMessage,
   ]);
 
   const handleDraftChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -283,12 +449,13 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!selectedModel) {
-      window.localStorage.removeItem(storageKey);
-      return;
-    }
+    if (!selectedModel) return;
     window.localStorage.setItem(storageKey, selectedModel);
   }, [selectedModel, storageKey]);
+
+  useEffect(() => {
+    loadInitialHistory();
+  }, [loadInitialHistory]);
 
   useEffect(() => {
     if (!streamingMessage) return;
@@ -340,6 +507,7 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
 
   useEffect(() => {
     if (!isOpen) return;
+    if (isPrependingHistoryRef.current) return;
     const frame = window.requestAnimationFrame(() => {
       const container = messagesContainerRef.current;
       if (!container) return;
@@ -347,6 +515,13 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
     });
     return () => window.cancelAnimationFrame(frame);
   }, [isOpen, messages]);
+
+  const handleMessagesScroll = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    if (container.scrollTop > 40) return;
+    loadOlderHistory();
+  }, [loadOlderHistory]);
 
   if (!isDesktop) {
     return null;
@@ -441,19 +616,40 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
               gap="sm"
               px="md"
               pb="md"
+              onScroll={handleMessagesScroll}
               style={{
                 overflowY: 'auto',
                 flex: 1,
                 borderBottom: '1px solid var(--mantine-color-gray-2)',
               }}
             >
+              {isLoadingOlder && (
+                <Group justify="center" pt="xs">
+                  <Loader size="xs" />
+                  <Text size="xs" c="dimmed">
+                    {t('ai_chat.loading_previous_messages')}
+                  </Text>
+                </Group>
+              )}
               <Box style={{ marginTop: 'auto' }} />
+              {isHistoryLoading && (
+                <Group justify="center" py="md">
+                  <Loader size="sm" />
+                </Group>
+              )}
               {messages.map(message => (
                 <Box key={message.id}>
                   <Paper withBorder p="sm" radius="md" bg={message.role === 'assistant' ? 'gray.0' : 'blue.0'}>
-                    <Text size="sm" fw={600} mb={4}>
-                      {message.role === 'assistant' ? t('ai_chat.assistant') : t('ai_chat.you')}
-                    </Text>
+                    <Group justify="space-between" align="center" mb={4}>
+                      <Text size="sm" fw={600}>
+                        {message.role === 'assistant' ? t('ai_chat.assistant') : t('ai_chat.you')}
+                      </Text>
+                      {message.role === 'assistant' && !!message.model && (
+                        <Badge variant="light" color="grape" size="sm">
+                          {t('ai_chat.model_badge', { model: message.model })}
+                        </Badge>
+                      )}
+                    </Group>
                     {message.role === 'assistant' && message.isThinking && (
                       <Group gap="xs">
                         <Loader size="xs" />

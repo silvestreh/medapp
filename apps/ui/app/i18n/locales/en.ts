@@ -739,6 +739,7 @@ export const en: typeof es = {
   ai_chat: {
     title: 'AI Assistant',
     thinking: 'Thinking...',
+    loading_previous_messages: 'Loading previous messages...',
     open_assistant: 'Open encounter AI assistant',
     minimize_assistant: 'Minimize chat assistant',
     model_label: 'Model ({{provider}})',
@@ -746,6 +747,7 @@ export const en: typeof es = {
     no_models: 'No models available',
     assistant: 'Assistant',
     you: 'You',
+    model_badge: 'Model: {{model}}',
     ask_label: 'Ask the assistant',
     ask_placeholder:
       'Example: Based on this history, what differential diagnoses and initial treatment options should be considered?',

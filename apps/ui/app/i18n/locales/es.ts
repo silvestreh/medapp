@@ -742,6 +742,7 @@ export const es = {
   ai_chat: {
     title: 'Asistente IA',
     thinking: 'Pensando...',
+    loading_previous_messages: 'Cargando mensajes anteriores...',
     open_assistant: 'Abrir asistente IA de encuentros',
     minimize_assistant: 'Minimizar asistente de chat',
     model_label: 'Modelo ({{provider}})',
@@ -749,6 +750,7 @@ export const es = {
     no_models: 'No hay modelos disponibles',
     assistant: 'Asistente',
     you: 'Vos',
+    model_badge: 'Modelo: {{model}}',
     ask_label: 'Preguntar al asistente',
     ask_placeholder: 'Escriba su pregunta...',
     assistive_warning: 'Las sugerencias son asistivas y deben ser revisadas por un profesional clínico.',
