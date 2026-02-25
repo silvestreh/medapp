@@ -31,6 +31,10 @@ export const es = {
     something_went_wrong: 'Algo salió mal',
     date_placeholder: 'Haga clic para seleccionar una fecha',
     comments_placeholder: 'Escriba algo... (Opcional)',
+    unsaved_title: 'Cambios sin guardar',
+    unsaved_body: 'Tenés cambios sin guardar. ¿Querés guardar antes de salir?',
+    discard: 'Descartar',
+    save_and_leave: 'Guardar y salir',
   },
   page_titles: {
     home: 'Inicio',
@@ -742,9 +746,16 @@ export const es = {
     pdf_sent: 'PDF enviado a {{email}}',
     error_generating: 'Error al generar el PDF',
   },
+  print_pdf: {
+    title: 'Imprimir Historia Clínica',
+    button: 'Imprimir',
+    print: 'Imprimir',
+    error_generating: 'Error al generar el PDF para imprimir',
+  },
   digital_signature: {
     title: 'Firma Digital',
-    info_notice: 'Suba su certificado digital (.pfx o .p12) emitido por una Autoridad Certificante argentina para poder firmar digitalmente las historias clínicas exportadas. El certificado se almacena cifrado y su clave nunca se guarda.',
+    info_notice:
+      'Suba su certificado digital (.pfx o .p12) emitido por una Autoridad Certificante argentina para poder firmar digitalmente las historias clínicas exportadas. El certificado se almacena cifrado y su clave nunca se guarda.',
     certificate_loaded: 'Certificado cargado',
     remove: 'Eliminar',
     file_label: 'Certificado digital',

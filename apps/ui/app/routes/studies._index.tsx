@@ -3,7 +3,7 @@ import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Search, Plus } from 'lucide-react';
 import { Link, useSearchParams } from '@remix-run/react';
-import { TextInput, Stack, Loader, Group, Button, ActionIcon } from '@mantine/core';
+import { TextInput, Stack, Loader, Group, Button } from '@mantine/core';
 
 import { useFind } from '~/components/provider';
 import { authenticatedLoader } from '~/utils/auth.server';
@@ -11,6 +11,7 @@ import Portal from '~/components/portal';
 import { media } from '~/media';
 import { StudiesTable, toStudyItems } from '~/components/studies-table';
 import type { Study } from '~/components/studies-table';
+import { Fab } from '~/components/fab';
 
 export const loader = authenticatedLoader();
 
@@ -113,13 +114,10 @@ export default function StudiesIndex() {
               {t('studies.new_study')}
             </Button>
           )}
-          {!isDesktop && (
-            <ActionIcon component={Link} to="/studies/new">
-              <Plus size={16} />
-            </ActionIcon>
-          )}
         </Group>
       </Portal>
+
+      {!isDesktop && <Fab to="/studies/new" />}
 
       <StudiesTable
         items={studyItems}

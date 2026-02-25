@@ -32,6 +32,10 @@ export const en: typeof es = {
     something_went_wrong: 'Something went wrong',
     date_placeholder: 'Click to select a date',
     comments_placeholder: 'Type something... (Optional)',
+    unsaved_title: 'Unsaved changes',
+    unsaved_body: 'You have unsaved changes. Do you want to save before leaving?',
+    discard: 'Discard',
+    save_and_leave: 'Save and leave',
   },
   page_titles: {
     home: 'Home',
@@ -739,9 +743,16 @@ export const en: typeof es = {
     pdf_sent: 'PDF sent to {{email}}',
     error_generating: 'Error generating PDF',
   },
+  print_pdf: {
+    title: 'Print Medical History',
+    button: 'Print',
+    print: 'Print',
+    error_generating: 'Error generating PDF for printing',
+  },
   digital_signature: {
     title: 'Digital Signature',
-    info_notice: 'Upload your digital certificate (.pfx or .p12) issued by an Argentine Certificate Authority to digitally sign exported medical histories. The certificate is stored encrypted and your password is never saved.',
+    info_notice:
+      'Upload your digital certificate (.pfx or .p12) issued by an Argentine Certificate Authority to digitally sign exported medical histories. The certificate is stored encrypted and your password is never saved.',
     certificate_loaded: 'Certificate uploaded',
     remove: 'Remove',
     file_label: 'Digital certificate',

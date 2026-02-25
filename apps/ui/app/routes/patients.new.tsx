@@ -2,11 +2,11 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useNavigate, useLocation } from '@remix-run/react';
-import { Group, Button, ActionIcon, Title, Alert, Text } from '@mantine/core';
+import { Group, Button, Alert, Text, Modal } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useDebouncedValue } from '@mantine/hooks';
+import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Save, ArrowLeft, AlertCircle, RotateCcw } from 'lucide-react';
+import { Save, AlertCircle, RotateCcw } from 'lucide-react';
 import omit from 'lodash/omit';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
@@ -21,6 +21,10 @@ import {
   type PatientFormValues,
 } from '~/components/forms/patient-form';
 import { getPageTitle } from '~/utils/meta';
+import { media } from '~/media';
+import { Fab } from '~/components/fab';
+import { ToolbarTitle } from '~/components/toolbar-title';
+import { useUnsavedGuard } from '~/hooks/use-unsaved-guard';
 
 export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'new_patient') }];
@@ -76,6 +80,7 @@ export default function NewPatient() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const isDesktop = useMediaQuery(media.md);
   const fetcher = useFetcher();
   const { create: createAppointment } = useMutation('appointments');
   const hasHandledSuccess = useRef(false);
@@ -191,31 +196,35 @@ export default function NewPatient() {
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
   }, [canSave, form, existingPersonalDataId, fetcher]);
 
+  const handleBack = useCallback(() => navigate(-1), [navigate]);
+
   const handleReset = useCallback(() => {
     form.reset();
     setExistingPersonalDataId(null);
   }, [form]);
 
+  const { blocker, handleDiscard, handleCancel, handleSaveAndLeave } = useUnsavedGuard({
+    isDirty: form.isDirty(),
+    onSave: handleSave,
+  });
+
   return (
     <PageContainer>
       <Portal id="toolbar">
-        <Group align="center" flex={1}>
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate(-1)}>
-            <ArrowLeft size={20} />
-          </ActionIcon>
-          <Title m={0} lh={1} fz="h2">
-            {t('patients.new_patient')}
-          </Title>
-        </Group>
+        <ToolbarTitle title={t('patients.new_patient')} onBack={handleBack} />
       </Portal>
 
-      <Portal id="form-actions">
-        <Group>
-          <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<Save size={16} />}>
-            {t('patients.save')}
-          </Button>
-        </Group>
-      </Portal>
+      {isDesktop && (
+        <Portal id="form-actions">
+          <Group>
+            <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<Save size={16} />}>
+              {t('patients.save')}
+            </Button>
+          </Group>
+        </Portal>
+      )}
+
+      {!isDesktop && <Fab icon={<Save size={22} />} onClick={handleSave} disabled={!canSave} />}
 
       {isLookingUp && (
         <Text size="xs" c="dimmed">
@@ -270,6 +279,16 @@ export default function NewPatient() {
       )}
 
       <PatientForm form={form} disabled={patientAlreadyExists} showContactAndInsurance={!patientAlreadyExists} />
+
+      <Modal opened={blocker.state === 'blocked'} onClose={handleCancel} title={t('common.unsaved_title')}>
+        <Text mb="lg">{t('common.unsaved_body')}</Text>
+        <Group justify="flex-end">
+          <Button variant="default" onClick={handleDiscard}>
+            {t('common.discard')}
+          </Button>
+          <Button onClick={handleSaveAndLeave}>{t('common.save_and_leave')}</Button>
+        </Group>
+      </Modal>
     </PageContainer>
   );
 }

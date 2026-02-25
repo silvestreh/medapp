@@ -1,11 +1,11 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Link, useLoaderData } from '@remix-run/react';
+import { Link, useLoaderData, useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Group, Title, Stack, Button, ActionIcon, Tooltip, Tabs, Text } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { X, FileDown } from 'lucide-react';
+import { Group, Stack, Button, ActionIcon, Tooltip, Tabs, Text } from '@mantine/core';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import { X, FileDown, Printer, Plus } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -18,7 +18,11 @@ import { studySchemas } from '~/components/forms/study-schemas';
 import { PatientOverview } from '~/components/patient-overview';
 import type { StudyResultData } from '~/components/forms/study-form-types';
 import { getPageTitle } from '~/utils/meta';
+import { media } from '~/media';
 import { ExportSignedPdfDialog } from '~/components/export-signed-pdf-dialog';
+import { PrintPdfDialog } from '~/components/print-pdf-dialog';
+import { Fab, FabItem } from '~/components/fab';
+import { ToolbarTitle } from '~/components/toolbar-title';
 
 const Container = styled('div', {
   base: {
@@ -50,9 +54,13 @@ const Content = styled('div', {
   base: {
     flex: 1,
     height: '100%',
-    padding: '2rem',
+    padding: '1rem',
     position: 'sticky',
     top: '4.5rem',
+
+    lg: {
+      padding: '2rem',
+    },
   },
 });
 
@@ -132,7 +140,26 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 export default function PatientEncounterDetail() {
   const { t } = useTranslation();
   const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const isDesktop = useMediaQuery(media.md);
   const [exportOpened, { open: openExport, close: closeExport }] = useDisclosure(false);
+  const [printOpened, { open: openPrint, close: closePrint }] = useDisclosure(false);
+  const [fabOpen, { toggle: toggleFab, close: closeFab }] = useDisclosure(false);
+
+  const handleFabPrint = useCallback(() => {
+    closeFab();
+    openPrint();
+  }, [closeFab, openPrint]);
+
+  const handleFabExport = useCallback(() => {
+    closeFab();
+    openExport();
+  }, [closeFab, openExport]);
+
+  const handleFabNewEncounter = useCallback(() => {
+    closeFab();
+    navigate(`/encounters/${data.patient.id}/new`);
+  }, [closeFab, navigate, data.patient.id]);
 
   const dateRange = useMemo(() => {
     const encounters = data?.encounters || [];
@@ -189,19 +216,24 @@ export default function PatientEncounterDetail() {
     <Container className="encounters-container">
       <Portal id="toolbar">
         <Group justify="space-between" align="center" style={{ width: '100%' }}>
-          <Title order={2} m={0} lh={1}>
-            {data.patient.personalData.firstName} {data.patient.personalData.lastName}
-          </Title>
-          <Group gap="sm">
-            {data.isMedic && (
-              <Button variant="light" leftSection={<FileDown size={16} />} onClick={openExport}>
-                {t('export_pdf.button')}
+          <ToolbarTitle title={`${data.patient.personalData.firstName} ${data.patient.personalData.lastName}`} />
+          {isDesktop && (
+            <Group gap="sm">
+              {data.isMedic && (
+                <Button variant="light" leftSection={<Printer size={16} />} onClick={openPrint}>
+                  {t('print_pdf.button')}
+                </Button>
+              )}
+              {data.isMedic && (
+                <Button variant="light" leftSection={<FileDown size={16} />} onClick={openExport}>
+                  {t('export_pdf.button')}
+                </Button>
+              )}
+              <Button component={Link} to={`/encounters/${data.patient.id}/new`} leftSection={<Plus size={16} />}>
+                {t('encounters.new')}
               </Button>
-            )}
-            <Button component={Link} to={`/encounters/${data.patient.id}/new`}>
-              {t('encounters.new')}
-            </Button>
-          </Group>
+            </Group>
+          )}
         </Group>
       </Portal>
 
@@ -212,6 +244,16 @@ export default function PatientEncounterDetail() {
           patientId={data.patient.id}
           patientName={`${data.patient.personalData.firstName || ''} ${data.patient.personalData.lastName || ''}`.trim()}
           hasCertificate={data.hasCertificate}
+          dateRange={dateRange}
+        />
+      )}
+
+      {data.isMedic && (
+        <PrintPdfDialog
+          opened={printOpened}
+          onClose={closePrint}
+          patientId={data.patient.id}
+          patientName={`${data.patient.personalData.firstName || ''} ${data.patient.personalData.lastName || ''}`.trim()}
           dateRange={dateRange}
         />
       )}
@@ -232,7 +274,6 @@ export default function PatientEncounterDetail() {
       <Content>
         {hasSelection ? (
           <Stack key={`${selectedEncounter?.id ?? selectedStudy?.id}-${activeFormKey ?? 'study'}`} pos="relative">
-            {/* Encounter form */}
             {selectedEncounter && (
               <EncounterForm
                 encounter={selectedEncounter}
@@ -241,7 +282,6 @@ export default function PatientEncounterDetail() {
               />
             )}
 
-            {/* Study forms (read-only) */}
             {selectedStudy?.results?.length === 1 && studySchemas[selectedStudy.results[0].type] && (
               <StudyForm
                 schema={studySchemas[selectedStudy.results[0].type]}
@@ -293,6 +333,27 @@ export default function PatientEncounterDetail() {
           <PatientOverview patient={data.patient} encounters={data.encounters} />
         )}
       </Content>
+
+      {!isDesktop && (
+        <Fab open={fabOpen} onToggle={toggleFab} onClose={closeFab}>
+          {data.isMedic && (
+            <FabItem onClick={handleFabPrint} index={data.isMedic ? 2 : 0}>
+              <Printer size={18} />
+              {t('print_pdf.button')}
+            </FabItem>
+          )}
+          {data.isMedic && (
+            <FabItem onClick={handleFabExport} index={1}>
+              <FileDown size={18} />
+              {t('export_pdf.button')}
+            </FabItem>
+          )}
+          <FabItem onClick={handleFabNewEncounter} index={0}>
+            <Plus size={18} />
+            {t('encounters.new')}
+          </FabItem>
+        </Fab>
+      )}
     </Container>
   );
 }

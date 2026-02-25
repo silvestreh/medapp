@@ -2,9 +2,9 @@ import { useState, useCallback } from 'react';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 import { useFetcher, useNavigate } from '@remix-run/react';
-import { Group, Button, ActionIcon, Title } from '@mantine/core';
+import { Group, Button } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { Save, ArrowLeft } from 'lucide-react';
+import { Save } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -13,6 +13,7 @@ import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 import { getPageTitle } from '~/utils/meta';
+import { ToolbarTitle } from '~/components/toolbar-title';
 
 export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'new_study') }];
@@ -89,6 +90,8 @@ export default function NewStudy() {
   const canSave = patientId && selectedStudies.length > 0 && date;
   const isSaving = fetcher.state !== 'idle';
 
+  const handleBack = useCallback(() => navigate('/studies'), [navigate]);
+
   const handleSave = useCallback(() => {
     if (!canSave) return;
 
@@ -108,14 +111,7 @@ export default function NewStudy() {
   return (
     <PageContainer>
       <Portal id="toolbar">
-        <Group align="center" flex={1}>
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/studies')}>
-            <ArrowLeft size={20} />
-          </ActionIcon>
-          <Title m={0} lh={1} fz="h2">
-            {t('studies.new_study')}
-          </Title>
-        </Group>
+        <ToolbarTitle title={t('studies.new_study')} onBack={handleBack} />
       </Portal>
 
       <Portal id="form-actions">

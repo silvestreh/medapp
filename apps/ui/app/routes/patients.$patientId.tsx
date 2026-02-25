@@ -2,11 +2,12 @@ import { useCallback, useEffect } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
-import { Group, Button, ActionIcon, Title, Alert, Text, Modal } from '@mantine/core';
+import { Group, Button, Alert, Text, Modal } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Save, ArrowLeft, Trash2, AlertCircle } from 'lucide-react';
+import { Save, Trash2, AlertCircle } from 'lucide-react';
+import omit from 'lodash/omit';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -19,6 +20,10 @@ import {
   type PatientFormValues,
 } from '~/components/forms/patient-form';
 import { getPageTitle } from '~/utils/meta';
+import { media } from '~/media';
+import { Fab, FabItem } from '~/components/fab';
+import { ToolbarTitle } from '~/components/toolbar-title';
+import { useUnsavedGuard } from '~/hooks/use-unsaved-guard';
 
 export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'patient') }];
@@ -71,7 +76,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     const promises: Promise<any>[] = [];
 
     if (personalDataId && personalData) {
-      const { documentValue, ...patchablePersonalData } = personalData;
+      const patchablePersonalData = omit(personalData, ['documentValue']);
       promises.push(client.service('personal-data').patch(personalDataId, patchablePersonalData));
     }
 
@@ -111,19 +116,24 @@ export default function PatientDetail() {
   const navigate = useNavigate();
   const fetcher = useFetcher();
   const { patient } = useLoaderData<typeof loader>() as { patient: any };
+  const isDesktop = useMediaQuery(media.md);
   const [deleteOpened, { open: openDelete, close: closeDelete }] = useDisclosure(false);
+
+  const handleBack = useCallback(() => navigate('/patients'), [navigate]);
 
   const form = useForm<PatientFormValues>({
     initialValues: parsePatientToFormValues(patient),
     validate: {
-      firstName: (value) => (value.trim() ? null : t('patients.validation.first_name_required')),
-      lastName: (value) => (value.trim() ? null : t('patients.validation.last_name_required')),
+      firstName: value => (value.trim() ? null : t('patients.validation.first_name_required')),
+      lastName: value => (value.trim() ? null : t('patients.validation.last_name_required')),
     },
   });
 
   const isSaving = fetcher.state !== 'idle';
 
-  const actionData = fetcher.data as { success?: boolean; error?: string; encounterCount?: number; studyCount?: number } | undefined;
+  const actionData = fetcher.data as
+    | { success?: boolean; error?: string; encounterCount?: number; studyCount?: number }
+    | undefined;
 
   useEffect(() => {
     if (actionData?.success) {
@@ -150,44 +160,76 @@ export default function PatientDetail() {
   }, [form, patient, fetcher]);
 
   const handleDelete = useCallback(() => {
-    fetcher.submit(
-      { data: JSON.stringify({ intent: 'delete' }) },
-      { method: 'post' }
-    );
+    fetcher.submit({ data: JSON.stringify({ intent: 'delete' }) }, { method: 'post' });
     closeDelete();
   }, [fetcher, closeDelete]);
 
   const canDelete = !isSaving;
+  const [fabOpen, { toggle: toggleFab, close: closeFab }] = useDisclosure(false);
+
+  const handleFabDelete = useCallback(() => {
+    closeFab();
+    openDelete();
+  }, [closeFab, openDelete]);
+
+  const handleFabSave = useCallback(() => {
+    closeFab();
+    handleSave();
+  }, [closeFab, handleSave]);
+
+  const { blocker, handleDiscard, handleCancel, handleSaveAndLeave } = useUnsavedGuard({
+    isDirty: form.isDirty(),
+    onSave: handleSave,
+  });
 
   return (
     <PageContainer>
       <Portal id="toolbar">
-        <Group align="center" flex={1}>
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/patients')}>
-            <ArrowLeft size={20} />
-          </ActionIcon>
-          <Title m={0} lh={1} fz="h2">
-            {patient.personalData?.firstName} {patient.personalData?.lastName}
-          </Title>
-        </Group>
+        <ToolbarTitle
+          title={`${patient.personalData?.firstName} ${patient.personalData?.lastName}`}
+          onBack={handleBack}
+        />
       </Portal>
 
-      <Portal id="form-actions">
-        <Group>
-          <Button
-            variant="outline"
-            color="red"
-            onClick={openDelete}
-            disabled={!canDelete}
-            leftSection={<Trash2 size={16} />}
+      {isDesktop && (
+        <Portal id="form-actions">
+          <Group>
+            <Button
+              variant="outline"
+              color="red"
+              onClick={openDelete}
+              disabled={!canDelete}
+              leftSection={<Trash2 size={16} />}
+            >
+              {t('patients.delete')}
+            </Button>
+            <Button onClick={handleSave} loading={isSaving} leftSection={<Save size={16} />}>
+              {t('patients.save')}
+            </Button>
+          </Group>
+        </Portal>
+      )}
+
+      {!isDesktop && (
+        <Fab open={fabOpen} onToggle={toggleFab} onClose={closeFab}>
+          <FabItem
+            onClick={handleFabDelete}
+            index={1}
+            style={{
+              color: 'var(--mantine-color-red-7)',
+              background: 'var(--mantine-color-red-0)',
+              boxShadow: 'inset 0 0 0 1px var(--mantine-color-red-1)',
+            }}
           >
+            <Trash2 size={18} />
             {t('patients.delete')}
-          </Button>
-          <Button onClick={handleSave} loading={isSaving} leftSection={<Save size={16} />}>
+          </FabItem>
+          <FabItem onClick={handleFabSave} index={0}>
+            <Save size={18} />
             {t('patients.save')}
-          </Button>
-        </Group>
-      </Portal>
+          </FabItem>
+        </Fab>
+      )}
 
       {actionData?.error === 'cannot_delete' && (
         <Alert icon={<AlertCircle size={16} />} color="red">
@@ -198,16 +240,9 @@ export default function PatientDetail() {
         </Alert>
       )}
 
-      {actionData?.success && (
-        <Alert color="green">
-          {t('patients.saved_successfully')}
-        </Alert>
-      )}
+      {actionData?.success && <Alert color="green">{t('patients.saved_successfully')}</Alert>}
 
-      <PatientForm
-        form={form}
-        readOnlyDocument
-      />
+      <PatientForm form={form} readOnlyDocument />
 
       {/* Delete confirmation modal */}
       <Modal opened={deleteOpened} onClose={closeDelete} title={t('patients.delete_confirm_title')}>
@@ -219,6 +254,16 @@ export default function PatientDetail() {
           <Button color="red" onClick={handleDelete} leftSection={<Trash2 size={16} />}>
             {t('patients.delete')}
           </Button>
+        </Group>
+      </Modal>
+
+      <Modal opened={blocker.state === 'blocked'} onClose={handleCancel} title={t('common.unsaved_title')}>
+        <Text mb="lg">{t('common.unsaved_body')}</Text>
+        <Group justify="flex-end">
+          <Button variant="default" onClick={handleDiscard}>
+            {t('common.discard')}
+          </Button>
+          <Button onClick={handleSaveAndLeave}>{t('common.save_and_leave')}</Button>
         </Group>
       </Modal>
     </PageContainer>
