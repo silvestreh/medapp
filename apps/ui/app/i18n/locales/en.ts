@@ -738,6 +738,7 @@ export const en: typeof es = {
   },
   ai_chat: {
     title: 'AI Assistant',
+    thinking: 'Thinking...',
     open_assistant: 'Open encounter AI assistant',
     minimize_assistant: 'Minimize chat assistant',
     model_label: 'Model ({{provider}})',
