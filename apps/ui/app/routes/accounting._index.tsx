@@ -3,7 +3,7 @@ import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { BarChart } from '@mantine/charts';
-import { Button, Group, Menu, Paper, Stack, Text, Title, Table, ScrollArea } from '@mantine/core';
+import { Button, Group, Menu, Paper, Stack, Text, Title, Table } from '@mantine/core';
 import { ChevronDown } from 'lucide-react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import { DateRangePopover, resolveDateRange, type DateRangeFilterState } from '~
 import { useFeathers } from '~/components/provider';
 import { normalizeInsurerPrices } from '~/utils/accounting';
 import { styled } from '~/styled-system/jsx';
+import { css } from '~/styled-system/css';
 
 type Prepaga = {
   id: string;
@@ -46,6 +47,17 @@ const ContentWrapper = styled('div', {
     md: {
       padding: '2rem',
     },
+  },
+});
+
+const CellText = styled('span', {
+  base: {
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    display: 'block',
+    padding: 'var(--mantine-spacing-xs)',
+    fontSize: 'var(--mantine-font-size-sm)',
   },
 });
 
@@ -245,44 +257,77 @@ export default function AccountingDashboardPage() {
           <BarChart h={260} data={revenueByInsurer} dataKey="insurer" series={[{ name: 'revenue', color: 'blue.6' }]} />
         </Paper>
 
-        <Paper withBorder p="md">
-          <Text fw={600} mb="sm">
-            {t('accounting.records', { defaultValue: 'Detailed records' })}
+        {isClient && loading && (
+          <Text c="dimmed" ta="center" py="xl">
+            {t('common.loading', { defaultValue: 'Loading...' })}
           </Text>
-          {isClient && !loading && (
-            <ScrollArea h={640}>
-              <Table striped highlightOnHover withTableBorder>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>{t('accounting.col_date', { defaultValue: 'Date' })}</Table.Th>
-                    <Table.Th>{t('accounting.col_type', { defaultValue: 'Type' })}</Table.Th>
-                    <Table.Th>{t('accounting.col_protocol', { defaultValue: 'Protocol' })}</Table.Th>
-                    <Table.Th>{t('accounting.col_insurer', { defaultValue: 'Insurer' })}</Table.Th>
-                    <Table.Th>{t('accounting.col_patient', { defaultValue: 'Patient' })}</Table.Th>
-                    <Table.Th>{t('accounting.col_cost', { defaultValue: 'Cost' })}</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {records.map((record, index) => (
-                    <Table.Tr key={`${record.id}-${record.kind}-${index}`}>
-                      <Table.Td>{dayjs(record.date).format('YYYY-MM-DD')}</Table.Td>
-                      <Table.Td>{translateType(record.kind)}</Table.Td>
-                      <Table.Td>{record.protocol ?? ''}</Table.Td>
-                      <Table.Td>{record.insurerName}</Table.Td>
-                      <Table.Td>{record.patientName}</Table.Td>
-                      <Table.Td>${record.cost.toFixed(2)}</Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            </ScrollArea>
-          )}
-          {isClient && loading && (
-            <Text c="dimmed" ta="center" py="xl">
-              {t('common.loading', { defaultValue: 'Loading...' })}
-            </Text>
-          )}
-        </Paper>
+        )}
+
+        <Table
+          layout="fixed"
+          bg="white"
+          className={css({
+            lg: {
+              marginTop: '1rem',
+              marginLeft: '-2rem',
+              width: 'calc(100% + 4rem)',
+            },
+          })}
+        >
+          <Table.Thead style={{ position: 'sticky', top: '5rem', zIndex: 1 }}>
+            <Table.Tr bg="blue.0">
+              {[
+                t('accounting.col_date', { defaultValue: 'Date' }),
+                t('accounting.col_type', { defaultValue: 'Type' }),
+                // t('accounting.col_protocol', { defaultValue: 'Protocol' }),
+                t('accounting.col_insurer', { defaultValue: 'Insurer' }),
+                t('accounting.col_patient', { defaultValue: 'Patient' }),
+                t('accounting.col_cost', { defaultValue: 'Cost' }),
+              ].map((label, idx) => (
+                <Table.Th
+                  key={label}
+                  style={{
+                    border: '1px solid var(--mantine-color-blue-1)',
+                    ...(idx === 0 && { borderLeft: 'none' }),
+                    ...(idx === 5 && { borderRight: 'none' }),
+                  }}
+                  fw={500}
+                  fz="md"
+                  py="0.5em"
+                >
+                  {label}
+                </Table.Th>
+              ))}
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {records.map((record, index) => (
+              <Table.Tr
+                key={`${record.id}-${record.kind}-${index}`}
+                styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
+              >
+                <Table.Td>
+                  <CellText>{dayjs(record.date).format('YYYY-MM-DD')}</CellText>
+                </Table.Td>
+                <Table.Td>
+                  <CellText>{translateType(record.kind)}</CellText>
+                </Table.Td>
+                {/* <Table.Td>
+                  <CellText>{record.protocol ?? ''}</CellText>
+                </Table.Td> */}
+                <Table.Td>
+                  <CellText>{record.insurerName}</CellText>
+                </Table.Td>
+                <Table.Td>
+                  <CellText>{record.patientName}</CellText>
+                </Table.Td>
+                <Table.Td>
+                  <CellText>${record.cost.toFixed(2)}</CellText>
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
       </Stack>
     </ContentWrapper>
   );

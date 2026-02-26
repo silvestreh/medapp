@@ -8,31 +8,51 @@ describe('\'accounting\' service', () => {
   let prepaga: any;
 
   before(async () => {
+    await app.get('sequelizeSync');
+
     await app.service('roles').create({
       id: 'medic',
       permissions: ['*'],
     }).catch(() => null);
 
-    medic = await app.service('users').create({
-      username: 'test.medic.accounting',
-      password: 'SuperSecret1',
-      roleId: 'medic',
-    });
+    const existingUsers = await app.service('users').find({
+      query: { username: 'test.medic.accounting', $limit: 1 },
+      paginate: false,
+    }) as any[];
+
+    if (existingUsers.length) {
+      medic = existingUsers[0];
+    } else {
+      medic = await app.service('users').create({
+        username: 'test.medic.accounting',
+        password: 'SuperSecret1',
+        roleId: 'medic',
+      });
+    }
+
+    const existingPrepagas = await app.service('prepagas').find({
+      query: { shortName: 'ACC-TEST', $limit: 1 },
+      paginate: false,
+    }) as any[];
+
+    if (existingPrepagas.length) {
+      prepaga = existingPrepagas[0];
+    } else {
+      prepaga = await app.service('prepagas').create({
+        shortName: 'ACC-TEST',
+        denomination: 'Accounting Test Prepaga',
+      });
+    }
 
     patient = await app.service('patients').create({
-      medicare: 'OSDE BINARIO',
+      medicareId: prepaga.id,
       medicareNumber: '999888',
-    });
-
-    prepaga = await app.service('prepagas').create({
-      shortName: 'OSDE',
-      denomination: 'OSDE Binario',
     });
 
     await app.service('personal-data').create({
       firstName: 'John',
       lastName: 'Doe',
-      documentValue: 'ACC-TEST-DOC-001',
+      documentValue: `ACC-TEST-DOC-${Date.now()}`,
     }).then(async (pd: any) => {
       await app.service('patient-personal-data').create({
         ownerId: patient.id,
@@ -40,18 +60,36 @@ describe('\'accounting\' service', () => {
       });
     });
 
-    await app.service('md-settings').create({
-      userId: medic.id,
-      encounterDuration: 30,
-      insurerPrices: {
-        [prepaga.id]: {
-          encounter: 5000,
-          anemia: 3000,
-          hemostasis: 2000,
-          anticoagulation: 1500,
+    const existingSettings = await app.service('md-settings').find({
+      query: { userId: medic.id, $limit: 1 },
+      paginate: false,
+    }) as any[];
+
+    if (existingSettings.length) {
+      await app.service('md-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 3000,
+            hemostasis: 2000,
+            anticoagulation: 1500,
+          },
         },
-      },
-    } as any);
+      } as any);
+    } else {
+      await app.service('md-settings').create({
+        userId: medic.id,
+        encounterDuration: 30,
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 3000,
+            hemostasis: 2000,
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+    }
   });
 
   it('registered the service', () => {
@@ -160,10 +198,17 @@ describe('\'accounting\' service', () => {
   it('filters by insurerId', async () => {
     const today = dayjs();
 
-    const otherPrepaga = await app.service('prepagas').create({
-      shortName: 'OTHER',
-      denomination: 'Other Prepaga',
-    });
+    const existingOther = await app.service('prepagas').find({
+      query: { shortName: 'ACC-OTHER', $limit: 1 },
+      paginate: false,
+    }) as any[];
+
+    const otherPrepaga = existingOther.length
+      ? existingOther[0]
+      : await app.service('prepagas').create({
+          shortName: 'ACC-OTHER',
+          denomination: 'Accounting Other Prepaga',
+        });
 
     await app.service('encounters').create({
       data: { simple: { values: { note: 'other insurer' } } },
@@ -240,6 +285,56 @@ describe('\'accounting\' service', () => {
       result.totalRevenue,
       'revenueByDay sums to totalRevenue'
     );
+  });
+
+  it('get("insurers") returns distinct insurer IDs for a medic', async () => {
+    const result = await app.service('accounting').get('insurers', {
+      query: { medicId: medic.id },
+    } as any);
+
+    assert.ok(Array.isArray(result), 'Result is an array');
+    assert.ok(result.includes(prepaga.id), 'Contains prepaga used in encounters/studies');
+  });
+
+  it('get("insurers") requires medicId', async () => {
+    try {
+      await app.service('accounting').get('insurers', { query: {} } as any);
+      assert.fail('Should have thrown');
+    } catch (err: any) {
+      assert.strictEqual(err.code, 400);
+    }
+  });
+
+  it('get("insurers") rejects unknown resource ids', async () => {
+    try {
+      await app.service('accounting').get('unknown', {
+        query: { medicId: medic.id },
+      } as any);
+      assert.fail('Should have thrown');
+    } catch (err: any) {
+      assert.strictEqual(err.code, 400);
+    }
+  });
+
+  it('get("insurers") falls back to patient medicareId when encounter has no insurerId', async () => {
+    const patientWithMedicare = await app.service('patients').create({
+      medicareId: prepaga.id,
+      medicareNumber: '111222',
+    });
+
+    await app.service('encounters').create({
+      data: { simple: { values: { note: 'medicare fallback test' } } },
+      date: new Date(),
+      medicId: medic.id,
+      patientId: patientWithMedicare.id,
+    } as any);
+
+    const result = await app.service('accounting').get('insurers', {
+      query: { medicId: medic.id },
+    } as any);
+
+    assert.ok(Array.isArray(result), 'Result is an array');
+    assert.ok(result.includes(prepaga.id), 'Contains insurer resolved from patient medicareId');
   });
 
   it('includes protocol number for study rows', async () => {

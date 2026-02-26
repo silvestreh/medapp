@@ -1,5 +1,5 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
-import { Sequelize, QueryTypes } from 'sequelize';
+import type { OrganizationPatient } from '../declarations';
 
 /**
  * Before-find hook: restricts `patients.find` to only return patients
@@ -16,17 +16,12 @@ export const scopePatientsToOrganization = (): Hook => {
       return context;
     }
 
-    const sequelize: Sequelize = app.get('sequelizeClient');
+    const orgPatients = await app.service('organization-patients').find({
+      query: { organizationId },
+      paginate: false,
+    }) as OrganizationPatient[];
 
-    const rows = await sequelize.query<{ patientId: string }>(
-      'SELECT "patientId" FROM "organization_patients" WHERE "organizationId" = :orgId',
-      {
-        replacements: { orgId: organizationId },
-        type: QueryTypes.SELECT
-      }
-    );
-
-    const patientIds = rows.map(r => r.patientId);
+    const patientIds = orgPatients.map(r => r.patientId as string);
 
     if (patientIds.length === 0) {
       context.params.query = {

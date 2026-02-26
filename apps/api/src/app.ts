@@ -26,12 +26,15 @@ import authentication from './authentication';
 import sequelize from './sequelize';
 // Don't remove this comment. It's needed to format import lines nicely.
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const qs = require('qs');
 const app: Application = express(feathers());
 export type HookContext<T = any> = { app: Application } & FeathersHookContext<T>;
 
-// Load app configuration
+// qs default arrayLimit is 20; arrays with >20 elements are silently
+// converted to objects, breaking Sequelize $in queries.
+app.set('query parser', (str: string) => qs.parse(str, { arrayLimit: 500 }));
 app.configure(configuration());
-// Enable security, CORS, compression, favicon and body parsing
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -55,16 +58,9 @@ app.use(cors({
 // app.use(compress());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// app.use(favicon(path.join(app.get('public'), 'favicon.ico')));
-// Host the public folder
 app.use('/', express.static(app.get('public')));
-
-// Set up Plugins and providers
 app.configure(express.rest());
-
-
 app.configure(sequelize);
-
 
 // Rate-limit login attempts (disabled during tests).
 // Only count requests using the 'local' strategy (credential-based logins).

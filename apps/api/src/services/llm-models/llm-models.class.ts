@@ -44,6 +44,7 @@ export class LlmModels {
       const keyService = this.app.service('llm-provider-keys') as any;
       if (!keyService?.getDecryptedProviderKeys) return {};
       return await keyService.getDecryptedProviderKeys(params);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       return {};
     }
@@ -59,6 +60,7 @@ export class LlmModels {
         return preferred;
       }
       return undefined;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       return undefined;
     }

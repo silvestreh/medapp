@@ -8,20 +8,22 @@ const generateTempPassword = (): string => crypto.randomBytes(48).toString('base
 const resolveAndNotify = (): Hook => async (context: HookContext): Promise<HookContext> => {
   const { app, result } = context;
   const invite = result;
-  const sequelize = app.get('sequelizeClient');
 
   const encryptedEmail = encryptValue(invite.email);
 
-  const matchRows = await sequelize.query(
-    `SELECT ucd."ownerId" AS "userId"
-       FROM user_contact_data ucd
-       JOIN contact_data cd ON cd.id = ucd."contactDataId"
-      WHERE cd.email = :email
-      LIMIT 1`,
-    { replacements: { email: encryptedEmail }, type: sequelize.constructor.QueryTypes.SELECT }
-  ) as any[];
+  const contactMatches = await app.service('contact-data').find({
+    query: { email: encryptedEmail, $limit: 1 },
+    paginate: false,
+  }) as any[];
 
-  const existingUserId = matchRows?.[0]?.userId ?? null;
+  let existingUserId: string | null = null;
+  if (contactMatches.length > 0) {
+    const ucdMatches = await app.service('user-contact-data').find({
+      query: { contactDataId: contactMatches[0].id, $limit: 1 },
+      paginate: false,
+    }) as any[];
+    existingUserId = ucdMatches[0]?.ownerId ?? null;
+  }
   let isNewUser = false;
   let username: string | undefined;
 

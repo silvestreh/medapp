@@ -264,6 +264,7 @@ export class EncounterAiChat {
     const json = this.limitString(JSON.stringify(value), maxChars);
     try {
       return JSON.parse(json);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       return { truncated: json };
     }
@@ -331,6 +332,7 @@ export class EncounterAiChat {
         confidence: typeof payload?.confidence === 'number' ? payload.confidence : 0,
         citations: Array.isArray(payload?.citations) ? payload.citations.map((item: any) => String(item)) : [],
       };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       return fallback;
     }
@@ -341,6 +343,7 @@ export class EncounterAiChat {
       const keyService = this.app.service('llm-provider-keys') as any;
       if (!keyService?.getDecryptedProviderKeys) return {};
       return await keyService.getDecryptedProviderKeys(params);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       return {};
     }
@@ -366,6 +369,7 @@ export class EncounterAiChat {
           : undefined,
         model: typeof model === 'string' && model.trim() ? model.trim() : undefined,
       };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       return {};
     }
