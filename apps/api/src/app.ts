@@ -24,10 +24,8 @@ import channels from './channels';
 import { HookContext as FeathersHookContext } from '@feathersjs/feathers';
 import authentication from './authentication';
 import sequelize from './sequelize';
+import qs from 'qs';
 // Don't remove this comment. It's needed to format import lines nicely.
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const qs = require('qs');
 const app: Application = express(feathers());
 export type HookContext<T = any> = { app: Application } & FeathersHookContext<T>;
 
