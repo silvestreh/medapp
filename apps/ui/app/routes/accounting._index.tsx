@@ -1,0 +1,326 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { LoaderFunctionArgs } from '@remix-run/node';
+import { json } from '@remix-run/node';
+import { Link, useLoaderData } from '@remix-run/react';
+import { BarChart } from '@mantine/charts';
+import { Button, Group, Menu, Paper, Stack, Text, Title, Table, ScrollArea } from '@mantine/core';
+import { ChevronDown } from 'lucide-react';
+import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
+
+import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';
+import Portal from '~/components/portal';
+import { ToolbarTitle } from '~/components/toolbar-title';
+import { DateRangePopover, resolveDateRange, type DateRangeFilterState } from '~/components/date-range-popover';
+import { useFeathers } from '~/components/provider';
+import { normalizeInsurerPrices } from '~/utils/accounting';
+import { styled } from '~/styled-system/jsx';
+
+type Prepaga = {
+  id: string;
+  shortName: string;
+  denomination: string;
+};
+
+type AccountingRecord = {
+  id: string;
+  date: string;
+  kind: 'encounter' | 'study';
+  studyType: string | null;
+  protocol: number | null;
+  insurerId: string | null;
+  insurerName: string;
+  patientName: string;
+  patientInsurance: string;
+  patientInsuranceNumber: string;
+  cost: number;
+};
+
+type AccountingResult = {
+  records: AccountingRecord[];
+  totalRevenue: number;
+  revenueByDay: { date: string; revenue: number }[];
+  revenueByInsurer: { insurer: string; revenue: number }[];
+};
+
+const ContentWrapper = styled('div', {
+  base: {
+    padding: '1rem',
+    md: {
+      padding: '2rem',
+    },
+  },
+});
+
+const MIN_RANGE_START = '1900-01-01';
+
+const STUDY_TYPE_I18N: Record<string, string> = {
+  anemia: 'accounting.type_anemia',
+  anticoagulation: 'accounting.type_anticoagulation',
+  compatibility: 'accounting.type_compatibility',
+  hemostasis: 'accounting.type_hemostasis',
+  myelogram: 'accounting.type_myelogram',
+  thrombophilia: 'accounting.type_thrombophilia',
+};
+
+export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
+  const { client, user } = await getAuthenticatedClient(request);
+
+  const settingsResponse = await client.service('md-settings').find({
+    query: { userId: user.id, $limit: 1 },
+    paginate: false,
+  });
+  const settingsList = Array.isArray(settingsResponse)
+    ? settingsResponse
+    : ((settingsResponse as { data?: unknown[] }).data ?? []);
+  const mdSettings = settingsList[0] as { insurerPrices?: unknown } | undefined;
+  const insurerPrices = normalizeInsurerPrices(mdSettings?.insurerPrices);
+  const insurerIds = Object.keys(insurerPrices);
+
+  const insurersResponse = insurerIds.length
+    ? await client.service('prepagas').find({
+        query: { id: { $in: insurerIds }, $limit: insurerIds.length },
+        paginate: false,
+      })
+    : [];
+  const insurers = (
+    Array.isArray(insurersResponse) ? insurersResponse : ((insurersResponse as { data?: unknown[] }).data ?? [])
+  ) as Prepaga[];
+
+  return json({ insurers });
+});
+
+export default function AccountingDashboardPage() {
+  const { t } = useTranslation();
+  const feathersClient = useFeathers();
+  const { insurers } = useLoaderData<typeof loader>();
+  const [selectedInsurerId, setSelectedInsurerId] = useState<string>('all');
+  const [isClient, setIsClient] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<AccountingResult | null>(null);
+  const [rangeFilter, setRangeFilter] = useState<DateRangeFilterState>({
+    mode: 'in_last',
+    lastAmount: 30,
+    lastUnit: 'day',
+    singleDate: dayjs().format('YYYY-MM-DD'),
+    betweenRange: [dayjs().subtract(30, 'day').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+  });
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const resolvedRange = useMemo(
+    () =>
+      resolveDateRange(rangeFilter, {
+        minRangeStart: MIN_RANGE_START,
+        maxDate: dayjs().format('YYYY-MM-DD'),
+        precision: 'day',
+      }),
+    [rangeFilter]
+  );
+
+  const dateRangeLabels = useMemo(
+    () => ({
+      modeInLast: t('stats.mode_in_last'),
+      modeAfter: t('stats.mode_after'),
+      modeBefore: t('stats.mode_before'),
+      modeBetween: t('stats.mode_between'),
+      rangeMode: t('stats.range_mode'),
+      lastValue: t('stats.last_value'),
+      lastUnit: t('stats.last_unit'),
+      unitDays: t('stats.unit_days'),
+      unitWeeks: t('stats.unit_weeks'),
+      unitMonths: t('stats.unit_months'),
+      unitYears: t('stats.unit_years'),
+      pickDate: t('stats.pick_date'),
+      pickRange: t('stats.pick_range'),
+      invalidRange: t('stats.invalid_range'),
+      apply: t('stats.apply'),
+    }),
+    [t]
+  );
+
+  const handleApplyRange = useCallback((nextState: DateRangeFilterState) => {
+    setRangeFilter(nextState);
+  }, []);
+
+  useEffect(() => {
+    if (!resolvedRange) return;
+
+    let cancelled = false;
+    setLoading(true);
+
+    const query: Record<string, string> = {
+      from: dayjs(resolvedRange.from).format('YYYY-MM-DD'),
+      to: dayjs(resolvedRange.to).format('YYYY-MM-DD'),
+    };
+    if (selectedInsurerId !== 'all') {
+      query.insurerId = selectedInsurerId;
+    }
+
+    feathersClient
+      .service('accounting')
+      .find({ query })
+      .then((result: AccountingResult) => {
+        if (!cancelled) {
+          setData(result);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setData(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [feathersClient, resolvedRange, selectedInsurerId]);
+
+  const records = data?.records ?? [];
+  const totalRevenue = data?.totalRevenue ?? 0;
+  const revenueByInsurer = data?.revenueByInsurer ?? [];
+
+  const translateKind = useCallback(
+    (kind: string) =>
+      kind === 'encounter'
+        ? t('accounting.kind_encounter', { defaultValue: 'Encounter' })
+        : t('accounting.kind_study', { defaultValue: 'Study' }),
+    [t]
+  );
+
+  const translateStudyType = useCallback(
+    (studyType: string | null) => {
+      if (!studyType) return '';
+      const key = STUDY_TYPE_I18N[studyType];
+      return key ? t(key, { defaultValue: studyType }) : studyType;
+    },
+    [t]
+  );
+
+  const selectedInsurerLabel = useMemo(() => {
+    if (selectedInsurerId === 'all') return t('common.all', { defaultValue: 'Everything' });
+    const found = insurers.find((i: Prepaga) => i.id === selectedInsurerId);
+    return found ? found.shortName : t('common.all', { defaultValue: 'Everything' });
+  }, [selectedInsurerId, insurers, t]);
+
+  const handleSelectInsurer = useCallback((id: string) => {
+    setSelectedInsurerId(id);
+  }, []);
+
+  return (
+    <ContentWrapper>
+      <Portal id="toolbar">
+        <Group justify="space-between" align="center" w="100%">
+          <ToolbarTitle title={t('navigation.accounting', { defaultValue: 'Accounting' })} />
+          <Group gap="sm">
+            <Menu shadow="md" width={260}>
+              <Menu.Target>
+                <Button variant="default" rightSection={<ChevronDown size={14} />}>
+                  {selectedInsurerLabel}
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Label>{t('navigation.insurers', { defaultValue: 'Insurers' })}</Menu.Label>
+                <Menu.Item onClick={() => handleSelectInsurer('all')} fw={selectedInsurerId === 'all' ? 700 : 400}>
+                  {t('common.all', { defaultValue: 'Everything' })}
+                </Menu.Item>
+                <Menu.Divider />
+                {insurers.map((insurer: Prepaga) => (
+                  <Menu.Item
+                    key={insurer.id}
+                    onClick={() => handleSelectInsurer(insurer.id)}
+                    fw={selectedInsurerId === insurer.id ? 700 : 400}
+                  >
+                    {insurer.shortName}
+                  </Menu.Item>
+                ))}
+              </Menu.Dropdown>
+            </Menu>
+            <DateRangePopover
+              value={rangeFilter}
+              onApply={handleApplyRange}
+              labels={dateRangeLabels}
+              minRangeStart={MIN_RANGE_START}
+              maxDate={dayjs().format('YYYY-MM-DD')}
+              precision="day"
+            />
+            <Button component={Link} to="/accounting/settings" variant="default">
+              {t('common.settings')}
+            </Button>
+          </Group>
+        </Group>
+      </Portal>
+
+      <Stack gap="md">
+        <Paper withBorder p="md">
+          <Text c="dimmed">{t('accounting.total_revenue', { defaultValue: 'Total revenue' })}</Text>
+          <Title order={2}>${totalRevenue.toFixed(2)}</Title>
+          {loading && (
+            <Text c="dimmed" size="sm">
+              {t('common.loading', { defaultValue: 'Loading...' })}
+            </Text>
+          )}
+        </Paper>
+
+        <Paper withBorder p="md">
+          <Text fw={600} mb="sm">
+            {t('accounting.revenue_by_insurer', { defaultValue: 'Revenue by insurer' })}
+          </Text>
+          <BarChart h={260} data={revenueByInsurer} dataKey="insurer" series={[{ name: 'revenue', color: 'blue.6' }]} />
+        </Paper>
+
+        <Paper withBorder p="md">
+          <Text fw={600} mb="sm">
+            {t('accounting.records', { defaultValue: 'Detailed records' })}
+          </Text>
+          {isClient && !loading && (
+            <ScrollArea h={640}>
+              <Table striped highlightOnHover withTableBorder>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>{t('accounting.col_date', { defaultValue: 'Date' })}</Table.Th>
+                    <Table.Th>{t('accounting.col_type', { defaultValue: 'Type' })}</Table.Th>
+                    <Table.Th>{t('accounting.col_study_type', { defaultValue: 'Study Type' })}</Table.Th>
+                    <Table.Th>{t('accounting.col_protocol', { defaultValue: 'Protocol' })}</Table.Th>
+                    <Table.Th>{t('accounting.col_insurer', { defaultValue: 'Insurer' })}</Table.Th>
+                    <Table.Th>{t('accounting.col_patient', { defaultValue: 'Patient' })}</Table.Th>
+                    <Table.Th>{t('accounting.col_insurance', { defaultValue: 'Insurance' })}</Table.Th>
+                    <Table.Th>{t('accounting.col_insurance_number', { defaultValue: 'Insurance #' })}</Table.Th>
+                    <Table.Th>{t('accounting.col_cost', { defaultValue: 'Cost' })}</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {records.map((record, index) => (
+                    <Table.Tr key={`${record.id}-${record.studyType || ''}-${index}`}>
+                      <Table.Td>{dayjs(record.date).format('YYYY-MM-DD')}</Table.Td>
+                      <Table.Td>{translateKind(record.kind)}</Table.Td>
+                      <Table.Td>{translateStudyType(record.studyType)}</Table.Td>
+                      <Table.Td>{record.protocol ?? ''}</Table.Td>
+                      <Table.Td>{record.insurerName}</Table.Td>
+                      <Table.Td>{record.patientName}</Table.Td>
+                      <Table.Td>{record.patientInsurance}</Table.Td>
+                      <Table.Td>{record.patientInsuranceNumber}</Table.Td>
+                      <Table.Td>${record.cost.toFixed(2)}</Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            </ScrollArea>
+          )}
+          {isClient && loading && (
+            <Text c="dimmed" ta="center" py="xl">
+              {t('common.loading', { defaultValue: 'Loading...' })}
+            </Text>
+          )}
+        </Paper>
+      </Stack>
+    </ContentWrapper>
+  );
+}

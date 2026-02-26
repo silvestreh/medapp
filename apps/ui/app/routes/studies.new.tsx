@@ -1,19 +1,20 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
-import { redirect } from '@remix-run/node';
-import { useFetcher, useNavigate } from '@remix-run/react';
-import { Group, Button } from '@mantine/core';
+import { json, redirect } from '@remix-run/node';
+import { useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
+import { Group, Button, NumberInput, Paper } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { Save } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader, isMedicVerified } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
-import { useGet } from '~/components/provider';
+import { useFind, useGet } from '~/components/provider';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
+import { normalizeInsurerPrices, parsePrepagaDisplay, resolveStudyCost, toNumericPrice } from '~/utils/accounting';
 
 export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'new_study') }];
@@ -27,7 +28,19 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     throw redirect('/studies');
   }
 
-  return null;
+  const settingsResponse = await client.service('md-settings').find({
+    query: { userId: user.id, $limit: 1 },
+    paginate: false,
+  });
+
+  const settingsList = Array.isArray(settingsResponse)
+    ? settingsResponse
+    : ((settingsResponse as { data?: unknown[] }).data ?? []);
+  const mdSettings = settingsList[0] as { insurerPrices?: unknown } | undefined;
+
+  return json({
+    insurerPrices: normalizeInsurerPrices(mdSettings?.insurerPrices),
+  });
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -84,6 +97,7 @@ const PageContainer = styled('div', {
 
 export default function NewStudy() {
   const { t } = useTranslation();
+  const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const fetcher = useFetcher();
 
@@ -94,8 +108,44 @@ export default function NewStudy() {
   const [comment, setComment] = useState('');
   const [noOrder, setNoOrder] = useState(false);
   const [selectedStudies, setSelectedStudies] = useState<string[]>([]);
+  const [cost, setCost] = useState(0);
+  const [costManuallyEdited, setCostManuallyEdited] = useState(false);
 
   const { data: patient } = useGet('patients', patientId!, { enabled: !!patientId });
+  const patientMedicare = String((patient as any)?.medicare || '');
+  const parsedInsurance = useMemo(() => parsePrepagaDisplay(patientMedicare), [patientMedicare]);
+
+  const prepagaQuery = useMemo(
+    () => ({
+      shortName: parsedInsurance.shortName,
+      denomination: parsedInsurance.denomination,
+      $limit: 1,
+    }),
+    [parsedInsurance.denomination, parsedInsurance.shortName]
+  );
+  const { response: prepagaResponse } = useFind('prepagas', prepagaQuery, {
+    enabled: Boolean(parsedInsurance.shortName && parsedInsurance.denomination),
+    paginate: false,
+  });
+  const prepagaList = Array.isArray(prepagaResponse)
+    ? prepagaResponse
+    : ((prepagaResponse as { data?: unknown[] })?.data ?? []);
+  const insurerId = (prepagaList[0] as { id?: string } | undefined)?.id ?? null;
+
+  const insurerPracticePrices = insurerId ? data.insurerPrices?.[insurerId] : undefined;
+
+  useEffect(() => {
+    if (!insurerId) {
+      if (!costManuallyEdited) {
+        setCost(0);
+      }
+      return;
+    }
+
+    if (!costManuallyEdited) {
+      setCost(resolveStudyCost(selectedStudies, insurerPracticePrices));
+    }
+  }, [costManuallyEdited, insurerId, insurerPracticePrices, selectedStudies]);
 
   const toggleStudy = useCallback((key: string) => {
     setSelectedStudies(prev => (prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]));
@@ -116,11 +166,18 @@ export default function NewStudy() {
       noOrder,
       comment: comment || undefined,
       ...(medicId ? { medicId } : { referringDoctor: referringDoctor || undefined }),
+      insurerId,
+      cost: toNumericPrice(cost),
       results: [],
     };
 
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
-  }, [canSave, patientId, date, selectedStudies, noOrder, comment, referringDoctor, medicId, fetcher]);
+  }, [canSave, patientId, date, selectedStudies, noOrder, comment, referringDoctor, medicId, insurerId, cost, fetcher]);
+
+  const handleCostChange = useCallback((value: string | number) => {
+    setCostManuallyEdited(true);
+    setCost(toNumericPrice(value));
+  }, []);
 
   return (
     <PageContainer>
@@ -156,6 +213,17 @@ export default function NewStudy() {
         onMedicIdChange={setMedicId}
         showEmptyStudyHint
       />
+      <Paper withBorder p="md">
+        <NumberInput
+          label={t('accounting.study_cost', { defaultValue: 'Study cost' })}
+          decimalScale={2}
+          min={0}
+          fixedDecimalScale
+          thousandSeparator=","
+          value={cost}
+          onChange={handleCostChange}
+        />
+      </Paper>
     </PageContainer>
   );
 }

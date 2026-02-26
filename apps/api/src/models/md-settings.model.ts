@@ -125,6 +125,11 @@ export default function (app: Application): typeof Model {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    insurerPrices: {
+      type: DataTypes.JSONB,
+      allowNull: false,
+      defaultValue: {},
+    },
   }, {
     hooks: {
       beforeCount(options: any): HookReturn {

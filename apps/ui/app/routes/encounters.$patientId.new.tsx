@@ -3,7 +3,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { redirect } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Stack, Center, Text } from '@mantine/core';
+import { Stack, Center, Text, NumberInput, Paper } from '@mantine/core';
 
 import { getAuthenticatedClient, authenticatedLoader, isMedicVerified } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -14,6 +14,30 @@ import NewEncounterSidebar from '~/components/new-encounter-sidebar';
 import { EncounterAiChatPanel } from '~/components/encounter-ai-chat-panel';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
+import { normalizeInsurerPrices, parsePrepagaDisplay, toNumericPrice } from '~/utils/accounting';
+
+async function resolveInsurerIdFromPatient(client: any, patient: { medicare?: string | null }) {
+  const { shortName, denomination } = parsePrepagaDisplay(patient?.medicare);
+
+  if (!shortName || !denomination) {
+    return null;
+  }
+
+  const prepagasResponse = await client.service('prepagas').find({
+    query: {
+      shortName,
+      denomination,
+      $limit: 1,
+    },
+    paginate: false,
+  });
+
+  const prepagasList = Array.isArray(prepagasResponse)
+    ? prepagasResponse
+    : ((prepagasResponse as { data?: unknown[] }).data ?? []);
+  const prepaga = prepagasList[0] as { id: string } | undefined;
+  return prepaga?.id ?? null;
+}
 
 const Container = styled('div', {
   base: {
@@ -68,12 +92,20 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   const formData = await request.formData();
   const data = parseFormJson(formData.get('data'));
+  const postedInsurerId = String(formData.get('insurerId') || '').trim();
+  const postedCost = String(formData.get('cost') || '').trim();
+
+  const patient = await client.service('patients').get(patientId);
+  const insurerId = postedInsurerId || (await resolveInsurerIdFromPatient(client, patient));
+  const cost = postedCost ? toNumericPrice(postedCost) : null;
 
   await client.service('encounters').create({
     patientId,
     medicId: user.id,
     date: new Date(),
     data,
+    insurerId,
+    cost,
   });
 
   return redirect(`/encounters/${patientId}`);
@@ -94,8 +126,22 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 
   const patient = await client.service('patients').get(patientId);
 
+  const settingsResponse = await client.service('md-settings').find({
+    query: { userId: user.id, $limit: 1 },
+    paginate: false,
+  });
+  const settingsList = Array.isArray(settingsResponse)
+    ? settingsResponse
+    : ((settingsResponse as { data?: unknown[] }).data ?? []);
+  const mdSettings = settingsList[0] as { insurerPrices?: unknown } | undefined;
+  const insurerPrices = normalizeInsurerPrices(mdSettings?.insurerPrices);
+  const insurerId = await resolveInsurerIdFromPatient(client, patient);
+  const defaultCost = insurerId ? toNumericPrice(insurerPrices[insurerId]?.encounter ?? 0) : 0;
+
   return {
     patient,
+    insurerId,
+    defaultCost,
   };
 });
 
@@ -132,6 +178,7 @@ export default function NewEncounter() {
   const { patient } = data;
   const [formValues, setFormValues] = useState<any>({});
   const [activeFormKey, setActiveFormKey] = useState<string | undefined>(undefined);
+  const [cost, setCost] = useState<number>(data.defaultCost ?? 0);
 
   const activeForms = useMemo(() => {
     const filtered = ALL_FORMS.filter(key => key === null || formValues[key] !== undefined);
@@ -195,12 +242,25 @@ export default function NewEncounter() {
 
       <Content>
         <Stack key={activeFormKey ?? 'no-active-form'}>
+          <Paper withBorder p="md">
+            <NumberInput
+              label={t('accounting.encounter_cost', { defaultValue: 'Encounter cost' })}
+              value={cost}
+              onChange={value => setCost(toNumericPrice(value))}
+              min={0}
+              decimalScale={2}
+              fixedDecimalScale
+              thousandSeparator=","
+            />
+          </Paper>
           {activeFormKey && (
             <EncounterForm
               encounter={{ patientId: patient.id, data: formValues }}
               readOnly={false}
               activeFormKey={activeFormKey}
               onValuesChange={handleValuesChange}
+              cost={cost}
+              insurerId={data.insurerId}
             />
           )}
           {!activeFormKey && (

@@ -10,6 +10,7 @@ import {
   Shield,
   Languages,
   BarChart3,
+  Calculator,
   type LucideProps,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -219,6 +220,13 @@ const sections: Section[] = [
     permissions: ['users:create', 'users:find', 'users:get', 'roles:find', 'roles:get', 'roles:patch'],
     path: '/users',
     color: 'red',
+  },
+  {
+    labelKey: 'accounting',
+    icon: <Calculator />,
+    permissions: ['encounters:find', 'studies:find'],
+    path: '/accounting',
+    color: 'indigo',
   },
   {
     labelKey: 'stats',

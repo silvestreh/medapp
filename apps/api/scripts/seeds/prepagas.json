@@ -1,3155 +1,3681 @@
 [
   {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GALENO CONSULTING GROUP S. A.",
-    "shortName": "GALENO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GERMED S.A.",
-    "shortName": "GERMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDICAL CORPORATIVE TRADE",
-    "shortName": "MEDICAL CORPORATIVE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "FAMYL S.A. SALUD PARA LA FAMILIA",
-    "shortName": "FAMYL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COBERTURA INTEGRAL DE MEDICINA ASISTENCIAL S.A.",
-    "shortName": "CIMA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDICINA ESENCIAL S.A.",
-    "shortName": "MEDICINA ESENCIAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "VS GROUP S.A.",
-    "shortName": "VS GROUP"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "DELTA SALUD S.A.",
-    "shortName": "DELTA SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CRUZ AZUL SALUD",
-    "shortName": "CRUZ AZUL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CEN SALUD S.R.L.",
-    "shortName": "CEN SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CLINICAS MARPLATENSES UNIDAS S.A.",
-    "shortName": "CLINICAS MARPLATENSES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SALUD PLUS S.A.",
-    "shortName": "SALUD PLUS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GILSA",
-    "shortName": "GILSA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SANTA SALUD S.A.",
-    "shortName": "SANTA SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GRUPO SAN NICOLAS S.R.L.",
-    "shortName": "GRUPO SAN NICOLAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SALUD ROSARIO S.A.",
-    "shortName": "SALUD ROSARIO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PRIMED SA",
-    "shortName": "PRIMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOCIEDAD MÉDICA UNIVERSITARIA S.A.",
-    "shortName": "SMU"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GENESEN S.,A.",
-    "shortName": "GENESEN"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "STAFF MEDICO S.A",
-    "shortName": "STAFF MEDICO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDI-CARDIO S.R.L.",
-    "shortName": "MEDI-CARDIO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PARQUE SALUD S.A.",
-    "shortName": "PARQUE SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASISTENCIA SANITARIA INTEGRAL S.A.",
-    "shortName": "ASI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASKHA",
-    "shortName": "ASKHA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "UNO SALUD",
-    "shortName": "UNO SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "NORTE SALUD SA",
-    "shortName": "NORTE SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CRUZ BLANCA DEL SUR (LANUS)",
-    "shortName": "CRUZ BLANCA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CENTROMEDICA",
-    "shortName": "CENTROMEDICA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDICAL´S ORGANIZACION DE PRESTACIONES MEDICAS PRIVADAS S.A.",
-    "shortName": "MEDICALS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CODIME S.A.",
-    "shortName": "CODIME"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CENTRO MÉDICO SAN BLAS S.A.",
-    "shortName": "SAN BLAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDICINA PREPAGA HOMINIS S.A.",
-    "shortName": "HOMINIS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GEA",
-    "shortName": "GEA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CORPORACION ASISTENCIAL S.A.",
-    "shortName": "CORP ASISTENCIAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PRESTADORES SANATORIALES SA",
-    "shortName": "PRESTADORES SANATORIALES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "APRES S.A.",
-    "shortName": "APRES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COBERTURA DE SALUD S.A.",
-    "shortName": "COBERTURA DE SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SU MEDICINA ASISTENCIA S.A.",
-    "shortName": "SU MEDICINA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PROGRAMA DE SALUD S.A.",
-    "shortName": "PROGRAMA DE SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMEDIC S.A.",
-    "shortName": "EMEDIC"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDIN S.A.S.M.A",
-    "shortName": "MEDIN"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SISTEMA DE SALUD DEL COLEGIO MEDICO S.A.",
-    "shortName": "SISTEMA COLEGIO MEDICO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MAPFRE SALUD S.A.",
-    "shortName": "MAPFRE SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INSTITUTO DE INVESTIGACIONES DEL CORAZON INICOR",
-    "shortName": "INICOR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDICUS SOCIEDAD ANONIMA DE ASISTENCIA MEDICA Y CIENTIFICA",
-    "shortName": "MEDICUS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GAM SALUD",
-    "shortName": "GAM SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMECA",
-    "shortName": "EMECA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDICINA FEDERAL S.A",
-    "shortName": "MEDICINA FEDERAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "UNIDAD CORONARIA MOVIL QUILMES",
-    "shortName": "UCM QUILMES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COBERTURA DE SALUD BELL VILLE PRIVADA S.R.L.",
-    "shortName": "COBERTURA BELL VILLE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INSTITUTO MATERNO INFANTIL SA",
-    "shortName": "IMI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ESCENCIAL SRL",
-    "shortName": "ESCENCIAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SALUD INTEGRAL",
-    "shortName": "SALUD INTEGRAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "VITA`S S.A.",
-    "shortName": "VITAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CUIDAR SALUD ASISTENCIA MEDICA DOMICILIARIA",
-    "shortName": "CUIDAR SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GERDANNA SA",
-    "shortName": "GERDANNA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GRUPO DDM SA",
-    "shortName": "GRUPO DDM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "BOEDO SALUD SA",
-    "shortName": "BOEDO SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "BRAMED S.R.L.",
-    "shortName": "BRAMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOCORRO MEDICO PRIVADO CORDOBA S.A.",
-    "shortName": "SOCORRO MEDICO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CLINICA DE LA UNION SA.",
-    "shortName": "CLINICA DE LA UNION"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOCORRO MEDICO SAN MARTIN S.A.",
-    "shortName": "SOCORRO SAN MARTIN"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMERGENCIAS MEDICAS PUNILLA S.A.",
-    "shortName": "EMERGENCIAS PUNILLA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "HEALTH MEDICAL",
-    "shortName": "HEALTH MEDICAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INTERNATIONAL HEALTH SERVICES ARGENTINA S.A",
-    "shortName": "IHSA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMERGENCIA CARDIO ASISTENCIAL S.A.",
-    "shortName": "EMERGENCIA CARDIO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AMC SALUD S.A",
-    "shortName": "AMC SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INSTITUTO PRIVADO DE CLINICA Y CIRUGIA DE LOBOS SA",
-    "shortName": "CLINICA LOBOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SAIMQ SANATORIO PLAZA",
-    "shortName": "SANATORIO PLAZA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SABER S.A.",
-    "shortName": "SABER"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "REYLES S.A.",
-    "shortName": "REYLES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SIMARA S.A.",
-    "shortName": "SIMARA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "HOGAR SALUD S.A.",
-    "shortName": "HOGAR SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GALENO ARGENTINA S.A.",
-    "shortName": "GALENO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CENTRO DE EMERGENCIA MEDICA INTEGRAL",
-    "shortName": "CEMI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "POLICLINICO LOMAS MEDICINA PREPAGA SOCIEDAD ANONIMA",
-    "shortName": "POLICLINICO LOMAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMME S.A.",
-    "shortName": "EMME"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMERGENCIA RIO CUARTO",
-    "shortName": "EMERGENCIA RIO CUARTO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "C.R.S. PRESTADORES DE SALUD S.A.",
-    "shortName": "CRS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SISTEMA DE URGENCIAS DEL ROSAFE S.A.U",
-    "shortName": "URGENCIAS ROSAFE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MPE S.A.",
-    "shortName": "MPE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SEREM SA",
-    "shortName": "SEREM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOCORRO MEDICO PRIVADO S.A.",
-    "shortName": "SOCORRO MEDICO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "UNIFE S.A.",
-    "shortName": "UNIFE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SISTEMAS PRIVADOS DE SALUD S. A.",
-    "shortName": "SPS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CENTRO MEDICO MONDE GRAN SA",
-    "shortName": "MONDE GRAN"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AMECA SA",
-    "shortName": "AMECA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AUSTRAL ORGANIZACION MEDICA INTEGRAL S.A.",
-    "shortName": "AUSTRAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MET CORDOBA S.A",
-    "shortName": "MET CORDOBA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASSI SA",
-    "shortName": "ASSI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "D.I.M.SA. S.A.",
-    "shortName": "DIMSA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CLINICA MEDICO QUIRURGICA SANATORIO JUNIN S.A",
-    "shortName": "SANATORIO JUNIN"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SWISS MEDICAL S.A.",
-    "shortName": "SWISS MEDICAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMERGENCIA MEDICA INTEGRAL S.A.",
-    "shortName": "EMI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "OMINT S.A. DE SERVICIOS",
-    "shortName": "OMINT"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AMCE S.A.",
-    "shortName": "AMCE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PLENA SALUD S.A.",
-    "shortName": "PLENA SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PREVINCA SALUD S.A.",
-    "shortName": "PREVINCA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ECCO S.A.",
-    "shortName": "ECCO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ORDEM SUR S.A.",
-    "shortName": "ORDEM SUR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ADMINISTRAR SALUD S.A.",
-    "shortName": "ADMINISTRAR SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "UNIDEM S.A.",
-    "shortName": "UNIDEM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ARMIENTO SA",
-    "shortName": "ARMIENTO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "IE EMERGENCIAS BOLIVAR SA",
-    "shortName": "IE EMERGENCIAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GRUPO GERENCIADOR G4 SA",
-    "shortName": "GRUPO G4"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SANATORIO MEDICO QUIRURGICO SANTA FE S.A",
-    "shortName": "SANATORIO SANTA FE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INCOR EMERGENCIAS SRL",
-    "shortName": "INCOR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PREMEDIKAL S.R.L",
-    "shortName": "PREMEDIKAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PREMEDICA S.A.",
-    "shortName": "PREMEDICA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "TIMELY MEDICAL",
-    "shortName": "TIMELY"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOREMER S.A.",
-    "shortName": "SOREMER"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "UNIMED SA",
-    "shortName": "UNIMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "FAMILY EMERGENCIAS MEDICAS SRL",
-    "shortName": "FAMILY"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CORSAL SA",
-    "shortName": "CORSAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AMI S.R.L.",
-    "shortName": "AMI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SERVICIOS EMSYS S.A.",
-    "shortName": "EMSYS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EME SALUD SA",
-    "shortName": "EME SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "HEALTHNES S.A.",
-    "shortName": "HEALTHNES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AMPARAS S.A.",
-    "shortName": "AMPARAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GRUPO MEDICO INCAS S.A.",
-    "shortName": "INCAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CARRA SALUD S.A",
-    "shortName": "CARRA SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SANATORIO GARAY S.A.",
-    "shortName": "SANATORIO GARAY"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CALIDAD MÉDICA S.A.",
-    "shortName": "CALIDAD MÉDICA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INTERMED DE JUNIN S.A",
-    "shortName": "INTERMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "LO-MAR S.A.",
-    "shortName": "LO-MAR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SUM S.A.",
-    "shortName": "SUM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SISTEMA ODONTOLÓGICO PREPAGO PAMPEANO",
-    "shortName": "SOPP"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CLINICA ROCA S.A.",
-    "shortName": "CLINICA ROCA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASISTIR SA",
-    "shortName": "ASISTIR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CYNTHIOS SALUD SA",
-    "shortName": "CYNTHIOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PRIVAMED S.A",
-    "shortName": "PRIVAMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "RESCATE CENTRO S.A.",
-    "shortName": "RESCATE CENTRO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MANO SALUD",
-    "shortName": "MANO SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMERGENCIAS MEDICAS OLAVARRIA SRL",
-    "shortName": "EMERGENCIAS OLAVARRIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ENTRE RIOS EMERGENCIAS S.R.L.",
-    "shortName": "ER EMERGENCIAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "IMEDICAL S.A.",
-    "shortName": "IMEDICAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "VEM SA",
-    "shortName": "VEM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CARDIO SA",
-    "shortName": "CARDIO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMERGENCIAS MEDICAS ENTRE RIOS SRL",
-    "shortName": "EMERGENCIAS ENTRE RIOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ECA",
-    "shortName": "ECA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDOM S.A.",
-    "shortName": "MEDOM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEMED S.A.",
-    "shortName": "MEMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "IMPLATEL S.A.",
-    "shortName": "IMPLATEL"
-  },
-  {
+    "id": "002b7eb5-80b5-4667-ba28-2adef18e5d7b",
     "rnas": null,
     "enemp": null,
     "denomination": "ACZEP S.A.",
     "shortName": "ACZEP"
   },
   {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "LPSM S.A.",
-    "shortName": "LPSM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EQUIPO MEDICO DE EMERGENCIAS",
-    "shortName": "EME"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ORGANIZACION GALVEZ S.A.",
-    "shortName": "ORG GALVEZ"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDICAR S.R.L.",
-    "shortName": "MEDICAR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMERGENCIA SRL",
-    "shortName": "EMERGENCIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "NATIVUS SRL",
-    "shortName": "NATIVUS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ELAREYNA",
-    "shortName": "ELAREYNA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INSTITUTO PANAMERICANO DE SALUD S.A.",
-    "shortName": "PANAMERICANO SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SALTMED ORGANIZACION MEDICA INTEGRAL SRL",
-    "shortName": "SALTMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "Nordica Salud s.r.l.",
-    "shortName": "NORDICA SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "FAMILY SALUD",
-    "shortName": "FAMILY SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PANGEA S.A.",
-    "shortName": "PANGEA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "HUINCA SALUD",
-    "shortName": "HUINCA SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PROTECCION EMERALD SALUD SA",
-    "shortName": "EMERALD SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SIALNOR",
-    "shortName": "SIALNOR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "FISHERTON SALUD S.R.L.",
-    "shortName": "FISHERTON SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "And the Yellow Too S.A.",
-    "shortName": "AND THE YELLOW"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDIPAR SA",
-    "shortName": "MEDIPAR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ROI SA",
-    "shortName": "ROI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SALUD DEL NUEVO ROSARIO SA",
-    "shortName": "NUEVO ROSARIO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASISTENCIA MODELO VICENTE LOPEZ SA",
-    "shortName": "ASISTENCIA MODELO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ECSA SALUD",
-    "shortName": "ECSA SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "Prevención Salud S.A.",
-    "shortName": "PREVENCION SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PROTECCION MEDICA SRL",
-    "shortName": "PROMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDVISUR SALUD S.A.",
-    "shortName": "MEDVISUR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "Hospital Privado Regional del Sur SA",
-    "shortName": "HPR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PLUS SALUD",
-    "shortName": "PLUS SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ENSALUD",
-    "shortName": "ENSALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOCIEDAD DE SEERVICIOS DE SALUD DE SALTA S.A.",
-    "shortName": "SALUD SALTA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "TACCHI JULIO ALFREDO Y TACCHI JUAN CARLOS SOCIEDAD DE HECHO",
-    "shortName": "TACCHI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "Sancor Medicina Privada",
-    "shortName": "SANCOR SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "BIENESTAR SALUD SA",
-    "shortName": "BIENESTAR SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PLAN ODONTOLOGICO INTEGRAL S.A",
-    "shortName": "POI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "Conciencia Medica S.A",
-    "shortName": "CONCIENCIA MEDICA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "RED SALUD",
-    "shortName": "RED SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "OSCOSALUD",
-    "shortName": "OSCOSALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "DIAGNOSTICO BOULOGNE",
-    "shortName": "DIAGNOSTICO BOULOGNE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASIPSALUD",
-    "shortName": "ASIPSALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AMSTERDAM SALUD SA",
-    "shortName": "AMSTERDAM SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SANATORIO MAPACI S.A.",
-    "shortName": "MAPACI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "La Casa del Medico Mutual",
-    "shortName": "CASA DEL MEDICO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SANTE MEDICAL SRL",
-    "shortName": "SANTE MEDICAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PLENIMEDICAL S.A.",
-    "shortName": "PLENIMEDICAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMERGENCIAS DEL SUR S.R.L.",
-    "shortName": "EMERGENCIAS DEL SUR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MARCOS Y HUGO LIBEDISNKY S.A (CRISOLMED )",
-    "shortName": "CRISOLMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "UNION A.F. MENDOZA SALUD SA",
-    "shortName": "UAF MENDOZA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "salud uteplim",
-    "shortName": "UTEPLIM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SP HEALTH GROUP",
-    "shortName": "SP HEALTH"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDYCIN ARGENTINO S.A.",
-    "shortName": "MEDYCIN"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AGRUPACIÓN SANATORIAL SUR S.A.",
-    "shortName": "ASS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SANITAS SALUD S.R.L.",
-    "shortName": "SANITAS SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ANDESALUD S.A.",
-    "shortName": "ANDESALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "BONMED S.A.",
-    "shortName": "BONMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CONURBANO SALUD",
-    "shortName": "CONURBANO SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "A.M.R. SALUD S.A.S.",
-    "shortName": "AMR SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SISTEMA INTEGRADO DE PRESTADORES DE SALUD SA",
-    "shortName": "SIPS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "YOUR HEALTH S.A.",
-    "shortName": "YOUR HEALTH"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CENTRO MEDICO IPAM S.A.",
-    "shortName": "IPAM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SISTEMA INTEGRAL DE SALUD DEL SANATORIO CHIVILCOY S.A.",
-    "shortName": "SANATORIO CHIVILCOY"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDICINA PRIVADA S.A.",
-    "shortName": "MEDICINA PRIVADA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GALENO S.R.L.",
-    "shortName": "GALENO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "UNION EMERGENCIAS REGIONALES S.A.",
-    "shortName": "UER"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASISMED",
-    "shortName": "ASISMED"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ADMINISTRACION RECURSOS PARA SALUD.S.A",
-    "shortName": "ARPS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "NOBIS SA",
-    "shortName": "NOBIS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "EMINENTE MEDICINAL S.A.",
-    "shortName": "EMINENTE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MEDICAL SERVICIOS DE SALUD S.R.L.",
-    "shortName": "MEDICAL SERVICIOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COOPERATIVA DE TRABAJO DE SERVICIOS MEDICO ASISTENCIALES NECOCHEA LTDA.",
-    "shortName": "COOP NECOCHEA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PLURAL COOPERATIVA DE CREDITO, CONSUMO Y VIVIENDA LTDA.",
-    "shortName": "PLURAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AVALIAN SALUD Y BIENESTAR COOPERATIVA LIMITADA EX ACA SALUD COOPERATIVA DE PRESTACION DE SERVICIOS MEDICO ASISTENCIALES LTDA",
-    "shortName": "AVALIAN"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COOP DE TRABAJO MEDICO URUGUAY LTDA",
-    "shortName": "COOP URUGUAY"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INSTITUTO MÉDICO ASISTENCIAL - IMA - COOPERATIVA DE PROVISIÓN DE SERVICIOS PARA PROFESIONALES DEL ARTE DE CURAR LTDA.",
-    "shortName": "IMA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COOPERATIVA DE ENERGIA ELECTRICA Y O.S.P.LAS VARILLAS LTDA",
-    "shortName": "COOP LAS VARILLAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COOPERATIVA DE PREVISIÓN DE SERVICIOS PÚBLICOS, ASISTENCIALES,VIVIENDA Y CRÉDITO LTDA.",
-    "shortName": "COOP SERVICIOS PUBLICOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COOPERATIVA DE TRABAJO DE ATENCION MEDICA INTEGRAL DEL SUR DE DE LA PROVINCIA DE CORDOBA (AMICOR) LTDA.",
-    "shortName": "AMICOR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COOP.DE PROV.DE OBRAS Y SERV.PCOS DE GDOR.CRESPO LTDA.",
-    "shortName": "COOP GDOR CRESPO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "GRAN COOPERATIVA DE CREDITO, VIVIENDA, CONSUMO Y SERVICIOS SOCIALES LIMITADA",
-    "shortName": "GRAN COOPERATIVA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COOPERATIVA DE PROVISION DE SERVICO ELECTRICO Y OTROS SERVICIOS PUBLICOS LIMITADA DE PIGUE",
-    "shortName": "COOP PIGUE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COOPERATIVA DE ELECTRICIDAD, SERVICIOS PUBLICOS VIVIENDA Y CREDITO DE VILLA CAÑÁS LIMITADA - COEVICAL-",
-    "shortName": "COEVICAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "COOPERATIVA DE CREDITO DE SERVICIOS PUBLICOS Y SOCIALES CRUZ DEL EJE LTDA.",
-    "shortName": "COOP CRUZ DEL EJE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "Cooperativa de Provision de Obras y Servicios Publicos y de Creditos Cuenca del Salado ltda",
-    "shortName": "COOP CUENCA SALADO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL DE LA INDUSTRIA CURTIDORA ARGENTINA",
-    "shortName": "MICA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION SOCORROS MUTUOS FUERZAS ARMADAS",
-    "shortName": "MUTUAL FF.AA."
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DEL PERSONAL JERARQUICO DE BANCOS OFICIALES NACIONALES",
-    "shortName": "MUTUAL JERARQUICOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE EMPLEADOS PROVINCIALES DE LA PROVINCIA DE BUENOS AIRES.",
-    "shortName": "AMEP"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL AGUA Y ENERGIA ELECTRICA DE CAPITAL FEDERAL",
-    "shortName": "MUTUAL AGUA Y ENERGIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE SALUD DE CIUDADELA",
-    "shortName": "MUTUAL CIUDADELA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL PERSONAL SANCOR",
-    "shortName": "MUTUAL SANCOR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL 12 DE ENERO TRABAJADORES PASTELEROS, CONFITEROS, PIZZEROS, HELADEROS, ALFAJOREROS Y SERVICIOS RAPIDOS.",
-    "shortName": "MUTUAL PASTELEROS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION DE PROTECCION RECIPROCA ENTRE PRODUCTORES AGROPECUARIOS",
-    "shortName": "APREPA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOC MUTUAL TRABAJADORES EMPLEADOS DE COMERCIO",
-    "shortName": "MUTUAL COMERCIO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DR. ESTEBAN LAUREANO MARADONA SALUD",
-    "shortName": "MUTUAL MARADONA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AMUVAC",
-    "shortName": "AMUVAC"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUALISTA DE EMPLEADOS DEL BANCO DE LA PROVINCIA DE BUENOS AIRES",
-    "shortName": "MUTUAL BANCO PROVINCIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUALISTA DE EMPLEADOS DEL MINISTERIO DE OBRAS PÚBLICAS",
-    "shortName": "AMEMOP"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL SINDICATO DE CAMIONEROS",
-    "shortName": "MUTUAL CAMIONEROS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL ARGUS SALUD",
-    "shortName": "ARGUS SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL COSECHA SALUD",
-    "shortName": "COSECHA SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE CHOFERES DE CAMIONES, OBREROS Y EMPLEADOS DEL TRANSPORTE AUTOMOTOR DE CARGAS GENERALES DE MISIONES",
-    "shortName": "MUTUAL CAMIONEROS MISIONES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL PREMIUM",
-    "shortName": "MUTUAL PREMIUM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL DEL PERSONAL DE TRANSPORTE AUTOMOTOR PLAZA",
-    "shortName": "MUTUAL TRANSPORTE PLAZA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PROGRAMAS MEDICOS SOCIEDAD ARGENTINA DE CONSULTORIA MUTUAL",
-    "shortName": "PROGRAMAS MEDICOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL MUNICIPALES DEL DEPARTAMENTO GENERAL LOPEZ",
-    "shortName": "MUTUAL MUNICIPALES GL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL RURALISTA",
-    "shortName": "MUTUAL RURALISTA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL DE AYUDA ENTRE ASOC. DE LA ASOC. DEP.EVERTON-OLIMPIA",
-    "shortName": "MUTUAL EVERTON-OLIMPIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "OBRA ASISTENCIAL MUTUAL PARA AGENTES MUNICIPALES OAM",
-    "shortName": "OAM"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL CON-SER CONFIANZA Y SERVICIO",
-    "shortName": "CON-SER"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL GREMIAL MEDICA",
-    "shortName": "MUTUAL GREMIAL MEDICA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL TRABAJADORES ACTIVIDAD REPOSTERIA",
-    "shortName": "MUTUAL REPOSTERIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL MEDICA RIO CUARTO",
-    "shortName": "MUTUAL RIO CUARTO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CIRC SUBOF DE LA FZA AREA ARG ASOC MUTUAL",
-    "shortName": "MUTUAL FZA AEREA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOCIEDAD ESPAÑOLA DE SOCORROS MUTUOS DE TRES ARROYOS",
-    "shortName": "MUTUAL ESPAÑOLA TRES ARROYOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL MEDICA CONCORDIA",
-    "shortName": "MUTUAL CONCORDIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOC MUTUAL SEGURIDAD SOCIAL 13 DE MAYO",
-    "shortName": "MUTUAL 13 DE MAYO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PRENAPA ASOC.MUTUAL COMPENSADORA SANITARIA",
-    "shortName": "PRENAPA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL DEL PERSONAL DE FUTURA NORTE S.A.",
-    "shortName": "MUTUAL FUTURA NORTE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL SANCOR SALUD",
-    "shortName": "SANCOR SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "A.I.S.M. UNIONE E BENEVOLENZA",
-    "shortName": "UNIONE E BENEVOLENZA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES ARGENTINOS ESTATALES (AMTAE)",
-    "shortName": "AMTAE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL FEDERADA 25 DE JUNIO SOCIEDAD DE PROTECCION RECIPROCA.",
-    "shortName": "FEDERADA SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE ASOCIADOS Y EMPLEADOS DE LA COOPERATIVA MARPLATENSE DE PESCA E INDUSTRIALIZACION LIMITADA (COOMARPES)",
-    "shortName": "COOMARPES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CENTRO UNION DEPENDIENTES ASOCIACION DE PROTECCION MUTUA",
-    "shortName": "CENTRO UNION"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL Y PROTECCION RECIPROCA UNISOL SALUD",
-    "shortName": "UNISOL SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL ARGENTINA DEL TURISMO",
-    "shortName": "AMAT"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL METALMECANICA ENTRE OBREROS Y TECNICOS AFILIADOS AL SINDICATO DE MECANICOS Y AFINES DEL TRANSPORTE AUTOMOTOR",
-    "shortName": "MUTUAL METALMECANICA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL MERCANTIL EMPRESARIA",
-    "shortName": "MME"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "HOSPITAL ESPAÑOL DEL SUR MENDOCINO SOCIEDAD DE BENEFICIENCIA Y MUTUALIDAD",
-    "shortName": "HOSPITAL ESPAÑOL SUR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL MÉDICA VILLA MARÍA",
-    "shortName": "MUTUAL VILLA MARÍA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL MERCANTIL BAHIENSE",
-    "shortName": "AMMB"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL 10 DE ABRIL",
-    "shortName": "MUTUAL 10 DE ABRIL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL CENTRO MÉDICO DE SAN FRANCISCO",
-    "shortName": "MUTUAL SAN FRANCISCO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOCIEDAD ITALIANA DE SOCORROS MUTUOS CAMPANA",
-    "shortName": "ITALIANA CAMPANA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL DE EX EMPLEADOS DE AGUA, LA ENERGIA ELECTRICA Y OTRAS ACTIVIDADES - JUJUY",
-    "shortName": "MUTUAL AGUA JUJUY"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL FERROVIARIA",
-    "shortName": "MUTUAL FERROVIARIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE PROFESIONALES",
-    "shortName": "MUTUAL PROFESIONALES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "A.M.PARA LA AYUDA RECIPROCA DE ASOCIADOS REGIONALES",
-    "shortName": "AMARAR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE PROTECCION FAMILIAR",
-    "shortName": "AMPF"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE EMPLEADOS DE COMERCIO DEL SUDESTE BONAERENSE",
-    "shortName": "AMEC"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL DEL PERSONAL DEL CENTRO INDUSTRIAL ACINDAR",
-    "shortName": "MUTUAL ACINDAR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL INTERIOR DEFENSA Y JUSTICIA",
-    "shortName": "MUTUAL DEFENSA Y JUSTICIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL DE SERVICIOS ASISTENCIALES DE MEDICINA INTERDISCIPLINARIA-SAMI",
-    "shortName": "SAMI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOCIEDAD ESPAÑOLA DE BENEFICENCIA Y MUTUALIDAD",
-    "shortName": "ESPAÑOLA MUTUALIDAD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE FARMACEUTICOS DE MENDOZA A.M.F.A.R.",
-    "shortName": "AMFAR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL C Y D DE TRABAJADORES DEL ESTADO",
-    "shortName": "MUTUAL TRABAJADORES ESTADO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL 22 DE DICIEMBRE DEL DEPARTAMENTO IRIONDO",
-    "shortName": "MUTUAL IRIONDO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION ESPAÑOLA DE SOCORROS MUTUOS -VILLA CONSTITUCION-",
-    "shortName": "ESPAÑOLA VILLA CONSTITUCION"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES PORTUARIOS DE LA REPUBLICA ARGENTINA",
-    "shortName": "MUTUAL PORTUARIOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN DE EMPLEADOS MUNICIPALES-MUTUALIDAD",
-    "shortName": "MUTUAL MUNICIPALES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "LA RECIPROCA A.A.M.E.B.P.B.A.",
-    "shortName": "LA RECIPROCA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE PENSIONADOS SOCIALES LEY 5110",
-    "shortName": "MUTUAL LEY 5110"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL MEDICOS ASOCIACION MEDICA DEL DEPARTAMENTO DIAMANTE",
-    "shortName": "MUTUAL MEDICOS DIAMANTE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "PROTECCIÓN INTEGRAL PARA LA FAMILIA ASOCIACIÓN MUTUAL",
-    "shortName": "PROTECCION INTEGRAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL SM SALUD DE SOCIEDAD MEDICA DEL DEPARTAMENTO LAS COLONIAS",
-    "shortName": "SM SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL DE INTEGRANTES DEL PODER JUDICIAL",
-    "shortName": "MUTUAL JUDICIAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL BS.AS. STAFF DE MEDICINA Y SERVICIOS",
-    "shortName": "MUTUAL BS.AS. STAFF"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DEL PERSONAL DEL MINISTERIO DE EDUCACION Y JUSTICIA DE LA NACION (MUPEDUC)",
-    "shortName": "MUPEDUC"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL BIENESTAR Y PROGRESO",
-    "shortName": "BIENESTAR Y PROGRESO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL MÉDICA DEL OESTE",
-    "shortName": "MUTUAL OESTE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOC. ESPAÑOLA DE SOCORROS MUTUOS Y BENEFICIENCIA DE LA PLATA",
-    "shortName": "ESPAÑOLA LA PLATA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "HOSPITAL ITALIANO DE LA PLATA - ASOCIACIÓN DE SOCORROS MUTUOS Y BENEFICENCIA",
-    "shortName": "ITALIANO LA PLATA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL ENTRERRIANA DE SERVICIOS",
-    "shortName": "AMES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE LA COSTA SUDESTE",
-    "shortName": "MUTUAL COSTA SUDESTE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL INTEGRAL DE CONSUMOS Y SERVICIOS",
-    "shortName": "AMICS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DEL CONTROL INTEGRAL",
-    "shortName": "MUTUAL CONTROL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "OLIMPIA ASOCIACIÓN MUTUAL",
-    "shortName": "OLIMPIA MUTUAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOCIEDAD MUTUAL DE VILLA LA EMILIA",
-    "shortName": "MUTUAL VILLA EMILIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DOC ( EX ASOCIACION MUTUAL EMPLEADOS Y FUNCIONARIOS DEL GRUPO CORDOBA SALUD)",
-    "shortName": "MUTUAL DOC"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES MUNICIPALES DE ROSARIO",
-    "shortName": "MUTUAL MUNICIPALES ROSARIO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DEL PERSONAL DE LA AFIP",
-    "shortName": "MUTUAL AFIP"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOC. MUTUAL INTERCOOOP. SOLID.PROV. DE CBA. (AMICOS)",
-    "shortName": "AMICOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL METALURGICA VILLA CONSTITUCION",
-    "shortName": "MUTUAL METALURGICA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL DE AGRICULTURA Y GANADERIA",
-    "shortName": "MUTUAL AGRICULTURA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL SOCIOS CIRCULO MEDICO DE NOGOYA",
-    "shortName": "MUTUAL MEDICA NOGOYA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CIRCULO MUTUAL DE SUBOFICIALES RETIRADOS DE LA POLICIA FEDERAL ARGENTINA",
-    "shortName": "MUTUAL PFA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL CAPITAL DE SANTIAGO DEL ESTERO",
-    "shortName": "MUTUAL CAPITAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL SOCIOS CIRCULO MEDICO DE VICTORIA",
-    "shortName": "MUTUAL MEDICA VICTORIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL LICEANA",
-    "shortName": "MUTUAL LICEANA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL DE EMPLEADOS DE COMERCIO DE NOGOYÁ",
-    "shortName": "MUTUAL COMERCIO NOGOYA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASISTENCIA MUTUAL AERONAVEGANTE",
-    "shortName": "AMA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOC. MUTUAL AYUDA EMPL. PREVINCA SERV. SOCIALES",
-    "shortName": "MUTUAL PREVINCA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE EMPLEADOS DE FARMACIA 22 DE DICIEMBRE",
-    "shortName": "MUTUAL FARMACIA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL PERSONA JOHN DEERE ARGENTINA",
-    "shortName": "MUTUAL JOHN DEERE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL PROVINCIAL MARIANO MORENO",
-    "shortName": "MUTUAL MARIANO MORENO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL SISTEMA PREVENTIVO SOCIAL",
-    "shortName": "MSPS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL MERCANTIL ARGENTINA DE LOS EMPLEADOS DE COMERCIO DEL CHACO",
-    "shortName": "MUTUAL COMERCIO CHACO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE SERVICIOS PARA INTERNACIONES Y OPERACIONES",
-    "shortName": "AMSIO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE PROFESIONALES DEL HOSPITAL ITALIANO DE CORDOBA",
-    "shortName": "MUTUAL ITALIANO CBA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "A.M.U.K.R.A.",
-    "shortName": "AMUKRA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL DE TRABAJADORES DEL TRANSPORTE AUTOMOTOR DE CARGAS",
-    "shortName": "MUTUAL TRANSPORTE CARGAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION ESPAÑOLA DE SOCORROS MUTUOS DE CORDOBA",
-    "shortName": "ESPAÑOLA CORDOBA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL DE EMPLEADOS DE SISTEMAS MEDICOS DE EMERGENCIAS DE LA REPUBLICA ARGENTINA",
-    "shortName": "MUTUAL EMERGENCIAS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES MUNICIPALES DE LA MATANZA",
-    "shortName": "MUTUAL MUNICIPALES MATANZA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "CENTRO DE ATENCION MEDICA ASOCIACION MUTUAL DE SALUD",
-    "shortName": "MUTUAL DE SALUD"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "AMEPORT MUTUAL DEL PERSONAL DEL ESTADO NACIONA PROVINCIAL MUNICIPAL Y AFINES",
-    "shortName": "AMEPORT"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL 24 DE DICIEMBRE",
-    "shortName": "MUTUAL 24 DICIEMBRE"
-  },
-  {
-    "rnas": null,
-    "enempative": null,
-    "denomination": "ASOCIACION MUTUAL DE COMERCIANTES BARTOLOME MITRE",
-    "shortName": "MUTUAL B. MITRE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL INTERCOOPERATIVA",
-    "shortName": "MUTUAL INTERCOOPERATIVA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL VALLE INFERIOR .-AMVI",
-    "shortName": "AMVI"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES CULTURALES Y SOCIALES",
-    "shortName": "MUTUAL CULTURAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL de EMPLEADOS DE POLICIA DE LA PROVINCIA DE CORDOBA",
-    "shortName": "MUTUAL POLICIA CORDOBA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL GRAN ROSARIO",
-    "shortName": "MUTUAL GRAN ROSARIO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACIÓN MUTUAL AMAR DE AYUDA RECIPROCA",
-    "shortName": "AMAR"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "UNION OBRERA ASOCIACION DE SOCORROS MUTUOS",
-    "shortName": "MUTUAL UNION OBRERA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL SIDERURGICA GENERAL SAVIO",
-    "shortName": "MUTUAL SIDERURGICA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SOCIEDAD ITALIANA DE SOCORROS MUTUOS",
-    "shortName": "SOCIEDAD ITALIANA"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOC. ESPAÑOLA DE SOCORROS MUTUOS",
-    "shortName": "ESPAÑOLA SOCORROS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL DEL TRABAJADOR VIAL SANTA FE",
-    "shortName": "MUTUAL VIAL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL DE SUBOFICIALES Y PENSIONADAS FEDERALES DEL INTERIOR",
-    "shortName": "MUTUAL SUBOFICIALES"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "MUTUAL MERCANTIL 26 DE SEPTIEMBRE",
-    "shortName": "MUTUAL MERCANTIL"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL ROSARIO METALMECANICA Y AFINES",
-    "shortName": "MUTUAL ROSARIO"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ASOCIACION MUTUAL SEGURIDAD SOCIAL",
-    "shortName": "MUTUAL SEGURIDAD SOCIAL"
-  },
-  {
-    "rnas": "0-0010-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL NAVAL",
-    "shortName": "OSPN"
-  },
-  {
-    "rnas": "0-0020-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA PREFECTURA NAVAL ARGENTINA",
-    "shortName": "OSPNA"
-  },
-  {
-    "rnas": "0-0030-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA POLICIA FEDERAL ARGENTINA",
-    "shortName": "OSPFA"
-  },
-  {
-    "rnas": "1-0010-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE AERONAVEGANTES",
-    "shortName": "OSA"
-  },
-  {
-    "rnas": "1-0020-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE EMPLEADOS DE ADUANA",
-    "shortName": "OSEAD"
-  },
-  {
-    "rnas": "1-0030-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA ACTIVIDAD DEL SURF",
-    "shortName": "OSPAS"
-  },
-  {
-    "rnas": "1-0040-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE AGUAS GASEOSAS Y AFINES",
-    "shortName": "OSAGA"
-  },
-  {
-    "rnas": "1-0060-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE AGUAS CORRIENTES Y OBRAS SANITARIAS",
-    "shortName": "OSPAC"
-  },
-  {
-    "rnas": "1-0070-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE ALFOMBRAS, TAPIZADOS, CAPAS E IMPERMEABLES",
-    "shortName": "OSPATI"
-  },
-  {
-    "rnas": "1-0080-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DE LA ALIMENTACION",
-    "shortName": "OSPIA"
-  },
-  {
-    "rnas": "1-0090-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE BARRACAS DE LANAS, CUEROS Y ANEXOS",
-    "shortName": "OSPB"
-  },
-  {
-    "rnas": "1-0100-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL ESPECTACULO PUBLICO",
-    "shortName": "OSPEP"
-  },
-  {
-    "rnas": "1-0110-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL CALZADO",
-    "shortName": "OSPIC"
-  },
-  {
-    "rnas": "1-0120-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE CAPITANES DE PESCA",
-    "shortName": "OSCP"
-  },
-  {
-    "rnas": "1-0130-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE CAPITANES, PILOTOS Y PATRONES DE YATES",
-    "shortName": "OSCPPY"
-  },
-  {
-    "rnas": "1-0140-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA CARTONERA",
-    "shortName": "OSPIC"
-  },
-  {
-    "rnas": "1-0150-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL CAUCHO",
-    "shortName": "OSPIC"
-  },
-  {
-    "rnas": "1-0160-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL CAUCHO DE ARMADO DE CALZADO",
-    "shortName": "OSPCAC"
-  },
-  {
-    "rnas": "1-0180-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL CEMENTO",
-    "shortName": "OSPIC"
-  },
-  {
-    "rnas": "1-0190-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA CERAMICA, SANITARIOS Y PORCELANA DE MESA",
-    "shortName": "OSPC"
-  },
-  {
-    "rnas": "1-0200-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA CINEMATOGRAFICA",
-    "shortName": "OSPIC"
-  },
-  {
-    "rnas": "1-0210-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE COMISARIOS NAVALES",
-    "shortName": "OSCN"
-  },
-  {
-    "rnas": "1-0230-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE DIRECCION DE COMERCIO",
-    "shortName": "OSPEDC"
-  },
-  {
-    "rnas": "1-0240-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE CONDUCTORES NAVALES",
-    "shortName": "OSCON"
-  },
-  {
+    "id": "004adcd4-3ad9-448e-80c6-e039d9156ab1",
     "rnas": "1-0250-7",
     "enemp": null,
     "denomination": "OBRA SOCIAL DEL PERSONAL DE LA CONSTRUCCION",
     "shortName": "OSPECON"
   },
   {
-    "rnas": "1-0260-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE COTILLON Y AFINES",
-    "shortName": "OSCYA"
-  },
-  {
-    "rnas": "1-0270-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL CUERO",
-    "shortName": "OSPIC"
-  },
-  {
-    "rnas": "1-0280-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE CHOFERES DE CAMIONES",
-    "shortName": "OSCHOCA"
-  },
-  {
-    "rnas": "1-0290-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE ENTIDADES DEPORTIVAS Y CIVILES",
-    "shortName": "OSPEDYC"
-  },
-  {
-    "rnas": "1-0300-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE ESCRIBANIAS DE LA CIUDAD DE BUENOS AIRES",
-    "shortName": "OSPECBA"
-  },
-  {
-    "rnas": "1-0310-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE ESCRIBANOS DE LA PROVINCIA DE BUENOS AIRES",
-    "shortName": "OSPEPBA"
-  },
-  {
-    "rnas": "1-0320-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE ESTACIONES DE SERVICIO, GARAJE S, PLAYAS Y LAVADEROS",
-    "shortName": "OSPESGA"
-  },
-  {
-    "rnas": "1-0330-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE FARMACIA",
-    "shortName": "OSPF"
-  },
-  {
-    "rnas": "1-0340-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL FERTILIZANTE",
-    "shortName": "OSPF"
-  },
-  {
-    "rnas": "1-0350-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL FIDEO",
-    "shortName": "OSPIF"
-  },
-  {
-    "rnas": "1-0360-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL FOSFORO",
-    "shortName": "OSPIF"
-  },
-  {
-    "rnas": "1-0370-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE FOTOTIPISTAS",
-    "shortName": "OSPF"
-  },
-  {
-    "rnas": "1-0380-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL GAS",
-    "shortName": "OSPIG"
-  },
-  {
-    "rnas": "1-0390-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL GRAFICO",
-    "shortName": "OSPG"
-  },
-  {
-    "rnas": "1-0400-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE GUITARRERIA",
-    "shortName": "OSPG"
-  },
-  {
-    "rnas": "1-0410-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL HIELO",
-    "shortName": "OSPIH"
-  },
-  {
-    "rnas": "1-0420-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL JUEGO DE AZAR",
-    "shortName": "OSJA"
-  },
-  {
-    "rnas": "1-0430-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL JABON",
-    "shortName": "OSPJ"
-  },
-  {
-    "rnas": "1-0440-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE JARDINES DE INFANTES",
-    "shortName": "OSPJI"
-  },
-  {
-    "rnas": "1-0450-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL LADRILLERO",
-    "shortName": "OSPL"
-  },
-  {
-    "rnas": "1-0460-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA LECHERA",
-    "shortName": "OSPIL"
-  },
-  {
-    "rnas": "1-0470-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LOTERIA",
-    "shortName": "OSPL"
-  },
-  {
-    "rnas": "1-0480-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LOCOMOTIVEROS DE FERROCARRILES",
-    "shortName": "OSL"
-  },
-  {
-    "rnas": "1-0490-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE MAESTRANZA",
-    "shortName": "OSPM"
-  },
-  {
-    "rnas": "1-0500-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE MAQUINISTAS DE TEATRO Y TELEVISION",
-    "shortName": "OSMTTV"
-  },
-  {
-    "rnas": "1-0510-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE CAPITANES Y BAQUEANOS FLUVIALES",
-    "shortName": "OSCBF"
-  },
-  {
-    "rnas": "1-0520-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE MECANICOS Y AFINES DEL TRANSPORTE AUTOMOTOR",
-    "shortName": "OSMATA"
-  },
-  {
-    "rnas": "1-0530-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL MEDICO Y PARAMEDICO",
-    "shortName": "OSMP"
-  },
-  {
-    "rnas": "1-0540-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE MENSAJEROS Y CADETES",
-    "shortName": "OSMYC"
-  },
-  {
-    "rnas": "1-0550-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL MERCADO DE ABASTO",
-    "shortName": "OSPMA"
-  },
-  {
-    "rnas": "1-0560-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE MINAS Y CANTERAS",
-    "shortName": "OSPMC"
-  },
-  {
-    "rnas": "1-0570-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE MODELISTAS",
-    "shortName": "OSPM"
-  },
-  {
-    "rnas": "1-0580-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE MOLINEROS",
-    "shortName": "OSPM"
-  },
-  {
-    "rnas": "1-0590-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL MOSAICO",
-    "shortName": "OSPM"
-  },
-  {
-    "rnas": "1-0600-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE MUSICOS",
-    "shortName": "OSM"
-  },
-  {
-    "rnas": "1-0610-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL NEUMATICO",
-    "shortName": "OSPIN"
-  },
-  {
-    "rnas": "1-0620-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL ORGANISMO DE CONTROL EXTERNO",
-    "shortName": "OSPOCE"
-  },
-  {
-    "rnas": "1-0630-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL PAN",
-    "shortName": "OSPP"
-  },
-  {
-    "rnas": "1-0640-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL PAPEL, CARTON Y QUIMICOS",
-    "shortName": "OSPI PPYQ"
-  },
-  {
-    "rnas": "1-0650-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA PARLANTISTA",
-    "shortName": "OSPIP"
-  },
-  {
-    "rnas": "1-0660-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE PASTEURIZACION Y FABRICAS DE HIELO",
-    "shortName": "OSPFH"
-  },
-  {
-    "rnas": "1-0670-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE PASTELEROS, CONFITEROS, PIZZEROS Y HELADEROS",
-    "shortName": "OSPP"
-  },
-  {
-    "rnas": "1-0680-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE PELUQUERIA, ESTETICA Y AFINES",
-    "shortName": "OSPEA"
-  },
-  {
-    "rnas": "1-0690-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL PESCADO",
-    "shortName": "OSPIP"
-  },
-  {
-    "rnas": "1-0700-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE PETROLEO",
-    "shortName": "OSPP"
-  },
-  {
-    "rnas": "1-0710-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL PLASTICO",
-    "shortName": "OSPIP"
-  },
-  {
-    "rnas": "1-0720-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE PUBLICIDAD",
-    "shortName": "OSPP"
-  },
-  {
-    "rnas": "1-0740-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE RECOLECCION Y BARRIDO",
-    "shortName": "OSPRB"
-  },
-  {
-    "rnas": "1-0750-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE REFINERIAS DE MAIZ",
-    "shortName": "OSPRM"
-  },
-  {
-    "rnas": "1-0760-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL REGISTRO DE LA PROPIEDAD INMUEBLE",
-    "shortName": "OSPRPI"
-  },
-  {
-    "rnas": "1-0770-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE RELOJEROS Y JOYEROS",
-    "shortName": "OSPRJ"
-  },
-  {
-    "rnas": "1-0780-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE RENTAS Y CATASTRO",
-    "shortName": "OSPRC"
-  },
-  {
-    "rnas": "1-0790-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE SANIDAD",
-    "shortName": "OSPSA"
-  },
-  {
-    "rnas": "1-0800-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE SEGURIDAD",
-    "shortName": "OSPS"
-  },
-  {
-    "rnas": "1-0810-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE SERVICIOS FUNERARIOS",
-    "shortName": "OSPSF"
-  },
-  {
-    "rnas": "1-0820-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE SEGUROS",
-    "shortName": "OSPS"
-  },
-  {
-    "rnas": "1-0830-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL TABACO",
-    "shortName": "OSPT"
-  },
-  {
-    "rnas": "1-0840-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE TELECOMUNICACIONES",
-    "shortName": "OSPTEL"
-  },
-  {
-    "rnas": "1-0850-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE TELEVISION",
-    "shortName": "OSPTV"
-  },
-  {
-    "rnas": "1-0860-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL TEXTIL",
-    "shortName": "OSPT"
-  },
-  {
-    "rnas": "1-0870-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL TURISMO, HOTELERIA Y GASTRONOMIA",
-    "shortName": "OSUTHGRA"
-  },
-  {
-    "rnas": "1-0880-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL TRANSPORTE",
-    "shortName": "OSPT"
-  },
-  {
-    "rnas": "1-0890-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE VIGILANCIA",
-    "shortName": "OSPV"
-  },
-  {
-    "rnas": "1-0900-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL VIDRIO",
-    "shortName": "OSPIV"
-  },
-  {
-    "rnas": "1-0910-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE VINOS Y AFINES",
-    "shortName": "OSPVA"
-  },
-  {
-    "rnas": "1-0920-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE ZAPATEROS",
-    "shortName": "OSPZ"
-  },
-  {
-    "rnas": "1-0930-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA ACTIVIDAD VIAL",
-    "shortName": "OSPAV"
-  },
-  {
-    "rnas": "1-0940-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA ACTIVIDAD TURISTICA",
-    "shortName": "OSPAT"
-  },
-  {
-    "rnas": "1-0950-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL AUTOMOVIL CLUB ARGENTINO",
-    "shortName": "OSPACA"
-  },
-  {
-    "rnas": "1-0960-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA CAJA DE AHORRO Y SEGURO",
-    "shortName": "OSP CAS"
-  },
-  {
-    "rnas": "1-0970-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL COMERCIO EXTERIOR",
-    "shortName": "OSPCE"
-  },
-  {
-    "rnas": "1-0980-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL CORREO Y TELECOMUNICACIONES",
-    "shortName": "OSPCYT"
-  },
-  {
-    "rnas": "1-0990-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA DIRECCION DE ENERGIA",
-    "shortName": "OSPDE"
-  },
-  {
-    "rnas": "1-1000-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL ESTADO",
-    "shortName": "OSPE"
-  },
-  {
-    "rnas": "1-1010-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA FEDERACION DE EMPLEADOS DE COMERCIO",
-    "shortName": "OSECAC"
-  },
-  {
-    "rnas": "1-1020-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA FEDERACION DE TRABAJADORES DE LUZ Y FUERZA",
-    "shortName": "OSFTLyF"
-  },
-  {
-    "rnas": "1-1030-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA FRATERNIDAD",
-    "shortName": "OSPF"
-  },
-  {
-    "rnas": "1-1040-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA GRAFICA",
-    "shortName": "OSPIG"
-  },
-  {
-    "rnas": "1-1050-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION ARGENTINA DE TRABAJADORES DE LUZ Y FUERZA",
-    "shortName": "OSFATLyF"
-  },
-  {
-    "rnas": "1-1060-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA MARINA MERCANTE",
-    "shortName": "OSPMM"
-  },
-  {
-    "rnas": "1-1070-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA METALURGICA",
-    "shortName": "OSPM"
-  },
-  {
-    "rnas": "1-1080-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA MINERIA",
-    "shortName": "OSPM"
-  },
-  {
-    "rnas": "1-1090-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA NAVEGACION",
-    "shortName": "OSPN"
-  },
-  {
-    "rnas": "1-1100-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA OBRA SOCIAL",
-    "shortName": "OSPOS"
-  },
-  {
-    "rnas": "1-1120-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA PRENSA",
-    "shortName": "OSPP"
-  },
-  {
-    "rnas": "1-1130-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA RADIODIFUSION",
-    "shortName": "OSPR"
-  },
-  {
-    "rnas": "1-1140-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA SANIDAD",
-    "shortName": "OSPSA"
-  },
-  {
-    "rnas": "1-1150-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA SEGURIDAD",
-    "shortName": "OSPS"
-  },
-  {
-    "rnas": "1-1160-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA TELEFONIA",
-    "shortName": "OSPT"
-  },
-  {
-    "rnas": "1-1170-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA TELEVISION",
-    "shortName": "OSPTV"
-  },
-  {
-    "rnas": "1-1180-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA UNION OBRERA METALURGICA",
-    "shortName": "OSUOMRA"
-  },
-  {
+    "id": "00a35038-019e-4f1c-9b43-bbd7abb41714",
     "rnas": "1-1190-4",
     "enemp": null,
     "denomination": "OBRA SOCIAL DEL PERSONAL DE LA UNIVERSIDAD",
     "shortName": "OSPU"
   },
   {
-    "rnas": "1-1200-6",
+    "id": "0122e937-411e-4c85-9902-faf076b73db9",
+    "rnas": null,
     "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA VIGILANCIA",
-    "shortName": "OSPV"
+    "denomination": "ASOC. MUTUAL INTERCOOOP. SOLID.PROV. DE CBA. (AMICOS)",
+    "shortName": "AMICOS"
   },
   {
-    "rnas": "1-1210-5",
+    "id": "01815387-6a52-4133-bada-b48da2570442",
+    "rnas": null,
     "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DEL YACIMIENTO CARBONIFERO",
-    "shortName": "OSPYC"
+    "denomination": "MEDIPAR SA",
+    "shortName": "MEDIPAR"
   },
   {
-    "rnas": "1-1220-4",
+    "id": "01d9a9f4-2606-40e4-b6e3-b4f2256e34d5",
+    "rnas": "1-0600-4",
     "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LOS FERROCARRILES",
-    "shortName": "OSPF"
+    "denomination": "OBRA SOCIAL DE MUSICOS",
+    "shortName": "OSM"
   },
   {
-    "rnas": "1-1230-3",
+    "id": "021e88ac-b71f-425b-b1f8-6df456aa4a14",
+    "rnas": null,
     "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LOS PUERTOS",
-    "shortName": "OSPP"
+    "denomination": "COBERTURA INTEGRAL DE MEDICINA ASISTENCIAL S.A.",
+    "shortName": "CIMA"
   },
   {
-    "rnas": "1-1240-2",
+    "id": "025c021c-adc8-4072-acfa-4236fd646aac",
+    "rnas": null,
     "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LOS SEGUROS",
-    "shortName": "OSPS"
+    "denomination": "EQUIPO MEDICO DE EMERGENCIAS",
+    "shortName": "EME"
   },
   {
-    "rnas": "1-1250-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE LOS TRIBUNALES",
-    "shortName": "OSPT"
-  },
-  {
-    "rnas": "1-2010-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL GAS",
-    "shortName": "OSFTIG"
-  },
-  {
-    "rnas": "1-2020-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL HIELO",
-    "shortName": "OSFTIH"
-  },
-  {
-    "rnas": "1-2030-1",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL PAPEL",
-    "shortName": "OSFTIP"
-  },
-  {
-    "rnas": "1-2040-0",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL VIDRIO",
-    "shortName": "OSFTIV"
-  },
-  {
-    "rnas": "1-2050-9",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL VESTIDO",
-    "shortName": "OSFTIV"
-  },
-  {
+    "id": "027fd059-695b-4a16-b2e1-407d16673f33",
     "rnas": "1-2060-8",
     "enemp": null,
     "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DE LA ALIMENTACION",
     "shortName": "OSFTIA"
   },
   {
-    "rnas": "1-2070-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL CALZADO",
-    "shortName": "OSFTIC"
-  },
-  {
-    "rnas": "1-2080-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL CUERO",
-    "shortName": "OSFTIC"
-  },
-  {
-    "rnas": "1-2090-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DE LA CERAMICA",
-    "shortName": "OSFTIC"
-  },
-  {
-    "rnas": "1-2100-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL JABON",
-    "shortName": "OSFTIJ"
-  },
-  {
-    "rnas": "1-2110-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL TABACO",
-    "shortName": "OSFTIT"
-  },
-  {
-    "rnas": "1-2120-5",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL MUEBLE",
-    "shortName": "OSFTIM"
-  },
-  {
-    "rnas": "1-2130-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL PLASTICO",
-    "shortName": "OSFTIP"
-  },
-  {
-    "rnas": "1-2140-3",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DE LA CARNE",
-    "shortName": "OSFTIC"
-  },
-  {
-    "rnas": "1-2150-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA QUIMICA",
-    "shortName": "OSFTIQ"
-  },
-  {
-    "rnas": "2-0010-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DEL PERSONAL DE DIRECCION DE LA INDUSTRIA METALURGICA Y DEMAS ACTIVIDADES EMPRESARIAS",
-    "shortName": "OSIM"
-  },
-  {
-    "rnas": "4-0170-4",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE EMPRESARIOS, PROFESIONALES Y MONOTRIBUTISTAS",
-    "shortName": "OSDE"
-  },
-  {
-    "rnas": "4-0220-2",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL MUTUALIDAD INDUSTRIAL TEXTIL ARGENTINA",
-    "shortName": "MITA"
-  },
-  {
-    "rnas": "4-0260-8",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL ASOCIACION DE SERVICIOS SOCIALES PARA EMPRESARIOS Y PERSONAL DE DIRECCION DE EMPRESAS DEL COMERCIO, SERVICIOS, PRODUCCION, INDUSTRIA Y CIVIL (ASSPE )",
-    "shortName": "ASSPE"
-  },
-  {
-    "rnas": "4-0270-7",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE DIRECCION OSDO",
-    "shortName": "OSDO"
-  },
-  {
-    "rnas": "4-0280-6",
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE DIRECCION DE LA ACTIVIDAD AEROCOMERCIAL PRIVADA",
-    "shortName": "OSDAAP"
-  },
-  {
-    "rnas": "9-0170-9",
-    "enemp": null,
-    "denomination": "MUTUAL MEDICA CONCORDIA",
-    "shortName": "MUTUAL CONCORDIA"
-  },
-  {
-    "rnas": "9-0180-8",
-    "enemp": null,
-    "denomination": "MUTUAL DE SEGURIDAD SOCIAL",
-    "shortName": "MUTUAL SEGURIDAD"
-  },
-  {
+    "id": "0395cddf-b52d-4491-b616-317c5f026cd2",
     "rnas": null,
     "enemp": null,
-    "denomination": "INSTITUTO DE OBRA MEDICA ASISTENCIAL",
-    "shortName": "IOMA"
+    "denomination": "MEDICINA PRIVADA S.A.",
+    "shortName": "MEDICINA PRIVADA"
   },
   {
+    "id": "039c24e5-4f62-4b4a-babb-6f9904af9648",
     "rnas": null,
     "enemp": null,
-    "denomination": "OBRA SOCIAL DE LOS EMPLEADOS PUBLICOS CATAMARCA",
-    "shortName": "OSEP"
+    "denomination": "SANATORIO GARAY S.A.",
+    "shortName": "SANATORIO GARAY"
   },
   {
+    "id": "03c0c048-70c9-4be0-9b1c-353eb98ca034",
     "rnas": null,
     "enemp": null,
-    "denomination": "INSTITUTO DE SEGURIDAD SOCIAL SEGUROS Y PRESTAMOS CHACO",
-    "shortName": "INSSEP"
+    "denomination": "CARRA SALUD S.A",
+    "shortName": "CARRA SALUD"
   },
   {
+    "id": "04316413-894c-4429-87e5-bb4e797055b9",
     "rnas": null,
     "enemp": null,
-    "denomination": "INSTITUTO DE SEGURIDAD SOCIAL Y SEGUROS CHUBUT",
-    "shortName": "SEROS"
+    "denomination": "NATIVUS SRL",
+    "shortName": "NATIVUS"
   },
   {
+    "id": "04d44719-81f8-42cb-bc7b-0b7858026f67",
+    "rnas": "1-0260-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE COTILLON Y AFINES",
+    "shortName": "OSCYA"
+  },
+  {
+    "id": "05221408-d507-4d75-920e-775dfd5bea44",
     "rnas": null,
     "enemp": null,
-    "denomination": "ADMINISTRACION PROVINCIAL DE SEGUROS DE SALUD CORDOBA",
-    "shortName": "APROSS"
+    "denomination": "CARDIO SA",
+    "shortName": "CARDIO"
   },
   {
+    "id": "0527f84d-258e-4050-81fe-306353e64c0c",
     "rnas": null,
     "enemp": null,
-    "denomination": "INSTITUTO DE OBRA SOCIAL DE CORRIENTES",
-    "shortName": "IOSCOR"
+    "denomination": "Nordica Salud s.r.l.",
+    "shortName": "NORDICA SALUD"
   },
   {
+    "id": "0579a714-1b44-423b-aa89-6acfe6c77735",
+    "rnas": "1-0680-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE PELUQUERIA, ESTETICA Y AFINES",
+    "shortName": "OSPEA"
+  },
+  {
+    "id": "05a95e12-eda6-4414-aab1-ccf6317cc335",
     "rnas": null,
     "enemp": null,
-    "denomination": "INSTITUTO DE OBRA SOCIAL DE LA PROVINCIA DE ENTRE RIOS",
-    "shortName": "IOSPER"
+    "denomination": "ASOCIACION MUTUAL 12 DE ENERO TRABAJADORES PASTELEROS, CONFITEROS, PIZZEROS, HELADEROS, ALFAJOREROS Y SERVICIOS RAPIDOS.",
+    "shortName": "MUTUAL PASTELEROS"
   },
   {
+    "id": "05f1990f-fed7-4ca7-b7df-8333c27e7216",
     "rnas": null,
     "enemp": null,
-    "denomination": "INSTITUTO DE ASISTENCIA SOCIAL DE EMPLEADOS PUBLICOS FORMOSA",
-    "shortName": "IASEP"
+    "denomination": "ADMINISTRAR SALUD S.A.",
+    "shortName": "ADMINISTRAR SALUD"
   },
   {
-    "rnas": null,
+    "id": "07122d0e-a62c-49ef-94c0-cb7873a5f18d",
+    "rnas": "1-1210-5",
     "enemp": null,
-    "denomination": "INSTITUTO DE SEGUROS DE JUJUY",
-    "shortName": "ISJ"
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL YACIMIENTO CARBONIFERO",
+    "shortName": "OSPYC"
   },
   {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "SERVICIOS MEDICOS PREVISIONAL LA PAMPA",
-    "shortName": "SEMPRE"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "ADMINISTRACION PROVINCIAL DE OBRA SOCIAL LA RIOJA",
-    "shortName": "APOS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "OBRA SOCIAL DE EMPLEADOS PUBLICOS MENDOZA",
-    "shortName": "OSEP"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INSTITUTO DE PREVISION SOCIAL MISIONES",
-    "shortName": "IPS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INSTITUTO DE SEGURIDAD SOCIAL DE NEUQUEN",
-    "shortName": "ISSN"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INSTITUTO PROVINCIAL DE SEGURO DE SALUD RIO NEGRO",
-    "shortName": "IPROSS"
-  },
-  {
-    "rnas": null,
-    "enemp": null,
-    "denomination": "INSTITUTO PROVINCIAL DE SALUD DE SALTA",
-    "shortName": "IPS"
-  },
-  {
+    "id": "0771be3d-d472-4894-b396-a4422083bfcd",
     "rnas": null,
     "enemp": null,
     "denomination": "DIRECCION DE OBRA SOCIAL SAN JUAN",
     "shortName": "DOS"
   },
   {
+    "id": "08b6a2a9-62dd-4034-9f67-2ec0903c7984",
     "rnas": null,
     "enemp": null,
-    "denomination": "DIRECCION DE OBRA SOCIAL DEL ESTADO PROVINCIAL SAN LUÍS",
-    "shortName": "DOSEP"
+    "denomination": "MANO SALUD",
+    "shortName": "MANO SALUD"
   },
   {
+    "id": "08c5aa76-eb6a-490a-b03c-22366bda4d0b",
     "rnas": null,
     "enemp": null,
-    "denomination": "CAJA DE SERVICIOS SOCIALES SANTA CRUZ",
-    "shortName": "CSS"
+    "denomination": "MUTUAL BIENESTAR Y PROGRESO",
+    "shortName": "BIENESTAR Y PROGRESO"
   },
   {
+    "id": "08f76371-c234-45af-b2d8-faabc8e99886",
     "rnas": null,
     "enemp": null,
-    "denomination": "INSTITUTO AUTARQUICO PROVINCIAL DE OBRA SOCIAL SANTA FE",
-    "shortName": "IAPOS"
+    "denomination": "SOCIEDAD ESPAÑOLA DE BENEFICENCIA Y MUTUALIDAD",
+    "shortName": "ESPAÑOLA MUTUALIDAD"
   },
   {
+    "id": "09cae384-5e5d-4870-97cf-299841440573",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE PREVISION SOCIAL MISIONES",
+    "shortName": "IPS"
+  },
+  {
+    "id": "09db2826-183a-41f0-aa51-bb17efea2146",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SOCIEDAD ITALIANA DE SOCORROS MUTUOS",
+    "shortName": "SOCIEDAD ITALIANA"
+  },
+  {
+    "id": "09ddb9af-ab57-430c-9ac3-07bce25cfd78",
+    "rnas": "1-0770-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE RELOJEROS Y JOYEROS",
+    "shortName": "OSPRJ"
+  },
+  {
+    "id": "09f6068d-679e-4a1a-92a5-3ca2dac0a447",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CLINICAS MARPLATENSES UNIDAS S.A.",
+    "shortName": "CLINICAS MARPLATENSES"
+  },
+  {
+    "id": "0a1bd109-b7dd-483c-83c3-d99551c5ca05",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMERGENCIAS DEL SUR S.R.L.",
+    "shortName": "EMERGENCIAS DEL SUR"
+  },
+  {
+    "id": "0a480f6a-744d-4ab4-bff5-b83d2659a0b6",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "LO-MAR S.A.",
+    "shortName": "LO-MAR"
+  },
+  {
+    "id": "0a546503-6822-40c3-9887-9a9b08890e89",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMERGENCIA RIO CUARTO",
+    "shortName": "EMERGENCIA RIO CUARTO"
+  },
+  {
+    "id": "0ac20618-e3f0-40a3-b99f-a58991a7381e",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CENTRO UNION DEPENDIENTES ASOCIACION DE PROTECCION MUTUA",
+    "shortName": "CENTRO UNION"
+  },
+  {
+    "id": "0b47f0a9-7751-47de-81d1-b0f12bfac082",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DEL PERSONAL DE LA AFIP",
+    "shortName": "MUTUAL AFIP"
+  },
+  {
+    "id": "0b9129fe-1744-4c70-9f05-967255f83aa0",
+    "rnas": "1-1030-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA FRATERNIDAD",
+    "shortName": "OSPF"
+  },
+  {
+    "id": "0bd7bc0a-e2b7-46f4-adc1-c3d83eb18a4c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMINENTE MEDICINAL S.A.",
+    "shortName": "EMINENTE"
+  },
+  {
+    "id": "0cbe2c56-b2a6-4be2-bb34-c9015243b958",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL MEDICA RIO CUARTO",
+    "shortName": "MUTUAL RIO CUARTO"
+  },
+  {
+    "id": "0d35fc15-29ed-415a-873a-8ee514623a8d",
+    "rnas": "1-2030-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL PAPEL",
+    "shortName": "OSFTIP"
+  },
+  {
+    "id": "0d9f88a1-8bef-413c-aa14-d854ccb4d3ed",
+    "rnas": "1-0530-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL MEDICO Y PARAMEDICO",
+    "shortName": "OSMP"
+  },
+  {
+    "id": "0df91ed9-ffa0-4bd4-b48a-9f4d4386620e",
+    "rnas": "1-0750-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE REFINERIAS DE MAIZ",
+    "shortName": "OSPRM"
+  },
+  {
+    "id": "10cfa299-af71-431d-9a69-4362a9090113",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LOS EMPLEADOS PUBLICOS CATAMARCA",
+    "shortName": "OSEP"
+  },
+  {
+    "id": "111b9ee0-9908-489e-b823-7f0ab8056688",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL SIDERURGICA GENERAL SAVIO",
+    "shortName": "MUTUAL SIDERURGICA"
+  },
+  {
+    "id": "1178e275-0536-416b-afee-ef2d90313b5c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE EMPLEADOS PUBLICOS MENDOZA",
+    "shortName": "OSEP"
+  },
+  {
+    "id": "119fc366-0ad7-4813-8fee-daa65fcd429d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GRUPO DDM SA",
+    "shortName": "GRUPO DDM"
+  },
+  {
+    "id": "1309e948-5160-43f2-b554-7cef93b178ea",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASISMED",
+    "shortName": "ASISMED"
+  },
+  {
+    "id": "137744df-4aa3-4644-8500-3c5ae05d2d77",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CRUZ BLANCA DEL SUR (LANUS)",
+    "shortName": "CRUZ BLANCA"
+  },
+  {
+    "id": "13cec7cc-38f2-490f-ad6c-182aeba34a0b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AMUVAC",
+    "shortName": "AMUVAC"
+  },
+  {
+    "id": "1405eb49-506a-472a-b6c0-43f6f3ab304a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SALUD INTEGRAL",
+    "shortName": "SALUD INTEGRAL"
+  },
+  {
+    "id": "14f9b753-91a9-4b45-916d-21e2d37cb7cb",
+    "rnas": "1-1080-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA MINERIA",
+    "shortName": "OSPM"
+  },
+  {
+    "id": "1513d667-a5c7-41b1-8949-25309ed07ec7",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDICAL CORPORATIVE TRADE",
+    "shortName": "MEDICAL CORPORATIVE"
+  },
+  {
+    "id": "16ac9080-0bb3-4c9e-b16c-56d1292e8ee1",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "Sancor Medicina Privada",
+    "shortName": "SANCOR SALUD"
+  },
+  {
+    "id": "16d1df7e-f306-48ae-bf5d-bb1c3a41723a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE ASISTENCIA SOCIAL DE EMPLEADOS PUBLICOS FORMOSA",
+    "shortName": "IASEP"
+  },
+  {
+    "id": "18649bb0-4c49-4b1f-be46-33165d84b3d1",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL METALURGICA VILLA CONSTITUCION",
+    "shortName": "MUTUAL METALURGICA"
+  },
+  {
+    "id": "1942a0d2-f9ba-4807-a183-3ed15b0bee97",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CENTRO MÉDICO SAN BLAS S.A.",
+    "shortName": "SAN BLAS"
+  },
+  {
+    "id": "195b4de4-ffcb-456c-815b-68b2d23e9367",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DEL CONTROL INTEGRAL",
+    "shortName": "MUTUAL CONTROL"
+  },
+  {
+    "id": "1972c9ed-179a-4c11-8d01-dede7b180159",
+    "rnas": "1-0010-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE AERONAVEGANTES",
+    "shortName": "OSA"
+  },
+  {
+    "id": "19816e66-6907-44a0-87df-83f10c3be840",
+    "rnas": "1-0900-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL VIDRIO",
+    "shortName": "OSPIV"
+  },
+  {
+    "id": "19abdf07-5dac-4ef3-972e-ece774085df1",
+    "rnas": "1-0380-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL GAS",
+    "shortName": "OSPIG"
+  },
+  {
+    "id": "1a72f141-0889-456b-b578-d2cfec52b366",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL PREMIUM",
+    "shortName": "MUTUAL PREMIUM"
+  },
+  {
+    "id": "1b60f987-f0fe-4a92-a11b-803b9c629b27",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ELAREYNA",
+    "shortName": "ELAREYNA"
+  },
+  {
+    "id": "1c7929ba-5d09-4c63-b3e3-4b4ec34df744",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "HOGAR SALUD S.A.",
+    "shortName": "HOGAR SALUD"
+  },
+  {
+    "id": "1cfd0e21-0a64-4b53-b35f-bbd7c5e5f2f7",
+    "rnas": "1-1180-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA UNION OBRERA METALURGICA",
+    "shortName": "OSUOMRA"
+  },
+  {
+    "id": "1dbebaf4-9753-4885-af74-362b28abccc1",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES MUNICIPALES DE ROSARIO",
+    "shortName": "MUTUAL MUNICIPALES ROSARIO"
+  },
+  {
+    "id": "1f2244c8-b57f-4492-9122-262195cc8757",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL ROSARIO METALMECANICA Y AFINES",
+    "shortName": "MUTUAL ROSARIO"
+  },
+  {
+    "id": "1f2e498d-180f-448d-a4dc-2dfafb2092c6",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "UNION A.F. MENDOZA SALUD SA",
+    "shortName": "UAF MENDOZA"
+  },
+  {
+    "id": "20240fbe-a978-4b35-aee5-24b161cd3acc",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMME S.A.",
+    "shortName": "EMME"
+  },
+  {
+    "id": "20647bbf-b50f-4320-a110-f34fd77fd5fd",
+    "rnas": "0-0030-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA POLICIA FEDERAL ARGENTINA",
+    "shortName": "OSPFA"
+  },
+  {
+    "id": "2133e1c4-ab48-4e57-8aaf-7127ab336791",
+    "rnas": "1-0420-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL JUEGO DE AZAR",
+    "shortName": "OSJA"
+  },
+  {
+    "id": "218478f0-cafc-4d94-95ca-4575ea4e3d03",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO PANAMERICANO DE SALUD S.A.",
+    "shortName": "PANAMERICANO SALUD"
+  },
+  {
+    "id": "2265eb5b-b52e-47b9-a822-3d788f7eb1d4",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COOPERATIVA DE ENERGIA ELECTRICA Y O.S.P.LAS VARILLAS LTDA",
+    "shortName": "COOP LAS VARILLAS"
+  },
+  {
+    "id": "231beed2-b182-49f6-80e9-72c4a043912f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "HOSPITAL ESPAÑOL DEL SUR MENDOCINO SOCIEDAD DE BENEFICIENCIA Y MUTUALIDAD",
+    "shortName": "HOSPITAL ESPAÑOL SUR"
+  },
+  {
+    "id": "23a51f40-9aa7-4734-95e9-27da57f80dbc",
+    "rnas": "1-0740-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE RECOLECCION Y BARRIDO",
+    "shortName": "OSPRB"
+  },
+  {
+    "id": "23a85054-cc8d-4349-8065-c02d38f5c13e",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL SISTEMA PREVENTIVO SOCIAL",
+    "shortName": "MSPS"
+  },
+  {
+    "id": "23bb2e8d-bd75-45f5-b47d-04a49f0a21b8",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SOCIEDAD MUTUAL DE VILLA LA EMILIA",
+    "shortName": "MUTUAL VILLA EMILIA"
+  },
+  {
+    "id": "23c1899f-de24-4000-a348-9440c79c91cc",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GERMED S.A.",
+    "shortName": "GERMED"
+  },
+  {
+    "id": "24337bab-e805-4bb0-99d5-aa7562dc0b76",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SOREMER S.A.",
+    "shortName": "SOREMER"
+  },
+  {
+    "id": "246cc8ec-b783-420c-b4fb-025aacb92838",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SOCIEDAD ESPAÑOLA DE SOCORROS MUTUOS DE TRES ARROYOS",
+    "shortName": "MUTUAL ESPAÑOLA TRES ARROYOS"
+  },
+  {
+    "id": "24c9980e-cbe0-49a9-94e2-6c1497f1bad0",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOC. MUTUAL AYUDA EMPL. PREVINCA SERV. SOCIALES",
+    "shortName": "MUTUAL PREVINCA"
+  },
+  {
+    "id": "24fb7c3e-1920-4420-9f3d-dc96233e5039",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN DE EMPLEADOS MUNICIPALES-MUTUALIDAD",
+    "shortName": "MUTUAL MUNICIPALES"
+  },
+  {
+    "id": "251705bf-c568-4671-9a09-2c3fb2d363ed",
+    "rnas": "2-0010-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE DIRECCION DE LA INDUSTRIA METALURGICA Y DEMAS ACTIVIDADES EMPRESARIAS",
+    "shortName": "OSIM"
+  },
+  {
+    "id": "254342f0-d9ba-4e0e-8905-66f5aead8f74",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SISTEMAS PRIVADOS DE SALUD S. A.",
+    "shortName": "SPS"
+  },
+  {
+    "id": "25dce1ad-05f4-4643-a9c3-5dd24b8f5181",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AMEPORT MUTUAL DEL PERSONAL DEL ESTADO NACIONA PROVINCIAL MUNICIPAL Y AFINES",
+    "shortName": "AMEPORT"
+  },
+  {
+    "id": "25f13b7f-03f1-437e-bac8-6aa07152ab21",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SANTE MEDICAL SRL",
+    "shortName": "SANTE MEDICAL"
+  },
+  {
+    "id": "260b504e-5a00-44e7-97e8-0151b61ecded",
+    "rnas": "1-0840-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE TELECOMUNICACIONES",
+    "shortName": "OSPTEL"
+  },
+  {
+    "id": "26343afb-7c78-4db5-b394-28c28a53e7d7",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "TACCHI JULIO ALFREDO Y TACCHI JUAN CARLOS SOCIEDAD DE HECHO",
+    "shortName": "TACCHI"
+  },
+  {
+    "id": "26e51517-a54a-4cb6-8e3b-681811105be7",
+    "rnas": "1-0160-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL CAUCHO DE ARMADO DE CALZADO",
+    "shortName": "OSPCAC"
+  },
+  {
+    "id": "26f0d901-ae1c-4525-9c6c-b24266fe5621",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL FERROVIARIA",
+    "shortName": "MUTUAL FERROVIARIA"
+  },
+  {
+    "id": "283b9bea-6515-493c-a614-32778527510e",
+    "rnas": "1-0780-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE RENTAS Y CATASTRO",
+    "shortName": "OSPRC"
+  },
+  {
+    "id": "285e9578-ace0-4c0e-8583-ea3520500606",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "UNO SALUD",
+    "shortName": "UNO SALUD"
+  },
+  {
+    "id": "28f43f66-20c5-4920-9557-03bc963a241c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDVISUR SALUD S.A.",
+    "shortName": "MEDVISUR"
+  },
+  {
+    "id": "2b0554e1-5a9f-4af9-95c1-1e7750ab653f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SOCIEDAD DE SEERVICIOS DE SALUD DE SALTA S.A.",
+    "shortName": "SALUD SALTA"
+  },
+  {
+    "id": "2b60ab9c-0359-4bec-be70-d81ceac80e1f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE PROFESIONALES DEL HOSPITAL ITALIANO DE CORDOBA",
+    "shortName": "MUTUAL ITALIANO CBA"
+  },
+  {
+    "id": "2be7f46f-6b61-4511-808c-bbd8b43eb567",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SIMARA S.A.",
+    "shortName": "SIMARA"
+  },
+  {
+    "id": "2cdf7b28-95cd-424f-9121-616f6f630464",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL DEL PERSONAL DE FUTURA NORTE S.A.",
+    "shortName": "MUTUAL FUTURA NORTE"
+  },
+  {
+    "id": "2d55183c-5007-412c-9802-59745903b956",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "Cooperativa de Provision de Obras y Servicios Publicos y de Creditos Cuenca del Salado ltda",
+    "shortName": "COOP CUENCA SALADO"
+  },
+  {
+    "id": "2d707700-641f-4d4c-9004-03905ca703be",
+    "rnas": "1-0200-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA CINEMATOGRAFICA",
+    "shortName": "OSPIC"
+  },
+  {
+    "id": "2dc244a9-78ca-407a-ad93-a939a8f96262",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CEN SALUD S.R.L.",
+    "shortName": "CEN SALUD"
+  },
+  {
+    "id": "2e392ed0-f598-441a-8121-6eb8b2212f7f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ECCO S.A.",
+    "shortName": "ECCO"
+  },
+  {
+    "id": "2ea2a6a9-8189-457d-aeb5-4cbe09547128",
+    "rnas": "1-0640-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL PAPEL, CARTON Y QUIMICOS",
+    "shortName": "OSPI PPYQ"
+  },
+  {
+    "id": "2fa536ed-5502-4d70-8384-6f070eedf86a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE LA COSTA SUDESTE",
+    "shortName": "MUTUAL COSTA SUDESTE"
+  },
+  {
+    "id": "2fdf3076-fbfe-44e8-8bb4-ff8e70f37e28",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MPE S.A.",
+    "shortName": "MPE"
+  },
+  {
+    "id": "2ff87814-d2f5-4642-a942-952a9fd2ce48",
+    "rnas": "1-0210-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE COMISARIOS NAVALES",
+    "shortName": "OSCN"
+  },
+  {
+    "id": "305e3fff-e6d9-4fc0-96dc-460aad76c492",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SISTEMA ODONTOLÓGICO PREPAGO PAMPEANO",
+    "shortName": "SOPP"
+  },
+  {
+    "id": "3108c566-19fc-4a8e-ad0a-7a0f4169be96",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "A.M.PARA LA AYUDA RECIPROCA DE ASOCIADOS REGIONALES",
+    "shortName": "AMARAR"
+  },
+  {
+    "id": "31d86db5-82c5-41b9-90fe-8447e72cdd86",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PLUS SALUD",
+    "shortName": "PLUS SALUD"
+  },
+  {
+    "id": "329f17b3-de96-4697-bcb5-5c3a604fc60e",
+    "rnas": "4-0260-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL ASOCIACION DE SERVICIOS SOCIALES PARA EMPRESARIOS Y PERSONAL DE DIRECCION DE EMPRESAS DEL COMERCIO, SERVICIOS, PRODUCCION, INDUSTRIA Y CIVIL (ASSPE )",
+    "shortName": "ASSPE"
+  },
+  {
+    "id": "32defac4-7b98-4155-9ada-afd1a3cad8e5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES CULTURALES Y SOCIALES",
+    "shortName": "MUTUAL CULTURAL"
+  },
+  {
+    "id": "33093543-4fc5-4a8a-b46e-d5cab64145df",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "BIENESTAR SALUD SA",
+    "shortName": "BIENESTAR SALUD"
+  },
+  {
+    "id": "33697a64-6271-4325-9887-b33809fb5007",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COOPERATIVA DE TRABAJO DE SERVICIOS MEDICO ASISTENCIALES NECOCHEA LTDA.",
+    "shortName": "COOP NECOCHEA"
+  },
+  {
+    "id": "336e92a4-ea5e-401b-9526-75d553e50dc2",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO PROVINCIAL DE SEGURO DE SALUD RIO NEGRO",
+    "shortName": "IPROSS"
+  },
+  {
+    "id": "3380756a-7f2d-48dd-9fa8-f4987d9fbf92",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL MUNICIPALES DEL DEPARTAMENTO GENERAL LOPEZ",
+    "shortName": "MUTUAL MUNICIPALES GL"
+  },
+  {
+    "id": "339cf75b-7a95-48f1-8e38-82ab202acde1",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ANDESALUD S.A.",
+    "shortName": "ANDESALUD"
+  },
+  {
+    "id": "3584b257-2b35-4cb4-a282-accddf23cb75",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUALISTA DE EMPLEADOS DEL MINISTERIO DE OBRAS PÚBLICAS",
+    "shortName": "AMEMOP"
+  },
+  {
+    "id": "35ff2420-dc71-4fa5-8f23-23ffc47e5055",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL C Y D DE TRABAJADORES DEL ESTADO",
+    "shortName": "MUTUAL TRABAJADORES ESTADO"
+  },
+  {
+    "id": "3763005f-13bc-4a34-8b9d-6cc42f700375",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE OBRA SOCIAL DE LA PROVINCIA DE ENTRE RIOS",
+    "shortName": "IOSPER"
+  },
+  {
+    "id": "3777dd3c-302b-4e3f-801d-fbed8cf350d0",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL METALMECANICA ENTRE OBREROS Y TECNICOS AFILIADOS AL SINDICATO DE MECANICOS Y AFINES DEL TRANSPORTE AUTOMOTOR",
+    "shortName": "MUTUAL METALMECANICA"
+  },
+  {
+    "id": "38970782-22b0-4212-b266-cf99c3f2ef75",
+    "rnas": "4-0280-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE DIRECCION DE LA ACTIVIDAD AEROCOMERCIAL PRIVADA",
+    "shortName": "OSDAAP"
+  },
+  {
+    "id": "38bae72a-d153-4ed9-ad2e-972a421c666c",
+    "rnas": "1-0880-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL TRANSPORTE",
+    "shortName": "OSPT"
+  },
+  {
+    "id": "3abf2344-e66b-428d-a51d-c3ec91dc37f0",
+    "rnas": "1-0150-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL CAUCHO",
+    "shortName": "OSPIC"
+  },
+  {
+    "id": "3b733b63-ee3c-4261-a392-1a0e16beaf49",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOC. ESPAÑOLA DE SOCORROS MUTUOS",
+    "shortName": "ESPAÑOLA SOCORROS"
+  },
+  {
+    "id": "3b7c7333-8c6b-4ac0-b3f0-453ecea2c14c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL TRABAJADORES ACTIVIDAD REPOSTERIA",
+    "shortName": "MUTUAL REPOSTERIA"
+  },
+  {
+    "id": "3bbc2421-4487-4fa2-964f-b0f2fd86cabb",
+    "rnas": "1-0020-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE EMPLEADOS DE ADUANA",
+    "shortName": "OSEAD"
+  },
+  {
+    "id": "3bed57bc-8b07-4f5c-91eb-7e62e23b5231",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "RED SALUD",
+    "shortName": "RED SALUD"
+  },
+  {
+    "id": "3d117bba-a346-42a4-aeb7-77466a922fcc",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PRENAPA ASOC.MUTUAL COMPENSADORA SANITARIA",
+    "shortName": "PRENAPA"
+  },
+  {
+    "id": "3d24e4a7-f05c-4eb9-82a3-f55ad1af4adc",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "DELTA SALUD S.A.",
+    "shortName": "DELTA SALUD"
+  },
+  {
+    "id": "3ef5da47-9b56-47e0-9c0e-10940dc70438",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COOP.DE PROV.DE OBRAS Y SERV.PCOS DE GDOR.CRESPO LTDA.",
+    "shortName": "COOP GDOR CRESPO"
+  },
+  {
+    "id": "4333052b-cddd-424b-9054-9544bee103f7",
+    "rnas": "1-2130-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL PLASTICO",
+    "shortName": "OSFTIP"
+  },
+  {
+    "id": "44db8035-b0bc-44f5-b1ae-04910e108e98",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CORPORACION ASISTENCIAL S.A.",
+    "shortName": "CORP ASISTENCIAL"
+  },
+  {
+    "id": "45071441-a2b0-4e58-a6fd-6efdfe5f3737",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL DE INTEGRANTES DEL PODER JUDICIAL",
+    "shortName": "MUTUAL JUDICIAL"
+  },
+  {
+    "id": "46a9a6c8-bc78-4232-a5cb-173eb526a561",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL BS.AS. STAFF DE MEDICINA Y SERVICIOS",
+    "shortName": "MUTUAL BS.AS. STAFF"
+  },
+  {
+    "id": "46fa10a2-fe6a-4efe-80ed-f17664c1b272",
+    "rnas": "1-1250-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LOS TRIBUNALES",
+    "shortName": "OSPT"
+  },
+  {
+    "id": "47c9fd4b-0659-49c8-a939-da2bd39d9d00",
+    "rnas": "1-0790-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE SANIDAD",
+    "shortName": "OSPSA"
+  },
+  {
+    "id": "49171a5e-72a4-4821-a870-0eb40d675fed",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL MERCANTIL EMPRESARIA",
+    "shortName": "MME"
+  },
+  {
+    "id": "494fd242-3fe2-444b-af1e-19c142d23a4b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ENSALUD",
+    "shortName": "ENSALUD"
+  },
+  {
+    "id": "49a19653-7c79-434d-b038-c44e1488beab",
+    "rnas": "1-0700-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE PETROLEO",
+    "shortName": "OSPP"
+  },
+  {
+    "id": "4a0771fb-2a06-4c32-8eff-af5a0ae4bfc2",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION DE PROTECCION RECIPROCA ENTRE PRODUCTORES AGROPECUARIOS",
+    "shortName": "APREPA"
+  },
+  {
+    "id": "4b4f7c06-8281-425e-b4f5-901c3dfc9e3a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "FAMILY SALUD",
+    "shortName": "FAMILY SALUD"
+  },
+  {
+    "id": "4be8d6b2-959c-4df3-9bb0-f083956bbcb3",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "YOUR HEALTH S.A.",
+    "shortName": "YOUR HEALTH"
+  },
+  {
+    "id": "4c47e7ff-e22e-4a41-8f16-2f08a3633acd",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "salud uteplim",
+    "shortName": "UTEPLIM"
+  },
+  {
+    "id": "4dacd256-7c86-4b2c-972b-e5fdd7c96ed2",
+    "rnas": "1-0100-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL ESPECTACULO PUBLICO",
+    "shortName": "OSPEP"
+  },
+  {
+    "id": "4e861655-4412-4a64-a3bf-3e7e019825a4",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ROI SA",
+    "shortName": "ROI"
+  },
+  {
+    "id": "4e9b39fb-9597-4103-a873-55f88d6be509",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PROGRAMA DE SALUD S.A.",
+    "shortName": "PROGRAMA DE SALUD"
+  },
+  {
+    "id": "4eb787e5-354c-4ab0-96ca-0072028e9ec7",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INTERMED DE JUNIN S.A",
+    "shortName": "INTERMED"
+  },
+  {
+    "id": "4ed8a28d-956a-4620-ac4c-62fb5b6c7042",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CONURBANO SALUD",
+    "shortName": "CONURBANO SALUD"
+  },
+  {
+    "id": "4f03bf93-b049-4111-b897-14b83d339a52",
+    "rnas": "1-0510-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE CAPITANES Y BAQUEANOS FLUVIALES",
+    "shortName": "OSCBF"
+  },
+  {
+    "id": "4f5ed6e3-e470-4fd8-9f90-6a9dfaa3d239",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "VS GROUP S.A.",
+    "shortName": "VS GROUP"
+  },
+  {
+    "id": "4faa9c95-4927-4e7f-95bc-e52045891da7",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AGRUPACIÓN SANATORIAL SUR S.A.",
+    "shortName": "ASS"
+  },
+  {
+    "id": "503a4c5e-d613-4bf0-a188-7c4e228ed465",
+    "rnas": "1-0810-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE SERVICIOS FUNERARIOS",
+    "shortName": "OSPSF"
+  },
+  {
+    "id": "50981504-0149-4abf-9d4f-bd24d1bdf7cf",
+    "rnas": "4-0170-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE EMPRESARIOS, PROFESIONALES Y MONOTRIBUTISTAS",
+    "shortName": "OSDE"
+  },
+  {
+    "id": "50ae395c-3b01-43f0-b383-c637fefba555",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SP HEALTH GROUP",
+    "shortName": "SP HEALTH"
+  },
+  {
+    "id": "513d3dad-a45c-4afe-a573-1f09c238ff83",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "IMEDICAL S.A.",
+    "shortName": "IMEDICAL"
+  },
+  {
+    "id": "51e63403-5c62-48db-854c-f6428b4b420c",
+    "rnas": "1-0650-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA PARLANTISTA",
+    "shortName": "OSPIP"
+  },
+  {
+    "id": "53892a82-7f52-45ca-80ca-b7091d8bd054",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SALUD PLUS S.A.",
+    "shortName": "SALUD PLUS"
+  },
+  {
+    "id": "53955f19-0fcf-4b93-bb2e-4f44ff69292d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE SEGURIDAD SOCIAL SEGUROS Y PRESTAMOS CHACO",
+    "shortName": "INSSEP"
+  },
+  {
+    "id": "53c68383-6026-4730-b4f2-2392a0d63b14",
+    "rnas": "9-0170-9",
+    "enemp": null,
+    "denomination": "MUTUAL MEDICA CONCORDIA",
+    "shortName": "MUTUAL CONCORDIA"
+  },
+  {
+    "id": "53c8d975-9c63-4044-b464-71fddd6bb97f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL DE EMPLEADOS DE COMERCIO DE NOGOYÁ",
+    "shortName": "MUTUAL COMERCIO NOGOYA"
+  },
+  {
+    "id": "54b66a99-25b5-4b13-b901-7d1c3851eaef",
     "rnas": null,
     "enemp": null,
     "denomination": "INSTITUTO DE OBRA SOCIAL DEL EMPLEADO PROVINCIAL SANTIAGO DEL ESTERO",
     "shortName": "IOSEP"
   },
   {
+    "id": "55076c9e-6e45-4a16-9d3a-1641ce2e4d3a",
     "rnas": null,
     "enemp": null,
-    "denomination": "OBRA SOCIAL DEL ESTADO FUEGUINO",
-    "shortName": "OSEF"
+    "denomination": "ASOCIACION MUTUAL SANCOR SALUD",
+    "shortName": "SANCOR SALUD"
   },
   {
+    "id": "56a4eb5c-da8e-4a71-80b0-7898c41c0ee2",
+    "rnas": "1-0240-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE CONDUCTORES NAVALES",
+    "shortName": "OSCON"
+  },
+  {
+    "id": "58e810cf-f142-47c2-8118-b11c96d47dfa",
+    "rnas": "1-1010-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA FEDERACION DE EMPLEADOS DE COMERCIO",
+    "shortName": "OSECAC"
+  },
+  {
+    "id": "59ab90c2-aa92-4f2b-bc4f-c5d295240e06",
     "rnas": null,
     "enemp": null,
-    "denomination": "INSTITUTO DE PREVISION Y SEGURIDAD SOCIAL DE TUCUMAN",
-    "shortName": "IPSST"
+    "denomination": "FAMYL S.A. SALUD PARA LA FAMILIA",
+    "shortName": "FAMYL"
   },
   {
+    "id": "59dcfab6-bda2-492f-aa9b-ebc0a460565d",
+    "rnas": "1-0390-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL GRAFICO",
+    "shortName": "OSPG"
+  },
+  {
+    "id": "5abf43f7-e9ba-41df-b315-0008f30e766a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ECA",
+    "shortName": "ECA"
+  },
+  {
+    "id": "5af1988d-a445-47e3-acb3-e6af2cf04770",
+    "rnas": "1-0140-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA CARTONERA",
+    "shortName": "OSPIC"
+  },
+  {
+    "id": "5af66bbd-54f9-49a0-aad7-3e4156eca378",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDICINA ESENCIAL S.A.",
+    "shortName": "MEDICINA ESENCIAL"
+  },
+  {
+    "id": "5b635bd2-27d1-44f4-b46b-c95fe2cebc56",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AMCE S.A.",
+    "shortName": "AMCE"
+  },
+  {
+    "id": "5b849210-a202-4ca3-b1e3-7cf0c3207dfa",
+    "rnas": "1-0190-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA CERAMICA, SANITARIOS Y PORCELANA DE MESA",
+    "shortName": "OSPC"
+  },
+  {
+    "id": "5c5d2cdd-5ded-4043-94af-a01fb5e272b8",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DEL PERSONAL JERARQUICO DE BANCOS OFICIALES NACIONALES",
+    "shortName": "MUTUAL JERARQUICOS"
+  },
+  {
+    "id": "5c81e190-466f-4404-8339-a15019057329",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL 10 DE ABRIL",
+    "shortName": "MUTUAL 10 DE ABRIL"
+  },
+  {
+    "id": "5d646dea-620f-4d7d-9268-025f7e576001",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE ASOCIADOS Y EMPLEADOS DE LA COOPERATIVA MARPLATENSE DE PESCA E INDUSTRIALIZACION LIMITADA (COOMARPES)",
+    "shortName": "COOMARPES"
+  },
+  {
+    "id": "5d6706eb-ae75-4556-ab1c-e7e77f1cdc69",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "HUINCA SALUD",
+    "shortName": "HUINCA SALUD"
+  },
+  {
+    "id": "5d673d74-19d6-42be-873a-beb6b1de053a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COOPERATIVA DE CREDITO DE SERVICIOS PUBLICOS Y SOCIALES CRUZ DEL EJE LTDA.",
+    "shortName": "COOP CRUZ DEL EJE"
+  },
+  {
+    "id": "5d79bcdf-3223-4a76-84ce-1ad43a6f3430",
+    "rnas": "4-0220-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL MUTUALIDAD INDUSTRIAL TEXTIL ARGENTINA",
+    "shortName": "MITA"
+  },
+  {
+    "id": "5df7e2b4-1975-4e26-a991-0c7d07c7065b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL GREMIAL MEDICA",
+    "shortName": "MUTUAL GREMIAL MEDICA"
+  },
+  {
+    "id": "5f6002c4-a694-4eb9-8838-1acdf96be4ce",
+    "rnas": "1-0850-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE TELEVISION",
+    "shortName": "OSPTV"
+  },
+  {
+    "id": "5fc1f6b5-49ae-4926-8122-78600ce6518d",
+    "rnas": "1-0570-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE MODELISTAS",
+    "shortName": "OSPM"
+  },
+  {
+    "id": "5fe2ece3-377a-4e8e-ab5f-b6df4ec240b6",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GEA",
+    "shortName": "GEA"
+  },
+  {
+    "id": "6033c785-9198-4a38-b465-9c9b9637bafb",
+    "rnas": "1-0400-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE GUITARRERIA",
+    "shortName": "OSPG"
+  },
+  {
+    "id": "61b67978-6ded-4dbb-b7c1-1834bc7c6bb4",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "IE EMERGENCIAS BOLIVAR SA",
+    "shortName": "IE EMERGENCIAS"
+  },
+  {
+    "id": "6250bcfc-7028-42da-8fe6-0cc672a2627c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE FARMACEUTICOS DE MENDOZA A.M.F.A.R.",
+    "shortName": "AMFAR"
+  },
+  {
+    "id": "6272adeb-9621-4c2a-a5e2-5a365499bce3",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SERVICIOS MEDICOS PREVISIONAL LA PAMPA",
+    "shortName": "SEMPRE"
+  },
+  {
+    "id": "64933059-9038-46fa-9eb8-f2998834da0f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "Hospital Privado Regional del Sur SA",
+    "shortName": "HPR"
+  },
+  {
+    "id": "65471e8a-a4fd-408e-88af-74a06d8eec53",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDICINA FEDERAL S.A",
+    "shortName": "MEDICINA FEDERAL"
+  },
+  {
+    "id": "65829f20-b830-4bc1-b56d-0efa90ed72af",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SANATORIO MAPACI S.A.",
+    "shortName": "MAPACI"
+  },
+  {
+    "id": "658a1795-2da9-4af6-bcda-bdb3a11d7fc0",
+    "rnas": "1-0270-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL CUERO",
+    "shortName": "OSPIC"
+  },
+  {
+    "id": "65c8cc63-78f9-4fda-a25e-9cd6ac1a05cf",
+    "rnas": "1-2020-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL HIELO",
+    "shortName": "OSFTIH"
+  },
+  {
+    "id": "66723c03-d6bc-4810-a27e-2cf534cbf4f5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL DEL TRABAJADOR VIAL SANTA FE",
+    "shortName": "MUTUAL VIAL"
+  },
+  {
+    "id": "67132b37-2096-4441-9319-6c887b5372f5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "IMPLATEL S.A.",
+    "shortName": "IMPLATEL"
+  },
+  {
+    "id": "6842ab02-de47-4d77-80a1-ce180a301dbd",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DEL PERSONAL DEL MINISTERIO DE EDUCACION Y JUSTICIA DE LA NACION (MUPEDUC)",
+    "shortName": "MUPEDUC"
+  },
+  {
+    "id": "686fb127-b61e-46da-9156-07ec26f382bf",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE SALUD DE CIUDADELA",
+    "shortName": "MUTUAL CIUDADELA"
+  },
+  {
+    "id": "68851b06-4ccb-4b76-8765-40403bb3878a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES PORTUARIOS DE LA REPUBLICA ARGENTINA",
+    "shortName": "MUTUAL PORTUARIOS"
+  },
+  {
+    "id": "68be1ad9-799d-47db-8d30-975eb0da4d4f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL MERCANTIL 26 DE SEPTIEMBRE",
+    "shortName": "MUTUAL MERCANTIL"
+  },
+  {
+    "id": "68e83f18-a7d3-4f76-b456-d2f76ba0f0d4",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASISTENCIA MUTUAL AERONAVEGANTE",
+    "shortName": "AMA"
+  },
+  {
+    "id": "68fd4731-b203-403b-9618-54350bc7d3fb",
+    "rnas": "1-0300-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE ESCRIBANIAS DE LA CIUDAD DE BUENOS AIRES",
+    "shortName": "OSPECBA"
+  },
+  {
+    "id": "691e2931-a0e6-45fd-9883-721da5d1cff2",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AMC SALUD S.A",
+    "shortName": "AMC SALUD"
+  },
+  {
+    "id": "6a616b2b-60ba-429e-8d2b-26ab3981a44c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GENESEN S.,A.",
+    "shortName": "GENESEN"
+  },
+  {
+    "id": "6ace3ab4-6427-4e2a-b903-d1479d4e05e3",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "OLIMPIA ASOCIACIÓN MUTUAL",
+    "shortName": "OLIMPIA MUTUAL"
+  },
+  {
+    "id": "6b640b51-f094-4420-8151-bfbe253178aa",
+    "rnas": "1-0310-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE ESCRIBANOS DE LA PROVINCIA DE BUENOS AIRES",
+    "shortName": "OSPEPBA"
+  },
+  {
+    "id": "6bcb6361-67b0-4beb-ad04-5665e0976df9",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL DE TRABAJADORES DEL TRANSPORTE AUTOMOTOR DE CARGAS",
+    "shortName": "MUTUAL TRANSPORTE CARGAS"
+  },
+  {
+    "id": "6bf389f4-0c50-42e2-a88c-fbed4d665d82",
+    "rnas": "1-1070-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA METALURGICA",
+    "shortName": "OSPM"
+  },
+  {
+    "id": "6c2c377c-8192-404e-8b80-5c94fae0d107",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL PROVINCIAL MARIANO MORENO",
+    "shortName": "MUTUAL MARIANO MORENO"
+  },
+  {
+    "id": "6cd5c847-2d08-4170-ae35-a479eeee62a1",
+    "rnas": "1-2040-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL VIDRIO",
+    "shortName": "OSFTIV"
+  },
+  {
+    "id": "6d59fc50-47aa-47b2-b781-13dcc61566c1",
+    "rnas": "1-1220-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LOS FERROCARRILES",
+    "shortName": "OSPF"
+  },
+  {
+    "id": "6dd343b5-5a9f-4acf-a279-78669dd0d958",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PLENA SALUD S.A.",
+    "shortName": "PLENA SALUD"
+  },
+  {
+    "id": "6e5884a1-c9b1-4619-8d81-f60b2d58e57b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SANTA SALUD S.A.",
+    "shortName": "SANTA SALUD"
+  },
+  {
+    "id": "6f269197-bc7d-4cc2-8003-509efb3f1647",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "OBRA ASISTENCIAL MUTUAL PARA AGENTES MUNICIPALES OAM",
+    "shortName": "OAM"
+  },
+  {
+    "id": "6f4f289c-e08d-4894-bfa2-df53a4e44625",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ORGANIZACION GALVEZ S.A.",
+    "shortName": "ORG GALVEZ"
+  },
+  {
+    "id": "6f717384-eb41-4455-8821-8411eec64c6a",
+    "rnas": "1-0990-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA DIRECCION DE ENERGIA",
+    "shortName": "OSPDE"
+  },
+  {
+    "id": "6f7367a3-d99a-4e71-ba0b-532b78793602",
+    "rnas": "1-0590-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL MOSAICO",
+    "shortName": "OSPM"
+  },
+  {
+    "id": "6f809cd2-4494-4cbf-97d1-f2649db87f0d",
+    "rnas": "1-0120-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE CAPITANES DE PESCA",
+    "shortName": "OSCP"
+  },
+  {
+    "id": "7013fd8a-4a51-4a43-920e-d3d9177b4a9b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL INTERIOR DEFENSA Y JUSTICIA",
+    "shortName": "MUTUAL DEFENSA Y JUSTICIA"
+  },
+  {
+    "id": "705d4f3b-5ad6-4901-b9c5-18875cc5ad1b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL PERSONAL SANCOR",
+    "shortName": "MUTUAL SANCOR"
+  },
+  {
+    "id": "71fea863-16eb-434e-b453-8d7c56c37b23",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ENTRE RIOS EMERGENCIAS S.R.L.",
+    "shortName": "ER EMERGENCIAS"
+  },
+  {
+    "id": "73048976-26db-4d54-b15c-1a67c1a57b78",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CENTRO MEDICO MONDE GRAN SA",
+    "shortName": "MONDE GRAN"
+  },
+  {
+    "id": "7359809b-a76f-4e06-85a2-1c407d3e7bb5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDIN S.A.S.M.A",
+    "shortName": "MEDIN"
+  },
+  {
+    "id": "73780b69-3913-46b5-83c0-d417e174c3d3",
+    "rnas": "4-0270-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE DIRECCION OSDO",
+    "shortName": "OSDO"
+  },
+  {
+    "id": "740e4f04-8b87-4016-8675-27cf83991d34",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "NOBIS SA",
+    "shortName": "NOBIS"
+  },
+  {
+    "id": "742df1c7-e356-4615-b213-49ceea737da9",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL DE AYUDA ENTRE ASOC. DE LA ASOC. DEP.EVERTON-OLIMPIA",
+    "shortName": "MUTUAL EVERTON-OLIMPIA"
+  },
+  {
+    "id": "74ac11a8-c60f-4c56-a0ec-ee190068d5f7",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "VITA`S S.A.",
+    "shortName": "VITAS"
+  },
+  {
+    "id": "74bea07b-15a8-41e0-a73a-b0b6e753147e",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CENTRO DE ATENCION MEDICA ASOCIACION MUTUAL DE SALUD",
+    "shortName": "MUTUAL DE SALUD"
+  },
+  {
+    "id": "75ccb8c8-b28e-4c74-bfe9-72412465455f",
+    "rnas": "1-0410-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL HIELO",
+    "shortName": "OSPIH"
+  },
+  {
+    "id": "75ec325d-e658-48a9-87cf-a52f975fff0b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CAJA DE SERVICIOS SOCIALES SANTA CRUZ",
+    "shortName": "CSS"
+  },
+  {
+    "id": "7628a9b9-5e65-4ba5-bc56-27c015352847",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CENTROMEDICA",
+    "shortName": "CENTROMEDICA"
+  },
+  {
+    "id": "782286ae-6feb-4843-b485-fa4dfad8288b",
+    "rnas": "9-0180-8",
+    "enemp": null,
+    "denomination": "MUTUAL DE SEGURIDAD SOCIAL",
+    "shortName": "MUTUAL SEGURIDAD"
+  },
+  {
+    "id": "7893915a-1bb5-4b8c-961f-72d19cfd59d0",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "RESCATE CENTRO S.A.",
+    "shortName": "RESCATE CENTRO"
+  },
+  {
+    "id": "78aef832-4210-41df-9e85-61e0e79ce570",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "STAFF MEDICO S.A",
+    "shortName": "STAFF MEDICO"
+  },
+  {
+    "id": "7a1e84ef-a0da-49dc-a6dc-b98aa4c7706c",
+    "rnas": "1-0550-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL MERCADO DE ABASTO",
+    "shortName": "OSPMA"
+  },
+  {
+    "id": "7a4396c5-e51f-4063-b3e6-263e51636c02",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL ARGUS SALUD",
+    "shortName": "ARGUS SALUD"
+  },
+  {
+    "id": "7a77c22b-7a8a-4169-94c8-bcc91916ae7f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE COMERCIANTES BARTOLOME MITRE",
+    "shortName": "MUTUAL B. MITRE"
+  },
+  {
+    "id": "7a8914f9-79ec-4f36-a45b-fde3f7c0e4ac",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDICUS SOCIEDAD ANONIMA DE ASISTENCIA MEDICA Y CIENTIFICA",
+    "shortName": "MEDICUS"
+  },
+  {
+    "id": "7aef5e83-fbbe-4a9a-a5c9-209589540dc6",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "LA RECIPROCA A.A.M.E.B.P.B.A.",
+    "shortName": "LA RECIPROCA"
+  },
+  {
+    "id": "7afe157b-5038-4443-9a64-c8b7bef1f903",
+    "rnas": "1-0980-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL CORREO Y TELECOMUNICACIONES",
+    "shortName": "OSPCYT"
+  },
+  {
+    "id": "7b9b52fa-5349-4474-9067-c05d4a6fdc98",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL DEL PERSONAL DE TRANSPORTE AUTOMOTOR PLAZA",
+    "shortName": "MUTUAL TRANSPORTE PLAZA"
+  },
+  {
+    "id": "7bc466a4-de57-43c3-9669-5a6750aca361",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE SEGURIDAD SOCIAL DE NEUQUEN",
+    "shortName": "ISSN"
+  },
+  {
+    "id": "7bed4bd2-4c63-4c7f-a7d4-7ea6141b255d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GILSA",
+    "shortName": "GILSA"
+  },
+  {
+    "id": "7decf3a2-aaf3-4fce-a810-8ad3892517e7",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMERGENCIA MEDICA INTEGRAL S.A.",
+    "shortName": "EMI"
+  },
+  {
+    "id": "7e0cb7c5-a205-42a0-9684-9ff8fd1ff6b3",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE OBRA MEDICA ASISTENCIAL",
+    "shortName": "IOMA"
+  },
+  {
+    "id": "7ff619e5-bad3-4929-a20b-c13c82a0f99e",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AMI S.R.L.",
+    "shortName": "AMI"
+  },
+  {
+    "id": "8193fbbf-54ba-4f39-a6c9-64c9b31c953b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PREVINCA SALUD S.A.",
+    "shortName": "PREVINCA"
+  },
+  {
+    "id": "81c00e97-84b2-49fd-a24e-9127939f43cb",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MARCOS Y HUGO LIBEDISNKY S.A (CRISOLMED )",
+    "shortName": "CRISOLMED"
+  },
+  {
+    "id": "824fe829-7bea-4590-804f-f9a84a799ad7",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL ARGENTINA DEL TURISMO",
+    "shortName": "AMAT"
+  },
+  {
+    "id": "828be274-8a2e-427c-9ad8-769b4c9af429",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "Conciencia Medica S.A",
+    "shortName": "CONCIENCIA MEDICA"
+  },
+  {
+    "id": "836c2a77-dcfb-467f-ab74-c45959c38e00",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SANITAS SALUD S.R.L.",
+    "shortName": "SANITAS SALUD"
+  },
+  {
+    "id": "83d6b4ce-4fbf-4995-b9fd-e1d06444dcd9",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CALIDAD MÉDICA S.A.",
+    "shortName": "CALIDAD MÉDICA"
+  },
+  {
+    "id": "840e457b-9e84-4d58-83f6-bba514695241",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SU MEDICINA ASISTENCIA S.A.",
+    "shortName": "SU MEDICINA"
+  },
+  {
+    "id": "85f298a1-db38-4d3c-8ebd-cd800a2ac351",
+    "rnas": "1-0230-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE DIRECCION DE COMERCIO",
+    "shortName": "OSPEDC"
+  },
+  {
+    "id": "8673938d-f565-49f4-b5a5-77b58d41b4bb",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "A.I.S.M. UNIONE E BENEVOLENZA",
+    "shortName": "UNIONE E BENEVOLENZA"
+  },
+  {
+    "id": "86b363d8-c679-4694-b993-57beeb2454f7",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL RURALISTA",
+    "shortName": "MUTUAL RURALISTA"
+  },
+  {
+    "id": "86c45373-e881-4f6e-9bf2-e87ffa5ff456",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SIALNOR",
+    "shortName": "SIALNOR"
+  },
+  {
+    "id": "8752ef78-b722-4b26-af0d-3fcd440f9fb5",
+    "rnas": "1-0040-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE AGUAS GASEOSAS Y AFINES",
+    "shortName": "OSAGA"
+  },
+  {
+    "id": "876d1c5d-f305-4cba-89c3-87cdd6d418b8",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "HOSPITAL ITALIANO DE LA PLATA - ASOCIACIÓN DE SOCORROS MUTUOS Y BENEFICENCIA",
+    "shortName": "ITALIANO LA PLATA"
+  },
+  {
+    "id": "87da18c0-d036-4763-b598-bf9a73e2408f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CENTRO MEDICO IPAM S.A.",
+    "shortName": "IPAM"
+  },
+  {
+    "id": "87df9c3f-f205-4fd4-903a-0cd08fb6334d",
+    "rnas": "1-0820-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE SEGUROS",
+    "shortName": "OSPS"
+  },
+  {
+    "id": "88c1c761-ffb9-43f8-bde9-7d353e436ca5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GRAN COOPERATIVA DE CREDITO, VIVIENDA, CONSUMO Y SERVICIOS SOCIALES LIMITADA",
+    "shortName": "GRAN COOPERATIVA"
+  },
+  {
+    "id": "88eb349a-5271-4d54-a6f7-1ecca3b2a5f3",
+    "rnas": "1-1060-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA MARINA MERCANTE",
+    "shortName": "OSPMM"
+  },
+  {
+    "id": "896e101c-ab04-4a13-bbef-521c74f1ddbb",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "FISHERTON SALUD S.R.L.",
+    "shortName": "FISHERTON SALUD"
+  },
+  {
+    "id": "8a0e6176-918e-4f7b-b542-db5a12396eb8",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL ENTRERRIANA DE SERVICIOS",
+    "shortName": "AMES"
+  },
+  {
+    "id": "8a0eae2b-4ac5-4755-981a-3733aff23fb1",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ADMINISTRACION PROVINCIAL DE SEGUROS DE SALUD CORDOBA",
+    "shortName": "APROSS"
+  },
+  {
+    "id": "8a3a5b81-0011-46b9-9aa8-3489ee774040",
+    "rnas": "1-0720-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE PUBLICIDAD",
+    "shortName": "OSPP"
+  },
+  {
+    "id": "8a81fe05-f5b1-49e8-8618-746f04f5d002",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SERVICIOS EMSYS S.A.",
+    "shortName": "EMSYS"
+  },
+  {
+    "id": "8a82e879-e33b-4740-884c-c11af6fd4552",
+    "rnas": "1-0180-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL CEMENTO",
+    "shortName": "OSPIC"
+  },
+  {
+    "id": "8c43dcb6-83e2-4f8b-98f4-a5254f01f8f7",
+    "rnas": "1-1130-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA RADIODIFUSION",
+    "shortName": "OSPR"
+  },
+  {
+    "id": "8c6f76d9-8bad-451a-82a5-c25047786db5",
+    "rnas": "1-0890-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE VIGILANCIA",
+    "shortName": "OSPV"
+  },
+  {
+    "id": "8cb83598-6b1d-479f-8d52-44d381888b92",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DOC ( EX ASOCIACION MUTUAL EMPLEADOS Y FUNCIONARIOS DEL GRUPO CORDOBA SALUD)",
+    "shortName": "MUTUAL DOC"
+  },
+  {
+    "id": "8cd3dd2c-96c4-4fb7-b179-e4db8755515c",
+    "rnas": "1-0350-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL FIDEO",
+    "shortName": "OSPIF"
+  },
+  {
+    "id": "8eac64f3-4563-447c-a408-45fbb29182e2",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL MERCANTIL ARGENTINA DE LOS EMPLEADOS DE COMERCIO DEL CHACO",
+    "shortName": "MUTUAL COMERCIO CHACO"
+  },
+  {
+    "id": "8f15fbe7-b2f0-4c58-afc1-68decf54e9f2",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PRESTADORES SANATORIALES SA",
+    "shortName": "PRESTADORES SANATORIALES"
+  },
+  {
+    "id": "8f5d39f4-edf5-4fce-a498-4a5d1170b36a",
+    "rnas": "1-1120-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA PRENSA",
+    "shortName": "OSPP"
+  },
+  {
+    "id": "8f6dcbc7-d41e-4eb8-93fa-462912d7a849",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GALENO CONSULTING GROUP S. A.",
+    "shortName": "GALENO"
+  },
+  {
+    "id": "8fc939e4-8459-4cd6-b126-b676c8ed3ae3",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDI-CARDIO S.R.L.",
+    "shortName": "MEDI-CARDIO"
+  },
+  {
+    "id": "8fcec1d2-0a5a-4d5a-82fa-eab072859fa9",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMERGENCIA CARDIO ASISTENCIAL S.A.",
+    "shortName": "EMERGENCIA CARDIO"
+  },
+  {
+    "id": "90083490-4806-49a8-a2cc-3e78b343c548",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL LICEANA",
+    "shortName": "MUTUAL LICEANA"
+  },
+  {
+    "id": "90fda97b-510d-4769-9f50-da5086cf2ba1",
+    "rnas": "1-2140-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DE LA CARNE",
+    "shortName": "OSFTIC"
+  },
+  {
+    "id": "919c9913-58ed-4264-be95-4c864e5ad8a4",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SOCORRO MEDICO SAN MARTIN S.A.",
+    "shortName": "SOCORRO SAN MARTIN"
+  },
+  {
+    "id": "91b0861a-e3f0-4c57-891d-470245d95d26",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MET CORDOBA S.A",
+    "shortName": "MET CORDOBA"
+  },
+  {
+    "id": "929126c9-dbf3-4adc-8f78-577ea497f16c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDICAL´S ORGANIZACION DE PRESTACIONES MEDICAS PRIVADAS S.A.",
+    "shortName": "MEDICALS"
+  },
+  {
+    "id": "92c0f80d-be7d-4634-a485-e15423220066",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "A.M.R. SALUD S.A.S.",
+    "shortName": "AMR SALUD"
+  },
+  {
+    "id": "93bb1156-afa1-460b-b7f0-c1096153eee2",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SISTEMA DE SALUD DEL COLEGIO MEDICO S.A.",
+    "shortName": "SISTEMA COLEGIO MEDICO"
+  },
+  {
+    "id": "94dfb9b5-e4b6-4487-b84b-20d3a5ab7d23",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "BONMED S.A.",
+    "shortName": "BONMED"
+  },
+  {
+    "id": "95167f53-4268-4e6b-b455-c5271e2e09de",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASISTIR SA",
+    "shortName": "ASISTIR"
+  },
+  {
+    "id": "9584722f-8eaf-404c-81b2-b155d0fa041c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL DE LA INDUSTRIA CURTIDORA ARGENTINA",
+    "shortName": "MICA"
+  },
+  {
+    "id": "96551ee5-25be-4234-91c3-7e4a0117b4ff",
+    "rnas": "1-1160-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA TELEFONIA",
+    "shortName": "OSPT"
+  },
+  {
+    "id": "965df94d-5f08-4fb3-9de4-a2e04036f05a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEMED S.A.",
+    "shortName": "MEMED"
+  },
+  {
+    "id": "96e388ca-fee3-4ab2-89cd-0cb8ec25475b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMERGENCIAS MEDICAS ENTRE RIOS SRL",
+    "shortName": "EMERGENCIAS ENTRE RIOS"
+  },
+  {
+    "id": "97718138-429c-4b84-8f15-ed21b034b571",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE INVESTIGACIONES DEL CORAZON INICOR",
+    "shortName": "INICOR"
+  },
+  {
+    "id": "978e2904-41ae-42e4-8606-4d073f109a11",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "OSCOSALUD",
+    "shortName": "OSCOSALUD"
+  },
+  {
+    "id": "97ae630e-0c32-4378-acc6-b2476a1afb1b",
+    "rnas": "1-0430-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL JABON",
+    "shortName": "OSPJ"
+  },
+  {
+    "id": "98598274-5d7b-4455-b4cd-5f2b51729a07",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL SOCIOS CIRCULO MEDICO DE NOGOYA",
+    "shortName": "MUTUAL MEDICA NOGOYA"
+  },
+  {
+    "id": "986195cf-75f5-4625-ab9f-4de76cf0070f",
     "rnas": null,
     "enemp": null,
     "denomination": "OBRA SOCIAL DE LA CIUDAD DE BUENOS AIRES",
     "shortName": "OBSBA"
   },
   {
+    "id": "9904bba6-0b71-42a4-977b-4da5a0be4dc0",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EME SALUD SA",
+    "shortName": "EME SALUD"
+  },
+  {
+    "id": "991b85bc-8f43-42d1-a1fd-75ab257ef3c4",
+    "rnas": "1-0710-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL PLASTICO",
+    "shortName": "OSPIP"
+  },
+  {
+    "id": "99231bfc-112f-450e-b753-da2e179d611d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GALENO ARGENTINA S.A.",
+    "shortName": "GALENO"
+  },
+  {
+    "id": "9952baad-eb55-4fa9-8733-60485073d40b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL CAPITAL DE SANTIAGO DEL ESTERO",
+    "shortName": "MUTUAL CAPITAL"
+  },
+  {
+    "id": "99c0d0b4-c042-4ad5-b23b-235eedc9cb00",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "HEALTH MEDICAL",
+    "shortName": "HEALTH MEDICAL"
+  },
+  {
+    "id": "99e9dabf-774d-43dd-9119-3c70cd3c165d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOC MUTUAL SEGURIDAD SOCIAL 13 DE MAYO",
+    "shortName": "MUTUAL 13 DE MAYO"
+  },
+  {
+    "id": "9a60bab4-af62-4a0d-9311-281748ed3dcd",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE SUBOFICIALES Y PENSIONADAS FEDERALES DEL INTERIOR",
+    "shortName": "MUTUAL SUBOFICIALES"
+  },
+  {
+    "id": "9b0a976e-4d80-4cda-91ca-afca0e1b6da8",
+    "rnas": "1-0870-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL TURISMO, HOTELERIA Y GASTRONOMIA",
+    "shortName": "OSUTHGRA"
+  },
+  {
+    "id": "9b1a2111-bd01-451e-b4db-84ccec36b61c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASISTENCIA MODELO VICENTE LOPEZ SA",
+    "shortName": "ASISTENCIA MODELO"
+  },
+  {
+    "id": "9b895df1-f4b4-49cd-a045-f13e19d20683",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "UNION OBRERA ASOCIACION DE SOCORROS MUTUOS",
+    "shortName": "MUTUAL UNION OBRERA"
+  },
+  {
+    "id": "9bb0f69f-53ec-46c0-b3c3-72ae914fcde2",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE OBRA SOCIAL DE CORRIENTES",
+    "shortName": "IOSCOR"
+  },
+  {
+    "id": "9bc84c32-a64b-4fc7-b9c0-2b44aa92b44e",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AVALIAN SALUD Y BIENESTAR COOPERATIVA LIMITADA EX ACA SALUD COOPERATIVA DE PRESTACION DE SERVICIOS MEDICO ASISTENCIALES LTDA",
+    "shortName": "AVALIAN"
+  },
+  {
+    "id": "9c2d442b-9932-497d-8a03-4e27932a76ae",
+    "rnas": "1-0830-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL TABACO",
+    "shortName": "OSPT"
+  },
+  {
+    "id": "9e3bf881-7723-423a-80ba-f2673fe6785c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL 22 DE DICIEMBRE DEL DEPARTAMENTO IRIONDO",
+    "shortName": "MUTUAL IRIONDO"
+  },
+  {
+    "id": "9f02d499-a14d-4fd4-a4a8-ca0a75cb8c2d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CENTRO DE EMERGENCIA MEDICA INTEGRAL",
+    "shortName": "CEMI"
+  },
+  {
+    "id": "9f161da0-55a5-4801-ae4a-2fe07049b52f",
+    "rnas": "1-1150-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA SEGURIDAD",
+    "shortName": "OSPS"
+  },
+  {
+    "id": "9f1e5d6f-08cd-478e-9b2b-7e06538336e0",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL GRAN ROSARIO",
+    "shortName": "MUTUAL GRAN ROSARIO"
+  },
+  {
+    "id": "9f569f47-bddf-493e-b404-055a3453a47c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SISTEMA INTEGRAL DE SALUD DEL SANATORIO CHIVILCOY S.A.",
+    "shortName": "SANATORIO CHIVILCOY"
+  },
+  {
+    "id": "9fd93706-c21d-46cc-b3bd-04ca27526c20",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES MUNICIPALES DE LA MATANZA",
+    "shortName": "MUTUAL MUNICIPALES MATANZA"
+  },
+  {
+    "id": "9ff9c6f0-729a-4b6d-a03e-a74a669f2d92",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE PREVISION Y SEGURIDAD SOCIAL DE TUCUMAN",
+    "shortName": "IPSST"
+  },
+  {
+    "id": "a0b0f4f5-5729-498b-8d98-80443f77247d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL AGUA Y ENERGIA ELECTRICA DE CAPITAL FEDERAL",
+    "shortName": "MUTUAL AGUA Y ENERGIA"
+  },
+  {
+    "id": "a0fb0dfc-5938-410b-88ea-a9d21ce1ee32",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE PROTECCION FAMILIAR",
+    "shortName": "AMPF"
+  },
+  {
+    "id": "a1aa264a-11d3-4267-ad76-5d608d46b0eb",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOC. ESPAÑOLA DE SOCORROS MUTUOS Y BENEFICIENCIA DE LA PLATA",
+    "shortName": "ESPAÑOLA LA PLATA"
+  },
+  {
+    "id": "a27342fd-ea46-4da5-911e-0aee44c5a1df",
+    "rnas": "1-0670-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE PASTELEROS, CONFITEROS, PIZZEROS Y HELADEROS",
+    "shortName": "OSPP"
+  },
+  {
+    "id": "a2cd2fa7-a694-42c8-b3ef-5e5cf2c324ad",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "A.M.U.K.R.A.",
+    "shortName": "AMUKRA"
+  },
+  {
+    "id": "a3243f2e-e715-4c75-b101-a54b64803e05",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CYNTHIOS SALUD SA",
+    "shortName": "CYNTHIOS"
+  },
+  {
+    "id": "a3a38185-68ab-4276-a3f0-9d0f667f3026",
+    "rnas": "1-0060-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE AGUAS CORRIENTES Y OBRAS SANITARIAS",
+    "shortName": "OSPAC"
+  },
+  {
+    "id": "a3cf993a-1a6c-41f1-bdc7-81af0d0ff6e5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ADMINISTRACION RECURSOS PARA SALUD.S.A",
+    "shortName": "ARPS"
+  },
+  {
+    "id": "a4020224-9ef9-460d-b3fd-4ec8d5f7bf72",
+    "rnas": "1-0440-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE JARDINES DE INFANTES",
+    "shortName": "OSPJI"
+  },
+  {
+    "id": "a422dc1f-0fc1-45b6-b831-50ad41e17daf",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASKHA",
+    "shortName": "ASKHA"
+  },
+  {
+    "id": "a45240cc-719a-4b34-92aa-20491d3f05b8",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMERGENCIAS MEDICAS OLAVARRIA SRL",
+    "shortName": "EMERGENCIAS OLAVARRIA"
+  },
+  {
+    "id": "a48ba0cf-504c-4564-bf84-7a55f5c41f1d",
+    "rnas": "1-1050-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION ARGENTINA DE TRABAJADORES DE LUZ Y FUERZA",
+    "shortName": "OSFATLyF"
+  },
+  {
+    "id": "a4e64e9a-e4de-4e9e-92b2-f07e293c19b8",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PROTECCIÓN INTEGRAL PARA LA FAMILIA ASOCIACIÓN MUTUAL",
+    "shortName": "PROTECCION INTEGRAL"
+  },
+  {
+    "id": "a4f971bb-6c72-46b6-95bd-1dfa275e3cb4",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INTERNATIONAL HEALTH SERVICES ARGENTINA S.A",
+    "shortName": "IHSA"
+  },
+  {
+    "id": "a4fd3080-fff2-4c87-8b49-a35b0ac9ea9c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PREMEDICA S.A.",
+    "shortName": "PREMEDICA"
+  },
+  {
+    "id": "a634e6ea-bdcc-4fe1-823e-d31881657020",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "UNIDEM S.A.",
+    "shortName": "UNIDEM"
+  },
+  {
+    "id": "a696626f-0ad9-4366-bea6-5cf830c8de3f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SANATORIO MEDICO QUIRURGICO SANTA FE S.A",
+    "shortName": "SANATORIO SANTA FE"
+  },
+  {
+    "id": "a698ae25-2197-47d5-92ee-2094f15a3607",
+    "rnas": "1-2150-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA QUIMICA",
+    "shortName": "OSFTIQ"
+  },
+  {
+    "id": "a6b09b2c-3ed4-42be-b7e1-c848f6b03cf5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INCOR EMERGENCIAS SRL",
+    "shortName": "INCOR"
+  },
+  {
+    "id": "a6de0407-97f6-426e-98f4-42cdbbdd01ec",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SOCORRO MEDICO PRIVADO CORDOBA S.A.",
+    "shortName": "SOCORRO MEDICO"
+  },
+  {
+    "id": "a78bb371-9736-41ee-b940-9dad0d43459b",
+    "rnas": "1-0290-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE ENTIDADES DEPORTIVAS Y CIVILES",
+    "shortName": "OSPEDYC"
+  },
+  {
+    "id": "a7b64045-c488-4851-b673-9e5436cdb76f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASSI SA",
+    "shortName": "ASSI"
+  },
+  {
+    "id": "a809a8b9-34e4-4630-9398-312de7d23759",
+    "rnas": "1-2110-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL TABACO",
+    "shortName": "OSFTIT"
+  },
+  {
+    "id": "a84286f0-f8dc-4afd-bfcb-49ebf562d6d8",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AUSTRAL ORGANIZACION MEDICA INTEGRAL S.A.",
+    "shortName": "AUSTRAL"
+  },
+  {
+    "id": "a97355e0-2d68-41b3-b55e-bc8128a227fc",
+    "rnas": "1-2010-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL GAS",
+    "shortName": "OSFTIG"
+  },
+  {
+    "id": "a97d44f4-3c13-4376-a0cf-cde75b1c7140",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL AMAR DE AYUDA RECIPROCA",
+    "shortName": "AMAR"
+  },
+  {
+    "id": "a98b3ce4-a9cb-4e18-b440-d5cc17e293e0",
+    "rnas": "1-2080-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL CUERO",
+    "shortName": "OSFTIC"
+  },
+  {
+    "id": "aa7731e9-1baf-4e12-984a-fc2227078088",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE PROFESIONALES",
+    "shortName": "MUTUAL PROFESIONALES"
+  },
+  {
+    "id": "abdcac2a-a10e-4242-beb2-b092245ac51a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION ESPAÑOLA DE SOCORROS MUTUOS DE CORDOBA",
+    "shortName": "ESPAÑOLA CORDOBA"
+  },
+  {
+    "id": "acb0ff64-3cba-4105-85fb-254865cafab5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PLAN ODONTOLOGICO INTEGRAL S.A",
+    "shortName": "POI"
+  },
+  {
+    "id": "ad28ad92-0a8e-4b5d-ad78-fe5869b7b367",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES ARGENTINOS ESTATALES (AMTAE)",
+    "shortName": "AMTAE"
+  },
+  {
+    "id": "ad7597c6-f0b4-410b-ad94-5d491eea8b29",
+    "rnas": "1-0110-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL CALZADO",
+    "shortName": "OSPIC"
+  },
+  {
+    "id": "ae2e65af-a512-4676-82b4-56621e8163ce",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL SOCIOS CIRCULO MEDICO DE VICTORIA",
+    "shortName": "MUTUAL MEDICA VICTORIA"
+  },
+  {
+    "id": "ae65a92d-d516-4c8a-85e4-3c2793ece138",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL DE EX EMPLEADOS DE AGUA, LA ENERGIA ELECTRICA Y OTRAS ACTIVIDADES - JUJUY",
+    "shortName": "MUTUAL AGUA JUJUY"
+  },
+  {
+    "id": "aebcfa26-0fb0-4a1e-9736-47ba44c343df",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SOCIEDAD ITALIANA DE SOCORROS MUTUOS CAMPANA",
+    "shortName": "ITALIANA CAMPANA"
+  },
+  {
+    "id": "aecbf3c0-46aa-4b31-8b9f-18027812a6ae",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PREMEDIKAL S.R.L",
+    "shortName": "PREMEDIKAL"
+  },
+  {
+    "id": "af044f1f-4747-4c80-b5aa-e6f8f5c8db60",
+    "rnas": "1-0280-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE CHOFERES DE CAMIONES",
+    "shortName": "OSCHOCA"
+  },
+  {
+    "id": "af2bdb24-42e3-42b1-8f08-84514f286050",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SEREM SA",
+    "shortName": "SEREM"
+  },
+  {
+    "id": "af32f361-1c81-4e01-a171-0efa8c69c9bd",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PRIVAMED S.A",
+    "shortName": "PRIVAMED"
+  },
+  {
+    "id": "af710784-635d-4ff6-8172-d54f0e58c766",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ADMINISTRACION PROVINCIAL DE OBRA SOCIAL LA RIOJA",
+    "shortName": "APOS"
+  },
+  {
+    "id": "afd6eb5c-37c9-4f32-8214-d235b6b4be0a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO PROVINCIAL DE SALUD DE SALTA",
+    "shortName": "IPS"
+  },
+  {
+    "id": "b0a4061b-355f-4e23-b32c-08ada38882cc",
+    "rnas": "1-2120-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL MUEBLE",
+    "shortName": "OSFTIM"
+  },
+  {
+    "id": "b0bb274e-cf9e-485c-a106-5ada757c90ba",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PANGEA S.A.",
+    "shortName": "PANGEA"
+  },
+  {
+    "id": "b0f1a9ac-954b-435c-8b49-f4fb90e1a67a",
+    "rnas": "1-2090-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DE LA CERAMICA",
+    "shortName": "OSFTIC"
+  },
+  {
+    "id": "b10aab11-b330-4c77-b197-be119b2fe0c7",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PROGRAMAS MEDICOS SOCIEDAD ARGENTINA DE CONSULTORIA MUTUAL",
+    "shortName": "PROGRAMAS MEDICOS"
+  },
+  {
+    "id": "b12b3597-f8e9-4e0d-8477-70926b3d5e4c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AMSTERDAM SALUD SA",
+    "shortName": "AMSTERDAM SALUD"
+  },
+  {
+    "id": "b15c6bf9-fccc-4a0f-a227-4bd67546aa47",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GALENO S.R.L.",
+    "shortName": "GALENO"
+  },
+  {
+    "id": "b1fe681c-baf1-4a6d-bdab-3765dcb1c52f",
+    "rnas": "1-0970-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL COMERCIO EXTERIOR",
+    "shortName": "OSPCE"
+  },
+  {
+    "id": "b2878da6-5b3d-4499-b9e7-f712aa53ad0d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL CON-SER CONFIANZA Y SERVICIO",
+    "shortName": "CON-SER"
+  },
+  {
+    "id": "b2e52a0b-8ac5-453c-9b91-b63c0895bdf6",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GERDANNA SA",
+    "shortName": "GERDANNA"
+  },
+  {
+    "id": "b3124e33-bba5-41c2-b3b4-da8b5a5e10f9",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE EMPLEADOS DE COMERCIO DEL SUDESTE BONAERENSE",
+    "shortName": "AMEC"
+  },
+  {
+    "id": "b412d3db-b620-4d3c-a5b4-0da8bc80407b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMEDIC S.A.",
+    "shortName": "EMEDIC"
+  },
+  {
+    "id": "b5097362-e683-46e8-a791-9d1fac9ac6f4",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE CHOFERES DE CAMIONES, OBREROS Y EMPLEADOS DEL TRANSPORTE AUTOMOTOR DE CARGAS GENERALES DE MISIONES",
+    "shortName": "MUTUAL CAMIONEROS MISIONES"
+  },
+  {
+    "id": "b51efca6-8804-40a7-a2b9-8f47046824ba",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL DE AGRICULTURA Y GANADERIA",
+    "shortName": "MUTUAL AGRICULTURA"
+  },
+  {
+    "id": "b617e8d0-fec2-48d9-9016-bd0932dce3c3",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL ESTADO FUEGUINO",
+    "shortName": "OSEF"
+  },
+  {
+    "id": "b64160cd-8bfb-4c59-91bd-367a237f00ea",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COOPERATIVA DE TRABAJO DE ATENCION MEDICA INTEGRAL DEL SUR DE DE LA PROVINCIA DE CORDOBA (AMICOR) LTDA.",
+    "shortName": "AMICOR"
+  },
+  {
+    "id": "b6c0be8d-b1ee-4f3c-bd51-8133073cf2d4",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CODIME S.A.",
+    "shortName": "CODIME"
+  },
+  {
+    "id": "b75dad34-7fba-410e-a502-35705758b72c",
+    "rnas": "1-0800-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE SEGURIDAD",
+    "shortName": "OSPS"
+  },
+  {
+    "id": "b8612ae5-e517-4289-8811-a93acaa2e35b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "UNIFE S.A.",
+    "shortName": "UNIFE"
+  },
+  {
+    "id": "b9047996-9f55-4cf8-aa7d-581513d26080",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO MATERNO INFANTIL SA",
+    "shortName": "IMI"
+  },
+  {
+    "id": "b90db7dd-4659-4f00-b35f-78449a9070c5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SALTMED ORGANIZACION MEDICA INTEGRAL SRL",
+    "shortName": "SALTMED"
+  },
+  {
+    "id": "b9eab281-688e-46d8-afed-0a95fa3871a3",
+    "rnas": "1-0360-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL FOSFORO",
+    "shortName": "OSPIF"
+  },
+  {
+    "id": "ba28c5f2-e81b-434e-9fdf-97d0a7035c18",
+    "rnas": "1-1100-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA OBRA SOCIAL",
+    "shortName": "OSPOS"
+  },
+  {
+    "id": "bb06a544-beae-4421-962b-964eb705ffdf",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOC MUTUAL TRABAJADORES EMPLEADOS DE COMERCIO",
+    "shortName": "MUTUAL COMERCIO"
+  },
+  {
+    "id": "bb2a02fa-e39e-4568-9333-9e5df60c6488",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDOM S.A.",
+    "shortName": "MEDOM"
+  },
+  {
+    "id": "bb328610-d7c6-46ec-bdcc-8667813827d7",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "BRAMED S.R.L.",
+    "shortName": "BRAMED"
+  },
+  {
+    "id": "bc0af498-23ac-41ed-a7c7-aee60b659278",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL SEGURIDAD SOCIAL",
+    "shortName": "MUTUAL SEGURIDAD SOCIAL"
+  },
+  {
+    "id": "bc387b8d-1217-4e93-bcab-021c64c4bdd5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION ESPAÑOLA DE SOCORROS MUTUOS -VILLA CONSTITUCION-",
+    "shortName": "ESPAÑOLA VILLA CONSTITUCION"
+  },
+  {
+    "id": "bc96ccea-3c84-456d-8cd3-b7b1295a6968",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL INTERCOOPERATIVA",
+    "shortName": "MUTUAL INTERCOOPERATIVA"
+  },
+  {
+    "id": "bcff1432-f3b4-4373-8c60-d4012fcbd945",
+    "rnas": "1-1170-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA TELEVISION",
+    "shortName": "OSPTV"
+  },
+  {
+    "id": "bd0fdd51-d5ab-4c0b-9995-06c5f49ae9b6",
+    "rnas": "1-0610-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL NEUMATICO",
+    "shortName": "OSPIN"
+  },
+  {
+    "id": "bd2498e4-36fe-496f-98c7-ee291e9ad47c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL CENTRO MÉDICO DE SAN FRANCISCO",
+    "shortName": "MUTUAL SAN FRANCISCO"
+  },
+  {
+    "id": "bd5a6a5e-b283-4325-898b-6064c6c6073e",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "FAMILY EMERGENCIAS MEDICAS SRL",
+    "shortName": "FAMILY"
+  },
+  {
+    "id": "bdd4f8c1-0763-41b4-9d72-5f905fe4be13",
+    "rnas": "1-0690-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DEL PESCADO",
+    "shortName": "OSPIP"
+  },
+  {
+    "id": "be1f8588-f1e7-421c-b199-334a4291fd18",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL MEDICA CONCORDIA",
+    "shortName": "MUTUAL CONCORDIA"
+  },
+  {
+    "id": "be75c40f-ecf3-49d5-806a-3865433f0178",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASIPSALUD",
+    "shortName": "ASIPSALUD"
+  },
+  {
+    "id": "bebfadfa-0be4-410c-883a-38f74078187e",
+    "rnas": "1-1200-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA VIGILANCIA",
+    "shortName": "OSPV"
+  },
+  {
+    "id": "bef92c72-b091-4946-be4f-024e6a764cd6",
+    "rnas": "1-0450-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL LADRILLERO",
+    "shortName": "OSPL"
+  },
+  {
+    "id": "bf2f100f-5b1a-448b-9a96-dffc4b5a818c",
+    "rnas": "1-1090-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA NAVEGACION",
+    "shortName": "OSPN"
+  },
+  {
+    "id": "c04219f5-3fd1-4aa0-86ae-d3f8eaa69898",
+    "rnas": "1-0340-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL FERTILIZANTE",
+    "shortName": "OSPF"
+  },
+  {
+    "id": "c080ca82-4939-4928-a91e-1041ab0449cc",
+    "rnas": "1-0760-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL REGISTRO DE LA PROPIEDAD INMUEBLE",
+    "shortName": "OSPRPI"
+  },
+  {
+    "id": "c0e7cd48-fc59-4ed6-9c5c-7a37cfbba27c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COOPERATIVA DE PREVISIÓN DE SERVICIOS PÚBLICOS, ASISTENCIALES,VIVIENDA Y CRÉDITO LTDA.",
+    "shortName": "COOP SERVICIOS PUBLICOS"
+  },
+  {
+    "id": "c20c1a56-6751-471c-8566-fe11f54e6fce",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CIRC SUBOF DE LA FZA AREA ARG ASOC MUTUAL",
+    "shortName": "MUTUAL FZA AEREA"
+  },
+  {
+    "id": "c231db32-8e1c-4876-8a64-9e6d3d1262b2",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL MERCANTIL BAHIENSE",
+    "shortName": "AMMB"
+  },
+  {
+    "id": "c23c1ff3-b3eb-40a1-a70e-fcb39ce1ae10",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL FEDERADA 25 DE JUNIO SOCIEDAD DE PROTECCION RECIPROCA.",
+    "shortName": "FEDERADA SALUD"
+  },
+  {
+    "id": "c2c77f0c-7cb4-4bdf-a7d5-b2fba143d2ab",
+    "rnas": "1-0090-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE BARRACAS DE LANAS, CUEROS Y ANEXOS",
+    "shortName": "OSPB"
+  },
+  {
+    "id": "c315652d-77e7-4b1d-872c-7b37f34af944",
+    "rnas": "0-0020-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA PREFECTURA NAVAL ARGENTINA",
+    "shortName": "OSPNA"
+  },
+  {
+    "id": "c32b9967-48ac-4810-ab18-8fa58d369291",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ORDEM SUR S.A.",
+    "shortName": "ORDEM SUR"
+  },
+  {
+    "id": "c34d38b3-f7b6-433d-b7cf-695f4c5a70e3",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SABER S.A.",
+    "shortName": "SABER"
+  },
+  {
+    "id": "c44339aa-f714-4bf3-a69b-bc45b9da2f63",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL SINDICATO DE CAMIONEROS",
+    "shortName": "MUTUAL CAMIONEROS"
+  },
+  {
+    "id": "c501f737-c096-4dcd-9fe2-fff84eb04429",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "REYLES S.A.",
+    "shortName": "REYLES"
+  },
+  {
+    "id": "c5ec791e-46c3-469d-8c4b-0f0908b9ebc7",
+    "rnas": "0-0010-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL NAVAL",
+    "shortName": "OSPN"
+  },
+  {
+    "id": "c61c9f68-9bab-4ecf-8d0d-1f008eeecbd5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SISTEMA INTEGRADO DE PRESTADORES DE SALUD SA",
+    "shortName": "SIPS"
+  },
+  {
+    "id": "c6a87004-0f27-4c26-ace3-1ac4ea704dcc",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL MÉDICA DEL OESTE",
+    "shortName": "MUTUAL OESTE"
+  },
+  {
+    "id": "c6e3d496-f1ea-4cf3-bb79-fc42842050c0",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL DEL PERSONAL DEL CENTRO INDUSTRIAL ACINDAR",
+    "shortName": "MUTUAL ACINDAR"
+  },
+  {
+    "id": "c80e1e05-540a-4fdf-9f9c-6a6ba9438004",
+    "rnas": "1-1230-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LOS PUERTOS",
+    "shortName": "OSPP"
+  },
+  {
+    "id": "c83af1d2-bbc2-471f-b0c2-68dfb91d0e81",
+    "rnas": "1-0470-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LOTERIA",
+    "shortName": "OSPL"
+  },
+  {
+    "id": "c8f0f18e-f7bf-4777-9b77-f31ab2448227",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL MEDICOS ASOCIACION MEDICA DEL DEPARTAMENTO DIAMANTE",
+    "shortName": "MUTUAL MEDICOS DIAMANTE"
+  },
+  {
+    "id": "c9340dbf-98ad-4b9a-8c87-ffb0d707c21a",
+    "rnas": "1-0660-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE PASTEURIZACION Y FABRICAS DE HIELO",
+    "shortName": "OSPFH"
+  },
+  {
+    "id": "c9f09b6e-51d6-48d2-95e3-91b12b8bca44",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "VEM SA",
+    "shortName": "VEM"
+  },
+  {
+    "id": "ca5599b3-edf6-4fb9-94e0-b2970a2640bc",
+    "rnas": "1-0520-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE MECANICOS Y AFINES DEL TRANSPORTE AUTOMOTOR",
+    "shortName": "OSMATA"
+  },
+  {
+    "id": "caa07359-8252-410b-8c7f-275c9e0a4705",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "And the Yellow Too S.A.",
+    "shortName": "AND THE YELLOW"
+  },
+  {
+    "id": "cb2981bb-2e7a-4f72-9098-9b129d452784",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDICAL SERVICIOS DE SALUD S.R.L.",
+    "shortName": "MEDICAL SERVICIOS"
+  },
+  {
+    "id": "cb42df75-4aa1-4901-bc17-d4b327c1d025",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "UNIDAD CORONARIA MOVIL QUILMES",
+    "shortName": "UCM QUILMES"
+  },
+  {
+    "id": "cbc751e1-23c7-444e-8ecd-11050da52d03",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION SOCORROS MUTUOS FUERZAS ARMADAS",
+    "shortName": "MUTUAL FF.AA."
+  },
+  {
+    "id": "cbd0cb54-a2b3-461a-b005-3b99aaa99589",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "D.I.M.SA. S.A.",
+    "shortName": "DIMSA"
+  },
+  {
+    "id": "cc3c1de1-0ec0-468a-bf33-c41ded3e5b7d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDICAR S.R.L.",
+    "shortName": "MEDICAR"
+  },
+  {
+    "id": "cc51dc6f-541e-4eed-bcbf-052594a63c32",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PRIMED SA",
+    "shortName": "PRIMED"
+  },
+  {
+    "id": "cc81ef13-fa02-4e8b-aa7e-a7390f788142",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AMPARAS S.A.",
+    "shortName": "AMPARAS"
+  },
+  {
+    "id": "ccd29662-ecb0-4a77-889b-37931780c850",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SOCORRO MEDICO PRIVADO S.A.",
+    "shortName": "SOCORRO MEDICO"
+  },
+  {
+    "id": "ccd7908a-c9d8-472a-97b2-71a9ca3baac5",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACIÓN MUTUAL MÉDICA VILLA MARÍA",
+    "shortName": "MUTUAL VILLA MARÍA"
+  },
+  {
+    "id": "cd1e5528-0b9d-4433-9c78-925db0dc0d70",
+    "rnas": "1-0580-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE MOLINEROS",
+    "shortName": "OSPM"
+  },
+  {
+    "id": "cde90a5a-1103-4b29-ac67-09dc1c8ce83e",
+    "rnas": "1-1240-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LOS SEGUROS",
+    "shortName": "OSPS"
+  },
+  {
+    "id": "ce36de3b-47ea-491a-a35d-25dde3e0ecec",
+    "rnas": "1-0490-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE MAESTRANZA",
+    "shortName": "OSPM"
+  },
+  {
+    "id": "cf07ef28-9f67-47fc-a901-0800f20a892c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL PERSONA JOHN DEERE ARGENTINA",
+    "shortName": "MUTUAL JOHN DEERE"
+  },
+  {
+    "id": "cf3c7492-95c1-4728-8f13-6f7b91413891",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "HEALTHNES S.A.",
+    "shortName": "HEALTHNES"
+  },
+  {
+    "id": "cf571876-a4a6-4646-b2ba-b9938833ff54",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDYCIN ARGENTINO S.A.",
+    "shortName": "MEDYCIN"
+  },
+  {
+    "id": "cff370ec-b284-4f59-98ca-6d88cde0177c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CRUZ AZUL SALUD",
+    "shortName": "CRUZ AZUL"
+  },
+  {
+    "id": "d01a38a1-16a5-4ee8-affd-abe6642f0514",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GAM SALUD",
+    "shortName": "GAM SALUD"
+  },
+  {
+    "id": "d159cf75-c4d1-444c-b715-ded4af295f7b",
+    "rnas": "1-2100-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL JABON",
+    "shortName": "OSFTIJ"
+  },
+  {
+    "id": "d1f02573-8832-46bd-862d-7e3b7a27236d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE SERVICIOS PARA INTERNACIONES Y OPERACIONES",
+    "shortName": "AMSIO"
+  },
+  {
+    "id": "d41359e4-b438-4d6d-b325-b9d1f1881727",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL DE SERVICIOS ASISTENCIALES DE MEDICINA INTERDISCIPLINARIA-SAMI",
+    "shortName": "SAMI"
+  },
+  {
+    "id": "d4583ab0-fd88-4622-b632-d0e96e691063",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "UNION EMERGENCIAS REGIONALES S.A.",
+    "shortName": "UER"
+  },
+  {
+    "id": "d4bca464-5f8f-4e08-a37c-b2fe6e84c1c8",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ARMIENTO SA",
+    "shortName": "ARMIENTO"
+  },
+  {
+    "id": "d511aa18-d895-4e38-be1c-d60c9cf8e8ec",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CLINICA MEDICO QUIRURGICA SANATORIO JUNIN S.A",
+    "shortName": "SANATORIO JUNIN"
+  },
+  {
+    "id": "d59def5f-575f-42e3-8f5d-367ad1e82498",
+    "rnas": "1-0940-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA ACTIVIDAD TURISTICA",
+    "shortName": "OSPAT"
+  },
+  {
+    "id": "d7687584-f1b8-4966-9cf4-f776c959bcfe",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE EMPLEADOS PROVINCIALES DE LA PROVINCIA DE BUENOS AIRES.",
+    "shortName": "AMEP"
+  },
+  {
+    "id": "d9964196-ade2-4879-a559-917f15ed2a59",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COOPERATIVA DE ELECTRICIDAD, SERVICIOS PUBLICOS VIVIENDA Y CREDITO DE VILLA CAÑÁS LIMITADA - COEVICAL-",
+    "shortName": "COEVICAL"
+  },
+  {
+    "id": "d99a5200-d4b6-4c8a-bffb-afac59cb27d9",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE PENSIONADOS SOCIALES LEY 5110",
+    "shortName": "MUTUAL LEY 5110"
+  },
+  {
+    "id": "d9b50135-75f1-4450-b164-0da2cd741e78",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MAPFRE SALUD S.A.",
+    "shortName": "MAPFRE SALUD"
+  },
+  {
+    "id": "d9d5f3d1-c7e8-48a3-80a6-8e93f00f61e0",
+    "rnas": "1-1020-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA FEDERACION DE TRABAJADORES DE LUZ Y FUERZA",
+    "shortName": "OSFTLyF"
+  },
+  {
+    "id": "dac331af-5ee1-41df-88c3-f6912be89cbd",
+    "rnas": "1-2070-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL CALZADO",
+    "shortName": "OSFTIC"
+  },
+  {
+    "id": "db7bc77e-8033-41c8-9d67-a239d9af0fdd",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MEDICINA PREPAGA HOMINIS S.A.",
+    "shortName": "HOMINIS"
+  },
+  {
+    "id": "dc4305a5-928e-4fe9-aef6-9c647b018519",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COBERTURA DE SALUD S.A.",
+    "shortName": "COBERTURA DE SALUD"
+  },
+  {
+    "id": "dc7c11e5-9d74-479e-87c1-f2a4f5ac0fa8",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMERGENCIAS MEDICAS PUNILLA S.A.",
+    "shortName": "EMERGENCIAS PUNILLA"
+  },
+  {
+    "id": "dd42e24d-e148-4611-bbc8-b9b0e1d86f5b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CORSAL SA",
+    "shortName": "CORSAL"
+  },
+  {
+    "id": "dd639cfd-cc9d-4665-b1e5-20fdfe3a5a5d",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO PRIVADO DE CLINICA Y CIRUGIA DE LOBOS SA",
+    "shortName": "CLINICA LOBOS"
+  },
+  {
+    "id": "dd86be83-7835-42c9-8906-2be937a8685a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PROTECCION EMERALD SALUD SA",
+    "shortName": "EMERALD SALUD"
+  },
+  {
+    "id": "ddefebe2-8ad1-448c-8a5a-d5683c5c0bdb",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SAIMQ SANATORIO PLAZA",
+    "shortName": "SANATORIO PLAZA"
+  },
+  {
+    "id": "df1a3654-8af2-4c97-aaf1-45faff522008",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GRUPO SAN NICOLAS S.R.L.",
+    "shortName": "GRUPO SAN NICOLAS"
+  },
+  {
+    "id": "df4d693a-9ff7-4b82-b613-49705f0fbef1",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMERGENCIA SRL",
+    "shortName": "EMERGENCIA"
+  },
+  {
+    "id": "e06dfe8e-00c8-4ba8-8c37-0fe6d010c38f",
+    "rnas": "1-0370-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE FOTOTIPISTAS",
+    "shortName": "OSPF"
+  },
+  {
+    "id": "e0a6a283-2cdc-4000-88c5-ad390a0e5945",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COBERTURA DE SALUD BELL VILLE PRIVADA S.R.L.",
+    "shortName": "COBERTURA BELL VILLE"
+  },
+  {
+    "id": "e1323642-6ab2-4616-8acd-a85ab1f8b74f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL SM SALUD DE SOCIEDAD MEDICA DEL DEPARTAMENTO LAS COLONIAS",
+    "shortName": "SM SALUD"
+  },
+  {
+    "id": "e144bb85-2169-4406-84b8-a66ce9fdb65b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "Prevención Salud S.A.",
+    "shortName": "PREVENCION SALUD"
+  },
+  {
+    "id": "e1a268d3-aae8-4c92-ab0f-ef429914522f",
+    "rnas": "1-0560-5",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE MINAS Y CANTERAS",
+    "shortName": "OSPMC"
+  },
+  {
+    "id": "e1d37364-e5d4-4b49-b265-0d7c184c012c",
+    "rnas": "1-0130-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE CAPITANES, PILOTOS Y PATRONES DE YATES",
+    "shortName": "OSCPPY"
+  },
+  {
+    "id": "e1f32db0-083a-4063-9dcd-c5e1ea9067a2",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "APRES S.A.",
+    "shortName": "APRES"
+  },
+  {
+    "id": "e2ae33cc-974b-4a53-9f59-b482a6891117",
+    "rnas": "1-1000-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL ESTADO",
+    "shortName": "OSPE"
+  },
+  {
+    "id": "e2d86887-c0d0-4338-8703-8a6f58b9a59f",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "La Casa del Medico Mutual",
+    "shortName": "CASA DEL MEDICO"
+  },
+  {
+    "id": "e2e99cce-19fd-49fa-a46d-40859b383961",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL INTEGRAL DE CONSUMOS Y SERVICIOS",
+    "shortName": "AMICS"
+  },
+  {
+    "id": "e3d132e2-d239-46d2-98cc-c3d6f09aa625",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SWISS MEDICAL S.A.",
+    "shortName": "SWISS MEDICAL"
+  },
+  {
+    "id": "e3df75bc-d6bb-4e77-b237-fbdae0f3ff74",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "EMECA",
+    "shortName": "EMECA"
+  },
+  {
+    "id": "e41521fa-88a9-44e3-9758-9730618e15e3",
+    "rnas": "1-0960-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA CAJA DE AHORRO Y SEGURO",
+    "shortName": "OSP CAS"
+  },
+  {
+    "id": "e44bdb1d-aa80-4f83-9d62-6e01d36a3b8b",
+    "rnas": "1-0620-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL ORGANISMO DE CONTROL EXTERNO",
+    "shortName": "OSPOCE"
+  },
+  {
+    "id": "e4deea2e-3a09-430d-8a66-8420e0f7360a",
+    "rnas": "1-0480-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LOCOMOTIVEROS DE FERROCARRILES",
+    "shortName": "OSL"
+  },
+  {
+    "id": "e58ac947-35fc-4543-b8e1-ad7beb772394",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COOPERATIVA DE PROVISION DE SERVICO ELECTRICO Y OTROS SERVICIOS PUBLICOS LIMITADA DE PIGUE",
+    "shortName": "COOP PIGUE"
+  },
+  {
+    "id": "e5abddc9-07df-48f5-86d1-cadf18e4d621",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL de EMPLEADOS DE POLICIA DE LA PROVINCIA DE CORDOBA",
+    "shortName": "MUTUAL POLICIA CORDOBA"
+  },
+  {
+    "id": "e62fd0e9-e72a-4e41-9d74-70ba9bdfab5b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL COSECHA SALUD",
+    "shortName": "COSECHA SALUD"
+  },
+  {
+    "id": "e6c4bdf2-4550-4765-8089-b0d3e3da1e4e",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SALUD ROSARIO S.A.",
+    "shortName": "SALUD ROSARIO"
+  },
+  {
+    "id": "e728f3d3-1669-44cb-9743-e7d9d2020464",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SALUD DEL NUEVO ROSARIO SA",
+    "shortName": "NUEVO ROSARIO"
+  },
+  {
+    "id": "e77b81da-ca3f-454a-a282-3dfb30094f39",
+    "rnas": "1-0860-4",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL TEXTIL",
+    "shortName": "OSPT"
+  },
+  {
+    "id": "e8071e86-7fc4-49c7-b86e-1af2e862b88e",
+    "rnas": "1-1140-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA SANIDAD",
+    "shortName": "OSPSA"
+  },
+  {
+    "id": "e860a2d2-690e-4ee0-9cb4-5706b6af8366",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO MÉDICO ASISTENCIAL - IMA - COOPERATIVA DE PROVISIÓN DE SERVICIOS PARA PROFESIONALES DEL ARTE DE CURAR LTDA.",
+    "shortName": "IMA"
+  },
+  {
+    "id": "ea032be8-5aa9-4359-84a0-a9e3b27844fb",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "C.R.S. PRESTADORES DE SALUD S.A.",
+    "shortName": "CRS"
+  },
+  {
+    "id": "ea923152-6af5-4b49-9baf-bd6a01c0d163",
+    "rnas": "1-1040-6",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA GRAFICA",
+    "shortName": "OSPIG"
+  },
+  {
+    "id": "ebc95a9d-8bd1-45a8-9583-c46997e24183",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DE EMPLEADOS DE FARMACIA 22 DE DICIEMBRE",
+    "shortName": "MUTUAL FARMACIA"
+  },
+  {
+    "id": "ec218916-8414-4ec0-ba28-91cc7ef44ce6",
+    "rnas": "1-0930-0",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA ACTIVIDAD VIAL",
+    "shortName": "OSPAV"
+  },
+  {
+    "id": "ecf8efbc-d9c0-428c-8a46-b94d434289f4",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "UNIMED SA",
+    "shortName": "UNIMED"
+  },
+  {
+    "id": "ed2b7857-dd2f-4f70-8a64-3e63a7a3e7da",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GRUPO MEDICO INCAS S.A.",
+    "shortName": "INCAS"
+  },
+  {
+    "id": "edbad741-8952-4c67-9b07-a272b5b99a0b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE SEGUROS DE JUJUY",
+    "shortName": "ISJ"
+  },
+  {
+    "id": "ee30822d-92ec-4e2e-a3cf-ddf061707909",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "MUTUAL DE EMPLEADOS DE SISTEMAS MEDICOS DE EMERGENCIAS DE LA REPUBLICA ARGENTINA",
+    "shortName": "MUTUAL EMERGENCIAS"
+  },
+  {
+    "id": "ee944a04-1c20-46f3-acde-4a630c45f63b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO DE SEGURIDAD SOCIAL Y SEGUROS CHUBUT",
+    "shortName": "SEROS"
+  },
+  {
+    "id": "ee9960cc-bea7-48ae-b5ba-c4a034a44dc2",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "NORTE SALUD SA",
+    "shortName": "NORTE SALUD"
+  },
+  {
+    "id": "eeaf68eb-0823-4130-ab5d-c9851ee0b637",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "COOP DE TRABAJO MEDICO URUGUAY LTDA",
+    "shortName": "COOP URUGUAY"
+  },
+  {
+    "id": "eed274b4-c2f6-498c-bb08-d63ba98b0247",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CLINICA DE LA UNION SA.",
+    "shortName": "CLINICA DE LA UNION"
+  },
+  {
+    "id": "efa11cf7-c71e-4521-a338-8dcb1874eb7c",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "DIAGNOSTICO BOULOGNE",
+    "shortName": "DIAGNOSTICO BOULOGNE"
+  },
+  {
+    "id": "f0121fca-a688-4e86-bee5-3369d708db97",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SISTEMA DE URGENCIAS DEL ROSAFE S.A.U",
+    "shortName": "URGENCIAS ROSAFE"
+  },
+  {
+    "id": "f04b334d-583b-4199-819c-ebc41673eddf",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PROTECCION MEDICA SRL",
+    "shortName": "PROMED"
+  },
+  {
+    "id": "f0ba3b53-01d4-4fc2-a1b1-e3a760d6f083",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASISTENCIA SANITARIA INTEGRAL S.A.",
+    "shortName": "ASI"
+  },
+  {
+    "id": "f1444df1-50d7-4637-b50c-60666d46170a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL VALLE INFERIOR .-AMVI",
+    "shortName": "AMVI"
+  },
+  {
+    "id": "f214a548-7341-4cd2-82cb-0a9ac7006dac",
+    "rnas": "1-0540-7",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE MENSAJEROS Y CADETES",
+    "shortName": "OSMYC"
+  },
+  {
+    "id": "f2cfcb7f-cb50-4e2c-8b4e-9e86e2b20789",
+    "rnas": "1-0920-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE ZAPATEROS",
+    "shortName": "OSPZ"
+  },
+  {
+    "id": "f2fa7061-77b2-4a08-a232-1c79d46fc49e",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "GRUPO GERENCIADOR G4 SA",
+    "shortName": "GRUPO G4"
+  },
+  {
+    "id": "f34e6924-d81e-4f05-a87c-7c4aba61f55a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "POLICLINICO LOMAS MEDICINA PREPAGA SOCIEDAD ANONIMA",
+    "shortName": "POLICLINICO LOMAS"
+  },
+  {
+    "id": "f48235dd-881f-4f0c-9070-099354225608",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUALISTA DE EMPLEADOS DEL BANCO DE LA PROVINCIA DE BUENOS AIRES",
+    "shortName": "MUTUAL BANCO PROVINCIA"
+  },
+  {
+    "id": "f4a0db26-287d-40f9-9938-a06df526d0b8",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "INSTITUTO AUTARQUICO PROVINCIAL DE OBRA SOCIAL SANTA FE",
+    "shortName": "IAPOS"
+  },
+  {
+    "id": "f50ad3d9-f049-40be-8c6e-4c5700924e47",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "AMECA SA",
+    "shortName": "AMECA"
+  },
+  {
+    "id": "f544ef7a-5d8d-4f56-98ff-87aca32935c1",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CLINICA ROCA S.A.",
+    "shortName": "CLINICA ROCA"
+  },
+  {
+    "id": "f5cb203b-4c12-4108-900f-49991d30a173",
+    "rnas": "1-0630-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL PAN",
+    "shortName": "OSPP"
+  },
+  {
+    "id": "f681babf-f39e-410f-a1a7-17f5b523e361",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "BOEDO SALUD SA",
+    "shortName": "BOEDO SALUD"
+  },
+  {
+    "id": "f72a7e9c-62c2-45dd-b344-bca1ef466c02",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "TIMELY MEDICAL",
+    "shortName": "TIMELY"
+  },
+  {
+    "id": "f7494801-e96b-49d7-8732-848ac1dc91df",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SUM S.A.",
+    "shortName": "SUM"
+  },
+  {
+    "id": "f7675a56-eebf-4383-88e7-b4fbaa567e11",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PLENIMEDICAL S.A.",
+    "shortName": "PLENIMEDICAL"
+  },
+  {
+    "id": "f777ba49-82b4-4939-b5bd-989e9821143e",
+    "rnas": "1-0910-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE VINOS Y AFINES",
+    "shortName": "OSPVA"
+  },
+  {
+    "id": "f7eae6db-1552-479b-ad56-221020e4240b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "LPSM S.A.",
+    "shortName": "LPSM"
+  },
+  {
+    "id": "f8006979-d54e-4892-b819-659e7a344e18",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PARQUE SALUD S.A.",
+    "shortName": "PARQUE SALUD"
+  },
+  {
+    "id": "f8c9c96d-23c2-4ad0-81c5-86d6b2565bf4",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ECSA SALUD",
+    "shortName": "ECSA SALUD"
+  },
+  {
+    "id": "f916aae1-15e1-467c-9ec5-2761b42f4320",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL Y PROTECCION RECIPROCA UNISOL SALUD",
+    "shortName": "UNISOL SALUD"
+  },
+  {
+    "id": "f97b876d-6cae-49a4-ac2d-087141984d81",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "SOCIEDAD MÉDICA UNIVERSITARIA S.A.",
+    "shortName": "SMU"
+  },
+  {
+    "id": "f992ef58-66e5-40c7-9e7e-db75d4421ae5",
+    "rnas": "1-0330-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE FARMACIA",
+    "shortName": "OSPF"
+  },
+  {
+    "id": "f995b76d-b863-4db6-87b3-f49b9c28e5cc",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL DR. ESTEBAN LAUREANO MARADONA SALUD",
+    "shortName": "MUTUAL MARADONA"
+  },
+  {
+    "id": "fa187be5-d56f-4149-921a-f805991f0437",
+    "rnas": "1-0950-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL AUTOMOVIL CLUB ARGENTINO",
+    "shortName": "OSPACA"
+  },
+  {
+    "id": "fa58d2ad-6ec7-447a-a366-52a118c2168a",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CUIDAR SALUD ASISTENCIA MEDICA DOMICILIARIA",
+    "shortName": "CUIDAR SALUD"
+  },
+  {
+    "id": "fa8a497e-50cc-4129-86eb-9f1d1276c960",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ASOCIACION MUTUAL 24 DE DICIEMBRE",
+    "shortName": "MUTUAL 24 DICIEMBRE"
+  },
+  {
+    "id": "facd8207-fc8b-4db9-9a93-6d05384ef502",
+    "rnas": "1-0080-8",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA DE LA ALIMENTACION",
+    "shortName": "OSPIA"
+  },
+  {
+    "id": "faf8ad42-033c-4e14-8dfa-7869efc022ec",
+    "rnas": "1-0030-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA ACTIVIDAD DEL SURF",
+    "shortName": "OSPAS"
+  },
+  {
+    "id": "fb5b1757-1352-4748-8642-edf1dc0a1ab6",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "OMINT S.A. DE SERVICIOS",
+    "shortName": "OMINT"
+  },
+  {
+    "id": "fb77f499-2d7e-424e-9255-3d28cf86aa28",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "CIRCULO MUTUAL DE SUBOFICIALES RETIRADOS DE LA POLICIA FEDERAL ARGENTINA",
+    "shortName": "MUTUAL PFA"
+  },
+  {
+    "id": "fc4f4e2a-3cdb-4f46-a845-7c1915d97b5b",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "ESCENCIAL SRL",
+    "shortName": "ESCENCIAL"
+  },
+  {
+    "id": "fc7a3a7c-1f70-4fb0-adac-5d7be85e8b75",
+    "rnas": "1-0320-3",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE ESTACIONES DE SERVICIO, GARAJE S, PLAYAS Y LAVADEROS",
+    "shortName": "OSPESGA"
+  },
+  {
+    "id": "fce5d580-2241-4199-bd1a-ab6354b741dc",
+    "rnas": "1-0070-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE ALFOMBRAS, TAPIZADOS, CAPAS E IMPERMEABLES",
+    "shortName": "OSPATI"
+  },
+  {
+    "id": "fd5e94d0-a51c-410a-9bf5-ee3832bfb354",
+    "rnas": "1-0500-1",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE MAQUINISTAS DE TEATRO Y TELEVISION",
+    "shortName": "OSMTTV"
+  },
+  {
+    "id": "fdeeb246-d7d9-4675-926d-dc8089d9e035",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "PLURAL COOPERATIVA DE CREDITO, CONSUMO Y VIVIENDA LTDA.",
+    "shortName": "PLURAL"
+  },
+  {
+    "id": "fe3eee26-a17e-4398-bb4a-67f0da33bca4",
+    "rnas": "1-2050-9",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DE LA FEDERACION DE TRABAJADORES DE LA INDUSTRIA DEL VESTIDO",
+    "shortName": "OSFTIV"
+  },
+  {
+    "id": "fe953f2b-1e62-4e7e-a284-3e64a131aa82",
+    "rnas": "1-0460-2",
+    "enemp": null,
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA INDUSTRIA LECHERA",
+    "shortName": "OSPIL"
+  },
+  {
+    "id": "ffebc427-6888-45fa-a9b0-19cbeb13d519",
+    "rnas": null,
+    "enemp": null,
+    "denomination": "DIRECCION DE OBRA SOCIAL DEL ESTADO PROVINCIAL SAN LUÍS",
+    "shortName": "DOSEP"
+  },
+  {
+    "id": "ffebc427-6888-45fa-a9b0-19cbeb13d520",
     "rnas": null,
     "enemp": null,
     "denomination": "INSTITUTO NACIONAL DE SERVICIOS SOCIALES PARA JUBILADOS Y PENSIONADOS",

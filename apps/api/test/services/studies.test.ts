@@ -6,6 +6,7 @@ describe('\'studies\' service', () => {
   let medic: User;
   let patient: Patient;
   let study: Study;
+  let prepaga: any;
 
   before(async () => {
     await app.service('roles').create({
@@ -24,6 +25,11 @@ describe('\'studies\' service', () => {
       medicareNumber: '123456789',
       medicarePlan: 'planA',
     }) as Patient;
+
+    prepaga = await app.service('prepagas').create({
+      shortName: 'TEST-OS-STUDY',
+      denomination: 'Test Obra Social Study'
+    });
 
     study = await app.service('studies').create({
       date: new Date(),
@@ -132,5 +138,21 @@ describe('\'studies\' service', () => {
     assert.deepStrictEqual(anemia!.data, { value: 'new' }, 'Existing result was updated');
     assert.ok(thrombophilia, 'Missing result type was created');
     assert.deepStrictEqual(thrombophilia!.data, { value: 'added' }, 'New result has expected payload');
+  });
+
+  it('stores insurerId and cost for accounting', async () => {
+    const created = await app.service('studies').create({
+      date: new Date(),
+      studies: ['anemia', 'hemostasis'],
+      noOrder: false,
+      medicId: medic.id,
+      patientId: patient.id,
+      insurerId: prepaga.id,
+      cost: 456.78
+    } as any);
+
+    const saved = await app.service('studies').get(created.id);
+    assert.strictEqual(saved.insurerId, prepaga.id);
+    assert.strictEqual(Number((saved as any).cost), 456.78);
   });
 });

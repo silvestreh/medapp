@@ -5,6 +5,7 @@ import { Sequelize, QueryTypes } from 'sequelize';
 describe('\'encounters\' service', () => {
   let medic: any;
   let patient: any;
+  let prepaga: any;
 
   before(async () => {
     medic = await app.service('users').create({
@@ -16,6 +17,11 @@ describe('\'encounters\' service', () => {
     patient = await app.service('patients').create({
       medicare: 'TEST123',
       medicareNumber: '12345'
+    });
+
+    prepaga = await app.service('prepagas').create({
+      shortName: 'TEST-OS',
+      denomination: 'Test Obra Social'
     });
   });
 
@@ -79,5 +85,21 @@ describe('\'encounters\' service', () => {
       retrievedRecord.data,
       formData,
     );
+  });
+
+  it('stores insurerId and cost for accounting', async () => {
+    const service = app.service('encounters');
+    const createdRecord = await service.create({
+      data: { simple: { values: { note: 'Accounting check' } } },
+      date: new Date(),
+      medicId: medic.id,
+      patientId: patient.id,
+      insurerId: prepaga.id,
+      cost: 123.45
+    } as any);
+
+    const retrieved = await service.get(createdRecord.id);
+    assert.strictEqual(retrieved.insurerId, prepaga.id);
+    assert.strictEqual(Number(retrieved.cost), 123.45);
   });
 });
