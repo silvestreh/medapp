@@ -26,7 +26,9 @@ export async function importStudies({
   bar,
 }: ImportStudiesOptions): Promise<ImportStudiesResult> {
   const studiesService = app.service('studies');
+  const patientsService = app.service('patients');
   const seedToRealStudyId = new Map<string, string>();
+  const insurerIdByPatientId = new Map<string, string | null>();
   let importedCount = 0;
   let skippedCount = 0;
   const skipped: ImportStudiesResult['skipped'] = [];
@@ -44,10 +46,20 @@ export async function importStudies({
     }
 
     try {
+      let insurerId = study.insurerId ?? null;
+      if (!insurerId) {
+        if (!insurerIdByPatientId.has(realPatientId)) {
+          const patient = await patientsService.get(realPatientId);
+          insurerIdByPatientId.set(realPatientId, patient?.medicareId ?? null);
+        }
+        insurerId = insurerIdByPatientId.get(realPatientId) ?? null;
+      }
+
       const created = await studiesService.create({
         ...study,
         date: new Date(study.date),
         patientId: realPatientId,
+        insurerId,
         organizationId,
       } as any);
       seedToRealStudyId.set(study.id, (created as any).id);

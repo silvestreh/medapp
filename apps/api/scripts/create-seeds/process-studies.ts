@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import type cliProgress from 'cli-progress';
 import type { MongoStudy, MongoPatient, ProcessingStats, SeedStudy, SeedPatient } from './types';
 import { transformPatientToSeed } from './process-patients';
+import { loadPrepagaMap, resolveMedicareId } from './medicare-map';
 
 const JUANCA_ID = '540dc81947771d1f3f8b4567';
 const DE_LOS_SANTOS_ID = '5549f38e75d036e0058b457a';
@@ -10,6 +11,7 @@ const LIPRERI_ID = '55c0c04975d036f44f8b45db';
 const SORIA_ID = '5a71da3671302e8a638b4576';
 const ALVAREZ_ID = '5ca5377671302ed70a8b458a';
 const MAM_ID = '5818bc9a71302eb3768b472a';
+const prepagaMap = loadPrepagaMap();
 
 interface ResolvedMedic {
   medicId: string | null;
@@ -111,8 +113,10 @@ export function processStudies({
   // Build DNI -> patient ID map from ALL patients (not just kept)
   const dniToPatientId = new Map<string, string>();
   const allPatientIds = new Set<string>();
+  const patientMedicareById = new Map<string, string | undefined>();
   for (const patient of allPatients) {
     allPatientIds.add(patient._id.$oid);
+    patientMedicareById.set(patient._id.$oid, patient.medicare);
     const dni = patient.personal_data?.document_value;
     if (dni) {
       dniToPatientId.set(dni, patient._id.$oid);
@@ -260,6 +264,10 @@ export function processStudies({
     }
 
     const { medicId, referringDoctor } = resolveMedic(study.medic);
+    const resolvedInsurerId = resolveMedicareId(
+      study.patient?.medicare || patientMedicareById.get(patientId!),
+      prepagaMap
+    );
 
     kept.push({
       id: study._id.$oid,
@@ -270,6 +278,7 @@ export function processStudies({
       medicId,
       referringDoctor,
       patientId: patientId!,
+      insurerId: resolvedInsurerId,
     });
 
     keptStudyIds.add(study._id.$oid);

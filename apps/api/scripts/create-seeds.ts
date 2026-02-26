@@ -121,6 +121,9 @@ function printStats(label: string, stats: ProcessingStats) {
       skipLLM,
       bar: patientBar,
     });
+    const patientInsurerIdById = new Map(
+      patientsResult.patients.map((patient) => [patient.id, patient.medicareId ?? null]),
+    );
 
     // Step 5: Process encounters (validate refs, transform to API format)
     const encounterBar = multibar.create(dumps.encounters.length, 0, { title: 'Encounters' });
@@ -128,6 +131,7 @@ function printStats(label: string, stats: ProcessingStats) {
       encounters: dumps.encounters,
       keptUserIds: usersResult.keptUserIds,
       keptPatientIds: patientsResult.keptPatientIds,
+      patientInsurerIdById,
       weirdUserId: usersResult.weirdUserId,
       bar: encounterBar,
     });

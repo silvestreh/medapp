@@ -34,27 +34,6 @@ export function PrintPdfDialog({ opened, onClose, patientId, patientName, dateRa
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const dateRangeLabels = useMemo(
-    () => ({
-      modeInLast: t('stats.mode_in_last'),
-      modeAfter: t('stats.mode_after'),
-      modeBefore: t('stats.mode_before'),
-      modeBetween: t('stats.mode_between'),
-      rangeMode: t('stats.range_mode'),
-      lastValue: t('stats.last_value'),
-      lastUnit: t('stats.last_unit'),
-      unitDays: t('stats.unit_days'),
-      unitWeeks: t('stats.unit_weeks'),
-      unitMonths: t('stats.unit_months'),
-      unitYears: t('stats.unit_years'),
-      pickDate: t('stats.pick_date'),
-      pickRange: t('stats.pick_range'),
-      invalidRange: t('stats.invalid_range'),
-      apply: t('stats.apply'),
-    }),
-    [t]
-  );
-
   const resolvedRange = useMemo(
     () =>
       resolveDateRange(rangeFilter, {
@@ -120,7 +99,6 @@ export function PrintPdfDialog({ opened, onClose, patientId, patientName, dateRa
         <DateRangePopover
           value={rangeFilter}
           onApply={handleApplyRange}
-          labels={dateRangeLabels}
           minRangeStart={dateRange.min ? dayjs(dateRange.min).startOf('month').format('YYYY-MM-DD') : '1900-01-01'}
           maxDate={dayjs().format('YYYY-MM-DD')}
           precision="month"

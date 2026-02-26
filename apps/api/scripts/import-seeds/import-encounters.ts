@@ -27,6 +27,8 @@ export async function importEncounters({
   bar,
 }: ImportEncountersOptions): Promise<ImportEncountersResult> {
   const encountersService = app.service('encounters');
+  const patientsService = app.service('patients');
+  const insurerIdByPatientId = new Map<string, string | null>();
   let importedCount = 0;
   let skippedCount = 0;
   const skipped: ImportEncountersResult['skipped'] = [];
@@ -51,10 +53,20 @@ export async function importEncounters({
     }
 
     try {
+      let insurerId = encounter.insurerId ?? null;
+      if (!insurerId) {
+        if (!insurerIdByPatientId.has(realPatientId)) {
+          const patient = await patientsService.get(realPatientId);
+          insurerIdByPatientId.set(realPatientId, patient?.medicareId ?? null);
+        }
+        insurerId = insurerIdByPatientId.get(realPatientId) ?? null;
+      }
+
       await encountersService.create({
         ...encounter,
         date: new Date(encounter.date),
         patientId: realPatientId,
+        insurerId,
         organizationId,
       } as any);
       importedCount++;

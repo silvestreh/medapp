@@ -9,6 +9,7 @@ import { styled } from '~/styled-system/jsx';
 import { useMutation } from '~/components/provider';
 import PatientSearch from '~/components/patient-search';
 import type { Appointment, Slot as SlotType } from '~/declarations';
+import { getMedicareLabel } from '~/components/medicare-display';
 
 interface AppointmentsListProps {
   slots: SlotType[];
@@ -260,7 +261,7 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
                       {slot.appointment.patient.personalData.firstName}
                     </Text>
                     <Text variant="light" small>
-                      {slot.appointment.patient.medicare || t('appointments.private')}
+                      {getMedicareLabel(slot.appointment.patient) || t('appointments.private')}
                     </Text>
                   </TextContent>
                   {!readonly && (

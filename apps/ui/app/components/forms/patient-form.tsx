@@ -29,6 +29,7 @@ export interface PatientFormValues {
   phoneNumber: string;
   email: string;
   medicare: string;
+  medicareId: string;
   medicareNumber: string;
   medicarePlan: string;
 }
@@ -49,6 +50,7 @@ export const EMPTY_PATIENT_FORM_VALUES: PatientFormValues = {
   phoneNumber: '',
   email: '',
   medicare: '',
+  medicareId: '',
   medicareNumber: '',
   medicarePlan: '',
 };
@@ -72,6 +74,7 @@ export function parsePatientToFormValues(patient: any): PatientFormValues {
     phoneNumber: Array.isArray(cd.phoneNumber) ? cd.phoneNumber.join(', ') : cd.phoneNumber || '',
     email: cd.email || '',
     medicare: patient.medicare || '',
+    medicareId: patient.medicareId || '',
     medicareNumber: patient.medicareNumber || '',
     medicarePlan: patient.medicarePlan || '',
   };
@@ -80,7 +83,7 @@ export function parsePatientToFormValues(patient: any): PatientFormValues {
 export function buildFormPayload(values: PatientFormValues) {
   const { documentType, documentValue, firstName, lastName, nationality, maritalStatus, birthDate, gender } = values;
   const { streetAddress, city, province, country, phoneNumber, email } = values;
-  const { medicare, medicareNumber, medicarePlan } = values;
+  const { medicareId, medicareNumber, medicarePlan } = values;
 
   return {
     personalData: {
@@ -106,7 +109,7 @@ export function buildFormPayload(values: PatientFormValues) {
       email: email || undefined,
     },
     patientFields: {
-      medicare: medicare || undefined,
+      medicareId: medicareId || undefined,
       medicareNumber: medicareNumber || undefined,
       medicarePlan: medicarePlan || undefined,
     },
@@ -233,8 +236,8 @@ export function PatientForm({
           <FormCard>
             <FieldRow label={`${t('patients.medicare')}:`}>
               <PrepagaSelector
-                value={form.values.medicare}
-                onChange={val => form.setFieldValue('medicare', val)}
+                value={form.values.medicareId}
+                onChange={val => form.setFieldValue('medicareId', val)}
                 placeholder={t('patients.medicare')}
                 readOnly={disabled}
               />

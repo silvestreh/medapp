@@ -49,10 +49,6 @@ export default function (app: Application): typeof Model {
         key: 'id'
       }
     },
-    cost: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true
-    },
     data: {
       type: DataTypes.BLOB,
       allowNull: true

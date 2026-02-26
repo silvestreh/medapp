@@ -10,6 +10,7 @@ import Portal from '~/components/portal';
 import { media } from '~/media';
 import { displayDocumentValue } from '~/utils';
 import { Fab } from '~/components/fab';
+import { getMedicareLabel } from '~/components/medicare-display';
 
 export const loader = authenticatedLoader();
 
@@ -37,7 +38,7 @@ export default function PatientsIndex() {
           { key: 'personalData.firstName' },
           { key: 'personalData.lastName' },
           { key: 'personalData.documentValue', render: v => displayDocumentValue(v as string) },
-          { key: 'medicare', render: v => v || 'Particular' },
+          { key: 'medicare', render: (_v, patient) => getMedicareLabel(patient) || 'Particular' },
         ]}
       />
     </>

@@ -47,7 +47,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const patient = await client.service('patients').create({
     personalData,
     contactData,
-    medicare: patientFields.medicare,
+    medicareId: patientFields.medicareId || null,
     medicareNumber: patientFields.medicareNumber,
     medicarePlan: patientFields.medicarePlan,
   });

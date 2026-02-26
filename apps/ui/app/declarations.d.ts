@@ -40,10 +40,18 @@ export interface Account {
   };
 }
 
+export type Prepaga = {
+  id: string;
+  shortName: string;
+  denomination: string;
+};
+
 export type Patient = {
   id: string;
-  medicare: string;
+  medicare?: string | null;
+  medicareId?: string | null;
   medicareNumber: string;
+  prepaga?: Prepaga | null;
   contactData: {
     city: string;
     country: string;
@@ -78,3 +86,14 @@ export interface Slot {
   date: string;
   appointment: Appointment | null;
 }
+
+export type PricingType = 'fixed' | 'multiplier';
+
+export type PricingConfig = {
+  type: PricingType;
+  value?: number;
+  baseValue?: number;
+  multiplier?: number;
+  baseName?: string;
+  code?: string;
+};

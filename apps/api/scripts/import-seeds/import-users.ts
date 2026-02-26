@@ -3,6 +3,8 @@ import type cliProgress from 'cli-progress';
 import app from '../../src/app';
 import type { SeedUser } from '../create-seeds/types';
 
+const DEFAULT_PASSWORD = 'Retrete4u!';
+
 interface ImportUsersOptions {
   users: SeedUser[];
   resetPasswords: boolean;
@@ -32,9 +34,15 @@ export async function importUsers({ users, resetPasswords, organizationId, bar }
   await Promise.all(users.map(user => limit(async () => {
     try {
       const { mdSettings, additionalRoleIds, ...userData } = user;
-      if (resetPasswords) {
-        userData.password = 'Retrete4u!';
-      }
+
+      // Seed passwords are bcrypt hashes from the mongo dump. Sending them
+      // through the service hooks would double-hash them (and some fail
+      // validatePassword). Always use a known plaintext password so the
+      // hashPassword hook produces a valid hash.
+      userData.password = resetPasswords
+        ? DEFAULT_PASSWORD
+        : DEFAULT_PASSWORD;
+
       await usersService.create(userData as any);
       validUserIds.add(user.id);
 

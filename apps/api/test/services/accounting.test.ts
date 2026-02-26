@@ -77,7 +77,6 @@ describe('\'accounting\' service', () => {
       medicId: medic.id,
       patientId: patient.id,
       insurerId: prepaga.id,
-      cost: 5000,
     } as any);
 
     const result = await app.service('accounting').find({
@@ -94,7 +93,6 @@ describe('\'accounting\' service', () => {
 
     assert.ok(encounterRecords.length >= 1, 'Should have at least one encounter record');
     assert.strictEqual(encounterRecords[0].kind, 'encounter');
-    assert.strictEqual(encounterRecords[0].studyType, null);
     assert.strictEqual(encounterRecords[0].cost, 5000);
     assert.strictEqual(encounterRecords[0].patientName, 'John Doe');
   });
@@ -109,7 +107,6 @@ describe('\'accounting\' service', () => {
       medicId: medic.id,
       patientId: patient.id,
       insurerId: prepaga.id,
-      cost: 0,
     } as any);
 
     const result = await app.service('accounting').find({
@@ -120,12 +117,10 @@ describe('\'accounting\' service', () => {
       user: medic,
     } as any);
 
-    const studyRows = result.records.filter(
-      (r: any) => r.kind === 'study' && r.patientName === 'John Doe'
-    );
+    const studyRows = result.records.filter((r: any) => r.patientName === 'John Doe');
 
-    const anemiaRows = studyRows.filter((r: any) => r.studyType === 'anemia');
-    const hemostasisRows = studyRows.filter((r: any) => r.studyType === 'hemostasis');
+    const anemiaRows = studyRows.filter((r: any) => r.kind === 'anemia');
+    const hemostasisRows = studyRows.filter((r: any) => r.kind === 'hemostasis');
 
     assert.ok(anemiaRows.length >= 1, 'Should have at least one anemia row');
     assert.ok(hemostasisRows.length >= 1, 'Should have at least one hemostasis row');
@@ -141,7 +136,6 @@ describe('\'accounting\' service', () => {
       medicId: medic.id,
       patientId: patient.id,
       insurerId: prepaga.id,
-      cost: 0,
     } as any);
 
     const result = await app.service('accounting').find({
@@ -152,12 +146,10 @@ describe('\'accounting\' service', () => {
       user: medic,
     } as any);
 
-    const studyRows = result.records.filter(
-      (r: any) => r.kind === 'study' && r.patientName === 'John Doe'
-    );
+    const studyRows = result.records.filter((r: any) => r.patientName === 'John Doe');
 
-    const anemia = studyRows.find((r: any) => r.studyType === 'anemia');
-    const anticoag = studyRows.find((r: any) => r.studyType === 'anticoagulation');
+    const anemia = studyRows.find((r: any) => r.kind === 'anemia');
+    const anticoag = studyRows.find((r: any) => r.kind === 'anticoagulation');
 
     assert.ok(anemia, 'Anemia row exists');
     assert.strictEqual(anemia.cost, 3000, 'Anemia cost resolved from insurerPrices');
@@ -179,7 +171,6 @@ describe('\'accounting\' service', () => {
       medicId: medic.id,
       patientId: patient.id,
       insurerId: otherPrepaga.id,
-      cost: 9999,
     } as any);
 
     const result = await app.service('accounting').find({
@@ -206,7 +197,7 @@ describe('\'accounting\' service', () => {
       date: oldDate.toDate(),
       medicId: medic.id,
       patientId: patient.id,
-      cost: 1,
+      insurerId: prepaga.id,
     } as any);
 
     const result = await app.service('accounting').find({
@@ -217,9 +208,7 @@ describe('\'accounting\' service', () => {
       user: medic,
     } as any);
 
-    const oldRecords = result.records.filter(
-      (r: any) => r.cost === 1 && dayjs(r.date).isBefore(dayjs().subtract(1, 'year'))
-    );
+    const oldRecords = result.records.filter((r: any) => dayjs(r.date).isBefore(dayjs().subtract(1, 'year')));
     assert.strictEqual(oldRecords.length, 0, 'Old records should not appear in recent range');
   });
 
@@ -274,11 +263,10 @@ describe('\'accounting\' service', () => {
     } as any);
 
     const thrombRow = result.records.find(
-      (r: any) => r.studyType === 'thrombophilia' && r.id === study.id
+      (r: any) => r.kind === 'thrombophilia' && r.id === study.id
     );
     assert.ok(thrombRow, 'Thrombophilia row exists');
     assert.strictEqual(thrombRow.protocol, study.protocol, 'Protocol number matches');
-    assert.strictEqual(thrombRow.kind, 'study');
-    assert.strictEqual(thrombRow.studyType, 'thrombophilia');
+    assert.strictEqual(thrombRow.kind, 'thrombophilia');
   });
 });

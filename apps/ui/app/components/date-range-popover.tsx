@@ -4,6 +4,7 @@ import { DatePickerInput, MonthPickerInput } from '@mantine/dates';
 import { useClickOutside } from '@mantine/hooks';
 import { ChevronDown } from 'lucide-react';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 
 export type DateRangeMode = 'in_last' | 'after' | 'before' | 'between';
 export type DateRangeUnit = 'day' | 'week' | 'month' | 'year';
@@ -22,7 +23,7 @@ export interface ResolvedDateRange {
   to: dayjs.Dayjs;
 }
 
-export interface DateRangePopoverLabels {
+interface DateRangePopoverLabels {
   modeInLast: string;
   modeAfter: string;
   modeBefore: string;
@@ -40,6 +41,30 @@ export interface DateRangePopoverLabels {
   apply: string;
 }
 
+function useDateRangeLabels(): DateRangePopoverLabels {
+  const { t } = useTranslation();
+  return useMemo(
+    () => ({
+      modeInLast: t('stats.mode_in_last'),
+      modeAfter: t('stats.mode_after'),
+      modeBefore: t('stats.mode_before'),
+      modeBetween: t('stats.mode_between'),
+      rangeMode: t('stats.range_mode'),
+      lastValue: t('stats.last_value'),
+      lastUnit: t('stats.last_unit'),
+      unitDays: t('stats.unit_days'),
+      unitWeeks: t('stats.unit_weeks'),
+      unitMonths: t('stats.unit_months'),
+      unitYears: t('stats.unit_years'),
+      pickDate: t('stats.pick_date'),
+      pickRange: t('stats.pick_range'),
+      invalidRange: t('stats.invalid_range'),
+      apply: t('stats.apply'),
+    }),
+    [t]
+  );
+}
+
 interface ResolveOptions {
   minRangeStart: string;
   maxDate: string;
@@ -49,7 +74,6 @@ interface ResolveOptions {
 interface DateRangePopoverProps {
   value: DateRangeFilterState;
   onApply: (nextState: DateRangeFilterState, range: ResolvedDateRange) => void;
-  labels: DateRangePopoverLabels;
   minRangeStart?: string;
   maxDate?: string;
   precision?: DateRangePrecision;
@@ -142,13 +166,13 @@ export function getRangeSummary(
 export function DateRangePopover({
   value,
   onApply,
-  labels,
   minRangeStart = '1900-01-01',
   maxDate = dayjs().format('YYYY-MM-DD'),
   precision = 'day',
   fullWidth = false,
   withinPortal = true,
 }: DateRangePopoverProps) {
+  const labels = useDateRangeLabels();
   const [draft, setDraft] = useState<DateRangeFilterState>(value);
   const [opened, setOpened] = useState(false);
   const [controlNode, setControlNode] = useState<HTMLDivElement | null>(null);

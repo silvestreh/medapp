@@ -126,27 +126,6 @@ export default function StatsIndex() {
   const isLargeRange = rangeDays > LARGE_RANGE_DAYS;
   const trendDateFormat = rangeDays >= 365 ? 'YYYY-MM' : 'YYYY-MM-DD';
 
-  const dateRangeLabels = useMemo(
-    () => ({
-      modeInLast: t('stats.mode_in_last'),
-      modeAfter: t('stats.mode_after'),
-      modeBefore: t('stats.mode_before'),
-      modeBetween: t('stats.mode_between'),
-      rangeMode: t('stats.range_mode'),
-      lastValue: t('stats.last_value'),
-      lastUnit: t('stats.last_unit'),
-      unitDays: t('stats.unit_days'),
-      unitWeeks: t('stats.unit_weeks'),
-      unitMonths: t('stats.unit_months'),
-      unitYears: t('stats.unit_years'),
-      pickDate: t('stats.pick_date'),
-      pickRange: t('stats.pick_range'),
-      invalidRange: t('stats.invalid_range'),
-      apply: t('stats.apply'),
-    }),
-    [t]
-  );
-
   const handleApplyRange = useCallback((nextState: DateRangeFilterState) => {
     setRangeFilter(nextState);
   }, []);
@@ -282,7 +261,6 @@ export default function StatsIndex() {
             <DateRangePopover
               value={rangeFilter}
               onApply={handleApplyRange}
-              labels={dateRangeLabels}
               minRangeStart={MIN_RANGE_START}
               maxDate={dayjs().format('YYYY-MM-DD')}
               precision="day"

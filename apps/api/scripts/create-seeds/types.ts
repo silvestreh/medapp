@@ -213,6 +213,7 @@ export interface SeedUser {
 export interface SeedPatient {
   id: string;
   medicare?: string;
+  medicareId: string | null;
   medicareNumber?: string;
   medicarePlan?: string;
   deleted: boolean;
@@ -225,6 +226,7 @@ export interface SeedEncounter {
   date: string;
   medicId: string;
   patientId: string;
+  insurerId?: string | null;
 }
 
 export interface SeedAppointment {
@@ -243,6 +245,7 @@ export interface SeedStudy {
   medicId: string | null;
   referringDoctor: string | null;
   patientId: string;
+  insurerId?: string | null;
 }
 
 export interface SeedResult {

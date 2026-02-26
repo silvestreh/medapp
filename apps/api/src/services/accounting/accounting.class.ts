@@ -4,19 +4,16 @@ import type { Params } from '@feathersjs/feathers';
 import dayjs from 'dayjs';
 
 import type { Application } from '../../declarations';
-import { decryptValue } from '../../hooks/encryption';
 
 export interface AccountingRecord {
   id: string;
   date: string;
-  kind: 'encounter' | 'study';
-  studyType: string | null;
+  kind: string;
   protocol: number | null;
+  medicId: string | null;
   insurerId: string | null;
   insurerName: string;
   patientName: string;
-  patientInsurance: string;
-  patientInsuranceNumber: string;
   cost: number;
 }
 
@@ -30,16 +27,76 @@ export interface AccountingResult {
 interface RawRow {
   id: string;
   date: string;
-  kind: 'encounter' | 'study';
-  studyType: string | null;
+  kind: string;
   protocol: number | null;
+  medicId: string | null;
   insurerId: string | null;
   insurerName: string;
   patientFirstName: string | null;
   patientLastName: string | null;
-  patientInsurance: string | null;
-  patientInsuranceNumber: string | null;
-  cost: number;
+}
+
+type PricingType = 'fixed' | 'multiplier';
+
+interface PricingConfig {
+  type: PricingType;
+  value?: number;
+  baseValue?: number;
+  multiplier?: number;
+  baseName?: string;
+  code?: string;
+}
+
+type InsurerPricing = Record<string, number | PricingConfig>;
+type InsurerPrices = Record<string, InsurerPricing>;
+
+interface SettingsRow {
+  userId: string;
+  insurerPrices: unknown;
+}
+
+function toNonNegativeNumber(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
+  return parsed;
+}
+
+function toInsurerPrices(value: unknown): InsurerPrices {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  const result: InsurerPrices = {};
+  for (const [insurerId, insurerValue] of Object.entries(value as Record<string, unknown>)) {
+    if (!insurerId || !insurerValue || typeof insurerValue !== 'object' || Array.isArray(insurerValue)) {
+      continue;
+    }
+    result[insurerId] = insurerValue as InsurerPricing;
+  }
+
+  return result;
+}
+
+function resolveCostFromPrice(price: number | PricingConfig | undefined): number {
+  if (price == null) {
+    return 0;
+  }
+  if (typeof price === 'number') {
+    return toNonNegativeNumber(price);
+  }
+  if (!price || typeof price !== 'object' || Array.isArray(price)) {
+    return 0;
+  }
+
+  if (price.type === 'multiplier') {
+    const baseValue = toNonNegativeNumber(price.baseValue);
+    const multiplier = toNonNegativeNumber(price.multiplier);
+    return baseValue * multiplier;
+  }
+
+  return toNonNegativeNumber(price.value);
 }
 
 export class Accounting {
@@ -78,12 +135,8 @@ export class Accounting {
       ? 'AND s."organizationId" = :organizationId'
       : '';
 
-    const insurerFilterE = insurerId
-      ? 'AND e."insurerId" = :insurerId'
-      : '';
-
-    const insurerFilterS = insurerId
-      ? 'AND s."insurerId" = :insurerId'
+    const insurerFilter = insurerId
+      ? 'WHERE COALESCE(t."insurerId", pat."medicareId") = :insurerId'
       : '';
 
     const replacements: Record<string, string> = {
@@ -98,114 +151,92 @@ export class Accounting {
       replacements.insurerId = insurerId;
     }
 
-    const userId = params?.user?.id;
-    let insurerPrices: Record<string, Record<string, number>> = {};
-
-    if (userId) {
-      const settingsRows = await sequelize.query<{ insurerPrices: unknown }>(
-        `SELECT "insurerPrices" FROM md_settings WHERE "userId" = :userId LIMIT 1`,
-        { type: QueryTypes.SELECT, replacements: { userId } }
-      );
-      const raw = settingsRows[0]?.insurerPrices;
-      if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-        insurerPrices = raw as Record<string, Record<string, number>>;
-      }
-    }
-
     const rows = await sequelize.query<RawRow>(
       `
       SELECT
         t.id,
         t.date::text AS date,
         t.kind,
-        t."studyType",
         t.protocol,
-        t."insurerId",
-        COALESCE(
-          prp."shortName" || ' / ' || prp.denomination,
-          pat.medicare,
-          '-'
-        ) AS "insurerName",
+        t."medicId",
+        COALESCE(t."insurerId", pat."medicareId") AS "insurerId",
+        COALESCE(prp."shortName", 'Particular') AS "insurerName",
         pd."firstName" AS "patientFirstName",
-        pd."lastName" AS "patientLastName",
-        pat.medicare AS "patientInsurance",
-        pat."medicareNumber" AS "patientInsuranceNumber",
-        t.cost
+        pd."lastName" AS "patientLastName"
       FROM (
         SELECT
           e.id,
           e.date,
           'encounter'::text AS kind,
-          NULL::text AS "studyType",
           NULL::int AS protocol,
           e."insurerId",
           e."patientId",
-          e."organizationId",
-          COALESCE(e.cost, 0)::numeric AS cost
+          e."medicId",
+          e."organizationId"
         FROM encounters e
         WHERE e.date >= :from AND e.date <= :to
           ${orgFilterE}
-          ${insurerFilterE}
 
         UNION ALL
 
         SELECT
           s.id,
           s.date,
-          'study'::text AS kind,
-          UNNEST(s.studies) AS "studyType",
+          UNNEST(s.studies)::text AS kind,
           s.protocol,
           s."insurerId",
           s."patientId",
-          s."organizationId",
-          0::numeric AS cost
+          s."medicId",
+          s."organizationId"
         FROM studies s
         WHERE s.date >= :from AND s.date <= :to
           ${orgFilterS}
-          ${insurerFilterS}
       ) t
       LEFT JOIN patients pat ON pat.id = t."patientId"
-      LEFT JOIN prepagas prp ON prp.id = t."insurerId"
+      LEFT JOIN prepagas prp ON prp.id = COALESCE(t."insurerId", pat."medicareId")
       LEFT JOIN patient_personal_data ppd ON ppd."ownerId" = pat.id
       LEFT JOIN personal_data pd ON pd.id = ppd."personalDataId"
+      ${insurerFilter}
       ORDER BY t.date DESC, t.kind ASC
       `,
       { type: QueryTypes.SELECT, replacements }
+    );
+
+    const medicIds = [
+      ...new Set(
+        rows
+          .map((row) => row.medicId)
+          .filter((medicId): medicId is string => Boolean(medicId))
+      ),
+    ];
+    const settingsRows = medicIds.length
+      ? await sequelize.query<SettingsRow>(
+        'SELECT "userId", "insurerPrices" FROM md_settings WHERE "userId" IN (:medicIds)',
+        { type: QueryTypes.SELECT, replacements: { medicIds } }
+      )
+      : [];
+    const insurerPricesByMedicId = new Map<string, InsurerPrices>(
+      settingsRows.map((row) => [row.userId, toInsurerPrices(row.insurerPrices)])
     );
 
     const records: AccountingRecord[] = rows.map(row => {
       const firstName = row.patientFirstName || '';
       const lastName = row.patientLastName || '';
       const patientName = `${firstName} ${lastName}`.trim() || '-';
-
-      let decryptedInsuranceNumber = '-';
-      if (row.patientInsuranceNumber) {
-        try {
-          decryptedInsuranceNumber = decryptValue(row.patientInsuranceNumber) || '-';
-        } catch {
-          decryptedInsuranceNumber = row.patientInsuranceNumber;
-        }
-      }
-
-      let cost = Number(row.cost) || 0;
-      if (row.kind === 'study' && row.studyType && row.insurerId) {
-        const priceMap = insurerPrices[row.insurerId];
-        if (priceMap && priceMap[row.studyType] != null) {
-          cost = Number(priceMap[row.studyType]) || 0;
-        }
-      }
+      const medicPrices = row.medicId ? insurerPricesByMedicId.get(row.medicId) : undefined;
+      const insurerPracticePrices = row.insurerId && medicPrices ? medicPrices[row.insurerId] : undefined;
+      const practicePrice = insurerPracticePrices ? insurerPracticePrices[row.kind] : undefined;
+      const cost = resolveCostFromPrice(practicePrice);
 
       return {
         id: row.id,
         date: row.date,
         kind: row.kind,
-        studyType: row.studyType,
         protocol: row.protocol,
+        medicId: row.medicId,
         insurerId: row.insurerId,
         insurerName: row.insurerName,
         patientName,
-        patientInsurance: row.patientInsurance || '-',
-        patientInsuranceNumber: decryptedInsuranceNumber,
         cost: Number(cost.toFixed(2)),
       };
     });

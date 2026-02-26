@@ -25,14 +25,11 @@ type Prepaga = {
 type AccountingRecord = {
   id: string;
   date: string;
-  kind: 'encounter' | 'study';
-  studyType: string | null;
+  kind: string;
   protocol: number | null;
   insurerId: string | null;
   insurerName: string;
   patientName: string;
-  patientInsurance: string;
-  patientInsuranceNumber: string;
   cost: number;
 };
 
@@ -120,27 +117,6 @@ export default function AccountingDashboardPage() {
     [rangeFilter]
   );
 
-  const dateRangeLabels = useMemo(
-    () => ({
-      modeInLast: t('stats.mode_in_last'),
-      modeAfter: t('stats.mode_after'),
-      modeBefore: t('stats.mode_before'),
-      modeBetween: t('stats.mode_between'),
-      rangeMode: t('stats.range_mode'),
-      lastValue: t('stats.last_value'),
-      lastUnit: t('stats.last_unit'),
-      unitDays: t('stats.unit_days'),
-      unitWeeks: t('stats.unit_weeks'),
-      unitMonths: t('stats.unit_months'),
-      unitYears: t('stats.unit_years'),
-      pickDate: t('stats.pick_date'),
-      pickRange: t('stats.pick_range'),
-      invalidRange: t('stats.invalid_range'),
-      apply: t('stats.apply'),
-    }),
-    [t]
-  );
-
   const handleApplyRange = useCallback((nextState: DateRangeFilterState) => {
     setRangeFilter(nextState);
   }, []);
@@ -187,19 +163,13 @@ export default function AccountingDashboardPage() {
   const totalRevenue = data?.totalRevenue ?? 0;
   const revenueByInsurer = data?.revenueByInsurer ?? [];
 
-  const translateKind = useCallback(
-    (kind: string) =>
-      kind === 'encounter'
-        ? t('accounting.kind_encounter', { defaultValue: 'Encounter' })
-        : t('accounting.kind_study', { defaultValue: 'Study' }),
-    [t]
-  );
-
-  const translateStudyType = useCallback(
-    (studyType: string | null) => {
-      if (!studyType) return '';
-      const key = STUDY_TYPE_I18N[studyType];
-      return key ? t(key, { defaultValue: studyType }) : studyType;
+  const translateType = useCallback(
+    (kind: string) => {
+      if (kind === 'encounter') {
+        return t('accounting.kind_encounter', { defaultValue: 'Encounter' });
+      }
+      const key = STUDY_TYPE_I18N[kind];
+      return key ? t(key, { defaultValue: kind }) : kind;
     },
     [t]
   );
@@ -246,7 +216,6 @@ export default function AccountingDashboardPage() {
             <DateRangePopover
               value={rangeFilter}
               onApply={handleApplyRange}
-              labels={dateRangeLabels}
               minRangeStart={MIN_RANGE_START}
               maxDate={dayjs().format('YYYY-MM-DD')}
               precision="day"
@@ -287,26 +256,20 @@ export default function AccountingDashboardPage() {
                   <Table.Tr>
                     <Table.Th>{t('accounting.col_date', { defaultValue: 'Date' })}</Table.Th>
                     <Table.Th>{t('accounting.col_type', { defaultValue: 'Type' })}</Table.Th>
-                    <Table.Th>{t('accounting.col_study_type', { defaultValue: 'Study Type' })}</Table.Th>
                     <Table.Th>{t('accounting.col_protocol', { defaultValue: 'Protocol' })}</Table.Th>
                     <Table.Th>{t('accounting.col_insurer', { defaultValue: 'Insurer' })}</Table.Th>
                     <Table.Th>{t('accounting.col_patient', { defaultValue: 'Patient' })}</Table.Th>
-                    <Table.Th>{t('accounting.col_insurance', { defaultValue: 'Insurance' })}</Table.Th>
-                    <Table.Th>{t('accounting.col_insurance_number', { defaultValue: 'Insurance #' })}</Table.Th>
                     <Table.Th>{t('accounting.col_cost', { defaultValue: 'Cost' })}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                   {records.map((record, index) => (
-                    <Table.Tr key={`${record.id}-${record.studyType || ''}-${index}`}>
+                    <Table.Tr key={`${record.id}-${record.kind}-${index}`}>
                       <Table.Td>{dayjs(record.date).format('YYYY-MM-DD')}</Table.Td>
-                      <Table.Td>{translateKind(record.kind)}</Table.Td>
-                      <Table.Td>{translateStudyType(record.studyType)}</Table.Td>
+                      <Table.Td>{translateType(record.kind)}</Table.Td>
                       <Table.Td>{record.protocol ?? ''}</Table.Td>
                       <Table.Td>{record.insurerName}</Table.Td>
                       <Table.Td>{record.patientName}</Table.Td>
-                      <Table.Td>{record.patientInsurance}</Table.Td>
-                      <Table.Td>{record.patientInsuranceNumber}</Table.Td>
                       <Table.Td>${record.cost.toFixed(2)}</Table.Td>
                     </Table.Tr>
                   ))}

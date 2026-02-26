@@ -14,7 +14,7 @@ import {
 } from '@mantine/core';
 import { Search, X, Check } from 'lucide-react';
 
-import { useFind } from '~/components/provider';
+import { useFind, useGet } from '~/components/provider';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 
@@ -62,24 +62,15 @@ interface Prepaga {
 }
 
 interface PrepagaSelectorProps {
+  /** Prepaga UUID */
   value?: string;
-  onChange: (value: string) => void;
+  /** Called with the selected prepaga ID (or empty string on clear) */
+  onChange: (id: string) => void;
   onSelectPrepaga?: (prepaga: Prepaga) => void;
   placeholder?: string;
   label?: string;
   error?: string;
   readOnly?: boolean;
-}
-
-function parseReadOnlyValue(value: string) {
-  const parts = value.split('/');
-  if (parts.length >= 2) {
-    return {
-      shortName: parts[0].trim(),
-      denomination: parts.slice(1).join('/').trim(),
-    };
-  }
-  return { shortName: value, denomination: '' };
 }
 
 export function PrepagaSelector({
@@ -96,11 +87,21 @@ export function PrepagaSelector({
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
+  const { data: selectedPrepaga } = useGet('prepagas', value!, {
+    enabled: !!value,
+  });
+
+  const displayLabel = useMemo(() => {
+    if (!selectedPrepaga) return '';
+    const p = selectedPrepaga as Prepaga;
+    return `${p.shortName} / ${p.denomination}`;
+  }, [selectedPrepaga]);
+
   useEffect(() => {
     if (opened) {
-      setSearchValue(value || '');
+      setSearchValue('');
     }
-  }, [opened, value]);
+  }, [opened]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -122,21 +123,12 @@ export function PrepagaSelector({
 
   const handleSelect = useCallback(
     (prepaga: Prepaga) => {
-      const formattedValue = `${prepaga.shortName} / ${prepaga.denomination}`;
-      onChange(formattedValue);
+      onChange(prepaga.id);
       onSelectPrepaga?.(prepaga);
-      setSearchValue(formattedValue);
       setOpened(false);
     },
     [onChange, onSelectPrepaga],
   );
-
-  const handleCustomSubmit = useCallback(() => {
-    if (searchValue.trim()) {
-      onChange(searchValue.trim());
-      setOpened(false);
-    }
-  }, [searchValue, onChange]);
 
   const handleClear = useCallback(
     (e: React.MouseEvent) => {
@@ -160,41 +152,19 @@ export function PrepagaSelector({
     if (!readOnly) setOpened(true);
   }, [readOnly]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleCustomSubmit();
-      }
-    },
-    [handleCustomSubmit],
-  );
-
-  const handleBlur = useCallback(() => {
-    if (searchValue.trim() && searchValue !== value) {
-      handleCustomSubmit();
-    }
-  }, [searchValue, value, handleCustomSubmit]);
-
   const handleClick = useCallback(() => {
     if (!readOnly) setOpened(true);
   }, [readOnly]);
 
-  const parsed = useMemo(
-    () => (value ? parseReadOnlyValue(value) : null),
-    [value],
-  );
-
   if (readOnly) {
     return (
       <Flex direction="column" flex={1}>
-        {parsed ? (
+        {selectedPrepaga ? (
           <Stack gap={0}>
-            <MantineText size="sm">{parsed.shortName}</MantineText>
-            {parsed.denomination && (
-              <MantineText size="xs" c="dimmed">
-                {parsed.denomination}
-              </MantineText>
-            )}
+            <MantineText size="sm">{(selectedPrepaga as Prepaga).shortName}</MantineText>
+            <MantineText size="xs" c="dimmed">
+              {(selectedPrepaga as Prepaga).denomination}
+            </MantineText>
           </Stack>
         ) : (
           <MantineText size="sm" c="dimmed">
@@ -256,9 +226,9 @@ export function PrepagaSelector({
             rightSectionPointerEvents={loading || value ? 'all' : 'none'}
           >
             <Group gap={4} style={{ flex: 1 }}>
-              {!opened && value && (
+              {!opened && displayLabel && (
                 <MantineText size="sm" style={{ flex: 1 }}>
-                  {value}
+                  {displayLabel}
                 </MantineText>
               )}
               {(opened || !value) && (
@@ -266,8 +236,6 @@ export function PrepagaSelector({
                   value={searchValue}
                   onChange={handleSearchChange}
                   onFocus={handleFocus}
-                  onKeyDown={handleKeyDown}
-                  onBlur={handleBlur}
                   placeholder={
                     !value || opened
                       ? placeholder || t('forms.type_to_search_prepagas')
@@ -298,38 +266,35 @@ export function PrepagaSelector({
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>
-                    {results.map((prepaga: Prepaga) => {
-                      const formatted = `${prepaga.shortName} / ${prepaga.denomination}`;
-                      return (
-                        <TableRow
-                          key={prepaga.id}
-                          onMouseDown={e => {
-                            e.preventDefault();
-                            handleSelect(prepaga);
-                          }}
-                          selected={value === formatted}
-                        >
-                          <Table.Td>
-                            <MantineText size="sm" fw={500}>
-                              {prepaga.shortName}
-                            </MantineText>
-                          </Table.Td>
-                          <Table.Td>
-                            <MantineText size="sm">
-                              {prepaga.denomination}
-                            </MantineText>
-                          </Table.Td>
-                          <Table.Td>
-                            {value === formatted && (
-                              <Check
-                                size={14}
-                                color="var(--mantine-color-blue-6)"
-                              />
-                            )}
-                          </Table.Td>
-                        </TableRow>
-                      );
-                    })}
+                    {results.map((prepaga: Prepaga) => (
+                      <TableRow
+                        key={prepaga.id}
+                        onMouseDown={e => {
+                          e.preventDefault();
+                          handleSelect(prepaga);
+                        }}
+                        selected={value === prepaga.id}
+                      >
+                        <Table.Td>
+                          <MantineText size="sm" fw={500}>
+                            {prepaga.shortName}
+                          </MantineText>
+                        </Table.Td>
+                        <Table.Td>
+                          <MantineText size="sm">
+                            {prepaga.denomination}
+                          </MantineText>
+                        </Table.Td>
+                        <Table.Td>
+                          {value === prepaga.id && (
+                            <Check
+                              size={14}
+                              color="var(--mantine-color-blue-6)"
+                            />
+                          )}
+                        </Table.Td>
+                      </TableRow>
+                    ))}
                   </Table.Tbody>
                 </Table>
               )}
