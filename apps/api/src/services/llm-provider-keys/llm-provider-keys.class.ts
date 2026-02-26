@@ -114,6 +114,7 @@ export class LlmProviderKeys {
       if (!value) continue;
       try {
         decrypted[provider] = decryptProviderKey(this.app, value);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_error) {
         // ignore malformed secrets
       }

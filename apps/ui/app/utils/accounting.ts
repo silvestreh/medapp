@@ -1,3 +1,5 @@
+export const PARTICULAR_INSURER_ID = '_particular';
+
 export const ACCOUNTING_PRACTICE_KEYS = [
   'encounter',
   'anemia',

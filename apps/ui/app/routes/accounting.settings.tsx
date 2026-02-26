@@ -2,20 +2,21 @@ import { useCallback, useMemo, useState, type ChangeEvent } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
-import { ActionIcon, Button, Group, NumberInput, Paper, Select, Stack, Text, TextInput, Title } from '@mantine/core';
-import { Trash2 } from 'lucide-react';
+import { Button, Group, NumberInput, Paper, Select, Stack, Text, TextInput, Title, Input } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import { Search } from 'lucide-react';
 
 import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';
 import Portal from '~/components/portal';
 import { ToolbarTitle } from '~/components/toolbar-title';
-import { PrepagaSelector } from '~/components/prepaga-selector';
 import {
   ACCOUNTING_PRACTICE_KEYS,
+  PARTICULAR_INSURER_ID,
   toPricingConfig,
   normalizeInsurerPrices,
   toNumericPrice,
   type PricingConfig,
+  type PricingType,
   type InsurerPrices,
 } from '~/utils/accounting';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -32,10 +33,9 @@ const Layout = styled('div', {
     display: 'grid',
     gap: '1rem',
     gridTemplateColumns: '1fr',
-    padding: '1rem',
+
     md: {
       gridTemplateColumns: '320px 1fr',
-      padding: '2rem',
     },
   },
 });
@@ -43,13 +43,15 @@ const Layout = styled('div', {
 const Sidebar = styled('div', {
   base: {
     backgroundColor: 'white',
-    border: '1px solid var(--mantine-color-gray-3)',
-    borderRadius: 'var(--mantine-radius-sm)',
-    padding: '1rem',
+    borderRight: '1px solid var(--mantine-color-gray-3)',
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
-    maxHeight: 'calc(100vh - 10rem)',
+    minHeight: 'calc(100vh - 5rem)',
+    maxHeight: 'calc(100vh - 5rem)',
+    position: 'sticky',
+    top: '5rem',
+    overflowY: 'auto',
   },
 });
 
@@ -57,20 +59,18 @@ const SidebarList = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.5rem',
-    overflowY: 'auto',
   },
 });
 
-const practiceLabelByKey: Record<string, string> = {
-  encounter: 'Encounter',
-  anemia: 'Anemia',
-  anticoagulation: 'Anticoagulation',
-  compatibility: 'Compatibility',
-  hemostasis: 'Hemostasis',
-  myelogram: 'Myelogram',
-  thrombophilia: 'Thrombophilia',
-};
+const practiceI18nKey = {
+  encounter: 'accounting.kind_encounter',
+  anemia: 'accounting.type_anemia',
+  anticoagulation: 'accounting.type_anticoagulation',
+  compatibility: 'accounting.type_compatibility',
+  hemostasis: 'accounting.type_hemostasis',
+  myelogram: 'accounting.type_myelogram',
+  thrombophilia: 'accounting.type_thrombophilia',
+} as const;
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
@@ -85,42 +85,19 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     : ((settingsResponse as { data?: unknown[] }).data ?? []);
   const mdSettings = settingsList[0] as { id: string; insurerPrices?: unknown } | undefined;
   const insurerPrices = normalizeInsurerPrices(mdSettings?.insurerPrices);
-  const encounterInsurerRows = await client.service('encounters').find({
-    query: {
-      medicId: user.id,
-      insurerId: { $ne: null },
-      $select: ['insurerId'],
-      $limit: 10000,
-    },
-    paginate: false,
-  });
-  const studyInsurerRows = await client.service('studies').find({
-    query: {
-      medicId: user.id,
-      insurerId: { $ne: null },
-      $select: ['insurerId'],
-      $limit: 10000,
-    },
-    paginate: false,
+
+  const dbInsurerIds: string[] = await (client.service('accounting') as any).get('insurers', {
+    query: { medicId: user.id },
   });
 
-  const insurerIds = [
-    ...new Set(
-      [
-        ...Object.keys(insurerPrices),
-        ...(Array.isArray(encounterInsurerRows) ? encounterInsurerRows : []).map(
-          row => (row as { insurerId?: string | null }).insurerId
-        ),
-        ...(Array.isArray(studyInsurerRows) ? studyInsurerRows : []).map(
-          row => (row as { insurerId?: string | null }).insurerId
-        ),
-      ].filter((id): id is string => Boolean(id))
-    ),
+  const allInsurerIds = [
+    ...new Set([...Object.keys(insurerPrices), ...(Array.isArray(dbInsurerIds) ? dbInsurerIds : [])]),
   ];
+  const realInsurerIds = allInsurerIds.filter(id => id !== PARTICULAR_INSURER_ID);
 
-  const insurersResponse = insurerIds.length
+  const insurersResponse = realInsurerIds.length
     ? await client.service('prepagas').find({
-        query: { id: { $in: insurerIds }, $limit: insurerIds.length },
+        query: { id: { $in: realInsurerIds }, $limit: realInsurerIds.length },
         paginate: false,
       })
     : [];
@@ -130,16 +107,19 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     : ((insurersResponse as { data?: unknown[] }).data ?? []);
   const insurerById = new Map((insurersList as Prepaga[]).map(item => [item.id, item]));
 
-  const insurers = insurerIds
-    .map(id => {
-      const insurer = insurerById.get(id);
-      return {
-        id,
-        shortName: insurer?.shortName || 'UNKNOWN',
-        denomination: insurer?.denomination || id,
-      };
-    })
-    .sort((a, b) => a.shortName.localeCompare(b.shortName));
+  const insurers = [
+    { id: PARTICULAR_INSURER_ID, shortName: 'Particular', denomination: 'Particular' },
+    ...realInsurerIds
+      .map(id => {
+        const insurer = insurerById.get(id);
+        return {
+          id,
+          shortName: insurer?.shortName || 'UNKNOWN',
+          denomination: insurer?.denomination || id,
+        };
+      })
+      .sort((a, b) => a.shortName.localeCompare(b.shortName)),
+  ];
 
   return json({
     mdSettingsId: mdSettings?.id ?? null,
@@ -179,7 +159,6 @@ export default function AccountingSettingsPage() {
   const [insurerPrices, setInsurerPrices] = useState<InsurerPrices>(data.insurerPrices);
   const [insurers, setInsurers] = useState<Prepaga[]>(data.insurers as Prepaga[]);
   const [activeInsurerId, setActiveInsurerId] = useState<string | null>(data.insurers[0]?.id ?? null);
-  const [pendingInsurance, setPendingInsurance] = useState('');
 
   const isSaving = fetcher.state !== 'idle';
 
@@ -192,6 +171,27 @@ export default function AccountingSettingsPage() {
     () => (activeInsurerId ? (insurerPrices[activeInsurerId] ?? {}) : {}),
     [activeInsurerId, insurerPrices]
   );
+
+  const activeInsurerType: PricingType = useMemo(() => {
+    if (!activeInsurerId) return 'fixed';
+    const practices = insurerPrices[activeInsurerId] ?? {};
+    const first = Object.values(practices)[0];
+    return first ? toPricingConfig(first).type : 'fixed';
+  }, [activeInsurerId, insurerPrices]);
+
+  const activeInsurerBaseName = useMemo(() => {
+    if (!activeInsurerId) return '';
+    const practices = insurerPrices[activeInsurerId] ?? {};
+    const first = Object.values(practices)[0];
+    return first ? (toPricingConfig(first).baseName ?? '') : '';
+  }, [activeInsurerId, insurerPrices]);
+
+  const activeInsurerBaseValue = useMemo(() => {
+    if (!activeInsurerId) return 0;
+    const practices = insurerPrices[activeInsurerId] ?? {};
+    const first = Object.values(practices)[0];
+    return first ? (toPricingConfig(first).baseValue ?? 0) : 0;
+  }, [activeInsurerId, insurerPrices]);
 
   const handleSave = useCallback(() => {
     fetcher.submit({ payload: JSON.stringify({ insurerPrices }) }, { method: 'post' });
@@ -206,51 +206,20 @@ export default function AccountingSettingsPage() {
     [activePrices]
   );
 
-  const handleRemoveInsurer = useCallback(
-    (insurerId: string) => {
-      setInsurerPrices(prev => {
-        const next = { ...prev };
-        delete next[insurerId];
-        return next;
-      });
-      setInsurers(prev => prev.filter(insurer => insurer.id !== insurerId));
-      if (activeInsurerId === insurerId) {
-        setActiveInsurerId(null);
-      }
-    },
-    [activeInsurerId]
-  );
-
-  const handleAddInsurer = useCallback((prepaga: Prepaga) => {
-    setInsurers(prev => {
-      const exists = prev.some(item => item.id === prepaga.id);
-      if (exists) {
-        return prev;
-      }
-
-      return [...prev, prepaga];
-    });
-    setInsurerPrices(prev => ({ ...prev, [prepaga.id]: prev[prepaga.id] ?? {} }));
-    setActiveInsurerId(prepaga.id);
-    setPendingInsurance('');
-  }, []);
-
-  const handlePriceTypeChange = useCallback(
-    (practiceKey: string, value: string | null) => {
+  const handleInsurerTypeChange = useCallback(
+    (value: string | null) => {
       if (!activeInsurerId) {
         return;
       }
-      const type = value === 'multiplier' ? 'multiplier' : 'fixed';
-      setInsurerPrices(prev => ({
-        ...prev,
-        [activeInsurerId]: {
-          ...(prev[activeInsurerId] ?? {}),
-          [practiceKey]: {
-            ...toPricingConfig(prev[activeInsurerId]?.[practiceKey]),
-            type,
-          },
-        },
-      }));
+      const type: PricingType = value === 'multiplier' ? 'multiplier' : 'fixed';
+      setInsurerPrices(prev => {
+        const current = prev[activeInsurerId] ?? {};
+        const updated: Record<string, PricingConfig> = {};
+        for (const key of ACCOUNTING_PRACTICE_KEYS) {
+          updated[key] = { ...toPricingConfig(current[key]), type };
+        }
+        return { ...prev, [activeInsurerId]: updated };
+      });
     },
     [activeInsurerId]
   );
@@ -285,7 +254,6 @@ export default function AccountingSettingsPage() {
           ...(prev[activeInsurerId] ?? {}),
           [practiceKey]: {
             ...toPricingConfig(prev[activeInsurerId]?.[practiceKey]),
-            type: 'fixed',
             value: toNumericPrice(value),
           },
         },
@@ -294,41 +262,38 @@ export default function AccountingSettingsPage() {
     [activeInsurerId]
   );
 
-  const handlePracticeBaseNameChange = useCallback(
-    (practiceKey: string, value: string) => {
+  const handleInsurerBaseNameChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
       if (!activeInsurerId) {
         return;
       }
-      setInsurerPrices(prev => ({
-        ...prev,
-        [activeInsurerId]: {
-          ...(prev[activeInsurerId] ?? {}),
-          [practiceKey]: {
-            ...toPricingConfig(prev[activeInsurerId]?.[practiceKey]),
-            baseName: value,
-          },
-        },
-      }));
+      const baseName = event.currentTarget.value;
+      setInsurerPrices(prev => {
+        const current = prev[activeInsurerId] ?? {};
+        const updated: Record<string, PricingConfig> = {};
+        for (const key of ACCOUNTING_PRACTICE_KEYS) {
+          updated[key] = { ...toPricingConfig(current[key]), baseName };
+        }
+        return { ...prev, [activeInsurerId]: updated };
+      });
     },
     [activeInsurerId]
   );
 
-  const handlePracticeBaseValueChange = useCallback(
-    (practiceKey: string, value: string | number) => {
+  const handleInsurerBaseValueChange = useCallback(
+    (value: string | number) => {
       if (!activeInsurerId) {
         return;
       }
-      setInsurerPrices(prev => ({
-        ...prev,
-        [activeInsurerId]: {
-          ...(prev[activeInsurerId] ?? {}),
-          [practiceKey]: {
-            ...toPricingConfig(prev[activeInsurerId]?.[practiceKey]),
-            type: 'multiplier',
-            baseValue: toNumericPrice(value),
-          },
-        },
-      }));
+      const baseValue = toNumericPrice(value);
+      setInsurerPrices(prev => {
+        const current = prev[activeInsurerId] ?? {};
+        const updated: Record<string, PricingConfig> = {};
+        for (const key of ACCOUNTING_PRACTICE_KEYS) {
+          updated[key] = { ...toPricingConfig(current[key]), baseValue };
+        }
+        return { ...prev, [activeInsurerId]: updated };
+      });
     },
     [activeInsurerId]
   );
@@ -344,7 +309,6 @@ export default function AccountingSettingsPage() {
           ...(prev[activeInsurerId] ?? {}),
           [practiceKey]: {
             ...toPricingConfig(prev[activeInsurerId]?.[practiceKey]),
-            type: 'multiplier',
             multiplier: toNumericPrice(value),
           },
         },
@@ -358,20 +322,6 @@ export default function AccountingSettingsPage() {
       handleSelectInsurer(insurerId);
     },
     [handleSelectInsurer]
-  );
-
-  const getRemoveInsurerHandler = useCallback(
-    (insurerId: string) => () => {
-      handleRemoveInsurer(insurerId);
-    },
-    [handleRemoveInsurer]
-  );
-
-  const getTypeChangeHandler = useCallback(
-    (practiceKey: string) => (value: string | null) => {
-      handlePriceTypeChange(practiceKey, value);
-    },
-    [handlePriceTypeChange]
   );
 
   const getCodeChangeHandler = useCallback(
@@ -388,25 +338,25 @@ export default function AccountingSettingsPage() {
     [handlePracticeFixedValueChange]
   );
 
-  const getBaseNameChangeHandler = useCallback(
-    (practiceKey: string) => (event: ChangeEvent<HTMLInputElement>) => {
-      handlePracticeBaseNameChange(practiceKey, event.currentTarget.value);
-    },
-    [handlePracticeBaseNameChange]
-  );
-
-  const getBaseValueChangeHandler = useCallback(
-    (practiceKey: string) => (value: string | number) => {
-      handlePracticeBaseValueChange(practiceKey, value);
-    },
-    [handlePracticeBaseValueChange]
-  );
-
   const getMultiplierChangeHandler = useCallback(
     (practiceKey: string) => (value: string | number) => {
       handlePracticeMultiplierChange(practiceKey, value);
     },
     [handlePracticeMultiplierChange]
+  );
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (value.length > 0) {
+        const filteredInsurers = data.insurers.filter((insurer: Prepaga) =>
+          insurer.shortName.toLowerCase().includes(value.toLowerCase())
+        );
+        setInsurers(filteredInsurers);
+      } else {
+        setInsurers(data.insurers);
+      }
+    },
+    [data.insurers]
   );
 
   return (
@@ -415,108 +365,148 @@ export default function AccountingSettingsPage() {
         <ToolbarTitle title={t('navigation.accounting_settings', { defaultValue: 'Accounting Settings' })} />
       </Portal>
 
+      <Portal id="form-actions">
+        <Group justify="flex-end" flex={1}>
+          <Text c="dimmed">{t('accounting.settings_pricing_type')}</Text>
+          <Select
+            data={[
+              { value: 'fixed', label: t('accounting.settings_fixed_price') },
+              { value: 'multiplier', label: t('accounting.settings_multiplier') },
+            ]}
+            value={activeInsurerType}
+            onChange={handleInsurerTypeChange}
+            style={{ width: '120px' }}
+          />
+          {activeInsurerType === 'multiplier' && (
+            <>
+              <TextInput
+                // label="Base value name"
+                value={activeInsurerBaseName}
+                onChange={handleInsurerBaseNameChange}
+                placeholder={t('accounting.settings_base_name_placeholder')}
+                style={{ width: '120px' }}
+              />
+              <NumberInput
+                // label="Base value amount"
+                decimalScale={2}
+                min={0}
+                fixedDecimalScale
+                value={activeInsurerBaseValue}
+                onChange={handleInsurerBaseValueChange}
+                thousandSeparator=","
+                style={{ width: '120px' }}
+              />
+            </>
+          )}
+          <Button onClick={handleSave} loading={isSaving}>
+            {t('common.save')}
+          </Button>
+        </Group>
+      </Portal>
+
       <Sidebar>
-        <Title order={4}>{t('navigation.insurers', { defaultValue: 'Insurers' })}</Title>
-        <PrepagaSelector
-          value={pendingInsurance}
-          onChange={setPendingInsurance}
-          onSelectPrepaga={handleAddInsurer}
-          placeholder={t('forms.type_to_search_prepagas')}
+        <Input
+          placeholder={t('accounting.settings_search_insurers')}
+          variant="unstyled"
+          size="lg"
+          leftSection={<Search size={16} />}
+          onChange={event => handleSearchChange(event.currentTarget.value)}
+          styles={{
+            wrapper: {
+              borderBottom: '1px solid var(--mantine-color-gray-2)',
+            },
+            input: {
+              fontSize: '1rem',
+            },
+          }}
         />
         <SidebarList>
           {insurers.map(insurer => (
-            <Group key={insurer.id} justify="space-between" wrap="nowrap">
-              <Button
-                variant={activeInsurerId === insurer.id ? 'filled' : 'light'}
-                fullWidth
-                justify="flex-start"
-                onClick={getSelectInsurerHandler(insurer.id)}
-              >
-                {insurer.shortName}
-              </Button>
-              <ActionIcon
-                color="red"
-                variant="subtle"
-                onClick={getRemoveInsurerHandler(insurer.id)}
-                aria-label={t('common.delete')}
-              >
-                <Trash2 size={16} />
-              </ActionIcon>
-            </Group>
+            <Button
+              key={insurer.id}
+              variant={activeInsurerId === insurer.id ? 'filled' : 'transparent'}
+              fullWidth
+              justify="flex-start"
+              onClick={getSelectInsurerHandler(insurer.id)}
+              style={{ borderRadius: 0 }}
+            >
+              {insurer.id === PARTICULAR_INSURER_ID ? t('accounting.settings_particular') : insurer.shortName}
+            </Button>
           ))}
         </SidebarList>
       </Sidebar>
 
-      <Paper withBorder p="lg">
+      <Paper variant="unstyled" bg="transparent" p="2rem">
         {!activeInsurer && (
           <Text c="dimmed">{t('common.no_results', { defaultValue: 'No insurers configured yet.' })}</Text>
         )}
         {activeInsurer && (
-          <Stack gap="md">
-            <Group justify="space-between">
-              <Title order={3}>{activeInsurer.shortName}</Title>
-              <Button onClick={handleSave} loading={isSaving}>
-                {t('common.save')}
-              </Button>
+          <Stack gap="0">
+            <Group justify="space-between" mb="md">
+              <Stack gap="0">
+                <Title>
+                  {activeInsurer.id === PARTICULAR_INSURER_ID
+                    ? t('accounting.settings_particular')
+                    : activeInsurer.shortName}
+                </Title>
+                <Text>
+                  {activeInsurer.id === PARTICULAR_INSURER_ID
+                    ? t('accounting.settings_particular')
+                    : activeInsurer.denomination}
+                </Text>
+              </Stack>
             </Group>
-            {ACCOUNTING_PRACTICE_KEYS.map(practiceKey => (
-              <Paper key={practiceKey} withBorder p="md">
-                <Stack gap="sm">
-                  <Text fw={600}>{practiceLabelByKey[practiceKey] ?? practiceKey}</Text>
-                  <Select
-                    label="Pricing type"
-                    data={[
-                      { value: 'fixed', label: 'Fixed price' },
-                      { value: 'multiplier', label: 'Multiplier' },
-                    ]}
-                    value={getPracticeConfig(practiceKey).type}
-                    onChange={getTypeChangeHandler(practiceKey)}
-                  />
-                  <TextInput
-                    label="Practice code"
-                    value={getPracticeConfig(practiceKey).code ?? ''}
-                    onChange={getCodeChangeHandler(practiceKey)}
-                    placeholder="e.g. 210210"
-                  />
-
-                  {getPracticeConfig(practiceKey).type === 'fixed' && (
-                    <NumberInput
-                      label="Price"
-                      decimalScale={2}
-                      min={0}
-                      fixedDecimalScale
-                      value={getPracticeConfig(practiceKey).value ?? 0}
-                      onChange={getFixedValueChangeHandler(practiceKey)}
-                      thousandSeparator=","
+            {ACCOUNTING_PRACTICE_KEYS.map((practiceKey, index, array) => (
+              <Paper
+                key={practiceKey}
+                withBorder
+                p="md"
+                style={{
+                  borderRadius:
+                    index === 0 ? '0.5rem 0.5rem 0 0' : index === array.length - 1 ? '0 0 0.5rem 0.5rem' : '0',
+                  borderBottomWidth: index !== array.length - 1 ? 0 : 1,
+                }}
+              >
+                <Stack gap={0}>
+                  <Text c="blue.4" fw={600}>
+                    {t(practiceI18nKey[practiceKey])}
+                  </Text>
+                  <Group justify="stretch">
+                    <TextInput
+                      label={t('accounting.settings_practice_code')}
+                      value={getPracticeConfig(practiceKey).code ?? ''}
+                      onChange={getCodeChangeHandler(practiceKey)}
+                      placeholder={t('accounting.settings_practice_code_placeholder')}
+                      flex={1}
+                      styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
                     />
-                  )}
 
-                  {getPracticeConfig(practiceKey).type === 'multiplier' && (
-                    <Stack gap="sm">
-                      <TextInput
-                        label="Base value name"
-                        value={getPracticeConfig(practiceKey).baseName ?? ''}
-                        onChange={getBaseNameChangeHandler(practiceKey)}
-                        placeholder="e.g. UHB"
-                      />
+                    {activeInsurerType === 'fixed' && (
                       <NumberInput
-                        label="Base value amount"
+                        label={t('accounting.settings_price')}
                         decimalScale={2}
                         min={0}
                         fixedDecimalScale
-                        value={getPracticeConfig(practiceKey).baseValue ?? 0}
-                        onChange={getBaseValueChangeHandler(practiceKey)}
+                        value={getPracticeConfig(practiceKey).value ?? 0}
+                        onChange={getFixedValueChangeHandler(practiceKey)}
                         thousandSeparator=","
+                        flex={1}
+                        styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
                       />
+                    )}
+
+                    {activeInsurerType === 'multiplier' && (
                       <NumberInput
-                        label="Multiplier"
+                        label={t('accounting.settings_units')}
                         decimalScale={2}
                         min={0}
                         value={getPracticeConfig(practiceKey).multiplier ?? 1}
                         onChange={getMultiplierChangeHandler(practiceKey)}
+                        flex={1}
+                        styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
                       />
-                    </Stack>
-                  )}
+                    )}
+                  </Group>
                 </Stack>
               </Paper>
             ))}

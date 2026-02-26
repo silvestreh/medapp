@@ -1,6 +1,11 @@
-import { Sequelize, QueryTypes } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import type { Params } from '@feathersjs/feathers';
-import type { Application } from '../../declarations';
+import type {
+  Application,
+  OrganizationUser,
+  UserPersonalData,
+  PersonalData,
+} from '../../declarations';
 
 export interface ReferringDoctor {
   name: string;
@@ -18,37 +23,88 @@ export class ReferringDoctors {
     const sequelize: Sequelize = this.app.get('sequelizeClient');
     const organizationId = params?.organizationId;
 
-    const orgFilter = organizationId
-      ? `AND s."organizationId" = ${sequelize.escape(organizationId)}`
-      : '';
+    const studyWhere: Record<string, unknown> = {
+      referringDoctor: { [Op.ne]: null },
+    };
+    if (organizationId) {
+      studyWhere.organizationId = organizationId;
+    }
 
-    const orgJoinFilter = organizationId
-      ? `JOIN organization_users ou ON ou."userId" = u.id AND ou."organizationId" = ${sequelize.escape(organizationId)}`
-      : '';
+    const studyRows = await sequelize.models.studies.findAll({
+      where: studyWhere,
+      attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('referringDoctor')), 'referringDoctor']],
+      raw: true,
+    }) as unknown as { referringDoctor: string }[];
 
-    const rows = await sequelize.query<ReferringDoctor>(
-      `
-      SELECT DISTINCT "referringDoctor" AS name, NULL AS "medicId"
-      FROM studies s
-      WHERE "referringDoctor" IS NOT NULL
-      ${orgFilter}
+    const studyDoctors: ReferringDoctor[] = studyRows
+      .map(r => r.referringDoctor)
+      .filter(Boolean)
+      .map(name => ({ name, medicId: null }));
 
-      UNION
+    let medicUserIds: string[] | null = null;
+    if (organizationId) {
+      const orgUsers = await this.app.service('organization-users').find({
+        query: { organizationId },
+        paginate: false,
+      }) as OrganizationUser[];
+      medicUserIds = orgUsers.map(ou => ou.userId as string);
+    }
 
-      SELECT DISTINCT
-        TRIM(CONCAT(pd."firstName", ' ', pd."lastName")) AS name,
-        u.id AS "medicId"
-      FROM users u
-      JOIN user_personal_data upd ON upd."ownerId" = u.id
-      JOIN personal_data pd ON pd.id = upd."personalDataId"
-      ${orgJoinFilter}
-      WHERE u."roleId" = 'medic'
+    const userWhere: Record<string, unknown> = { roleId: 'medic' };
+    if (medicUserIds !== null) {
+      if (medicUserIds.length === 0) {
+        return studyDoctors.sort((a, b) => a.name.localeCompare(b.name));
+      }
+      userWhere.id = { [Op.in]: medicUserIds };
+    }
 
-      ORDER BY name
-      `,
-      { type: QueryTypes.SELECT }
-    );
+    const userRows = await sequelize.models.users.findAll({
+      where: userWhere,
+      attributes: ['id'],
+      raw: true,
+    }) as unknown as { id: string }[];
 
-    return rows;
+    const userIds = userRows.map(u => u.id);
+    if (userIds.length === 0) {
+      return studyDoctors.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    const upds = await this.app.service('user-personal-data').find({
+      query: { ownerId: { $in: userIds } },
+      paginate: false,
+    }) as UserPersonalData[];
+
+    const pdIds = upds.map(upd => upd.personalDataId as string);
+    const pds = pdIds.length
+      ? await this.app.service('personal-data').find({
+          query: { id: { $in: pdIds }, $select: ['id', 'firstName', 'lastName'] },
+          paginate: false,
+        }) as PersonalData[]
+      : [];
+
+    const pdById = new Map(pds.map(pd => [pd.id.toString(), pd]));
+    const updByOwnerId = new Map(upds.map(upd => [upd.ownerId.toString(), upd]));
+
+    const medicDoctors: ReferringDoctor[] = userIds
+      .map(userId => {
+        const upd = updByOwnerId.get(userId);
+        const pd = upd ? pdById.get(upd.personalDataId.toString()) : null;
+        const name = `${pd?.firstName || ''} ${pd?.lastName || ''}`.trim();
+        return { name, medicId: userId };
+      })
+      .filter(d => d.name.length > 0);
+
+    const seen = new Set<string>();
+    const result: ReferringDoctor[] = [];
+    const all = [...studyDoctors, ...medicDoctors].sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const doctor of all) {
+      if (!seen.has(doctor.name)) {
+        seen.add(doctor.name);
+        result.push(doctor);
+      }
+    }
+
+    return result;
   }
 }
