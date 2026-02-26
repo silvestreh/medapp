@@ -19,8 +19,17 @@ import {
   type PricingType,
   type InsurerPrices,
 } from '~/utils/accounting';
+import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@medapp/encounter-schemas';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { styled } from '~/styled-system/jsx';
+
+const extraCostSectionsByPractice: Record<string, ExtraCostSection[]> = {};
+for (const [studyName, schema] of Object.entries(studySchemas)) {
+  const sections = getExtraCostSections(schema);
+  if (sections.length > 0) {
+    extraCostSectionsByPractice[studyName] = sections;
+  }
+}
 
 type Prepaga = {
   id: string;
@@ -317,6 +326,38 @@ export default function AccountingSettingsPage() {
     [activeInsurerId]
   );
 
+  const handleExtraCostChange = useCallback(
+    (practiceKey: string, sectionName: string, value: string | number) => {
+      if (!activeInsurerId) {
+        return;
+      }
+      setInsurerPrices(prev => {
+        const current = toPricingConfig(prev[activeInsurerId]?.[practiceKey]);
+        return {
+          ...prev,
+          [activeInsurerId]: {
+            ...(prev[activeInsurerId] ?? {}),
+            [practiceKey]: {
+              ...current,
+              extras: {
+                ...current.extras,
+                [sectionName]: toNumericPrice(value),
+              },
+            },
+          },
+        };
+      });
+    },
+    [activeInsurerId]
+  );
+
+  const getExtraCostChangeHandler = useCallback(
+    (practiceKey: string, sectionName: string) => (value: string | number) => {
+      handleExtraCostChange(practiceKey, sectionName, value);
+    },
+    [handleExtraCostChange]
+  );
+
   const getSelectInsurerHandler = useCallback(
     (insurerId: string) => () => {
       handleSelectInsurer(insurerId);
@@ -395,6 +436,7 @@ export default function AccountingSettingsPage() {
                 onChange={handleInsurerBaseValueChange}
                 thousandSeparator=","
                 style={{ width: '120px' }}
+                prefix="$"
               />
             </>
           )}
@@ -492,6 +534,7 @@ export default function AccountingSettingsPage() {
                         thousandSeparator=","
                         flex={1}
                         styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
+                        prefix="$"
                       />
                     )}
 
@@ -504,9 +547,41 @@ export default function AccountingSettingsPage() {
                         onChange={getMultiplierChangeHandler(practiceKey)}
                         flex={1}
                         styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
+                        suffix={` ${activeInsurerBaseName}`}
                       />
                     )}
                   </Group>
+                  {(extraCostSectionsByPractice[practiceKey] ?? []).map(section => (
+                    <Group key={section.name} justify="flex-end" mt="xs">
+                      <Text c="dimmed" size="sm" flex={1} style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        {`${section.label.toLowerCase()}:`}
+                      </Text>
+                      {activeInsurerType === 'fixed' && (
+                        <NumberInput
+                          decimalScale={2}
+                          min={0}
+                          fixedDecimalScale
+                          value={getPracticeConfig(practiceKey).extras?.[section.name] ?? 0}
+                          onChange={getExtraCostChangeHandler(practiceKey, section.name)}
+                          thousandSeparator=","
+                          styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
+                          prefix="$"
+                          flex={1}
+                        />
+                      )}
+                      {activeInsurerType === 'multiplier' && (
+                        <NumberInput
+                          decimalScale={2}
+                          min={0}
+                          value={getPracticeConfig(practiceKey).extras?.[section.name] ?? 0}
+                          onChange={getExtraCostChangeHandler(practiceKey, section.name)}
+                          styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
+                          suffix={` ${activeInsurerBaseName}`}
+                          flex={1}
+                        />
+                      )}
+                    </Group>
+                  ))}
                 </Stack>
               </Paper>
             ))}

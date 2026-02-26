@@ -21,6 +21,7 @@ export interface StudyField {
   unit?: string;
   method?: string;
   options?: StudySelectOption[];
+  addsExtraCost?: boolean;
 }
 
 export interface StudySchema {
@@ -33,3 +34,37 @@ export interface StudySchema {
 export type StudySelectValue = { value: string; label: string } | null;
 
 export type StudyResultData = Record<string, string | StudySelectValue>;
+
+export interface ExtraCostSection {
+  name: string;
+  label: string;
+  fieldNames: string[];
+}
+
+export function getExtraCostSections(schema: StudySchema): ExtraCostSection[] {
+  const sections: ExtraCostSection[] = [];
+  let current: ExtraCostSection | null = null;
+
+  for (const field of schema.fields) {
+    if (field.type === 'title' || field.type === 'separator') {
+      if (current) {
+        sections.push(current);
+        current = null;
+      }
+      if (field.addsExtraCost && field.name && field.label) {
+        current = { name: field.name, label: field.label, fieldNames: [] };
+      }
+      continue;
+    }
+
+    if (current && field.name) {
+      current.fieldNames.push(field.name);
+    }
+  }
+
+  if (current) {
+    sections.push(current);
+  }
+
+  return sections;
+}
