@@ -66,6 +66,8 @@
     "@signpdf/signpdf": "^3.3.0",
     "@signpdf/utils": "^3.3.0",
     "@simplewebauthn/server": "^11.0.0",
+    "axios": "^1.7.7",
+    "cheerio": "^1.0.0",
     "compression": "^1.7.5",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
@@ -83,12 +85,11 @@
     "p-limit": "^3.1.0",
     "pdf-lib": "^1.17.1",
     "pg": "^8.13.1",
+    "qs": "^6.15.0",
     "react": "^18.3.1",
     "sequelize": "^6.37.5",
     "serve-favicon": "^2.5.0",
-    "winston": "^3.16.0",
-    "axios": "^1.7.7",
-    "cheerio": "^1.0.0"
+    "winston": "^3.16.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",
@@ -105,6 +106,7 @@
     "@types/mocha": "^10.0.9",
     "@types/multer": "^2.0.0",
     "@types/node-cron": "^3.0.11",
+    "@types/qs": "^6.14.0",
     "@types/react": "^19.1.8",
     "@types/serve-favicon": "^2.5.7",
     "@types/validator": "^13.12.2",
