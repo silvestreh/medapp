@@ -3,8 +3,8 @@ import { Autocomplete, Checkbox, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 import PatientSearch from '~/components/patient-search';
-import { PrepagaSelector } from '~/components/prepaga-selector';
 import { useFind } from '~/components/provider';
+import { MedicareDisplay } from '~/components/medicare-display';
 import {
   FormCard,
   FieldRow,
@@ -21,7 +21,9 @@ interface StudyPatientInfo {
     lastName?: string;
     documentValue?: string;
   };
-  medicare?: string;
+  medicare?: string | null;
+  medicareId?: string | null;
+  prepaga?: { shortName: string; denomination: string } | null;
 }
 
 interface StudyMetadataFormProps {
@@ -163,7 +165,14 @@ export function StudyMetadataForm({
         </FieldRow>
 
         <FieldRow label={t('studies.insurance')}>
-          <PrepagaSelector value={patient?.medicare || ''} onChange={() => {}} readOnly />
+          <MedicareDisplay
+            patient={{
+              medicareId: patient?.medicareId,
+              medicare: patient?.medicare,
+              prepaga: patient?.prepaga,
+            }}
+            fallback="—"
+          />
         </FieldRow>
 
         <FieldRow label={t('studies.extraction_date')}>

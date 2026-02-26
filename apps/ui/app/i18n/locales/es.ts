@@ -450,6 +450,8 @@ export const es = {
     birth_date: 'Fecha de nacimiento',
     years_old: '{{age}} años',
     insurance: 'Obra social',
+    unresolved_insurer: 'Este valor no corresponde a una obra social válida del sistema',
+    private: 'Particular',
     gender: 'Sexo',
     gender_male: 'Masculino',
     gender_female: 'Femenino',

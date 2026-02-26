@@ -25,6 +25,7 @@ interface ProcessEncountersOptions {
   encounters: MongoEncounter[];
   keptUserIds: Set<string>;
   keptPatientIds: Set<string>;
+  patientInsurerIdById: Map<string, string | null>;
   weirdUserId: string | undefined;
   bar: cliProgress.SingleBar;
 }
@@ -40,6 +41,7 @@ export function processEncounters({
   encounters,
   keptUserIds,
   keptPatientIds,
+  patientInsurerIdById,
   weirdUserId,
   bar,
 }: ProcessEncountersOptions): ProcessEncountersResult {
@@ -88,6 +90,7 @@ export function processEncounters({
       date: dayjs.unix(timestamp).toISOString(),
       medicId: encounter.medic_id === weirdUserId ? JUANCA_ID : encounter.medic_id,
       patientId: encounter.patient_id,
+      insurerId: patientInsurerIdById.get(encounter.patient_id) ?? null,
     });
 
     patientIdsWithEncounters.add(encounter.patient_id);

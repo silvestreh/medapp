@@ -140,7 +140,7 @@ describe('\'studies\' service', () => {
     assert.deepStrictEqual(thrombophilia!.data, { value: 'added' }, 'New result has expected payload');
   });
 
-  it('stores insurerId and cost for accounting', async () => {
+  it('stores insurerId for accounting', async () => {
     const created = await app.service('studies').create({
       date: new Date(),
       studies: ['anemia', 'hemostasis'],
@@ -148,11 +148,10 @@ describe('\'studies\' service', () => {
       medicId: medic.id,
       patientId: patient.id,
       insurerId: prepaga.id,
-      cost: 456.78
     } as any);
 
     const saved = await app.service('studies').get(created.id);
     assert.strictEqual(saved.insurerId, prepaga.id);
-    assert.strictEqual(Number((saved as any).cost), 456.78);
+    assert.strictEqual((saved as any).cost, undefined);
   });
 });

@@ -22,11 +22,19 @@ interface PersonalData {
   gender?: string;
 }
 
+interface PrepagaInfo {
+  id: string;
+  shortName: string;
+  denomination: string;
+}
+
 interface Patient {
   id: string;
-  medicare?: string;
+  medicare?: string | null;
+  medicareId?: string | null;
   medicareNumber?: string;
   medicarePlan?: string;
+  prepaga?: PrepagaInfo | null;
   personalData?: PersonalData;
 }
 
@@ -160,13 +168,20 @@ const CardRow = styled('div', {
 // Helpers
 // ---------------------------------------------------------------------------
 
+function getPatientMedicareLabel(patient?: Patient): string {
+  if (patient?.medicareId && patient?.prepaga) {
+    return patient.prepaga.shortName;
+  }
+  return patient?.medicare || '';
+}
+
 export function toStudyItems(studies: Study[]): StudyItem[] {
   return studies.map(study => {
     const patient = study.patient;
     const firstName = patient?.personalData?.firstName || '';
     const lastName = patient?.personalData?.lastName || '';
     const dni = patient?.personalData?.documentValue;
-    const medicare = patient?.medicare || '';
+    const medicare = getPatientMedicareLabel(patient);
     const hasResults = (study.results ?? []).length > 0;
 
     return { study, firstName, lastName, dni, medicare, hasResults };

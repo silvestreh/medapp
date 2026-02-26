@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import type { Patient } from '~/declarations';
 import { styled } from '~/styled-system/jsx';
 import { StyledTitle, FormCard, FieldRow, FormHeader } from '~/components/forms/styles';
+import { MedicareDisplay } from '~/components/medicare-display';
 
 interface PatientOverviewProps {
   patient: Patient;
@@ -68,24 +69,9 @@ export function PatientOverview({ patient, encounters }: PatientOverviewProps) {
             </FieldRow>
           )}
 
-          {patient.medicare && (
-            <FieldRow label={`${t('overview.insurance')}:`}>
-              {(() => {
-                const parts = patient.medicare.split('/');
-                if (parts.length >= 2) {
-                  return (
-                    <Stack gap={0}>
-                      <Text size="sm">{parts[0].trim()}</Text>
-                      <Text size="xs" c="dimmed">
-                        {parts.slice(1).join('/').trim()}
-                      </Text>
-                    </Stack>
-                  );
-                }
-                return <Text>{patient.medicare}</Text>;
-              })()}
-            </FieldRow>
-          )}
+          <FieldRow label={`${t('overview.insurance')}:`}>
+            <MedicareDisplay patient={patient} />
+          </FieldRow>
 
           {patient.personalData?.gender && (
             <FieldRow label={`${t('overview.gender')}:`}>

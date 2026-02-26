@@ -84,7 +84,9 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
             query: { userId: user.id },
             paginate: false,
           });
-          const settings = Array.isArray(mdSettingsResponse) ? mdSettingsResponse[0] : (mdSettingsResponse as any)?.data?.[0];
+          const settings = Array.isArray(mdSettingsResponse)
+            ? mdSettingsResponse[0]
+            : (mdSettingsResponse as any)?.data?.[0];
           setIsVerified(settings?.isVerified);
         } catch (error) {
           console.error('Error checking verification status:', error);
@@ -113,8 +115,8 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
     <MainLayoutContainer>
       <SideNav />
       <Box flex={1}>
-        <TopNav />
         <VerificationBanner isVerified={isVerified} />
+        <TopNav />
         {showWeakPasswordBanner && (
           <Alert
             color="orange"
@@ -124,15 +126,11 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
             radius={0}
             styles={{ root: { position: 'relative' } }}
           >
-            {t('common.weak_password_warning', 'Your password doesn\'t meet the current security policy.')}{' '}
+            {t('common.weak_password_warning', "Your password doesn't meet the current security policy.")}{' '}
             <Anchor component={Link} to="/profile/security" fw={600}>
               {t('common.update_password', 'Update it now')}
             </Anchor>
-            <CloseButton
-              onClick={handleDismissBanner}
-              size="sm"
-              style={{ position: 'absolute', top: 8, right: 8 }}
-            />
+            <CloseButton onClick={handleDismissBanner} size="sm" style={{ position: 'absolute', top: 8, right: 8 }} />
           </Alert>
         )}
         <ContentContainer>{children}</ContentContainer>

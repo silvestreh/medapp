@@ -120,9 +120,7 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
 
 (async () => {
   console.log('=== Import Seeds ===');
-  if (resetPasswords) {
-    console.log('  --reset-passwords: all user passwords will be set to "Retrete4u!"');
-  }
+  console.log('  All user passwords will be set to "Retrete4u!"');
   console.log('');
 
   const multibar = new cliProgress.MultiBar(

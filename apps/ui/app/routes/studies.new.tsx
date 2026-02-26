@@ -8,13 +8,13 @@ import { Save } from 'lucide-react';
 
 import { getAuthenticatedClient, authenticatedLoader, isMedicVerified } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
-import { useFind, useGet } from '~/components/provider';
+import { useGet } from '~/components/provider';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
-import { normalizeInsurerPrices, parsePrepagaDisplay, resolveStudyCost, toNumericPrice } from '~/utils/accounting';
+import { normalizeInsurerPrices, resolveStudyCost, toNumericPrice } from '~/utils/accounting';
 
 export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'new_study') }];
@@ -112,25 +112,7 @@ export default function NewStudy() {
   const [costManuallyEdited, setCostManuallyEdited] = useState(false);
 
   const { data: patient } = useGet('patients', patientId!, { enabled: !!patientId });
-  const patientMedicare = String((patient as any)?.medicare || '');
-  const parsedInsurance = useMemo(() => parsePrepagaDisplay(patientMedicare), [patientMedicare]);
-
-  const prepagaQuery = useMemo(
-    () => ({
-      shortName: parsedInsurance.shortName,
-      denomination: parsedInsurance.denomination,
-      $limit: 1,
-    }),
-    [parsedInsurance.denomination, parsedInsurance.shortName]
-  );
-  const { response: prepagaResponse } = useFind('prepagas', prepagaQuery, {
-    enabled: Boolean(parsedInsurance.shortName && parsedInsurance.denomination),
-    paginate: false,
-  });
-  const prepagaList = Array.isArray(prepagaResponse)
-    ? prepagaResponse
-    : ((prepagaResponse as { data?: unknown[] })?.data ?? []);
-  const insurerId = (prepagaList[0] as { id?: string } | undefined)?.id ?? null;
+  const insurerId = (patient as any)?.medicareId || null;
 
   const insurerPracticePrices = insurerId ? data.insurerPrices?.[insurerId] : undefined;
 
@@ -167,7 +149,6 @@ export default function NewStudy() {
       comment: comment || undefined,
       ...(medicId ? { medicId } : { referringDoctor: referringDoctor || undefined }),
       insurerId,
-      cost: toNumericPrice(cost),
       results: [],
     };
 

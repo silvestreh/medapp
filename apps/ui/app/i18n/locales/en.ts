@@ -449,6 +449,8 @@ export const en: typeof es = {
     birth_date: 'Date of birth',
     years_old: '{{age}} years old',
     insurance: 'Insurance',
+    unresolved_insurer: 'This value does not match a valid insurer in the system',
+    private: 'Private',
     gender: 'Gender',
     gender_male: 'Male',
     gender_female: 'Female',

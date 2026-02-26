@@ -10,7 +10,18 @@ export const ACCOUNTING_PRACTICE_KEYS = [
 
 export type AccountingPracticeKey = (typeof ACCOUNTING_PRACTICE_KEYS)[number];
 
-export type InsurerPrices = Record<string, Record<string, number>>;
+export type PricingType = 'fixed' | 'multiplier';
+
+export type PricingConfig = {
+  type: PricingType;
+  value?: number;
+  baseValue?: number;
+  multiplier?: number;
+  baseName?: string;
+  code?: string;
+};
+
+export type InsurerPrices = Record<string, Record<string, PricingConfig>>;
 
 export function toNumericPrice(value: unknown): number {
   const parsed = typeof value === 'number' ? value : Number(value);
@@ -19,6 +30,51 @@ export function toNumericPrice(value: unknown): number {
   }
 
   return Number(parsed.toFixed(2));
+}
+
+export function toPricingConfig(value: unknown): PricingConfig {
+  if (typeof value === 'number') {
+    return {
+      type: 'fixed',
+      value: toNumericPrice(value),
+      baseValue: 0,
+      multiplier: 1,
+      baseName: '',
+      code: '',
+    };
+  }
+
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {
+      type: 'fixed',
+      value: 0,
+      baseValue: 0,
+      multiplier: 1,
+      baseName: '',
+      code: '',
+    };
+  }
+
+  const raw = value as Record<string, unknown>;
+  const type: PricingType = raw.type === 'multiplier' ? 'multiplier' : 'fixed';
+
+  return {
+    type,
+    value: toNumericPrice(raw.value),
+    baseValue: toNumericPrice(raw.baseValue),
+    multiplier: toNumericPrice(raw.multiplier ?? 1),
+    baseName: typeof raw.baseName === 'string' ? raw.baseName : '',
+    code: typeof raw.code === 'string' ? raw.code : '',
+  };
+}
+
+export function calculatePracticeCost(value: unknown): number {
+  const config = toPricingConfig(value);
+  if (config.type === 'multiplier') {
+    return Number((toNumericPrice(config.baseValue) * toNumericPrice(config.multiplier)).toFixed(2));
+  }
+
+  return toNumericPrice(config.value);
 }
 
 export function normalizeInsurerPrices(value: unknown): InsurerPrices {
@@ -34,14 +90,14 @@ export function normalizeInsurerPrices(value: unknown): InsurerPrices {
       continue;
     }
 
-    const nextPrices: Record<string, number> = {};
+    const nextPrices: Record<string, PricingConfig> = {};
     for (const practiceKey of ACCOUNTING_PRACTICE_KEYS) {
       const raw = (prices as Record<string, unknown>)[practiceKey];
       if (raw === undefined || raw === null || raw === '') {
         continue;
       }
 
-      nextPrices[practiceKey] = toNumericPrice(raw);
+      nextPrices[practiceKey] = toPricingConfig(raw);
     }
 
     normalized[insurerId] = nextPrices;
@@ -50,26 +106,17 @@ export function normalizeInsurerPrices(value: unknown): InsurerPrices {
   return normalized;
 }
 
-export function parsePrepagaDisplay(value: string | null | undefined) {
-  if (!value) {
-    return { shortName: '', denomination: '' };
-  }
-
-  const [shortNameRaw, ...rest] = value.split('/');
-  return {
-    shortName: shortNameRaw?.trim() || '',
-    denomination: rest.join('/').trim(),
-  };
-}
-
-export function resolveStudyCost(selectedStudies: string[], insurerPracticePrices: Record<string, number> | undefined) {
+export function resolveStudyCost(
+  selectedStudies: string[],
+  insurerPracticePrices: Record<string, PricingConfig> | undefined
+) {
   if (!insurerPracticePrices) {
     return 0;
   }
 
   return Number(
     selectedStudies
-      .reduce((acc, key) => acc + toNumericPrice(insurerPracticePrices[key]), 0)
+      .reduce((acc, key) => acc + calculatePracticeCost(insurerPracticePrices[key]), 0)
       .toFixed(2)
   );
 }

@@ -18,6 +18,9 @@ import type {
   SeedPersonalData,
   SeedContactData,
 } from './types';
+import { loadPrepagaMap, resolveMedicareId } from './medicare-map';
+
+const prepagaMap = loadPrepagaMap();
 
 interface ProcessPatientsOptions {
   patients: MongoPatient[];
@@ -76,6 +79,7 @@ export function transformPatientToSeed(patient: MongoPatient): SeedPatient {
   return {
     id: patientId,
     medicare: patient.medicare,
+    medicareId: resolveMedicareId(patient.medicare, prepagaMap),
     medicareNumber: patient.medicare_number,
     medicarePlan: patient.medicare_plan,
     deleted: Boolean(patient.deleted),

@@ -18,6 +18,14 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING,
       allowNull: true
     },
+    medicareId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'prepagas',
+        key: 'id'
+      }
+    },
     medicareNumber: {
       type: DataTypes.TEXT,
       allowNull: true
@@ -50,7 +58,8 @@ export default function (app: Application): typeof Model {
       patient_contact_data,
       studies,
       organizations,
-      organization_patients
+      organization_patients,
+      prepagas
     } = models;
 
     patients.hasMany(appointments, { foreignKey: 'patientId' });
@@ -84,6 +93,7 @@ export default function (app: Application): typeof Model {
       otherKey: 'organizationId',
       as: 'organizations'
     });
+    patients.belongsTo(prepagas, { foreignKey: 'medicareId' });
   };
 
   return patients;

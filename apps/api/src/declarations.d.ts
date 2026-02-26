@@ -4,6 +4,15 @@ import countries from '../data/countries.json';
 
 export type CountryCode = keyof typeof countries;
 export type PhoneNumber = `tel:${string}` | `cel:${string}` | null;
+export type PricingType = 'fixed' | 'multiplier';
+export interface PricingConfig {
+  type: PricingType;
+  value?: number;
+  baseValue?: number;
+  multiplier?: number;
+  baseName?: string;
+  code?: string;
+}
 // A mapping of service names to types. Will be extended in service files.
 export interface Icd10 {
   id: string;
@@ -59,6 +68,7 @@ export interface Patient {
   id: Id;
   mugshot?: string | null;
   medicare?: string | null;
+  medicareId?: Id | null;
   medicareNumber?: string | null;
   medicarePlan?: string | null;
   deleted: boolean;
@@ -153,7 +163,6 @@ export interface Encounter {
   medicId: Id;
   date: Date;
   insurerId?: Id | null;
-  cost?: number | null;
   data: {
     [key: string]: any;
   } | string;
@@ -186,7 +195,7 @@ export interface MdSettings {
   saturdayEnd: string | null;
   sundayStart: string | null;
   sundayEnd: string | null;
-  insurerPrices: Record<string, Record<string, number>>;
+  insurerPrices: Record<string, Record<string, number | PricingConfig>>;
 }
 
 export interface Organization {
@@ -232,7 +241,6 @@ export interface Study {
   referringDoctor?: string | null;
   patientId: Id;
   insurerId?: Id | null;
-  cost?: number | null;
   results?: StudyResult[];
 }
 

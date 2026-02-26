@@ -65,10 +65,6 @@ export default function (app: Application): typeof Model {
         model: 'prepagas',
         key: 'id'
       }
-    },
-    cost: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true
     }
   }, {
     hooks: {

@@ -9,6 +9,7 @@ import { useFind } from '~/components/provider';
 import { styled } from '~/styled-system/jsx';
 import type { Patient } from '~/declarations';
 import { displayDocumentValue } from '~/utils';
+import { getMedicareLabel } from '~/components/medicare-display';
 
 export interface CreateNewPatientSlot {
   medicId: string;
@@ -154,7 +155,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
                   ` (${patient.personalData.documentValue})`}
               </Text>
               <Text size="xs" c="dimmed">
-                {patient.medicare} {patient.medicareNumber}
+                {getMedicareLabel(patient) || t('overview.private')} {patient.medicareNumber}
               </Text>
             </Button>
           ))}

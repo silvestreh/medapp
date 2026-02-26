@@ -41,11 +41,17 @@ export interface AnonymizedEncounterHistory {
 const SENSITIVE_KEY_REGEX = /(name|firstName|lastName|document|dni|email|phone|address|street|city|province|country|birth|medicare|mugshot|avatar|photo)/i;
 const EMAIL_REGEX = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig;
 const PHONE_REGEX = /(\+?\d[\d\s().-]{6,}\d)/g;
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 function toIsoDate(value: unknown): string | null {
   if (!value) return null;
   const date = new Date(String(value));
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function toUtcDayIndex(isoDate: string): number {
+  const date = new Date(isoDate);
+  return Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / MS_PER_DAY);
 }
 
 function calculateAgeYears(birthDate?: string | null): number | undefined {
@@ -152,14 +158,14 @@ export function anonymizeEncounterHistory(input: AnonymizeInput): AnonymizedEnco
   });
 
   const timelineStartDate = allDates.length > 0 ? allDates[0] : null;
-  const timelineAnchor = timelineStartDate ? new Date(timelineStartDate).getTime() : null;
+  const timelineAnchorDay = timelineStartDate ? toUtcDayIndex(timelineStartDate) : null;
 
   const normalizedEncounters = sortedEncounters.map((encounter: any): AnonymizedEncounter => {
     const encounterIso = toIsoDate(encounter?.date) || new Date().toISOString();
-    const encounterTime = new Date(encounterIso).getTime();
-    const relativeDay = timelineAnchor == null
+    const encounterDay = toUtcDayIndex(encounterIso);
+    const relativeDay = timelineAnchorDay == null
       ? 0
-      : Math.floor((encounterTime - timelineAnchor) / (1000 * 60 * 60 * 24));
+      : encounterDay - timelineAnchorDay!;
 
     return {
       date: encounterIso,
@@ -170,10 +176,10 @@ export function anonymizeEncounterHistory(input: AnonymizeInput): AnonymizedEnco
 
   const normalizedStudies = sortedStudies.map((study: any): AnonymizedStudy => {
     const studyIso = toIsoDate(study?.date || study?.createdAt) || new Date().toISOString();
-    const studyTime = new Date(studyIso).getTime();
-    const relativeDay = timelineAnchor == null
+    const studyDay = toUtcDayIndex(studyIso);
+    const relativeDay = timelineAnchorDay == null
       ? 0
-      : Math.floor((studyTime - timelineAnchor) / (1000 * 60 * 60 * 24));
+      : studyDay - timelineAnchorDay!;
     const results = Array.isArray(study?.results) ? study.results : [];
 
     return {

@@ -87,7 +87,7 @@ describe('\'encounters\' service', () => {
     );
   });
 
-  it('stores insurerId and cost for accounting', async () => {
+  it('stores insurerId for accounting', async () => {
     const service = app.service('encounters');
     const createdRecord = await service.create({
       data: { simple: { values: { note: 'Accounting check' } } },
@@ -95,11 +95,10 @@ describe('\'encounters\' service', () => {
       medicId: medic.id,
       patientId: patient.id,
       insurerId: prepaga.id,
-      cost: 123.45
     } as any);
 
     const retrieved = await service.get(createdRecord.id);
     assert.strictEqual(retrieved.insurerId, prepaga.id);
-    assert.strictEqual(Number(retrieved.cost), 123.45);
+    assert.strictEqual((retrieved as any).cost, undefined);
   });
 });
