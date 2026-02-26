@@ -3,6 +3,8 @@ import { BadRequest } from '@feathersjs/errors';
 import type { Params, Id } from '@feathersjs/feathers';
 import dayjs from 'dayjs';
 
+import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@medapp/encounter-schemas';
+
 import type {
   Application,
   PatientPersonalData,
@@ -10,6 +12,14 @@ import type {
   Prepaga,
   MdSettings,
 } from '../../declarations';
+
+const extraCostSectionsByStudyType = new Map<string, ExtraCostSection[]>();
+for (const [studyName, schema] of Object.entries(studySchemas)) {
+  const sections = getExtraCostSections(schema);
+  if (sections.length > 0) {
+    extraCostSectionsByStudyType.set(studyName, sections);
+  }
+}
 
 export interface AccountingRecord {
   id: string;
@@ -39,6 +49,7 @@ interface PricingConfig {
   multiplier?: number;
   baseName?: string;
   code?: string;
+  extras?: Record<string, number>;
 }
 
 type InsurerPricing = Record<string, number | PricingConfig>;
@@ -88,6 +99,46 @@ function resolveCostFromPrice(price: number | PricingConfig | undefined): number
   }
 
   return toNonNegativeNumber(price.value);
+}
+
+function resolveExtraCost(
+  price: number | PricingConfig | undefined,
+  activeSections: string[]
+): number {
+  if (price == null || typeof price === 'number' || !activeSections.length) {
+    return 0;
+  }
+  const extras = price.extras;
+  if (!extras) {
+    return 0;
+  }
+
+  let total = 0;
+  for (const section of activeSections) {
+    const extraValue = extras[section];
+    if (!extraValue) continue;
+
+    if (price.type === 'multiplier') {
+      total += toNonNegativeNumber(price.baseValue) * toNonNegativeNumber(extraValue);
+    } else {
+      total += toNonNegativeNumber(extraValue);
+    }
+  }
+
+  return total;
+}
+
+function hasAnyFieldValue(
+  data: Record<string, unknown>,
+  fieldNames: string[]
+): boolean {
+  for (const name of fieldNames) {
+    const val = data[name];
+    if (val != null && val !== '') {
+      return true;
+    }
+  }
+  return false;
 }
 
 interface EncounterRow {
@@ -338,6 +389,46 @@ export class Accounting {
       settingsList.map(s => [s.userId as string, toInsurerPrices(s.insurerPrices)])
     );
 
+    // Determine which studies need extra-cost section checks
+    const studyIdsWithExtraCost = new Set<string>();
+    for (const row of rawRows) {
+      if (row.kind !== 'encounter' && extraCostSectionsByStudyType.has(row.kind)) {
+        studyIdsWithExtraCost.add(row.id);
+      }
+    }
+
+    // studyId+studyType -> active section names
+    const activeExtrasByRow = new Map<string, string[]>();
+
+    if (studyIdsWithExtraCost.size > 0) {
+      const studyResultRows = await this.app.service('study-results').find({
+        query: {
+          studyId: { $in: [...studyIdsWithExtraCost] },
+        },
+        paginate: false,
+      }) as { studyId: string; type: string; data: Record<string, unknown> }[];
+
+      for (const result of studyResultRows) {
+        const sections = extraCostSectionsByStudyType.get(result.type);
+        if (!sections || !result.data) continue;
+
+        const data = typeof result.data === 'string'
+          ? JSON.parse(result.data)
+          : result.data;
+
+        const active: string[] = [];
+        for (const section of sections) {
+          if (hasAnyFieldValue(data, section.fieldNames)) {
+            active.push(section.name);
+          }
+        }
+
+        if (active.length > 0) {
+          activeExtrasByRow.set(`${result.studyId}:${result.type}`, active);
+        }
+      }
+    }
+
     const records: AccountingRecord[] = rawRows.map(row => {
       const ppd = ppdByOwnerId.get(row.patientId);
       const pd = ppd ? pdById.get(ppd.personalDataId.toString()) : null;
@@ -352,7 +443,10 @@ export class Accounting {
       const priceKey = row.insurerId || PARTICULAR_INSURER_ID;
       const insurerPracticePrices = medicPrices ? medicPrices[priceKey] : undefined;
       const practicePrice = insurerPracticePrices ? insurerPracticePrices[row.kind] : undefined;
-      const cost = resolveCostFromPrice(practicePrice);
+      const baseCost = resolveCostFromPrice(practicePrice);
+      const activeSections = activeExtrasByRow.get(`${row.id}:${row.kind}`) ?? [];
+      const extraCost = resolveExtraCost(practicePrice, activeSections);
+      const cost = baseCost + extraCost;
 
       return {
         id: row.id,

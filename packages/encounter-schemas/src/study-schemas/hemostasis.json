@@ -135,7 +135,8 @@
   }, {
     "type": "title",
     "name": "regular_blood_plasma_correction",
-    "label": "Corrección con plasma normal"
+    "label": "Corrección con plasma normal",
+    "addsExtraCost": true
   }, {
     "name": "regular_blood_plasma_correction_quick",
     "label": "Tiempo de Protrombina (Quick) seg.",

@@ -364,4 +364,139 @@ describe('\'accounting\' service', () => {
     assert.strictEqual(thrombRow.protocol, study.protocol, 'Protocol number matches');
     assert.strictEqual(thrombRow.kind, 'thrombophilia');
   });
+
+  describe('extra cost sections', () => {
+    let extraCostStudy: any;
+
+    before(async () => {
+      const existingSettings = await app.service('md-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      await app.service('md-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 3000,
+            hemostasis: {
+              type: 'fixed',
+              value: 2000,
+              extras: { regular_blood_plasma_correction: 500 },
+            },
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+
+      const today = dayjs();
+
+      extraCostStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['hemostasis'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+        results: [{
+          type: 'hemostasis',
+          data: {
+            quick: '12',
+            regular_blood_plasma_correction_quick: '11',
+          },
+        }],
+      } as any);
+    });
+
+    it('adds extra cost when plasma correction section has values', async () => {
+      const today = dayjs();
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'hemostasis' && r.id === extraCostStudy.id
+      );
+      assert.ok(row, 'Hemostasis row exists');
+      assert.strictEqual(row.cost, 2500, 'Cost includes base (2000) + extra (500)');
+    });
+
+    it('does not add extra cost when plasma correction section is empty', async () => {
+      const today = dayjs();
+
+      const studyWithoutCorrection = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['hemostasis'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+        results: [{
+          type: 'hemostasis',
+          data: {
+            quick: '13',
+            aptt: '35',
+          },
+        }],
+      } as any);
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'hemostasis' && r.id === studyWithoutCorrection.id
+      );
+      assert.ok(row, 'Hemostasis row exists');
+      assert.strictEqual(row.cost, 2000, 'Cost is base only (2000) without extras');
+    });
+
+    it('works with multiplier pricing type for extras', async () => {
+      const existingSettings = await app.service('md-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      await app.service('md-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 3000,
+            hemostasis: {
+              type: 'multiplier',
+              baseValue: 100,
+              multiplier: 20,
+              extras: { regular_blood_plasma_correction: 5 },
+            },
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+
+      const today = dayjs();
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'hemostasis' && r.id === extraCostStudy.id
+      );
+      assert.ok(row, 'Hemostasis row exists');
+      assert.strictEqual(row.cost, 2500, 'Cost = base (100*20) + extra (100*5) = 2500');
+    });
+  });
 });

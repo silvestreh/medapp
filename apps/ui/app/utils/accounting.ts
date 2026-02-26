@@ -21,6 +21,7 @@ export type PricingConfig = {
   multiplier?: number;
   baseName?: string;
   code?: string;
+  extras?: Record<string, number>;
 };
 
 export type InsurerPrices = Record<string, Record<string, PricingConfig>>;
@@ -60,6 +61,14 @@ export function toPricingConfig(value: unknown): PricingConfig {
   const raw = value as Record<string, unknown>;
   const type: PricingType = raw.type === 'multiplier' ? 'multiplier' : 'fixed';
 
+  let extras: Record<string, number> | undefined;
+  if (raw.extras && typeof raw.extras === 'object' && !Array.isArray(raw.extras)) {
+    extras = {};
+    for (const [k, v] of Object.entries(raw.extras as Record<string, unknown>)) {
+      extras[k] = toNumericPrice(v);
+    }
+  }
+
   return {
     type,
     value: toNumericPrice(raw.value),
@@ -67,6 +76,7 @@ export function toPricingConfig(value: unknown): PricingConfig {
     multiplier: toNumericPrice(raw.multiplier ?? 1),
     baseName: typeof raw.baseName === 'string' ? raw.baseName : '',
     code: typeof raw.code === 'string' ? raw.code : '',
+    extras,
   };
 }
 
@@ -77,6 +87,26 @@ export function calculatePracticeCost(value: unknown): number {
   }
 
   return toNumericPrice(config.value);
+}
+
+export function calculateExtraCost(config: PricingConfig, activeSections: string[]): number {
+  if (!config.extras || activeSections.length === 0) {
+    return 0;
+  }
+
+  let total = 0;
+  for (const section of activeSections) {
+    const extraValue = config.extras[section];
+    if (!extraValue) continue;
+
+    if (config.type === 'multiplier') {
+      total += toNumericPrice(config.baseValue) * toNumericPrice(extraValue);
+    } else {
+      total += toNumericPrice(extraValue);
+    }
+  }
+
+  return Number(total.toFixed(2));
 }
 
 export function normalizeInsurerPrices(value: unknown): InsurerPrices {
