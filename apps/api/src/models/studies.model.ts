@@ -57,6 +57,18 @@ export default function (app: Application): typeof Model {
         model: 'patients',
         key: 'id'
       }
+    },
+    insurerId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'prepagas',
+        key: 'id'
+      }
+    },
+    cost: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true
     }
   }, {
     hooks: {

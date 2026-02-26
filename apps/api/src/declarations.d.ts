@@ -152,6 +152,8 @@ export interface Encounter {
   patientId: Id;
   medicId: Id;
   date: Date;
+  insurerId?: Id | null;
+  cost?: number | null;
   data: {
     [key: string]: any;
   } | string;
@@ -184,6 +186,7 @@ export interface MdSettings {
   saturdayEnd: string | null;
   sundayStart: string | null;
   sundayEnd: string | null;
+  insurerPrices: Record<string, Record<string, number>>;
 }
 
 export interface Organization {
@@ -228,6 +231,8 @@ export interface Study {
   medicId: Id | null;
   referringDoctor?: string | null;
   patientId: Id;
+  insurerId?: Id | null;
+  cost?: number | null;
   results?: StudyResult[];
 }
 

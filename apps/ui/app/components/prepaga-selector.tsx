@@ -64,6 +64,7 @@ interface Prepaga {
 interface PrepagaSelectorProps {
   value?: string;
   onChange: (value: string) => void;
+  onSelectPrepaga?: (prepaga: Prepaga) => void;
   placeholder?: string;
   label?: string;
   error?: string;
@@ -84,6 +85,7 @@ function parseReadOnlyValue(value: string) {
 export function PrepagaSelector({
   value,
   onChange,
+  onSelectPrepaga,
   placeholder,
   label,
   error,
@@ -122,10 +124,11 @@ export function PrepagaSelector({
     (prepaga: Prepaga) => {
       const formattedValue = `${prepaga.shortName} / ${prepaga.denomination}`;
       onChange(formattedValue);
+      onSelectPrepaga?.(prepaga);
       setSearchValue(formattedValue);
       setOpened(false);
     },
-    [onChange],
+    [onChange, onSelectPrepaga],
   );
 
   const handleCustomSubmit = useCallback(() => {
