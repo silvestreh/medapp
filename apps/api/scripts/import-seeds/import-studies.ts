@@ -50,7 +50,7 @@ export async function importStudies({
       if (!insurerId) {
         if (!insurerIdByPatientId.has(realPatientId)) {
           const patient = await patientsService.get(realPatientId, { disableSoftDelete: true });
-          insurerIdByPatientId.set(realPatientId, patient?.medicareId ?? null);
+          insurerIdByPatientId.set(realPatientId, (patient?.medicareId as string) ?? null);
         }
         insurerId = insurerIdByPatientId.get(realPatientId) ?? null;
       }

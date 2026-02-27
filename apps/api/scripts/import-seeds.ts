@@ -27,6 +27,18 @@ import type {
 const SEEDS_DIR = path.join(__dirname, './seeds');
 const resetPasswords = process.argv.includes('--reset-passwords');
 
+function toStartCase(s: string): string {
+  if (!s || !s.trim()) return s;
+  return s
+    .trim()
+    .split(/\s+/)
+    .map((word) => {
+      if (word.length > 1 && word === word.toUpperCase()) return word;
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
 async function loadSeed<T>(filename: string): Promise<T> {
   const content = await fs.readFile(path.join(SEEDS_DIR, filename), 'utf-8');
   return JSON.parse(content) as T;
@@ -123,7 +135,10 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
   const prepagasService = app.service('prepagas');
   const prepagasBar = multibar.create(prepagasRaw.length, 0, { title: 'Prepagas' });
   for (let i = 0; i < prepagasRaw.length; i += chunkSize) {
-    const chunk = prepagasRaw.slice(i, i + chunkSize);
+    const chunk = prepagasRaw.slice(i, i + chunkSize).map((p: any) => ({
+      ...p,
+      denomination: toStartCase(p.denomination ?? ''),
+    }));
     await prepagasService.create(chunk);
     prepagasBar.increment(chunk.length);
   }

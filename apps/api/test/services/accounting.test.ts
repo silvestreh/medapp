@@ -60,13 +60,13 @@ describe('\'accounting\' service', () => {
       });
     });
 
-    const existingSettings = await app.service('md-settings').find({
+    const existingAcctSettings = await app.service('accounting-settings').find({
       query: { userId: medic.id, $limit: 1 },
       paginate: false,
     }) as any[];
 
-    if (existingSettings.length) {
-      await app.service('md-settings').patch(existingSettings[0].id, {
+    if (existingAcctSettings.length) {
+      await app.service('accounting-settings').patch(existingAcctSettings[0].id, {
         insurerPrices: {
           [prepaga.id]: {
             encounter: 5000,
@@ -77,9 +77,8 @@ describe('\'accounting\' service', () => {
         },
       } as any);
     } else {
-      await app.service('md-settings').create({
+      await app.service('accounting-settings').create({
         userId: medic.id,
-        encounterDuration: 30,
         insurerPrices: {
           [prepaga.id]: {
             encounter: 5000,
@@ -88,6 +87,18 @@ describe('\'accounting\' service', () => {
             anticoagulation: 1500,
           },
         },
+      } as any);
+    }
+
+    const existingMdSettings = await app.service('md-settings').find({
+      query: { userId: medic.id, $limit: 1 },
+      paginate: false,
+    }) as any[];
+
+    if (!existingMdSettings.length) {
+      await app.service('md-settings').create({
+        userId: medic.id,
+        encounterDuration: 30,
       } as any);
     }
   });
@@ -206,9 +217,9 @@ describe('\'accounting\' service', () => {
     const otherPrepaga = existingOther.length
       ? existingOther[0]
       : await app.service('prepagas').create({
-          shortName: 'ACC-OTHER',
-          denomination: 'Accounting Other Prepaga',
-        });
+        shortName: 'ACC-OTHER',
+        denomination: 'Accounting Other Prepaga',
+      });
 
     await app.service('encounters').create({
       data: { simple: { values: { note: 'other insurer' } } },
@@ -369,12 +380,12 @@ describe('\'accounting\' service', () => {
     let extraCostStudy: any;
 
     before(async () => {
-      const existingSettings = await app.service('md-settings').find({
+      const existingSettings = await app.service('accounting-settings').find({
         query: { userId: medic.id, $limit: 1 },
         paginate: false,
       }) as any[];
 
-      await app.service('md-settings').patch(existingSettings[0].id, {
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
         insurerPrices: {
           [prepaga.id]: {
             encounter: 5000,
@@ -461,12 +472,12 @@ describe('\'accounting\' service', () => {
     });
 
     it('works with multiplier pricing type for extras', async () => {
-      const existingSettings = await app.service('md-settings').find({
+      const existingSettings = await app.service('accounting-settings').find({
         query: { userId: medic.id, $limit: 1 },
         paginate: false,
       }) as any[];
 
-      await app.service('md-settings').patch(existingSettings[0].id, {
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
         insurerPrices: {
           [prepaga.id]: {
             encounter: 5000,
@@ -502,12 +513,12 @@ describe('\'accounting\' service', () => {
 
   describe('emergency pricing', () => {
     before(async () => {
-      const existingSettings = await app.service('md-settings').find({
+      const existingSettings = await app.service('accounting-settings').find({
         query: { userId: medic.id, $limit: 1 },
         paginate: false,
       }) as any[];
 
-      await app.service('md-settings').patch(existingSettings[0].id, {
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
         insurerPrices: {
           [prepaga.id]: {
             encounter: 5000,
@@ -621,12 +632,12 @@ describe('\'accounting\' service', () => {
     });
 
     it('works with multiplier pricing type for emergency', async () => {
-      const existingSettings = await app.service('md-settings').find({
+      const existingSettings = await app.service('accounting-settings').find({
         query: { userId: medic.id, $limit: 1 },
         paginate: false,
       }) as any[];
 
-      await app.service('md-settings').patch(existingSettings[0].id, {
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
         insurerPrices: {
           [prepaga.id]: {
             encounter: 5000,
@@ -670,12 +681,12 @@ describe('\'accounting\' service', () => {
     });
 
     it('falls back to normal cost when emergency value is not configured', async () => {
-      const existingSettings = await app.service('md-settings').find({
+      const existingSettings = await app.service('accounting-settings').find({
         query: { userId: medic.id, $limit: 1 },
         paginate: false,
       }) as any[];
 
-      await app.service('md-settings').patch(existingSettings[0].id, {
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
         insurerPrices: {
           [prepaga.id]: {
             encounter: 5000,
