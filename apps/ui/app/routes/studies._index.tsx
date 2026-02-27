@@ -3,9 +3,9 @@ import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Search, Plus, ChevronDown } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { Link, useLoaderData, useSearchParams } from '@remix-run/react';
-import { TextInput, Stack, Loader, Group, Button, Menu, Select } from '@mantine/core';
+import { TextInput, Stack, Loader, Group, Button, Autocomplete, Select } from '@mantine/core';
 import dayjs from 'dayjs';
 
 import { useFind } from '~/components/provider';
@@ -28,14 +28,14 @@ type Prepaga = {
   denomination: string;
 };
 
-const STUDY_TYPES = [
-  'anemia',
-  'anticoagulation',
-  'compatibility',
-  'hemostasis',
-  'myelogram',
-  'thrombophilia',
-] as const;
+interface PrepagaResponse {
+  data: Prepaga[];
+  total: number;
+  limit: number;
+  skip: number;
+}
+
+const STUDY_TYPES = ['anemia', 'anticoagulation', 'compatibility', 'hemostasis', 'myelogram', 'thrombophilia'] as const;
 
 const STUDY_TYPE_I18N: Record<string, string> = {
   anemia: 'studies.type_anemia',
@@ -51,17 +51,7 @@ const MIN_RANGE_START = '1900-01-01';
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
   const isVerified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
-
-  const prepagasResponse = await client.service('prepagas').find({
-    query: { $limit: 500, $sort: { shortName: 1 } },
-  });
-  const insurers = (
-    Array.isArray(prepagasResponse)
-      ? prepagasResponse
-      : ((prepagasResponse as { data?: unknown[] }).data ?? [])
-  ) as Prepaga[];
-
-  return json({ isVerified, insurers });
+  return json({ isVerified });
 });
 
 // ---------------------------------------------------------------------------
@@ -83,7 +73,7 @@ const PAGE_SIZE = 15;
 
 export default function StudiesIndex() {
   const { t } = useTranslation();
-  const { isVerified, insurers } = useLoaderData<typeof loader>();
+  const { isVerified } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('q') || '';
   const [inputValue, setInputValue] = useState(initialSearch);
@@ -95,7 +85,10 @@ export default function StudiesIndex() {
   // Filter state
   // -------------------------------------------------------------------------
 
-  const [selectedInsurerId, setSelectedInsurerId] = useState<string>('all');
+  const [selectedInsurerId, setSelectedInsurerId] = useState<string | null>(null);
+  const [insurerSearch, setInsurerSearch] = useState('');
+  const [debouncedInsurerSearch] = useDebouncedValue(insurerSearch, 300);
+
   const [selectedStudyType, setSelectedStudyType] = useState<string | null>(null);
   const [rangeFilter, setRangeFilter] = useState<DateRangeFilterState>({
     mode: 'in_last',
@@ -111,6 +104,29 @@ export default function StudiesIndex() {
       precision: 'day',
     })
   );
+
+  // -------------------------------------------------------------------------
+  // Insurer autocomplete — live DB search
+  // -------------------------------------------------------------------------
+
+  const shouldSearchInsurers = debouncedInsurerSearch.length >= 2;
+
+  const insurerQuery = useMemo(
+    () => (shouldSearchInsurers ? { $search: debouncedInsurerSearch, $limit: 20, $sort: { shortName: 1 } } : undefined),
+    [debouncedInsurerSearch, shouldSearchInsurers]
+  );
+
+  const { response: insurerResponse } = useFind('prepagas', insurerQuery, { enabled: shouldSearchInsurers });
+
+  const insurerResults: Prepaga[] = useMemo(() => {
+    if (!shouldSearchInsurers) return [];
+    const raw = insurerResponse as PrepagaResponse | Prepaga[];
+    return Array.isArray(raw) ? raw : (raw?.data ?? []);
+  }, [shouldSearchInsurers, insurerResponse]);
+
+  const insurerAutocompleteData = useMemo(() => insurerResults.map(p => p.shortName), [insurerResults]);
+
+  const insurerByName = useMemo(() => new Map(insurerResults.map(p => [p.shortName, p.id])), [insurerResults]);
 
   // -------------------------------------------------------------------------
   // URL sync for search
@@ -154,18 +170,33 @@ export default function StudiesIndex() {
   // Filter handlers
   // -------------------------------------------------------------------------
 
-  const handleApplyRange = useCallback(
-    (nextState: DateRangeFilterState, range: ResolvedDateRange) => {
-      setRangeFilter(nextState);
-      setActiveRange(range);
-      setPage(1);
+  const handleInsurerChange = useCallback(
+    (value: string) => {
+      setInsurerSearch(value);
+      if (!value) {
+        setSelectedInsurerId(null);
+        setPage(1);
+      }
     },
     [setPage]
   );
 
-  const handleSelectInsurer = useCallback(
-    (id: string) => {
-      setSelectedInsurerId(id);
+  const handleInsurerOptionSubmit = useCallback(
+    (value: string) => {
+      const id = insurerByName.get(value) ?? null;
+      if (id) {
+        setSelectedInsurerId(id);
+        setInsurerSearch(value);
+        setPage(1);
+      }
+    },
+    [insurerByName, setPage]
+  );
+
+  const handleApplyRange = useCallback(
+    (nextState: DateRangeFilterState, range: ResolvedDateRange) => {
+      setRangeFilter(nextState);
+      setActiveRange(range);
       setPage(1);
     },
     [setPage]
@@ -178,12 +209,6 @@ export default function StudiesIndex() {
     },
     [setPage]
   );
-
-  const selectedInsurerLabel = useMemo(() => {
-    if (selectedInsurerId === 'all') return t('common.all', { defaultValue: 'All' });
-    const found = insurers.find((i: Prepaga) => i.id === selectedInsurerId);
-    return found ? found.shortName : t('common.all', { defaultValue: 'All' });
-  }, [selectedInsurerId, insurers, t]);
 
   const studyTypeOptions = useMemo(
     () =>
@@ -210,11 +235,13 @@ export default function StudiesIndex() {
     }
 
     if (activeRange) {
-      q.dateFrom = dayjs(activeRange.from).format('YYYY-MM-DD');
-      q.dateTo = dayjs(activeRange.to).format('YYYY-MM-DD');
+      q.date = {
+        $gte: dayjs(activeRange.from).format('YYYY-MM-DD'),
+        $lte: dayjs(activeRange.to).format('YYYY-MM-DD'),
+      };
     }
 
-    if (selectedInsurerId !== 'all') {
+    if (selectedInsurerId) {
       q.insurerId = selectedInsurerId;
     }
 
@@ -259,32 +286,16 @@ export default function StudiesIndex() {
                 comboboxProps={{ withinPortal: true }}
                 w={160}
               />
-              <Menu shadow="md" width={260}>
-                <Menu.Target>
-                  <Button variant="default" rightSection={<ChevronDown size={14} />}>
-                    {selectedInsurerLabel}
-                  </Button>
-                </Menu.Target>
-                <Menu.Dropdown mah={300} style={{ overflowY: 'auto' }}>
-                  <Menu.Label>{t('studies.filter_insurer', { defaultValue: 'Insurer' })}</Menu.Label>
-                  <Menu.Item
-                    onClick={() => handleSelectInsurer('all')}
-                    fw={selectedInsurerId === 'all' ? 700 : 400}
-                  >
-                    {t('common.all', { defaultValue: 'All' })}
-                  </Menu.Item>
-                  <Menu.Divider />
-                  {insurers.map((insurer: Prepaga) => (
-                    <Menu.Item
-                      key={insurer.id}
-                      onClick={() => handleSelectInsurer(insurer.id)}
-                      fw={selectedInsurerId === insurer.id ? 700 : 400}
-                    >
-                      {insurer.shortName}
-                    </Menu.Item>
-                  ))}
-                </Menu.Dropdown>
-              </Menu>
+              <Autocomplete
+                data={insurerAutocompleteData}
+                value={insurerSearch}
+                onChange={handleInsurerChange}
+                onOptionSubmit={handleInsurerOptionSubmit}
+                placeholder={t('studies.filter_insurer', { defaultValue: 'Insurer' })}
+                comboboxProps={{ withinPortal: true }}
+                maxDropdownHeight={300}
+                w={200}
+              />
               <DateRangePopover
                 value={rangeFilter}
                 onApply={handleApplyRange}
@@ -315,32 +326,18 @@ export default function StudiesIndex() {
             w={140}
             styles={{ input: { minHeight: 32 } }}
           />
-          <Menu shadow="md" width={260}>
-            <Menu.Target>
-              <Button variant="default" size="xs" rightSection={<ChevronDown size={12} />}>
-                {selectedInsurerLabel}
-              </Button>
-            </Menu.Target>
-            <Menu.Dropdown mah={300} style={{ overflowY: 'auto' }}>
-              <Menu.Label>{t('studies.filter_insurer', { defaultValue: 'Insurer' })}</Menu.Label>
-              <Menu.Item
-                onClick={() => handleSelectInsurer('all')}
-                fw={selectedInsurerId === 'all' ? 700 : 400}
-              >
-                {t('common.all', { defaultValue: 'All' })}
-              </Menu.Item>
-              <Menu.Divider />
-              {insurers.map((insurer: Prepaga) => (
-                <Menu.Item
-                  key={insurer.id}
-                  onClick={() => handleSelectInsurer(insurer.id)}
-                  fw={selectedInsurerId === insurer.id ? 700 : 400}
-                >
-                  {insurer.shortName}
-                </Menu.Item>
-              ))}
-            </Menu.Dropdown>
-          </Menu>
+          <Autocomplete
+            data={insurerAutocompleteData}
+            value={insurerSearch}
+            onChange={handleInsurerChange}
+            onOptionSubmit={handleInsurerOptionSubmit}
+            placeholder={t('studies.filter_insurer', { defaultValue: 'Insurer' })}
+            comboboxProps={{ withinPortal: true }}
+            maxDropdownHeight={300}
+            size="xs"
+            w={180}
+            styles={{ input: { minHeight: 32 } }}
+          />
           <DateRangePopover
             value={rangeFilter}
             onApply={handleApplyRange}
