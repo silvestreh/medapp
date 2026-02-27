@@ -7,10 +7,10 @@ import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@meda
 
 import type {
   Application,
+  AccountingSettings,
   PatientPersonalData,
   PersonalData,
   Prepaga,
-  MdSettings,
 } from '../../declarations';
 
 const extraCostSectionsByStudyType = new Map<string, ExtraCostSection[]>();
@@ -436,10 +436,10 @@ export class Accounting {
       ...new Set(rawRows.map(r => r.medicId).filter((id): id is string => Boolean(id))),
     ];
     const settingsList = medicIds.length
-      ? await this.app.service('md-settings').find({
+      ? await this.app.service('accounting-settings').find({
         query: { userId: { $in: medicIds } },
         paginate: false,
-      }) as MdSettings[]
+      }) as AccountingSettings[]
       : [];
     const insurerPricesByMedicId = new Map<string, InsurerPrices>(
       settingsList.map(s => [s.userId as string, toInsurerPrices(s.insurerPrices)])

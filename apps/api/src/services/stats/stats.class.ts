@@ -49,6 +49,11 @@ export interface NationalityDistributionEntry {
   count: number;
 }
 
+export interface InsurerDistributionEntry {
+  insurer: string;
+  count: number;
+}
+
 export interface StatsResult {
   studyTypeCounts: StudyTypeCount[];
   ageGroups: AgeGroupEntry[];
@@ -58,6 +63,7 @@ export interface StatsResult {
   avgStudiesPerPatient: number;
   completionRate: CompletionRate;
   nationalityDistribution: NationalityDistributionEntry[];
+  insurerDistribution: InsurerDistributionEntry[];
 }
 
 function ageToBucket(age: number): AgeBucket {
@@ -239,6 +245,21 @@ export class Stats {
       { type: QueryTypes.SELECT, replacements }
     );
 
+    const insurerDistribution = await sequelize.query<InsurerDistributionEntry>(
+      `
+      SELECT
+        COALESCE(p."shortName", 'Particular') AS insurer,
+        COUNT(*)::int AS count
+      FROM studies s
+      LEFT JOIN prepagas p ON p.id = s."insurerId"
+      WHERE s.date >= :from AND s.date <= :to
+      ${orgFilter}
+      GROUP BY insurer
+      ORDER BY count DESC
+      `,
+      { type: QueryTypes.SELECT, replacements }
+    );
+
     const patientStudyRows = await sequelize.query<{
       patientId: string;
       studyType: string;
@@ -262,6 +283,7 @@ export class Stats {
         avgStudiesPerPatient,
         completionRate,
         nationalityDistribution,
+        insurerDistribution,
       };
     }
 
@@ -349,6 +371,7 @@ export class Stats {
       avgStudiesPerPatient,
       completionRate,
       nationalityDistribution,
+      insurerDistribution,
     };
   }
 }

@@ -18,35 +18,36 @@ describe('\'md-settings\' service', () => {
     assert.ok(service, 'Registered the service');
   });
 
-  it('stores insurer-specific prices', async () => {
+  it('creates settings with schedule fields', async () => {
     const service = app.service('md-settings');
-    const insurerPrices = {
-      prepaga_a: { encounter: 100, anemia: 50 },
-      prepaga_b: { encounter: 200, hemostasis: 75 }
-    };
 
     const created = await service.create({
       userId: user.id,
       encounterDuration: 30,
-      insurerPrices
+      mondayStart: '08:00',
+      mondayEnd: '17:00',
     } as any);
 
-    assert.deepStrictEqual(created.insurerPrices, insurerPrices);
+    assert.strictEqual(created.encounterDuration, 30);
+    assert.strictEqual((created as any).mondayStart, '08:00:00');
+    assert.strictEqual((created as any).mondayEnd, '17:00:00');
   });
 
-  it('patches insurer-specific prices', async () => {
+  it('patches schedule fields', async () => {
     const service = app.service('md-settings');
     const created = await service.create({
       userId: user.id,
       encounterDuration: 20,
-      insurerPrices: {}
     } as any);
 
-    const insurerPrices = {
-      prepaga_c: { encounter: 320, thrombophilia: 140 }
-    };
-    const patched = await service.patch(created.id, { insurerPrices } as any);
+    const patched = await service.patch(created.id, {
+      encounterDuration: 45,
+      tuesdayStart: '09:00',
+      tuesdayEnd: '18:00',
+    } as any);
 
-    assert.deepStrictEqual(patched.insurerPrices, insurerPrices);
+    assert.strictEqual(patched.encounterDuration, 45);
+    assert.strictEqual((patched as any).tuesdayStart, '09:00:00');
+    assert.strictEqual((patched as any).tuesdayEnd, '18:00:00');
   });
 });

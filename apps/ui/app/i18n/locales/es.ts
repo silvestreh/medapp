@@ -934,6 +934,8 @@ export const es = {
     completion_with_results: 'Con resultados',
     completion_pending: 'Resultados pendientes',
     nationality_distribution: 'Nacionalidades principales',
+    studies_by_insurer: 'Estudios por obra social',
+    no_insurer: 'Sin obra social',
   },
   verification: {
     unverified_title: 'Profesional no verificado',

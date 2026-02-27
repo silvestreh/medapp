@@ -224,7 +224,7 @@ const sections: Section[] = [
   {
     labelKey: 'accounting',
     icon: <Calculator />,
-    permissions: ['encounters:find', 'studies:find'],
+    permissions: ['accounting:find'],
     path: '/accounting',
     color: 'indigo',
   },

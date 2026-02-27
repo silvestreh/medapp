@@ -11,7 +11,25 @@
       "users:find",
       "users:get:all",
       "users:patch:all",
-      "users:remove:all"
+      "users:remove:all",
+      "accounting:find",
+      "accounting:get",
+      "accounting-settings:create",
+      "accounting-settings:find",
+      "accounting-settings:get:all",
+      "accounting-settings:patch:all"
+    ]
+  },
+  {
+    "id": "accounting",
+    "permissions": [
+      "accounting:find",
+      "accounting:get",
+      "accounting-settings:create",
+      "accounting-settings:find",
+      "accounting-settings:get:all",
+      "accounting-settings:patch:all",
+      "prepagas:find"
     ]
   },
   {
@@ -74,7 +92,11 @@
       "study-results:find",
       "study-results:get:all",
       "study-results:patch:all",
-      "study-results:remove:all"
+      "study-results:remove:all",
+      "accounting-settings:create",
+      "accounting-settings:find",
+      "accounting-settings:get",
+      "accounting-settings:patch"
     ]
   },
   {

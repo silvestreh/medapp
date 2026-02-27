@@ -927,6 +927,8 @@ export const en: typeof es = {
     completion_with_results: 'With results',
     completion_pending: 'Pending results',
     nationality_distribution: 'Top nationalities',
+    studies_by_insurer: 'Studies by insurer',
+    no_insurer: 'No insurer',
   },
   verification: {
     unverified_title: 'Unverified Practitioner',

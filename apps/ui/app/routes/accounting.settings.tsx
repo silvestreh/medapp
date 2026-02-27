@@ -96,16 +96,16 @@ const practiceI18nKey = {
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
 
-  const settingsResponse = await client.service('md-settings').find({
+  const acctSettingsResponse = await client.service('accounting-settings').find({
     query: { userId: user.id, $limit: 1 },
     paginate: false,
   });
 
-  const settingsList = Array.isArray(settingsResponse)
-    ? settingsResponse
-    : ((settingsResponse as { data?: unknown[] }).data ?? []);
-  const mdSettings = settingsList[0] as { id: string; insurerPrices?: unknown } | undefined;
-  const insurerPrices = normalizeInsurerPrices(mdSettings?.insurerPrices);
+  const acctSettingsList = Array.isArray(acctSettingsResponse)
+    ? acctSettingsResponse
+    : ((acctSettingsResponse as { data?: unknown[] }).data ?? []);
+  const acctSettings = acctSettingsList[0] as { id: string; insurerPrices?: unknown } | undefined;
+  const insurerPrices = normalizeInsurerPrices(acctSettings?.insurerPrices);
 
   const dbInsurerIds: string[] = await (client.service('accounting') as any).get('insurers', {
     query: { medicId: user.id },
@@ -143,7 +143,7 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   ];
 
   return json({
-    mdSettingsId: mdSettings?.id ?? null,
+    acctSettingsId: acctSettings?.id ?? null,
     insurerPrices,
     insurers,
   });
@@ -154,21 +154,25 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const payload = parseFormJson<{ insurerPrices?: unknown }>(formData.get('payload'));
 
-  const settingsResponse = await client.service('md-settings').find({
+  const acctSettingsResponse = await client.service('accounting-settings').find({
     query: { userId: user.id, $limit: 1 },
     paginate: false,
   });
-  const settingsList = Array.isArray(settingsResponse)
-    ? settingsResponse
-    : ((settingsResponse as { data?: unknown[] }).data ?? []);
-  const mdSettings = settingsList[0] as { id: string } | undefined;
-
-  if (!mdSettings?.id) {
-    return json({ ok: false, error: 'Doctor settings were not found.' }, { status: 400 });
-  }
+  const acctSettingsList = Array.isArray(acctSettingsResponse)
+    ? acctSettingsResponse
+    : ((acctSettingsResponse as { data?: unknown[] }).data ?? []);
+  const acctSettings = acctSettingsList[0] as { id: string } | undefined;
 
   const insurerPrices = normalizeInsurerPrices(payload.insurerPrices);
-  await client.service('md-settings').patch(mdSettings.id, { insurerPrices });
+
+  if (acctSettings?.id) {
+    await client.service('accounting-settings').patch(acctSettings.id, { insurerPrices });
+  } else {
+    await client.service('accounting-settings').create({
+      userId: user.id,
+      insurerPrices,
+    } as any);
+  }
 
   return json({ ok: true });
 };

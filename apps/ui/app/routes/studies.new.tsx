@@ -28,18 +28,18 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     throw redirect('/studies');
   }
 
-  const settingsResponse = await client.service('md-settings').find({
+  const acctSettingsResponse = await client.service('accounting-settings').find({
     query: { userId: user.id, $limit: 1 },
     paginate: false,
   });
 
-  const settingsList = Array.isArray(settingsResponse)
-    ? settingsResponse
-    : ((settingsResponse as { data?: unknown[] }).data ?? []);
-  const mdSettings = settingsList[0] as { insurerPrices?: unknown } | undefined;
+  const acctSettingsList = Array.isArray(acctSettingsResponse)
+    ? acctSettingsResponse
+    : ((acctSettingsResponse as { data?: unknown[] }).data ?? []);
+  const acctSettings = acctSettingsList[0] as { insurerPrices?: unknown } | undefined;
 
   return json({
-    insurerPrices: normalizeInsurerPrices(mdSettings?.insurerPrices),
+    insurerPrices: normalizeInsurerPrices(acctSettings?.insurerPrices),
   });
 });
 
