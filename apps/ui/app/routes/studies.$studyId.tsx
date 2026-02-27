@@ -133,6 +133,7 @@ export default function StudyDetail() {
   const [metaDirty, setMetaDirty] = useState(false);
   const [comment, setComment] = useState<string | undefined>(undefined);
   const [noOrder, setNoOrder] = useState<boolean | undefined>(undefined);
+  const [emergency, setEmergency] = useState<boolean | undefined>(undefined);
   const [selectedStudies, setSelectedStudies] = useState<string[] | undefined>(undefined);
   const [date, setDate] = useState<Date | null | undefined>(undefined);
 
@@ -140,6 +141,7 @@ export default function StudyDetail() {
   if (study?.id && comment === undefined) {
     setComment(study.comment || '');
     setNoOrder(study.noOrder ?? false);
+    setEmergency(study.emergency ?? false);
     setSelectedStudies(study.studies || []);
     setDate(study.date ? new Date(study.date) : new Date());
   }
@@ -170,13 +172,14 @@ export default function StudyDetail() {
       id: studyId,
       comment: comment ?? study.comment ?? '',
       noOrder: noOrder ?? study.noOrder ?? false,
+      emergency: emergency ?? study.emergency ?? false,
       studies: selectedStudies ?? study.studies ?? [],
       date: (date ?? (study.date ? new Date(study.date) : null))?.toISOString(),
       results: Object.entries(resultDrafts).map(([type, data]) => ({ type, data })),
     };
 
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
-  }, [studyId, comment, noOrder, selectedStudies, date, study, resultDrafts, fetcher]);
+  }, [studyId, comment, noOrder, emergency, selectedStudies, date, study, resultDrafts, fetcher]);
 
   const handleResultDraftChange = useCallback(
     (type: string) => (data: StudyResultData) => {
@@ -267,6 +270,11 @@ export default function StudyDetail() {
         noOrder={noOrder ?? study.noOrder ?? false}
         onNoOrderChange={value => {
           setNoOrder(value);
+          setMetaDirty(true);
+        }}
+        emergency={emergency ?? study.emergency ?? false}
+        onEmergencyChange={value => {
+          setEmergency(value);
           setMetaDirty(true);
         }}
         comment={comment ?? study.comment ?? ''}
