@@ -107,6 +107,7 @@ export default function NewStudy() {
   const [medicId, setMedicId] = useState<string | null>(null);
   const [comment, setComment] = useState('');
   const [noOrder, setNoOrder] = useState(false);
+  const [emergency, setEmergency] = useState(false);
   const [selectedStudies, setSelectedStudies] = useState<string[]>([]);
   const [cost, setCost] = useState(0);
   const [costManuallyEdited, setCostManuallyEdited] = useState(false);
@@ -125,9 +126,9 @@ export default function NewStudy() {
     }
 
     if (!costManuallyEdited) {
-      setCost(resolveStudyCost(selectedStudies, insurerPracticePrices));
+      setCost(resolveStudyCost(selectedStudies, insurerPracticePrices, emergency));
     }
-  }, [costManuallyEdited, insurerId, insurerPracticePrices, selectedStudies]);
+  }, [costManuallyEdited, insurerId, insurerPracticePrices, selectedStudies, emergency]);
 
   const toggleStudy = useCallback((key: string) => {
     setSelectedStudies(prev => (prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]));
@@ -146,6 +147,7 @@ export default function NewStudy() {
       date: date.toISOString(),
       studies: selectedStudies,
       noOrder,
+      emergency,
       comment: comment || undefined,
       ...(medicId ? { medicId } : { referringDoctor: referringDoctor || undefined }),
       insurerId,
@@ -153,7 +155,7 @@ export default function NewStudy() {
     };
 
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
-  }, [canSave, patientId, date, selectedStudies, noOrder, comment, referringDoctor, medicId, insurerId, cost, fetcher]);
+  }, [canSave, patientId, date, selectedStudies, noOrder, emergency, comment, referringDoctor, medicId, insurerId, cost, fetcher]);
 
   const handleCostChange = useCallback((value: string | number) => {
     setCostManuallyEdited(true);
@@ -181,6 +183,8 @@ export default function NewStudy() {
         onToggleStudy={toggleStudy}
         noOrder={noOrder}
         onNoOrderChange={setNoOrder}
+        emergency={emergency}
+        onEmergencyChange={setEmergency}
         comment={comment}
         onCommentChange={setComment}
         date={date}

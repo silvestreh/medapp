@@ -1,22 +1,18 @@
+/// <reference types="node" />
 import fs from 'fs';
 import path from 'path';
 
-const OSPROVINCIA_CHUBUT_ID = 'ee944a04-1c20-46f3-acde-4a630c45f63b';
-const AVALIAN_ID = '9bc84c32-a64b-4fc7-b9c0-2b44aa92b44e';
-const SWISS_MEDICAL_ID = 'e3d132e2-d239-46d2-98cc-c3d6f09aa625';
-const TV_SALUD_ID = 'bcff1432-f3b4-4373-8c60-d4012fcbd945';
-const LUZ_Y_FUERZA_ID = 'a48ba0cf-504c-4564-bf84-7a55f5c41f1d';
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const normalizeKey = (value: string): string => value.trim().replace(/\s+/g, ' ').toUpperCase();
 
 export const MEDICARE_ALIASES: Record<string, string | null> = {
   'INST. NACIONAL DE SERVICIOS SOCIALES PARA JUBILADOS Y PENSIONADOS': 'PAMI',
-  'O.S.PROVINCIA CHUBUT': OSPROVINCIA_CHUBUT_ID,
-  'ACA SALUD COOPERATIVA DE SERVICIOS': AVALIAN_ID,
-  'SMG': SWISS_MEDICAL_ID,
-  'TV SALUD': TV_SALUD_ID,
-  'O.S.FED. ARG. TRAB. DE LUZ Y FUERZA': LUZ_Y_FUERZA_ID,
+  'O.S.PROVINCIA CHUBUT': 'SEROS',
+  'ACA SALUD COOPERATIVA DE SERVICIOS': 'AVALIAN',
+  'SMG': 'SWISS MEDICAL',
+  'TV SALUD': 'TV SALUD',
+  'O.S.FED. ARG. TRAB. DE LUZ Y FUERZA': 'OSFATLYF',
 
   'OSDE BINARIO': 'OSDE',
   'OSDE BINARIO BIOPSIA': 'OSDE',
@@ -31,7 +27,7 @@ export const MEDICARE_ALIASES: Record<string, string | null> = {
   'SWISS MEDICAL MEDICINA PRIVADA BX 4': 'SWISS MEDICAL',
   'SWISS MEDICAL MEDICINA PRIVADA (OBLIG)': 'SWISS MEDICAL',
   'SWISS MEDICAL MEDICINA PRIVADA 17 : 30': 'SWISS MEDICAL',
-  'DOCTHOS SA': SWISS_MEDICAL_ID,
+  'DOCTHOS SA': 'SWISS MEDICAL',
 
   'SEROS CHUBUT': 'SEROS',
   'SEROS CHUBUT.': 'SEROS',
@@ -191,7 +187,7 @@ const resolveByPattern = (normalized: string): string | null | undefined => {
 };
 
 export function loadPrepagaMap(): Map<string, string> {
-  const prepagasPath = path.join(__dirname, '../seeds/prepagas.json');
+  const prepagasPath = path.join(__dirname, '../seeds/prepagas-from-cuadros.json');
   const prepagas = JSON.parse(fs.readFileSync(prepagasPath, 'utf-8')) as Array<{
     id: string;
     denomination: string;

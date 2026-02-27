@@ -50,6 +50,9 @@ interface PricingConfig {
   baseName?: string;
   code?: string;
   extras?: Record<string, number>;
+  emergencyValue?: number;
+  emergencyMultiplier?: number;
+  emergencyExtras?: Record<string, number>;
 }
 
 type InsurerPricing = Record<string, number | PricingConfig>;
@@ -99,6 +102,55 @@ function resolveCostFromPrice(price: number | PricingConfig | undefined): number
   }
 
   return toNonNegativeNumber(price.value);
+}
+
+function resolveEmergencyCostFromPrice(price: number | PricingConfig | undefined): number {
+  const normalCost = resolveCostFromPrice(price);
+  if (price == null || typeof price === 'number') {
+    return normalCost;
+  }
+  if (!price || typeof price !== 'object' || Array.isArray(price)) {
+    return normalCost;
+  }
+
+  let emergencyCost: number;
+  if (price.type === 'multiplier') {
+    const baseValue = toNonNegativeNumber(price.baseValue);
+    const multiplier = toNonNegativeNumber(price.emergencyMultiplier ?? price.multiplier);
+    emergencyCost = baseValue * multiplier;
+  } else {
+    emergencyCost = toNonNegativeNumber(price.emergencyValue ?? price.value);
+  }
+
+  return Math.max(emergencyCost, normalCost);
+}
+
+function resolveEmergencyExtraCost(
+  price: number | PricingConfig | undefined,
+  activeSections: string[]
+): number {
+  const normalExtra = resolveExtraCost(price, activeSections);
+  if (price == null || typeof price === 'number' || !activeSections.length) {
+    return normalExtra;
+  }
+  const extras = price.emergencyExtras ?? price.extras;
+  if (!extras) {
+    return normalExtra;
+  }
+
+  let total = 0;
+  for (const section of activeSections) {
+    const extraValue = extras[section];
+    if (!extraValue) continue;
+
+    if (price.type === 'multiplier') {
+      total += toNonNegativeNumber(price.baseValue) * toNonNegativeNumber(extraValue);
+    } else {
+      total += toNonNegativeNumber(extraValue);
+    }
+  }
+
+  return Math.max(total, normalExtra);
 }
 
 function resolveExtraCost(
@@ -157,6 +209,7 @@ interface StudyRow {
   insurerId: string | null;
   patientId: string;
   medicId: string | null;
+  emergency: boolean;
 }
 
 function dateToString(d: Date | string): string {
@@ -266,7 +319,7 @@ export class Accounting {
       }) as Promise<unknown> as Promise<EncounterRow[]>,
       sequelize.models.studies.findAll({
         where: studyWhere,
-        attributes: ['id', 'date', 'studies', 'protocol', 'insurerId', 'patientId', 'medicId'],
+        attributes: ['id', 'date', 'studies', 'protocol', 'insurerId', 'patientId', 'medicId', 'emergency'],
         raw: true,
       }) as Promise<unknown> as Promise<StudyRow[]>,
     ]);
@@ -336,6 +389,7 @@ export class Accounting {
       medicId: string | null;
       insurerId: string | null;
       patientId: string;
+      emergency: boolean;
     }
 
     const rawRows: RawRow[] = [];
@@ -351,6 +405,7 @@ export class Accounting {
         medicId: e.medicId,
         insurerId: effectiveInsurerId,
         patientId: e.patientId,
+        emergency: false,
       });
     }
 
@@ -366,6 +421,7 @@ export class Accounting {
           medicId: s.medicId,
           insurerId: effectiveInsurerId,
           patientId: s.patientId,
+          emergency: !!s.emergency,
         });
       }
     }
@@ -443,9 +499,13 @@ export class Accounting {
       const priceKey = row.insurerId || PARTICULAR_INSURER_ID;
       const insurerPracticePrices = medicPrices ? medicPrices[priceKey] : undefined;
       const practicePrice = insurerPracticePrices ? insurerPracticePrices[row.kind] : undefined;
-      const baseCost = resolveCostFromPrice(practicePrice);
+      const baseCost = row.emergency
+        ? resolveEmergencyCostFromPrice(practicePrice)
+        : resolveCostFromPrice(practicePrice);
       const activeSections = activeExtrasByRow.get(`${row.id}:${row.kind}`) ?? [];
-      const extraCost = resolveExtraCost(practicePrice, activeSections);
+      const extraCost = row.emergency
+        ? resolveEmergencyExtraCost(practicePrice, activeSections)
+        : resolveExtraCost(practicePrice, activeSections);
       const cost = baseCost + extraCost;
 
       return {

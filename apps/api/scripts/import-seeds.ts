@@ -107,8 +107,19 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
 
   // Seed prepagas
   const prepagasRaw: any[] = JSON.parse(
-    await fs.readFile(path.join(SEEDS_DIR, 'prepagas.json'), 'utf-8'),
+    await fs.readFile(path.join(SEEDS_DIR, 'prepagas-from-cuadros.json'), 'utf-8'),
   );
+
+  for (const prepaga of prepagasRaw) {
+    const seenCodes = new Set<number>();
+    prepaga.tiers = (prepaga.tiers || []).filter((tier: any) => {
+      if (tier.code == null) return true;
+      if (seenCodes.has(tier.code)) return false;
+      seenCodes.add(tier.code);
+      return true;
+    });
+  }
+
   const prepagasService = app.service('prepagas');
   const prepagasBar = multibar.create(prepagasRaw.length, 0, { title: 'Prepagas' });
   for (let i = 0; i < prepagasRaw.length; i += chunkSize) {

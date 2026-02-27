@@ -65,6 +65,11 @@ export default function (app: Application): typeof Model {
         model: 'prepagas',
         key: 'id'
       }
+    },
+    emergency: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     hooks: {

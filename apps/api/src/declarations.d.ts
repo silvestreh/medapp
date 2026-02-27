@@ -40,10 +40,10 @@ export interface Medication {
 
 export interface Prepaga {
   id: string;
-  rnas: string | null;
-  enemp: string | null;
+  registry: string | null;
   denomination: string;
   shortName: string;
+  tiers: { name: string; code: number | null }[];
 }
 
 export interface ServiceTypes {}
