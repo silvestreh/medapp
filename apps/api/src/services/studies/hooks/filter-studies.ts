@@ -2,44 +2,27 @@ import { Hook, HookContext } from '@feathersjs/feathers';
 import { Op } from 'sequelize';
 
 /**
- * Before.find hook for studies filtering.
+ * Before.find hook that handles the `studyType` query param.
  *
- * Supports:
- * - `dateFrom` / `dateTo`: filter by `date` column (inclusive range)
- * - `studyType`: filter by Postgres array `studies` column using @> (contains)
- *
- * These custom params are stripped from the query so feathers-sequelize
- * doesn't try to match them as column names.
+ * The `studies` column is a Postgres string array, so we need
+ * Sequelize's Op.contains (@>) which Feathers can't express natively.
+ * All other filters (date, insurerId, etc.) use standard Feathers
+ * query operators and need no hook.
  */
 export default function filterStudies(): Hook {
   return async (context: HookContext) => {
-    const { params } = context;
-    const query = params.query || {};
+    const { query } = context.params;
+    if (!query?.studyType) return context;
 
-    const { dateFrom, dateTo, studyType, ...rest } = query;
+    context.params.sequelize = {
+      ...(context.params.sequelize || {}),
+      where: {
+        ...((context.params.sequelize || {}).where || {}),
+        studies: { [Op.contains]: [query.studyType] },
+      },
+    };
 
-    const sequelizeWhere: Record<string, unknown> = {};
-
-    if (dateFrom || dateTo) {
-      const dateFilter: Record<symbol, string> = {};
-      if (dateFrom) dateFilter[Op.gte] = dateFrom;
-      if (dateTo) dateFilter[Op.lte] = dateTo;
-      sequelizeWhere.date = dateFilter;
-    }
-
-    if (studyType) {
-      sequelizeWhere.studies = { [Op.contains]: [studyType] };
-    }
-
-    if (Object.keys(sequelizeWhere).length > 0) {
-      params.sequelize = params.sequelize || {};
-      params.sequelize.where = {
-        ...(params.sequelize.where || {}),
-        ...sequelizeWhere,
-      };
-    }
-
-    params.query = rest;
+    delete query.studyType;
     return context;
   };
 }

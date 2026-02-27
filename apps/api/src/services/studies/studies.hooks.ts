@@ -13,6 +13,7 @@ import { sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import searchStudies from './hooks/search-studies';
 import filterStudies from './hooks/filter-studies';
 import { requireVerifiedLicense } from '../../hooks/require-verified-license';
+import populateInsurer from './hooks/populate-insurer';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -37,12 +38,14 @@ export default {
     find: [
       populateResults(),
       populatePatient(),
+      populateInsurer(),
       populateReferringDoctor(),
       sortByPersonalDataRank({ foreignKey: 'patientId' })
     ],
     get: [
       populateResults(),
       populatePatient(),
+      populateInsurer(),
       populateReferringDoctor(),
     ],
     create: [upsertStudyResults(), populateReferringDoctor()],

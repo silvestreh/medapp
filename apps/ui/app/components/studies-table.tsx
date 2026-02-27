@@ -55,6 +55,8 @@ export interface Study {
   patientId: string;
   patient?: Patient;
   results?: StudyResult[];
+  insurerId?: string;
+  insurer?: PrepagaInfo;
 }
 
 export interface StudyItem {
@@ -285,7 +287,7 @@ export function StudiesTable({
       </Table.Td>
       <Table.Td>{renderBadges(item.study.studies)}</Table.Td>
       <Table.Td>
-        <CellText>{item.medicare}</CellText>
+        <CellText>{item.study.insurer?.shortName || 'Particular'}</CellText>
       </Table.Td>
       <Table.Td>
         <CellText>{item.study.date ? dayjs(item.study.date).format('DD/MM/YYYY') : '—'}</CellText>
@@ -353,7 +355,11 @@ export function StudiesTable({
                 <Table.Tr bg="blue.0">
                   <Table.Th
                     w={100}
-                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)', borderLeft: 'none' }}
+                    style={{
+                      ...stickyHeaderStyle,
+                      border: '1px solid var(--mantine-color-blue-1)',
+                      borderLeft: 'none',
+                    }}
                     fw={500}
                     fz="md"
                     py="0.5em"
@@ -397,7 +403,11 @@ export function StudiesTable({
                   </Table.Th>
                   <Table.Th
                     w={150}
-                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)', borderRight: 'none' }}
+                    style={{
+                      ...stickyHeaderStyle,
+                      border: '1px solid var(--mantine-color-blue-1)',
+                      borderRight: 'none',
+                    }}
                     fw={500}
                     fz="md"
                     py="0.5em"

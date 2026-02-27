@@ -82,6 +82,7 @@ export default function (app: Application): typeof Model {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   (studies as any).associate = function (models: any): void {
     studies.hasMany(models.study_results, { foreignKey: 'studyId' });
+    studies.belongsTo(models.prepagas, { foreignKey: 'insurerId', as: 'insurer' });
   };
 
   return studies;
