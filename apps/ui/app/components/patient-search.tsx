@@ -1,12 +1,11 @@
-import { useState, useMemo, type FC } from 'react';
-import { Link } from '@remix-run/react';
-import { Popover, TextInput, Stack, Loader, Text } from '@mantine/core';
-import { useDebouncedValue, useDisclosure, useClickOutside } from '@mantine/hooks';
+import { useState, useMemo, useCallback, useRef, type FC } from 'react';
+import { useNavigate } from '@remix-run/react';
+import { Autocomplete, Loader, Text } from '@mantine/core';
+import { useDebouncedValue } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 
 import { useFind } from '~/components/provider';
-import { styled } from '~/styled-system/jsx';
 import type { Patient } from '~/declarations';
 import { displayDocumentValue } from '~/utils';
 import { getMedicareLabel } from '~/components/medicare-display';
@@ -25,40 +24,7 @@ interface PatientSearchProps {
   createNewPatientSlot?: CreateNewPatientSlot | null;
 }
 
-const Button = styled('button', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    alignItems: 'flex-start',
-    appearance: 'none',
-    border: 'none',
-    background: 'transparent',
-    padding: '0.5em 1em',
-    borderRadius: 'var(--mantine-radius-sm)',
-
-    '&:hover': {
-      backgroundColor: 'var(--mantine-color-blue-0)',
-    },
-  },
-});
-
-const CreateNewLink = styled(Link, {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    alignItems: 'flex-start',
-    padding: '0.5em 1em',
-    borderRadius: 'var(--mantine-radius-sm)',
-    color: 'inherit',
-    textDecoration: 'none',
-
-    '&:hover': {
-      backgroundColor: 'var(--mantine-color-blue-0)',
-    },
-  },
-});
+const CREATE_NEW_VALUE = '__create_new__';
 
 const PatientSearch: FC<PatientSearchProps> = ({
   onChange,
@@ -68,12 +34,13 @@ const PatientSearch: FC<PatientSearchProps> = ({
   createNewPatientSlot,
 }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const resolvedPlaceholder = placeholder ?? t('patients.search_patient');
   const [inputValue, setInputValue] = useState('');
   const [debouncedInputValue] = useDebouncedValue(inputValue, 500);
-  const [isOpen, { open, close }] = useDisclosure(false);
   const [selected, setSelected] = useState(false);
-  const ref = useClickOutside(() => close());
+  const ignoreNextChange = useRef(false);
+
   const query = useMemo(
     () => ({
       firstName: debouncedInputValue,
@@ -82,104 +49,116 @@ const PatientSearch: FC<PatientSearchProps> = ({
     }),
     [debouncedInputValue]
   );
+
   const {
     response: { data: patients = [] },
     isLoading,
   } = useFind('patients', query);
 
-  const showCreateNew =
-    createNewPatientSlot && (inputValue === '' || patients.length === 0);
-  const dropdownOpen =
-    !selected &&
-    isOpen &&
-    (patients.length > 0 || (createNewPatientSlot && (inputValue === '' || patients.length === 0)));
+  const { autocompleteData, patientByValue } = useMemo(() => {
+    const map = new Map<string, Patient>();
+    const seen = new Set<string>();
+    const data: string[] = [];
 
-  const handleBlur = () => {
-    if (inputValue === '') onBlur?.();
-  };
+    for (const patient of patients as Patient[]) {
+      const name = `${patient.personalData.firstName} ${patient.personalData.lastName}`.trim();
+      const doc = displayDocumentValue(patient.personalData.documentValue);
+      let display = doc !== '—' ? `${name} — ${doc}` : name;
 
-  const handleFocus = () => {
-    if (selected) return;
-    if (patients.length > 0 || createNewPatientSlot) open();
-  };
-
-  const handleChange = (value: string) => {
-    setInputValue(value);
-    if (selected) setSelected(false);
-  };
-
-  const handleSelectPatient = (patient: Patient) => {
-    onChange?.(patient.id);
-    setInputValue(`${patient.personalData.firstName} ${patient.personalData.lastName}`.trim());
-    setSelected(true);
-    close();
-  };
-
-  const createNewState = createNewPatientSlot
-    ? {
-        assignSlot: createNewPatientSlot,
-        returnTo: `/appointments/${createNewPatientSlot.medicId}/${createNewPatientSlot.startDate.slice(0, 10)}`,
+      if (seen.has(display)) {
+        display = `${display} (${patient.id.slice(0, 6)})`;
       }
-    : undefined;
+
+      seen.add(display);
+      map.set(display, patient);
+      data.push(display);
+    }
+
+    const showCreateNew =
+      createNewPatientSlot && (inputValue === '' || patients.length === 0);
+    if (showCreateNew) {
+      data.push(CREATE_NEW_VALUE);
+    }
+
+    return { autocompleteData: data, patientByValue: map };
+  }, [patients, inputValue, createNewPatientSlot]);
+
+  const handleChange = useCallback(
+    (value: string) => {
+      if (ignoreNextChange.current) {
+        ignoreNextChange.current = false;
+        return;
+      }
+      setInputValue(value);
+      if (selected) setSelected(false);
+    },
+    [selected]
+  );
+
+  const handleOptionSubmit = useCallback(
+    (value: string) => {
+      if (value === CREATE_NEW_VALUE && createNewPatientSlot) {
+        navigate('/patients/new', {
+          state: {
+            assignSlot: createNewPatientSlot,
+            returnTo: `/appointments/${createNewPatientSlot.medicId}/${createNewPatientSlot.startDate.slice(0, 10)}`,
+          },
+        });
+        return;
+      }
+
+      const patient = patientByValue.get(value);
+      if (patient) {
+        onChange?.(patient.id);
+        const name = `${patient.personalData.firstName} ${patient.personalData.lastName}`.trim();
+        setInputValue(name);
+        setSelected(true);
+        ignoreNextChange.current = true;
+      }
+    },
+    [patientByValue, onChange, createNewPatientSlot, navigate]
+  );
+
+  const handleBlur = useCallback(() => {
+    if (inputValue === '') onBlur?.();
+  }, [inputValue, onBlur]);
 
   return (
-    <Popover
-      withArrow
-      arrowSize={12}
-      position="bottom-start"
-      styles={{ dropdown: { padding: 4 } }}
-      key={patients.length}
-      opened={dropdownOpen}
-      shadow="xs"
-    >
-      <Popover.Target>
-        <TextInput
-          variant="unstyled"
-          autoFocus={autoFocus}
-          onFocus={handleFocus}
-          onClick={open}
-          value={inputValue}
-          onChange={e => handleChange(e.currentTarget.value)}
-          onBlur={handleBlur}
-          placeholder={resolvedPlaceholder}
-          styles={{ input: { fontSize: '1em' } }}
-          leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
-          autoComplete="off"
-          data-1p-ignore
-        />
-      </Popover.Target>
-      <Popover.Dropdown ref={ref}>
-        <Stack gap={4}>
-          {patients.map((patient: Patient) => (
-            <Button
-              key={patient.id}
-              onMouseDown={e => {
-                e.preventDefault();
-                handleSelectPatient(patient);
-              }}
-            >
-              <Text>
-                {patient.personalData.firstName} {patient.personalData.lastName}
-                {displayDocumentValue(patient.personalData.documentValue) !== '—' &&
-                  ` (${patient.personalData.documentValue})`}
-              </Text>
-              <Text size="xs" c="dimmed">
-                {getMedicareLabel(patient) || t('overview.private')} {patient.medicareNumber}
-              </Text>
-            </Button>
-          ))}
-          {showCreateNew && createNewState && (
-            <CreateNewLink
-              to="/patients/new"
-              state={createNewState}
-              onMouseDown={e => e.preventDefault()}
-            >
-              <Text>{t('patients.new_patient')}</Text>
-            </CreateNewLink>
-          )}
-        </Stack>
-      </Popover.Dropdown>
-    </Popover>
+    <Autocomplete
+      value={inputValue}
+      onChange={handleChange}
+      onOptionSubmit={handleOptionSubmit}
+      onBlur={handleBlur}
+      data={selected ? [] : autocompleteData}
+      filter={({ options }) => options}
+      placeholder={resolvedPlaceholder}
+      autoFocus={autoFocus}
+      leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
+      maxDropdownHeight={300}
+      renderOption={({ option }) => {
+        if (option.value === CREATE_NEW_VALUE) {
+          return <Text size="sm" c="blue">{t('patients.new_patient')}</Text>;
+        }
+        const patient = patientByValue.get(option.value);
+        if (!patient) return option.value;
+        return (
+          <div>
+            <Text size="sm">
+              {patient.personalData.firstName} {patient.personalData.lastName}
+              {displayDocumentValue(patient.personalData.documentValue) !== '—' &&
+                ` (${patient.personalData.documentValue})`}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {getMedicareLabel(patient) || t('overview.private')} {patient.medicareNumber}
+            </Text>
+          </div>
+        );
+      }}
+      variant="unstyled"
+      styles={{ input: { fontSize: '1em' } }}
+      autoComplete="off"
+      data-1p-ignore
+    />
   );
 };
 
