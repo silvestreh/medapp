@@ -244,7 +244,7 @@ export default function StudiesIndex() {
     if (activeRange) {
       q.date = {
         $gte: dayjs(activeRange.from).format('YYYY-MM-DD'),
-        $lte: dayjs(activeRange.to).format('YYYY-MM-DD'),
+        $lt: dayjs(activeRange.to).add(1, 'day').format('YYYY-MM-DD'),
       };
     }
 

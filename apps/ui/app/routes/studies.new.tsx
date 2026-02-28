@@ -55,7 +55,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const study = await client.service('studies').create(payload);
 
-  return redirect(`/studies/${study.id}`);
+  return redirect('/studies');
 };
 
 // ---------------------------------------------------------------------------
