@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { UseFormReturnType } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,7 @@ import {
   StyledTitle,
 } from '~/components/forms/styles';
 import { PrepagaSelector } from '~/components/prepaga-selector';
+import { useGet } from '~/components/provider';
 
 export interface PatientFormValues {
   documentType: string;
@@ -127,6 +128,11 @@ interface PatientFormProps {
   showContactAndInsurance?: boolean;
 }
 
+interface PrepagaTier {
+  name: string;
+  code: number | null;
+}
+
 export function PatientForm({
   form,
   readOnlyDocument = false,
@@ -134,6 +140,25 @@ export function PatientForm({
   showContactAndInsurance = true,
 }: PatientFormProps) {
   const { t } = useTranslation();
+
+  const medicareId = form.values.medicareId;
+  const { data: selectedPrepaga } = useGet('prepagas', medicareId, {
+    enabled: !!medicareId,
+  });
+
+  const tierOptions = useMemo(() => {
+    const tiers = (selectedPrepaga as { tiers?: PrepagaTier[] })?.tiers;
+    if (!tiers || tiers.length === 0) return [];
+    return tiers.map(tier => ({ value: tier.name, label: tier.name }));
+  }, [selectedPrepaga]);
+
+  const handleInsurerChange = useCallback(
+    (val: string) => {
+      form.setFieldValue('medicareId', val);
+      form.setFieldValue('medicarePlan', '');
+    },
+    [form],
+  );
 
   const countryOptions = useMemo(
     () => buildSelectOptions(t('countries', { returnObjects: true }) as Record<string, string>),
@@ -237,7 +262,7 @@ export function PatientForm({
             <FieldRow label={`${t('patients.medicare')}:`}>
               <PrepagaSelector
                 value={form.values.medicareId}
-                onChange={val => form.setFieldValue('medicareId', val)}
+                onChange={handleInsurerChange}
                 placeholder={t('patients.medicare')}
                 readOnly={disabled}
               />
@@ -245,9 +270,18 @@ export function PatientForm({
             <FieldRow label={`${t('patients.medicare_number')}:`}>
               <StyledTextInput placeholder={t('patients.medicare_number')} {...form.getInputProps('medicareNumber')} />
             </FieldRow>
-            <FieldRow label={`${t('patients.medicare_plan')}:`}>
-              <StyledTextInput placeholder={t('patients.medicare_plan')} {...form.getInputProps('medicarePlan')} />
-            </FieldRow>
+            {tierOptions.length > 0 && (
+              <FieldRow label={`${t('patients.medicare_plan')}:`}>
+                <StyledSelect
+                  data={tierOptions}
+                  searchable
+                  clearable
+                  placeholder={t('patients.medicare_plan')}
+                  disabled={disabled}
+                  {...form.getInputProps('medicarePlan')}
+                />
+              </FieldRow>
+            )}
           </FormCard>
         </>
       )}
