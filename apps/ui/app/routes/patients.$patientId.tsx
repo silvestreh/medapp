@@ -178,7 +178,7 @@ export default function PatientDetail() {
   }, [closeFab, handleSave]);
 
   const { blocker, handleDiscard, handleCancel, handleSaveAndLeave } = useUnsavedGuard({
-    isDirty: form.isDirty(),
+    isDirty: form.isDirty() && !actionData?.success,
     onSave: handleSave,
   });
 
