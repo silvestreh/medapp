@@ -1,5 +1,6 @@
 // Initializes the `studies` service on path `/studies`
 import type { Application, Study, ServiceMethods } from '../../declarations';
+import { Op } from 'sequelize';
 import { Studies } from './studies.class';
 import createModel from '../../models/studies.model';
 import hooks from './studies.hooks';
@@ -15,7 +16,8 @@ export default function (app: Application): void {
   const options = {
     Model: createModel(app),
     paginate: app.get('paginate'),
-    multi: ['patch']
+    multi: ['patch'],
+    operators: { $contains: Op.contains },
   };
 
   // Initialize our service with any options it requires

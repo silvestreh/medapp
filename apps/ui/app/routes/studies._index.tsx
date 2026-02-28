@@ -8,7 +8,7 @@ import { Link, useLoaderData, useSearchParams } from '@remix-run/react';
 import { TextInput, Stack, Loader, Group, Button, Autocomplete, Select } from '@mantine/core';
 import dayjs from 'dayjs';
 
-import { useFind } from '~/components/provider';
+import { useFind, useFeathers } from '~/components/provider';
 import { authenticatedLoader, getAuthenticatedClient, isMedicVerified } from '~/utils/auth.server';
 import Portal from '~/components/portal';
 import { media } from '~/media';
@@ -27,13 +27,6 @@ type Prepaga = {
   shortName: string;
   denomination: string;
 };
-
-interface PrepagaResponse {
-  data: Prepaga[];
-  total: number;
-  limit: number;
-  skip: number;
-}
 
 const STUDY_TYPES = ['anemia', 'anticoagulation', 'compatibility', 'hemostasis', 'myelogram', 'thrombophilia'] as const;
 
@@ -109,22 +102,36 @@ export default function StudiesIndex() {
   // Insurer autocomplete — live DB search
   // -------------------------------------------------------------------------
 
-  const shouldSearchInsurers = debouncedInsurerSearch.length >= 2;
+  const feathers = useFeathers();
+  const [insurerResults, setInsurerResults] = useState<Prepaga[]>([]);
 
-  const insurerQuery = useMemo(
-    () => (shouldSearchInsurers ? { $search: debouncedInsurerSearch, $limit: 20, $sort: { shortName: 1 } } : undefined),
-    [debouncedInsurerSearch, shouldSearchInsurers]
-  );
+  useEffect(() => {
+    if (debouncedInsurerSearch.length < 2) {
+      setInsurerResults([]);
+      return;
+    }
 
-  const { response: insurerResponse } = useFind('prepagas', insurerQuery, { enabled: shouldSearchInsurers });
+    let cancelled = false;
 
-  const insurerResults: Prepaga[] = useMemo(() => {
-    if (!shouldSearchInsurers) return [];
-    const raw = insurerResponse as PrepagaResponse | Prepaga[];
-    return Array.isArray(raw) ? raw : (raw?.data ?? []);
-  }, [shouldSearchInsurers, insurerResponse]);
+    (async () => {
+      try {
+        const res = await feathers.service('prepagas').find({
+          query: { $search: debouncedInsurerSearch, $limit: 20, $sort: { shortName: 1 } },
+        });
+        if (cancelled) return;
+        const list = Array.isArray(res) ? res : (res?.data ?? []);
+        setInsurerResults(list);
+      } catch {
+        if (!cancelled) setInsurerResults([]);
+      }
+    })();
 
-  const insurerAutocompleteData = useMemo(() => insurerResults.map(p => p.shortName), [insurerResults]);
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedInsurerSearch, feathers]);
+
+  const insurerAutocompleteData = useMemo(() => [...new Set(insurerResults.map(p => p.shortName))], [insurerResults]);
 
   const insurerByName = useMemo(() => new Map(insurerResults.map(p => [p.shortName, p.id])), [insurerResults]);
 
@@ -246,7 +253,7 @@ export default function StudiesIndex() {
     }
 
     if (selectedStudyType) {
-      q.studyType = selectedStudyType;
+      q.studies = { $contains: [selectedStudyType] };
     }
 
     return q;
