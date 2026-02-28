@@ -72,6 +72,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [debouncedInputValue] = useDebouncedValue(inputValue, 500);
   const [isOpen, { open, close }] = useDisclosure(false);
+  const [selected, setSelected] = useState(false);
   const ref = useClickOutside(() => close());
   const query = useMemo(
     () => ({
@@ -89,6 +90,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
   const showCreateNew =
     createNewPatientSlot && (inputValue === '' || patients.length === 0);
   const dropdownOpen =
+    !selected &&
     isOpen &&
     (patients.length > 0 || (createNewPatientSlot && (inputValue === '' || patients.length === 0)));
 
@@ -97,12 +99,19 @@ const PatientSearch: FC<PatientSearchProps> = ({
   };
 
   const handleFocus = () => {
+    if (selected) return;
     if (patients.length > 0 || createNewPatientSlot) open();
+  };
+
+  const handleChange = (value: string) => {
+    setInputValue(value);
+    if (selected) setSelected(false);
   };
 
   const handleSelectPatient = (patient: Patient) => {
     onChange?.(patient.id);
     setInputValue(`${patient.personalData.firstName} ${patient.personalData.lastName}`.trim());
+    setSelected(true);
     close();
   };
 
@@ -130,7 +139,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
           onFocus={handleFocus}
           onClick={open}
           value={inputValue}
-          onChange={e => setInputValue(e.currentTarget.value)}
+          onChange={e => handleChange(e.currentTarget.value)}
           onBlur={handleBlur}
           placeholder={resolvedPlaceholder}
           styles={{ input: { fontSize: '1em' } }}
