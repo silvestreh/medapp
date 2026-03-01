@@ -1,14 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Stack,
-  Group,
-  Text,
-  Loader,
-  Alert,
-  Paper,
-  SimpleGrid,
-} from '@mantine/core';
+import { Stack, Group, Text, Loader, Alert, Paper, SimpleGrid } from '@mantine/core';
 import { AreaChart, BarChart, DonutChart } from '@mantine/charts';
 import { Info } from 'lucide-react';
 import dayjs from 'dayjs';
@@ -17,11 +9,7 @@ import { authenticatedLoader } from '~/utils/auth.server';
 import { useFind } from '~/components/provider';
 import Portal from '~/components/portal';
 import { ToolbarTitle } from '~/components/toolbar-title';
-import {
-  DateRangeFilterState,
-  DateRangePopover,
-  resolveDateRange,
-} from '~/components/date-range-popover';
+import { DateRangeFilterState, DateRangePopover, resolveDateRange } from '~/components/date-range-popover';
 
 export const loader = authenticatedLoader();
 
@@ -78,6 +66,11 @@ interface NationalityDistributionEntry {
   count: number;
 }
 
+interface InsurerDistributionEntry {
+  insurer: string;
+  count: number;
+}
+
 interface StatsResponse {
   studyTypeCounts: StudyTypeCount[];
   ageGroups: AgeGroupEntry[];
@@ -87,6 +80,7 @@ interface StatsResponse {
   avgStudiesPerPatient: number;
   completionRate: CompletionRate;
   nationalityDistribution: NationalityDistributionEntry[];
+  insurerDistribution: InsurerDistributionEntry[];
 }
 
 export default function StatsIndex() {
@@ -106,18 +100,16 @@ export default function StatsIndex() {
     lastAmount: 30,
     lastUnit: 'day',
     singleDate: dayjs().format('YYYY-MM-DD'),
-    betweenRange: [
-      dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
-      dayjs().format('YYYY-MM-DD'),
-    ],
+    betweenRange: [dayjs().subtract(30, 'day').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
   });
 
   const resolvedRange = useMemo(
-    () => resolveDateRange(rangeFilter, {
-      minRangeStart: MIN_RANGE_START,
-      maxDate: dayjs().format('YYYY-MM-DD'),
-      precision: 'day',
-    }),
+    () =>
+      resolveDateRange(rangeFilter, {
+        minRangeStart: MIN_RANGE_START,
+        maxDate: dayjs().format('YYYY-MM-DD'),
+        precision: 'day',
+      }),
     [rangeFilter]
   );
 
@@ -251,6 +243,15 @@ export default function StatsIndex() {
       }));
   }, [countries, stats, t]);
 
+  const insurerChartData = useMemo(() => {
+    if (!stats?.insurerDistribution) return [];
+
+    return stats.insurerDistribution.slice(0, 15).map(row => ({
+      insurer: row.insurer,
+      [t('stats.count')]: row.count,
+    }));
+  }, [stats, t]);
+
   return (
     <Stack gap="lg" p={{ base: '1rem', md: '2rem' }}>
       <Portal id="toolbar">
@@ -337,6 +338,21 @@ export default function StatsIndex() {
               tickLine="y"
             />
           </Paper>
+
+          {insurerChartData.length > 0 && (
+            <Paper p="md" withBorder>
+              <Text fw={600} mb="md">
+                {t('stats.studies_by_insurer')}
+              </Text>
+              <BarChart
+                h={400}
+                data={insurerChartData}
+                dataKey="insurer"
+                series={[{ name: t('stats.count'), color: 'violet.6' }]}
+                tickLine="y"
+              />
+            </Paper>
+          )}
 
           {ageChartSeries.length > 0 && (
             <Paper p="md" withBorder>

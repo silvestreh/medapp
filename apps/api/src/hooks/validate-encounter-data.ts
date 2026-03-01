@@ -3,6 +3,8 @@ import { Hook, HookContext } from '@feathersjs/feathers';
 
 export const validateEncounterData = (): Hook => {
   return async (context: HookContext) => {
+    if (!context.params.provider) return context;
+
     const { data } = context.data;
 
     if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {

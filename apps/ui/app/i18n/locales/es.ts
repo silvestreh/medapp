@@ -107,6 +107,8 @@ export const es = {
     settings_units: 'Unidades',
     settings_base_name_placeholder: 'Ej. UHB',
     settings_particular: 'Particular',
+    settings_normal: 'Normal',
+    settings_emergency: 'Emergencia',
   },
   appointments: {
     today_schedule: 'Turnos de Hoy',
@@ -676,6 +678,7 @@ export const es = {
     insurance_placeholder: 'Obra social del paciente',
     extraction_date: 'Fecha de extracción',
     no_order: 'Falta orden / Particular no pago',
+    emergency: 'Emergencia / UTI',
     observations: 'Observaciones',
     observations_placeholder: 'Comentarios u observaciones...',
     requested_studies: 'Estudios solicitados',
@@ -931,6 +934,8 @@ export const es = {
     completion_with_results: 'Con resultados',
     completion_pending: 'Resultados pendientes',
     nationality_distribution: 'Nacionalidades principales',
+    studies_by_insurer: 'Estudios por obra social',
+    no_insurer: 'Sin obra social',
   },
   verification: {
     unverified_title: 'Profesional no verificado',

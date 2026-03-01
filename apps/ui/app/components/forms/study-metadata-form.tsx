@@ -33,6 +33,8 @@ interface StudyMetadataFormProps {
   onToggleStudy: (key: string) => void;
   noOrder: boolean;
   onNoOrderChange: (value: boolean) => void;
+  emergency?: boolean;
+  onEmergencyChange?: (value: boolean) => void;
   comment: string;
   onCommentChange: (value: string) => void;
   date: Date | null;
@@ -97,6 +99,8 @@ export function StudyMetadataForm({
   onToggleStudy,
   noOrder,
   onNoOrderChange,
+  emergency = false,
+  onEmergencyChange,
   comment,
   onCommentChange,
   date,
@@ -197,6 +201,16 @@ export function StudyMetadataForm({
             checked={noOrder}
             onChange={e => onNoOrderChange(e.currentTarget.checked)}
             color="blue"
+            disabled={readOnly}
+          />
+        </FieldRow>
+
+        <FieldRow checkbox>
+          <Checkbox
+            label={t('studies.emergency')}
+            checked={emergency}
+            onChange={e => onEmergencyChange?.(e.currentTarget.checked)}
+            color="red"
             disabled={readOnly}
           />
         </FieldRow>

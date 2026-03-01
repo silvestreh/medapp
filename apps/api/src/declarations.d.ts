@@ -40,10 +40,10 @@ export interface Medication {
 
 export interface Prepaga {
   id: string;
-  rnas: string | null;
-  enemp: string | null;
+  registry: string | null;
   denomination: string;
   shortName: string;
+  tiers: { name: string; code: number | null }[];
 }
 
 export interface ServiceTypes {}
@@ -195,6 +195,12 @@ export interface MdSettings {
   saturdayEnd: string | null;
   sundayStart: string | null;
   sundayEnd: string | null;
+}
+
+export interface AccountingSettings {
+  id: Id;
+  organizationId: Id | null;
+  userId: Id;
   insurerPrices: Record<string, Record<string, number | PricingConfig>>;
 }
 

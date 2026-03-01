@@ -12,6 +12,7 @@ import restrictToMedic from './hooks/restrict-to-medic';
 import { sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import searchStudies from './hooks/search-studies';
 import { requireVerifiedLicense } from '../../hooks/require-verified-license';
+import populateInsurer from './hooks/populate-insurer';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -23,11 +24,25 @@ export default {
       verifyOrganizationMembership(),
       checkPermissions()
     ],
-    find: [restrictToMedic(), searchStudies()],
+    find: [
+      restrictToMedic(),
+      searchStudies()
+    ],
     get: [restrictToMedic()],
-    create: [requireVerifiedLicense(), restrictToMedic(), clearReferringDoctor(), autoProtocol(), extractStudyResults()],
+    create: [
+      requireVerifiedLicense(),
+      restrictToMedic(),
+      clearReferringDoctor(),
+      autoProtocol(),
+      extractStudyResults()
+    ],
     update: [],
-    patch: [requireVerifiedLicense(), restrictToMedic(), clearReferringDoctor(), extractStudyResults()],
+    patch: [
+      requireVerifiedLicense(),
+      restrictToMedic(),
+      clearReferringDoctor(),
+      extractStudyResults()
+    ],
     remove: [restrictToMedic()]
   },
 
@@ -36,17 +51,25 @@ export default {
     find: [
       populateResults(),
       populatePatient(),
+      populateInsurer(),
       populateReferringDoctor(),
       sortByPersonalDataRank({ foreignKey: 'patientId' })
     ],
     get: [
       populateResults(),
       populatePatient(),
+      populateInsurer(),
       populateReferringDoctor(),
     ],
-    create: [upsertStudyResults(), populateReferringDoctor()],
+    create: [
+      upsertStudyResults(),
+      populateReferringDoctor()
+    ],
     update: [],
-    patch: [upsertStudyResults(), populateReferringDoctor()],
+    patch: [
+      upsertStudyResults(),
+      populateReferringDoctor()
+    ],
     remove: []
   },
 

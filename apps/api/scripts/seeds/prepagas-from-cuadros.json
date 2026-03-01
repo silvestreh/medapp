@@ -1,0 +1,7732 @@
+[
+  {
+    "id": "002b7eb5-80b5-4667-ba28-2adef18e5d7b",
+    "registry": null,
+    "denomination": "Aczep S.A.",
+    "shortName": "ACZEP",
+    "tiers": []
+  },
+  {
+    "id": "004adcd4-3ad9-448e-80c6-e039d9156ab1",
+    "registry": "rnas:1-0250-7",
+    "denomination": "Obra Social Del Personal De La Construccion",
+    "shortName": "OSPECON",
+    "tiers": [
+      {
+        "name": "Mi 500",
+        "code": null
+      },
+      {
+        "name": "Mi 600",
+        "code": null
+      },
+      {
+        "name": "Mi 700",
+        "code": null
+      },
+      {
+        "name": "Mi 800",
+        "code": null
+      },
+      {
+        "name": "Mi 900",
+        "code": null
+      },
+      {
+        "name": "Mi 950",
+        "code": null
+      },
+      {
+        "name": "Mi 1000",
+        "code": null
+      },
+      {
+        "name": "Mi 2000",
+        "code": null
+      },
+      {
+        "name": "Mi 2000 Plus",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "00a35038-019e-4f1c-9b43-bbd7abb41714",
+    "registry": "rnas:1-1190-4",
+    "denomination": "Obra Social Del Personal De La Universidad",
+    "shortName": "OSPU",
+    "tiers": []
+  },
+  {
+    "id": "01815387-6a52-4133-bada-b48da2570442",
+    "registry": null,
+    "denomination": "Medipar Sa",
+    "shortName": "MEDIPAR",
+    "tiers": [
+      {
+        "name": "Global",
+        "code": null
+      },
+      {
+        "name": "Plus",
+        "code": null
+      },
+      {
+        "name": "Premium",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "01868350-3bea-cecd-8690-9eeeec60798a",
+    "registry": "rnemp:116716",
+    "denomination": "SALUD DEL NUEVO ROSARIO SA",
+    "shortName": "SNR SALUD NUEVO ROSARIO",
+    "tiers": [
+      {
+        "name": "2100",
+        "code": 490
+      },
+      {
+        "name": "3100",
+        "code": 491
+      },
+      {
+        "name": "4100",
+        "code": 492
+      },
+      {
+        "name": "5100",
+        "code": 493
+      },
+      {
+        "name": "6100",
+        "code": 494
+      },
+      {
+        "name": "JOVEN",
+        "code": 495
+      },
+      {
+        "name": "7100",
+        "code": 1402
+      }
+    ]
+  },
+  {
+    "id": "0188fa61-08c9-e6f6-f4e7-df1cffb0fca3",
+    "registry": "rnemp:310934",
+    "denomination": "PROGRAMAS MEDICOS SOCIEDAD ARGENTINA DE CONSULTORIA MUTUAL",
+    "shortName": "PM PROGRAMAS MEDICOS",
+    "tiers": [
+      {
+        "name": "Plan Classic-1",
+        "code": 1100
+      },
+      {
+        "name": "Plan Classic-2",
+        "code": 1119
+      },
+      {
+        "name": "Plan Classic-3",
+        "code": 1120
+      },
+      {
+        "name": "Plan Pgn",
+        "code": 1121
+      },
+      {
+        "name": "Plan Premium-2",
+        "code": 1122
+      },
+      {
+        "name": "Plan Premium-3",
+        "code": 1123
+      },
+      {
+        "name": "Plan Premium-4",
+        "code": 1124
+      }
+    ]
+  },
+  {
+    "id": "01d9a9f4-2606-40e4-b6e3-b4f2256e34d5",
+    "registry": "rnas:1-0600-4",
+    "denomination": "Obra Social De Musicos",
+    "shortName": "OSM",
+    "tiers": []
+  },
+  {
+    "id": "021e88ac-b71f-425b-b1f8-6df456aa4a14",
+    "registry": "rnemp:110060",
+    "denomination": "COBERTURA INTEGRAL DE MEDICINA ASISTENCIAL S.A.",
+    "shortName": "CIMA INTEGRAL",
+    "tiers": [
+      {
+        "name": "ROBLE",
+        "code": 366
+      },
+      {
+        "name": "ARRAYAN",
+        "code": 367
+      },
+      {
+        "name": "CIMO",
+        "code": 369
+      }
+    ]
+  },
+  {
+    "id": "025c021c-adc8-4072-acfa-4236fd646aac",
+    "registry": null,
+    "denomination": "Equipo Medico De Emergencias",
+    "shortName": "EME",
+    "tiers": []
+  },
+  {
+    "id": "027fd059-695b-4a16-b2e1-407d16673f33",
+    "registry": "rnas:1-2060-8",
+    "denomination": "Obra Social De La Federacion De Trabajadores De La Industria De La Alimentacion",
+    "shortName": "OSFTIA",
+    "tiers": []
+  },
+  {
+    "id": "03c0c048-70c9-4be0-9b1c-353eb98ca034",
+    "registry": null,
+    "denomination": "Carra Salud S.A",
+    "shortName": "CARRA SALUD",
+    "tiers": [
+      {
+        "name": "Clásico",
+        "code": null
+      },
+      {
+        "name": "Plus",
+        "code": null
+      },
+      {
+        "name": "Preferencial",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "03c78846-34c7-3edb-d808-9870abe4e2ab",
+    "registry": "rnemp:613064",
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE DIRECCION DE LA INDUSTRIA PRIVADA DEL PETROLEO",
+    "shortName": "OSDIPP",
+    "tiers": [
+      {
+        "name": "1 Plus-01-Fam.a.Cargo",
+        "code": null
+      },
+      {
+        "name": "1 Plus-01-Hijos",
+        "code": null
+      },
+      {
+        "name": "1 Plus-01-Individual",
+        "code": null
+      },
+      {
+        "name": "1 Plus-01-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "1 Plus-12-Hijos",
+        "code": null
+      },
+      {
+        "name": "1 Plus-12-Individual",
+        "code": null
+      },
+      {
+        "name": "1 Plus-12-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "1-01-Fam.a.Cargo",
+        "code": null
+      },
+      {
+        "name": "1-01-Hijos",
+        "code": null
+      },
+      {
+        "name": "1-01-Individual",
+        "code": null
+      },
+      {
+        "name": "1-01-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "150-12-Hijos",
+        "code": null
+      },
+      {
+        "name": "150-12-Individual",
+        "code": null
+      },
+      {
+        "name": "150-12-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "150-25-Hijos",
+        "code": null
+      },
+      {
+        "name": "150-25-Individual",
+        "code": null
+      },
+      {
+        "name": "150-25-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "2-01-Fam.a.Cargo",
+        "code": null
+      },
+      {
+        "name": "2-01-Hijos",
+        "code": null
+      },
+      {
+        "name": "2-01-Individual",
+        "code": null
+      },
+      {
+        "name": "2-01-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "250-12-Hijos",
+        "code": null
+      },
+      {
+        "name": "250-12-Individual",
+        "code": null
+      },
+      {
+        "name": "250-12-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "250-25-Hijos",
+        "code": null
+      },
+      {
+        "name": "250-25-Individual",
+        "code": null
+      },
+      {
+        "name": "250-25-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "3-01-Fam.a.Cargo",
+        "code": null
+      },
+      {
+        "name": "3-01-Hijos",
+        "code": null
+      },
+      {
+        "name": "3-01-Individual",
+        "code": null
+      },
+      {
+        "name": "3-01-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "350-12-Hijos",
+        "code": null
+      },
+      {
+        "name": "350-12-Individual",
+        "code": null
+      },
+      {
+        "name": "350-12-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "350-25-Hijos",
+        "code": null
+      },
+      {
+        "name": "350-25-Individual",
+        "code": null
+      },
+      {
+        "name": "350-25-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "Magnus-01-Fam.a.Cargo",
+        "code": null
+      },
+      {
+        "name": "Magnus-01-Hijos",
+        "code": null
+      },
+      {
+        "name": "Magnus-01-Individual",
+        "code": null
+      },
+      {
+        "name": "Magnus-01-Matrimonio",
+        "code": null
+      },
+      {
+        "name": "Magnus-12-Hijos",
+        "code": null
+      },
+      {
+        "name": "Magnus-12-Individual",
+        "code": null
+      },
+      {
+        "name": "Magnus-12-Matrimonio",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "04316413-894c-4429-87e5-bb4e797055b9",
+    "registry": null,
+    "denomination": "Nativus Srl",
+    "shortName": "NATIVUS",
+    "tiers": []
+  },
+  {
+    "id": "04d44719-81f8-42cb-bc7b-0b7858026f67",
+    "registry": "rnas:1-0260-6",
+    "denomination": "Obra Social De Cotillon Y Afines",
+    "shortName": "OSCYA",
+    "tiers": []
+  },
+  {
+    "id": "0527f84d-258e-4050-81fe-306353e64c0c",
+    "registry": null,
+    "denomination": "Nordica Salud S.R.L.",
+    "shortName": "NORDICA SALUD",
+    "tiers": [
+      {
+        "name": "Plan N",
+        "code": null
+      },
+      {
+        "name": "Plan S",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "0579a714-1b44-423b-aa89-6acfe6c77735",
+    "registry": "rnas:1-0680-6",
+    "denomination": "Obra Social Del Personal De Peluqueria, Estetica Y Afines",
+    "shortName": "OSPEA",
+    "tiers": []
+  },
+  {
+    "id": "05a95e12-eda6-4414-aab1-ccf6317cc335",
+    "registry": null,
+    "denomination": "Asociacion Mutual 12 De Enero Trabajadores Pasteleros, Confiteros, Pizzeros, Heladeros, Alfajoreros Y Servicios Rapidos.",
+    "shortName": "MUTUAL PASTELEROS",
+    "tiers": [
+      {
+        "name": "Básico",
+        "code": null
+      },
+      {
+        "name": "Plan 200",
+        "code": null
+      },
+      {
+        "name": "Plan 300",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "05c2d788-e701-5008-0c06-ebe5098c51c8",
+    "registry": "rnemp:320355",
+    "denomination": "ASOCIACION POETA LUGONES MUTUAL C Y D",
+    "shortName": "LUGONES SALUD",
+    "tiers": [
+      {
+        "name": "5000",
+        "code": 184
+      },
+      {
+        "name": "5100",
+        "code": 185
+      },
+      {
+        "name": "5200",
+        "code": 186
+      },
+      {
+        "name": "core",
+        "code": 187
+      },
+      {
+        "name": "LS10",
+        "code": 188
+      },
+      {
+        "name": "LS20",
+        "code": 189
+      },
+      {
+        "name": "LS30",
+        "code": 190
+      },
+      {
+        "name": "LS40",
+        "code": 191
+      },
+      {
+        "name": "LS50",
+        "code": 192
+      }
+    ]
+  },
+  {
+    "id": "05f1990f-fed7-4ca7-b7df-8333c27e7216",
+    "registry": null,
+    "denomination": "Administrar Salud S.A.",
+    "shortName": "ADMINISTRAR SALUD",
+    "tiers": []
+  },
+  {
+    "id": "061d680e-bbc6-4a61-4575-94e63603cc13",
+    "registry": "rnemp:316130",
+    "denomination": "MUTUAL DEL TRABAJADOR VIAL SANTA FE",
+    "shortName": "MUTUAL DEL TRABAJADOR VIAL SANTA FE",
+    "tiers": [
+      {
+        "name": "PLAN ODONTOLOGICO MUTUAL",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "06ff737f-d90b-5f2d-6242-d6e2bae47b0e",
+    "registry": "rnemp:120160",
+    "denomination": "ADMINISTRACION RECURSOS PARA SALUD.S.A",
+    "shortName": "SERVIRED",
+    "tiers": [
+      {
+        "name": "PLAN COSALUD",
+        "code": 1005
+      },
+      {
+        "name": "PLAN SALUD",
+        "code": 1006
+      },
+      {
+        "name": "PLAN JOVEN SALUD",
+        "code": 1007
+      }
+    ]
+  },
+  {
+    "id": "07122d0e-a62c-49ef-94c0-cb7873a5f18d",
+    "registry": "rnas:1-1210-5",
+    "denomination": "Obra Social Del Personal Del Yacimiento Carbonifero",
+    "shortName": "OSPYC",
+    "tiers": []
+  },
+  {
+    "id": "0771be3d-d472-4894-b396-a4422083bfcd",
+    "registry": null,
+    "denomination": "Direccion De Obra Social San Juan",
+    "shortName": "DOS",
+    "tiers": []
+  },
+  {
+    "id": "08b6a2a9-62dd-4034-9f67-2ec0903c7984",
+    "registry": null,
+    "denomination": "Mano Salud",
+    "shortName": "MANO SALUD",
+    "tiers": []
+  },
+  {
+    "id": "08c5aa76-eb6a-490a-b03c-22366bda4d0b",
+    "registry": "rnemp:313582",
+    "denomination": "MUTUAL BIENESTAR Y PROGRESO",
+    "shortName": "MUTUAL BIENESTAR Y PROGRESO",
+    "tiers": [
+      {
+        "name": "COMPLEMENTARIO GRUPO FAMILIAR",
+        "code": null
+      },
+      {
+        "name": "COMPLEMENTARIO TITULAR SOLO",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "08f76371-c234-45af-b2d8-faabc8e99886",
+    "registry": "rnemp:312695",
+    "denomination": "SOCIEDAD ESPAÑOLA DE BENEFICENCIA Y MUTUALIDAD",
+    "shortName": "HE HOSPITAL ESPAÑOL",
+    "tiers": [
+      {
+        "name": "ESPA�OL 5000",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "09cae384-5e5d-4870-97cf-299841440573",
+    "registry": null,
+    "denomination": "Instituto De Prevision Social Misiones",
+    "shortName": "IPS",
+    "tiers": []
+  },
+  {
+    "id": "09db2826-183a-41f0-aa51-bb17efea2146",
+    "registry": "rnemp:312091",
+    "denomination": "SOCIEDAD ITALIANA DE SOCORROS MUTUOS CAMPANA",
+    "shortName": "SOCIEDAD ITALIANA DE SOCORROS MUTUOS CAMPANA",
+    "tiers": [
+      {
+        "name": "Plan 1",
+        "code": null
+      },
+      {
+        "name": "PLAN 1",
+        "code": null
+      },
+      {
+        "name": "Plan 2",
+        "code": null
+      },
+      {
+        "name": "PLAN 2",
+        "code": null
+      },
+      {
+        "name": "Plan 2 Plus",
+        "code": null
+      },
+      {
+        "name": "PLAN 2 PLUS",
+        "code": null
+      },
+      {
+        "name": "PLAN 2 PUS",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "09ddb9af-ab57-430c-9ac3-07bce25cfd78",
+    "registry": "rnas:1-0770-0",
+    "denomination": "Obra Social Del Personal De Relojeros Y Joyeros",
+    "shortName": "OSPRJ",
+    "tiers": []
+  },
+  {
+    "id": "09f6068d-679e-4a1a-92a5-3ca2dac0a447",
+    "registry": "rnemp:110343",
+    "denomination": "CLINICAS MARPLATENSES UNIDAS S.A.",
+    "shortName": "THEMA RED MEDICA",
+    "tiers": [
+      {
+        "name": "ZAFIRO PLUS",
+        "code": 1382
+      },
+      {
+        "name": "ZAFIRO",
+        "code": 1383
+      },
+      {
+        "name": "AGATA",
+        "code": 1384
+      },
+      {
+        "name": "ONIX",
+        "code": 1385
+      },
+      {
+        "name": "RUBI PLUS",
+        "code": 1386
+      },
+      {
+        "name": "RUBI",
+        "code": 1387
+      },
+      {
+        "name": "AMBAR",
+        "code": 1388
+      },
+      {
+        "name": "OPALO",
+        "code": 1389
+      }
+    ]
+  },
+  {
+    "id": "0a1bd109-b7dd-483c-83c3-d99551c5ca05",
+    "registry": "rnemp:117757",
+    "denomination": "EMERGENCIAS DEL SUR S.R.L.",
+    "shortName": "EMERGENCIAS DEL SUR",
+    "tiers": [
+      {
+        "name": "S-1",
+        "code": 1390
+      },
+      {
+        "name": "S-2",
+        "code": 1391
+      },
+      {
+        "name": "S-8",
+        "code": 1392
+      },
+      {
+        "name": "S-9",
+        "code": 1393
+      },
+      {
+        "name": "S-10",
+        "code": 1394
+      }
+    ]
+  },
+  {
+    "id": "0ac20618-e3f0-40a3-b99f-a58991a7381e",
+    "registry": "rnemp:311739",
+    "denomination": "CENTRO UNION DEPENDIENTES ASOCIACION DE PROTECCION MUTUA",
+    "shortName": "CENTRO UNION DEPENDIENTES ASOCIACION DE PROTECCION MUTUA",
+    "tiers": [
+      {
+        "name": "PLAN 80",
+        "code": null
+      },
+      {
+        "name": "PLAN A",
+        "code": null
+      },
+      {
+        "name": "PLAN B",
+        "code": null
+      },
+      {
+        "name": "PLAN BASICO",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "0b9129fe-1744-4c70-9f05-967255f83aa0",
+    "registry": "rnas:1-1030-7",
+    "denomination": "Obra Social Del Personal De La Fraternidad",
+    "shortName": "OSPF",
+    "tiers": []
+  },
+  {
+    "id": "0c99f00a-dcd0-0411-a7b6-57647615f9c3",
+    "registry": "rnemp:616162",
+    "denomination": "OBRA SOCIAL DE LA FEDERACION ARGENTINA DEL TRABAJADOR DE LAS UNIVERSIDADES NACIONALES",
+    "shortName": "OSFATUN",
+    "tiers": [
+      {
+        "name": "UNI 1000",
+        "code": null
+      },
+      {
+        "name": "UNI 1000 ",
+        "code": null
+      },
+      {
+        "name": "UNI 1000                                          ",
+        "code": null
+      },
+      {
+        "name": "UNI 2000",
+        "code": null
+      },
+      {
+        "name": "UNI 3000",
+        "code": null
+      },
+      {
+        "name": "UNI 4000",
+        "code": null
+      },
+      {
+        "name": "UNI 1000",
+        "code": 1229
+      },
+      {
+        "name": "UNI 2000",
+        "code": 1230
+      },
+      {
+        "name": "UNI 3000",
+        "code": 1231
+      },
+      {
+        "name": "UNI 4000",
+        "code": 1232
+      }
+    ]
+  },
+  {
+    "id": "0d35fc15-29ed-415a-873a-8ee514623a8d",
+    "registry": "rnas:1-2030-1",
+    "denomination": "Obra Social De La Federacion De Trabajadores De La Industria Del Papel",
+    "shortName": "OSFTIP",
+    "tiers": []
+  },
+  {
+    "id": "0d6c90eb-3886-4fe7-af8f-687d7aab622d",
+    "registry": null,
+    "denomination": "Instituto De Planificacion Y Seguro Social De Tucuman",
+    "shortName": "IPSST",
+    "tiers": []
+  },
+  {
+    "id": "0d9f88a1-8bef-413c-aa14-d854ccb4d3ed",
+    "registry": "rnas:1-0530-8",
+    "denomination": "Obra Social Del Personal Medico Y Paramedico",
+    "shortName": "OSMP",
+    "tiers": []
+  },
+  {
+    "id": "0df91ed9-ffa0-4bd4-b48a-9f4d4386620e",
+    "registry": "rnas:1-0750-2",
+    "denomination": "Obra Social Del Personal De Refinerias De Maiz",
+    "shortName": "OSPRM",
+    "tiers": []
+  },
+  {
+    "id": "0e48f318-4278-4cb8-6990-9c060c793481",
+    "registry": "rnemp:612849",
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LA ACTIVIDAD DEL TURF",
+    "shortName": "OSPAT",
+    "tiers": [
+      {
+        "name": "DOCFE ORO",
+        "code": null
+      },
+      {
+        "name": "DOCFE ORO INDIVIDUAL",
+        "code": null
+      },
+      {
+        "name": "DOCFE PLATA",
+        "code": null
+      },
+      {
+        "name": "DOCFE PLATA INDIVIDUAL",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "0eb37c97-5111-4cd4-842d-5bb1d20f0201",
+    "registry": null,
+    "denomination": "Instituto De Obra Social De La Provincia De Santa Fe",
+    "shortName": "IAPOS",
+    "tiers": []
+  },
+  {
+    "id": "10cfa299-af71-431d-9a69-4362a9090113",
+    "registry": null,
+    "denomination": "Obra Social De Los Empleados Publicos Catamarca",
+    "shortName": "OSEP",
+    "tiers": []
+  },
+  {
+    "id": "1178e275-0536-416b-afee-ef2d90313b5c",
+    "registry": null,
+    "denomination": "Obra Social De Empleados Publicos Mendoza",
+    "shortName": "OSEP",
+    "tiers": []
+  },
+  {
+    "id": "12f0e2a7-f3ea-64e7-67da-e4da2c108c28",
+    "registry": "rnemp:320287",
+    "denomination": "ASOCIACION MUTUAL DE FARMACEUTICOS FLORENTINO AMEGHINO",
+    "shortName": "AMFFA SALUD",
+    "tiers": [
+      {
+        "name": "BALANCE",
+        "code": null
+      },
+      {
+        "name": "PREMIUM ORO",
+        "code": null
+      },
+      {
+        "name": "PREMIUM PLATA",
+        "code": null
+      },
+      {
+        "name": "SENIOR",
+        "code": null
+      },
+      {
+        "name": "START",
+        "code": null
+      },
+      {
+        "name": "SENIOR",
+        "code": 1268
+      },
+      {
+        "name": "BALANCE",
+        "code": 1269
+      },
+      {
+        "name": "PREMIUM ORO",
+        "code": 1270
+      },
+      {
+        "name": "PREMIUM ORO",
+        "code": 1271
+      },
+      {
+        "name": "PREMIUM PLATA",
+        "code": 1271
+      },
+      {
+        "name": "PREMIUM PLATA",
+        "code": 1272
+      },
+      {
+        "name": "START",
+        "code": 1272
+      }
+    ]
+  },
+  {
+    "id": "1309e948-5160-43f2-b554-7cef93b178ea",
+    "registry": null,
+    "denomination": "Asismed",
+    "shortName": "ASISMED",
+    "tiers": [
+      {
+        "name": "Clásico",
+        "code": null
+      },
+      {
+        "name": "Plus",
+        "code": null
+      },
+      {
+        "name": "Oro",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "13949ad1-4b70-4993-4c25-47c37f8550d5",
+    "registry": "rnemp:111094",
+    "denomination": "SCIS",
+    "shortName": "SCIS MEDICINA PRIVADA",
+    "tiers": [
+      {
+        "name": "G0519 SC150",
+        "code": 1061
+      },
+      {
+        "name": "G0519 SC150 MATRIMONIO",
+        "code": 1061
+      },
+      {
+        "name": "G0519 SC150 PRIMER HIJO",
+        "code": 1061
+      },
+      {
+        "name": "G0519 SC150 SEGUNDO HIJO EN ADELANTE",
+        "code": 1061
+      },
+      {
+        "name": "R0519 SC150",
+        "code": 1061
+      },
+      {
+        "name": "R0519 SC150 MATRIMONIO",
+        "code": 1061
+      },
+      {
+        "name": "R0519 SC150 PRIMER HIJO",
+        "code": 1061
+      },
+      {
+        "name": "R0519 SC150 SEGUNDO HIJO EN ADELANTE",
+        "code": 1061
+      },
+      {
+        "name": "G0519 SC300",
+        "code": 1062
+      },
+      {
+        "name": "G0519 SC300 MATRIMONIO",
+        "code": 1062
+      },
+      {
+        "name": "G0519 SC300 PRIMER HIJO",
+        "code": 1062
+      },
+      {
+        "name": "G0519 SC300 SEGUNDO HIJO EN ADELANTE",
+        "code": 1062
+      },
+      {
+        "name": "R0519 SC300",
+        "code": 1062
+      },
+      {
+        "name": "R0519 SC300 MATRIMONIO",
+        "code": 1062
+      },
+      {
+        "name": "R0519 SC300 PRIMER HIJO",
+        "code": 1062
+      },
+      {
+        "name": "R0519 SC300 SEGUNDO HIJO EN ADELANTE",
+        "code": 1062
+      },
+      {
+        "name": "G0519 SC500",
+        "code": 1063
+      },
+      {
+        "name": "G0519 SC500 MATRIMONIO",
+        "code": 1063
+      },
+      {
+        "name": "G0519 SC500 PRIMER HIJO",
+        "code": 1063
+      },
+      {
+        "name": "G0519 SC500 SEGUNDO HIJO EN ADELANTE",
+        "code": 1063
+      },
+      {
+        "name": "R0519 SC500",
+        "code": 1063
+      },
+      {
+        "name": "R0519 SC500 MATRIMONIO",
+        "code": 1063
+      },
+      {
+        "name": "R0519 SC500 PRIMER HIJO",
+        "code": 1063
+      },
+      {
+        "name": "R0519 SC500 SEGUNDO HIJO EN ADELANTE",
+        "code": 1063
+      }
+    ]
+  },
+  {
+    "id": "14562b84-845c-a527-9d02-03cffb6802be",
+    "registry": "rnemp:112325",
+    "denomination": "BRAMED S.R.L.",
+    "shortName": "BRAMED MEDICINA PRIVADA",
+    "tiers": [
+      {
+        "name": "INTEGRAL",
+        "code": 980
+      },
+      {
+        "name": "SUPERIOR",
+        "code": 981
+      },
+      {
+        "name": "GOLDEN",
+        "code": 982
+      },
+      {
+        "name": "GOLDEN PLUS",
+        "code": 983
+      },
+      {
+        "name": "DELTA",
+        "code": 984
+      },
+      {
+        "name": "GENESIS",
+        "code": 985
+      },
+      {
+        "name": "OMEGA",
+        "code": 986
+      },
+      {
+        "name": "OMEGA PLUS",
+        "code": 987
+      }
+    ]
+  },
+  {
+    "id": "14f9b753-91a9-4b45-916d-21e2d37cb7cb",
+    "registry": "rnas:1-1080-2",
+    "denomination": "Obra Social Del Personal De La Mineria",
+    "shortName": "OSPM",
+    "tiers": []
+  },
+  {
+    "id": "158e0add-b178-47e1-8538-5aaa0f1f40a6",
+    "registry": null,
+    "denomination": "Administracion Provincial De Obra Social",
+    "shortName": "APOS",
+    "tiers": []
+  },
+  {
+    "id": "16ac9080-0bb3-4c9e-b16c-56d1292e8ee1",
+    "registry": "rnemp:318082",
+    "denomination": "Mutual de Salud del Personal de Entidades del Grupo Sancor Seguros",
+    "shortName": "SANCOR SALUD GRUPO DE MEDICINA PRIVADA",
+    "tiers": [
+      {
+        "name": "OK 10",
+        "code": 385
+      },
+      {
+        "name": "OK 20",
+        "code": 548
+      },
+      {
+        "name": "OK 30",
+        "code": 549
+      },
+      {
+        "name": "OK Dental",
+        "code": 1961
+      }
+    ]
+  },
+  {
+    "id": "16d1df7e-f306-48ae-bf5d-bb1c3a41723a",
+    "registry": null,
+    "denomination": "Instituto De Asistencia Social De Empleados Publicos Formosa",
+    "shortName": "IASEP",
+    "tiers": []
+  },
+  {
+    "id": "177ff233-fcf6-8ed3-5e6f-dfe7f9753994",
+    "registry": "rnemp:420536",
+    "denomination": "COLEGIO MEDICO DE SAN JUAN",
+    "shortName": "COLEGIO MEDICO DE SAN JUAN",
+    "tiers": [
+      {
+        "name": "PLAN COLMED",
+        "code": 174
+      },
+      {
+        "name": "PLAN UNIVERSITARIO",
+        "code": 479
+      },
+      {
+        "name": "PLAN SUPERIOR",
+        "code": 480
+      },
+      {
+        "name": "PLAN MEDICO",
+        "code": 481
+      }
+    ]
+  },
+  {
+    "id": "17e5d65f-c451-5678-51af-7995143b98e9",
+    "registry": "rnemp:112110",
+    "denomination": "VITA`S S.A.",
+    "shortName": "VITAS",
+    "tiers": [
+      {
+        "name": "V100",
+        "code": null
+      },
+      {
+        "name": "V101",
+        "code": null
+      },
+      {
+        "name": "V200",
+        "code": 351
+      },
+      {
+        "name": "V202",
+        "code": 352
+      },
+      {
+        "name": "V100",
+        "code": 353
+      },
+      {
+        "name": "V101",
+        "code": 354
+      }
+    ]
+  },
+  {
+    "id": "1972c9ed-179a-4c11-8d01-dede7b180159",
+    "registry": "rnas:1-0010-5",
+    "denomination": "Obra Social De Aeronavegantes",
+    "shortName": "OSA",
+    "tiers": []
+  },
+  {
+    "id": "19816e66-6907-44a0-87df-83f10c3be840",
+    "registry": "rnas:1-0900-3",
+    "denomination": "Obra Social Del Personal De La Industria Del Vidrio",
+    "shortName": "OSPIV",
+    "tiers": []
+  },
+  {
+    "id": "19abdf07-5dac-4ef3-972e-ece774085df1",
+    "registry": "rnas:1-0380-7",
+    "denomination": "Obra Social Del Personal De La Industria Del Gas",
+    "shortName": "OSPIG",
+    "tiers": []
+  },
+  {
+    "id": "1a72f141-0889-456b-b578-d2cfec52b366",
+    "registry": "rnemp:310897",
+    "denomination": "ASOCIACION MUTUAL PREMIUM",
+    "shortName": "CRUZ PLUS COBERTURA MEDICA",
+    "tiers": [
+      {
+        "name": "2010",
+        "code": null
+      },
+      {
+        "name": "2015",
+        "code": null
+      },
+      {
+        "name": "2020",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "1b60f987-f0fe-4a92-a11b-803b9c629b27",
+    "registry": "rnemp:115935",
+    "denomination": "ELAREYNA",
+    "shortName": "ELAREYNA",
+    "tiers": [
+      {
+        "name": "DIAMANTE",
+        "code": null
+      },
+      {
+        "name": "GOLD",
+        "code": null
+      },
+      {
+        "name": "LITIO",
+        "code": null
+      },
+      {
+        "name": "PLATINUM",
+        "code": null
+      },
+      {
+        "name": "RUBI",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "1cfd0e21-0a64-4b53-b35f-bbd7c5e5f2f7",
+    "registry": "rnas:1-1180-5",
+    "denomination": "Obra Social Del Personal De La Union Obrera Metalurgica",
+    "shortName": "OSUOMRA",
+    "tiers": []
+  },
+  {
+    "id": "20647bbf-b50f-4320-a110-f34fd77fd5fd",
+    "registry": "rnas:0-0030-2",
+    "denomination": "Obra Social De La Policia Federal Argentina",
+    "shortName": "OSPFA",
+    "tiers": []
+  },
+  {
+    "id": "2133e1c4-ab48-4e57-8aaf-7127ab336791",
+    "registry": "rnas:1-0420-6",
+    "denomination": "Obra Social Del Personal Del Juego De Azar",
+    "shortName": "OSJA",
+    "tiers": []
+  },
+  {
+    "id": "217f3bdb-5de3-8282-236e-acb6ce7d6b00",
+    "registry": "rnemp:310231",
+    "denomination": "ASOCIACION MUTUAL DE SALUD DE CIUDADELA",
+    "shortName": "ASOCIACION MUTUAL DE SALUD DE CIUDADELA",
+    "tiers": [
+      {
+        "name": "Gold",
+        "code": null
+      },
+      {
+        "name": "PMO Int.",
+        "code": null
+      },
+      {
+        "name": "PMO Int. Adicional",
+        "code": null
+      },
+      {
+        "name": "PMO Int. Mat.",
+        "code": null
+      },
+      {
+        "name": "Senior",
+        "code": null
+      },
+      {
+        "name": "Senior +",
+        "code": null
+      },
+      {
+        "name": "Silver",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "23a51f40-9aa7-4734-95e9-27da57f80dbc",
+    "registry": "rnas:1-0740-3",
+    "denomination": "Obra Social Del Personal De Recoleccion Y Barrido",
+    "shortName": "OSPRB",
+    "tiers": []
+  },
+  {
+    "id": "23c1899f-de24-4000-a348-9440c79c91cc",
+    "registry": "rnemp:110022",
+    "denomination": "GERMED S.A.",
+    "shortName": "GRUPO LPF",
+    "tiers": [
+      {
+        "name": "PLAN 100",
+        "code": 420
+      },
+      {
+        "name": "PLAN 300",
+        "code": 421
+      },
+      {
+        "name": "PLAN 500",
+        "code": 422
+      },
+      {
+        "name": "PLAN VITAL 30",
+        "code": 423
+      },
+      {
+        "name": "PLAN VITAL 300",
+        "code": 423
+      },
+      {
+        "name": "PLAN VITAL 50",
+        "code": 424
+      },
+      {
+        "name": "PLAN VITAL 500",
+        "code": 424
+      },
+      {
+        "name": "PLAN 50",
+        "code": 1185
+      }
+    ]
+  },
+  {
+    "id": "24337bab-e805-4bb0-99d5-aa7562dc0b76",
+    "registry": "rnemp:113892",
+    "denomination": "SOREMER S.A.",
+    "shortName": "SOREMER S.A.",
+    "tiers": [
+      {
+        "name": "PLAN E",
+        "code": 1265
+      },
+      {
+        "name": "PLAN E PREMIUM",
+        "code": 1266
+      },
+      {
+        "name": "PLAN S",
+        "code": 1267
+      }
+    ]
+  },
+  {
+    "id": "246cc8ec-b783-420c-b4fb-025aacb92838",
+    "registry": "rnemp:311319",
+    "denomination": "SOCIEDAD ESPANOLA DE SOCORROS MUTUOS DE TRES ARROYOS",
+    "shortName": "SOCIEDAD ESPAÑOLA DE SOCORROS MUTUOS DE TRES ARROYOS",
+    "tiers": [
+      {
+        "name": "HISPANO - PLAN JOVEN",
+        "code": null
+      },
+      {
+        "name": "PLAN BASE",
+        "code": null
+      },
+      {
+        "name": "PLAN PLUS",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "24c9980e-cbe0-49a9-94e2-6c1497f1bad0",
+    "registry": "rnemp:314769",
+    "denomination": "ASOC. MUTUAL AYUDA EMPL. PREVINCA SERV. SOCIALES",
+    "shortName": "PREVINCA SALUD",
+    "tiers": [
+      {
+        "name": "A",
+        "code": 2235
+      },
+      {
+        "name": "B",
+        "code": 2236
+      },
+      {
+        "name": "B70",
+        "code": 2237
+      },
+      {
+        "name": "B71",
+        "code": 2238
+      },
+      {
+        "name": "C30",
+        "code": 2239
+      },
+      {
+        "name": "C31",
+        "code": 2240
+      },
+      {
+        "name": "I50",
+        "code": 2241
+      },
+      {
+        "name": "I51",
+        "code": 2242
+      },
+      {
+        "name": "M40",
+        "code": 2243
+      },
+      {
+        "name": "M41",
+        "code": 2244
+      },
+      {
+        "name": "P70",
+        "code": 2245
+      },
+      {
+        "name": "P71",
+        "code": 2246
+      },
+      {
+        "name": "S50",
+        "code": 2247
+      },
+      {
+        "name": "S51",
+        "code": 2248
+      }
+    ]
+  },
+  {
+    "id": "251705bf-c568-4671-9a09-2c3fb2d363ed",
+    "registry": "rnas:2-0010-4",
+    "denomination": "Obra Social Del Personal De Direccion De La Industria Metalurgica Y Demas Actividades Empresarias",
+    "shortName": "OSIM",
+    "tiers": [
+      {
+        "name": "Plata",
+        "code": null
+      },
+      {
+        "name": "Oro",
+        "code": null
+      },
+      {
+        "name": "Platinum",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "25f13b7f-03f1-437e-bac8-6aa07152ab21",
+    "registry": "rnemp:117719",
+    "denomination": "SANTE MEDICAL SRL",
+    "shortName": "SANTE MEDICAL",
+    "tiers": [
+      {
+        "name": "Plan A",
+        "code": null
+      },
+      {
+        "name": "Plan S1",
+        "code": null
+      },
+      {
+        "name": "Plan U",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "260b504e-5a00-44e7-97e8-0151b61ecded",
+    "registry": "rnas:1-0840-6",
+    "denomination": "Obra Social Del Personal De Telecomunicaciones",
+    "shortName": "OSPTEL",
+    "tiers": []
+  },
+  {
+    "id": "26e51517-a54a-4cb6-8e3b-681811105be7",
+    "registry": "rnas:1-0160-3",
+    "denomination": "Obra Social Del Personal Del Caucho De Armado De Calzado",
+    "shortName": "OSPCAC",
+    "tiers": []
+  },
+  {
+    "id": "27fb9f1b-2520-07a0-7ade-cef1a48f7ff8",
+    "registry": "rnemp:615527",
+    "denomination": "OBRA SOCIAL DE AGENTES DE PROPAGANDA MEDICA DE ROSARIO",
+    "shortName": "OBRA SOCIAL DE AGENTES DE PROPAGANDA MEDICA DE ROSARIO",
+    "tiers": [
+      {
+        "name": "AS110",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "28271619-86f5-7c98-8236-e1079990da72",
+    "registry": "rnemp:112349",
+    "denomination": "SOCORRO MEDICO PRIVADO CORDOBA S.A.",
+    "shortName": "SOCORRO MEDICO PRIVADO CORDOBA S.A.",
+    "tiers": [
+      {
+        "name": "VITTAL DOCTA",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "283b9bea-6515-493c-a614-32778527510e",
+    "registry": "rnas:1-0780-9",
+    "denomination": "Obra Social Del Personal De Rentas Y Catastro",
+    "shortName": "OSPRC",
+    "tiers": []
+  },
+  {
+    "id": "28461914-aca5-4ae3-0014-d8f8af6d1162",
+    "registry": "rnemp:111476",
+    "denomination": "GEA",
+    "shortName": "GEA COBERTURA DE SALUD",
+    "tiers": [
+      {
+        "name": "GEA C+",
+        "code": 1257
+      },
+      {
+        "name": "GEA OSTACC C+",
+        "code": 1257
+      },
+      {
+        "name": "GEA 400",
+        "code": 1258
+      },
+      {
+        "name": "GEA OSTACC 400",
+        "code": 1258
+      },
+      {
+        "name": "GEA 500",
+        "code": 1259
+      },
+      {
+        "name": "GEA OSTACC 3.0",
+        "code": 1259
+      },
+      {
+        "name": "GEA ZERO",
+        "code": 1260
+      },
+      {
+        "name": "GEA MILL",
+        "code": 1261
+      }
+    ]
+  },
+  {
+    "id": "285e9578-ace0-4c0e-8583-ea3520500606",
+    "registry": "rnemp:111025",
+    "denomination": "UNO SALUD",
+    "shortName": "UNO SALUD",
+    "tiers": [
+      {
+        "name": "CLASSIC",
+        "code": 528
+      },
+      {
+        "name": "CLASSIC PLUS",
+        "code": 529
+      },
+      {
+        "name": "SENIOR",
+        "code": 530
+      },
+      {
+        "name": "PREMIUM PLUS",
+        "code": 532
+      },
+      {
+        "name": "PREMIUM",
+        "code": 533
+      }
+    ]
+  },
+  {
+    "id": "28faffa3-af52-4c82-2dfc-0f3cc44f9e52",
+    "registry": "rnemp:113359",
+    "denomination": "EMERGENCIA MEDICA INTEGRAL S.A.",
+    "shortName": "EMERGENCIAS SALUD",
+    "tiers": [
+      {
+        "name": "INDIVIDUAL ESTANDAR",
+        "code": null
+      },
+      {
+        "name": "INDIVIDUAL PLUS JOVEN",
+        "code": null
+      },
+      {
+        "name": "INDIVIDUAL PLUS MAYORES",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "2a7ca48b-431e-34d0-7bd4-9cb67cc73a23",
+    "registry": "rnemp:114895",
+    "denomination": "CYNTHIOS SALUD SA",
+    "shortName": "CYNTHIOS SALUD SA",
+    "tiers": [
+      {
+        "name": "ALFA IND",
+        "code": null
+      },
+      {
+        "name": "ALFA IND1H",
+        "code": null
+      },
+      {
+        "name": "ALFA IND2H",
+        "code": null
+      },
+      {
+        "name": "ALFA MATRI",
+        "code": null
+      },
+      {
+        "name": "ALFA MATRI2H",
+        "code": null
+      },
+      {
+        "name": "BASICO A IND",
+        "code": null
+      },
+      {
+        "name": "BASICO A IND1H",
+        "code": null
+      },
+      {
+        "name": "BASICO A MATRI",
+        "code": null
+      },
+      {
+        "name": "BETA IND",
+        "code": null
+      },
+      {
+        "name": "BETA MATRI1H",
+        "code": null
+      },
+      {
+        "name": "DORADO",
+        "code": null
+      },
+      {
+        "name": "DORADO IND",
+        "code": null
+      },
+      {
+        "name": "DORADO MATRI",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR IND",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR IND1H",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR MATRI",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR MATRI1H",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR MATRI2H",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR PLUS IND",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR PLUS IND1H",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR PLUS IND2H",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR PLUS MATRI",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR PLUS MATRI1H",
+        "code": null
+      },
+      {
+        "name": "PLATA IND",
+        "code": null
+      },
+      {
+        "name": "PLATA MATRI",
+        "code": null
+      },
+      {
+        "name": "PLATA PLUS A IND",
+        "code": null
+      },
+      {
+        "name": "PLATA PLUS A MATRI",
+        "code": null
+      },
+      {
+        "name": "PLATA PLUS IND",
+        "code": null
+      },
+      {
+        "name": "PLATA PLUS MATRI",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "2bb95c08-0f01-0cec-3f33-b0221bf7b4e5",
+    "registry": "rnemp:620615",
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE TELEVISION",
+    "shortName": "TV SALUD",
+    "tiers": [
+      {
+        "name": "Plan 300 Adicionales",
+        "code": null
+      },
+      {
+        "name": "Plan 300 Individual",
+        "code": null
+      },
+      {
+        "name": "Plan 300 Matrimonio",
+        "code": null
+      },
+      {
+        "name": "Plan 400 Adicionales",
+        "code": null
+      },
+      {
+        "name": "Plan 400 Individual",
+        "code": null
+      },
+      {
+        "name": "Plan 400 Matrimonio",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "2d707700-641f-4d4c-9004-03905ca703be",
+    "registry": "rnas:1-0200-2",
+    "denomination": "Obra Social Del Personal De La Industria Cinematografica",
+    "shortName": "OSPIC",
+    "tiers": []
+  },
+  {
+    "id": "2dc244a9-78ca-407a-ad93-a939a8f96262",
+    "registry": "rnemp:110299",
+    "denomination": "CENSALUD S.R.L.",
+    "shortName": "CENSALUD",
+    "tiers": [
+      {
+        "name": "A",
+        "code": 2301
+      },
+      {
+        "name": "AE",
+        "code": 2302
+      },
+      {
+        "name": "T",
+        "code": 2303
+      },
+      {
+        "name": "TE",
+        "code": 2304
+      },
+      {
+        "name": "IDEAL",
+        "code": 2305
+      },
+      {
+        "name": "STATUS",
+        "code": 2306
+      },
+      {
+        "name": "STATUS II",
+        "code": 2307
+      }
+    ]
+  },
+  {
+    "id": "2ddf79b9-c13a-4080-a2ef-7501b830b685",
+    "registry": null,
+    "denomination": "Obra Social De La Ciudad De Buenos Aires",
+    "shortName": "ObSBA",
+    "tiers": []
+  },
+  {
+    "id": "2e83ccb2-de89-92bb-68de-d7092cd35c58",
+    "registry": "rnemp:412630",
+    "denomination": "SOCIEDAD DE BENEFICENCIA HOSPITAL ITALIANO -CORDOBA-",
+    "shortName": "HOSPITAL ITALIANO CORDOBA",
+    "tiers": [
+      {
+        "name": "Protezione Attiva",
+        "code": 886
+      },
+      {
+        "name": "Protezione Totale o Italico",
+        "code": 887
+      },
+      {
+        "name": "Protezione Totale o Italico ",
+        "code": 887
+      },
+      {
+        "name": "Protezione Giovane Italico",
+        "code": 888
+      },
+      {
+        "name": "Protezione Giovane Italico ",
+        "code": 888
+      },
+      {
+        "name": "Protezione Giovane Attiva",
+        "code": 889
+      },
+      {
+        "name": "Italico Red Integrada",
+        "code": 891
+      }
+    ]
+  },
+  {
+    "id": "2e90b50a-3a3c-7fdc-e1be-094cd7a826fc",
+    "registry": "rnemp:111872",
+    "denomination": "EMECA",
+    "shortName": "EMECA SALUD BERZATEGUI (AYUDA)",
+    "tiers": [
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS1",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS10",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS2",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS3",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS4",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS5",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS6",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS7",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS8",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS9",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "2ea2a6a9-8189-457d-aeb5-4cbe09547128",
+    "registry": "rnas:1-0640-0",
+    "denomination": "Obra Social Del Personal De La Industria Del Papel, Carton Y Quimicos",
+    "shortName": "OSPI PPYQ",
+    "tiers": []
+  },
+  {
+    "id": "2ee5301d-360e-5c4c-dd17-9627db443939",
+    "registry": "rnemp:313650",
+    "denomination": "ASOCIACION MUTUAL MEDICA DEL OESTE",
+    "shortName": "ASOCIACIÓN MUTUAL MÉDICA DEL OESTE",
+    "tiers": [
+      {
+        "name": "1100 - Integral cerrado con coseguro",
+        "code": 1296
+      },
+      {
+        "name": "1101 - Integral cerrado con coseguro",
+        "code": 1297
+      },
+      {
+        "name": "1000 - Integral cerrado sin coseguro",
+        "code": 1298
+      },
+      {
+        "name": "1101 - Integral cerrado sin coseguro",
+        "code": 1299
+      },
+      {
+        "name": "1103C - Integral cerrado sin coseguro",
+        "code": 1300
+      },
+      {
+        "name": "1104C - Integral cerrado sin coseguro",
+        "code": 1301
+      },
+      {
+        "name": "1105C - Integral cerrado sin coseguro",
+        "code": 1302
+      },
+      {
+        "name": "1106C - Integral cerrado sin coseguro",
+        "code": 1303
+      },
+      {
+        "name": "1107C - Integral cerrado sin coseguro",
+        "code": 1304
+      },
+      {
+        "name": "1100J - Integral joven cerrado sin coseguro",
+        "code": 1305
+      },
+      {
+        "name": "4000 - Integral abierto con coseguro",
+        "code": 1306
+      },
+      {
+        "name": "4001 - Integral abierto con coseguro",
+        "code": 1307
+      },
+      {
+        "name": "4100 - Integral abierto sin coseguro",
+        "code": 1308
+      },
+      {
+        "name": "4101 - Integral abierto sin coseguro",
+        "code": 1309
+      },
+      {
+        "name": "4100J - Integral joven abierto sin coseguro",
+        "code": 1310
+      },
+      {
+        "name": "7003B - Integral mayor abierto sin coseguro",
+        "code": 1311
+      },
+      {
+        "name": "7004B - Integral mayor abierto sin coseguro",
+        "code": 1312
+      },
+      {
+        "name": "7005B - Integral mayor abierto sin coseguro",
+        "code": 1313
+      },
+      {
+        "name": "7006B - Integral mayor abierto sin coseguro",
+        "code": 1314
+      },
+      {
+        "name": "7007B - Integral mayor abierto sin coseguro",
+        "code": 1315
+      },
+      {
+        "name": "7008B - Integral mayor abierto sin coseguro",
+        "code": 1316
+      },
+      {
+        "name": "7503B - Integral mayor cerrado sin coseguro",
+        "code": 1317
+      },
+      {
+        "name": "7504B - Integral mayor cerrado sin coseguro",
+        "code": 1318
+      },
+      {
+        "name": "7505B - Integral mayor cerrado sin coseguro",
+        "code": 1319
+      },
+      {
+        "name": "7506B - Integral mayor cerrado sin coseguro",
+        "code": 1320
+      },
+      {
+        "name": "7507B - Integral mayor cerrado sin coseguro",
+        "code": 1321
+      },
+      {
+        "name": "7508B - Integral mayor cerrado sin coseguro",
+        "code": 1322
+      },
+      {
+        "name": "2100 - Complementario cerrado sin coseguro",
+        "code": 2261
+      },
+      {
+        "name": "2101 - Complementario cerrado sin coseguro",
+        "code": 2262
+      },
+      {
+        "name": "2103 - Complementario cerrado sin coseguro",
+        "code": 2263
+      },
+      {
+        "name": "2104 - Complementario cerrado sin coseguro",
+        "code": 2264
+      },
+      {
+        "name": "2105 - Complementario cerrado sin coseguro",
+        "code": 2265
+      },
+      {
+        "name": "2106 - Complementario cerrado sin coseguro",
+        "code": 2266
+      },
+      {
+        "name": "2107 - Complementario cerrado sin coseguro",
+        "code": 2267
+      },
+      {
+        "name": "5100 - Complementario abierto sin coseguro",
+        "code": 2268
+      },
+      {
+        "name": "5101 - Complementario abierto sin coseguro",
+        "code": 2269
+      },
+      {
+        "name": "5103 - Complementario abierto sin coseguro",
+        "code": 2270
+      },
+      {
+        "name": "5104 - Complementario abierto sin coseguro",
+        "code": 2271
+      },
+      {
+        "name": "5105 - Complementario abierto sin coseguro",
+        "code": 2272
+      },
+      {
+        "name": "5106 - Complementario abierto sin coseguro",
+        "code": 2273
+      },
+      {
+        "name": "5107 - Complementario abierto sin coseguro",
+        "code": 2274
+      },
+      {
+        "name": "8100 - Complementario mediana y alta sin coseguro",
+        "code": 2275
+      },
+      {
+        "name": "8101 - Complementario mediana y alta sin coseguro",
+        "code": 2276
+      },
+      {
+        "name": "8103 - Complementario mediana y alta sin coseguro",
+        "code": 2277
+      }
+    ]
+  },
+  {
+    "id": "2ff87814-d2f5-4642-a942-952a9fd2ce48",
+    "registry": "rnas:1-0210-1",
+    "denomination": "Obra Social De Comisarios Navales",
+    "shortName": "OSCN",
+    "tiers": []
+  },
+  {
+    "id": "31b9ab73-b225-a70b-dc6d-38a344805f98",
+    "registry": "rnemp:111858",
+    "denomination": "GAM SALUD",
+    "shortName": "GAM",
+    "tiers": [
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS1",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS10",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS2",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS3",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS4",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS5",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS6",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS7",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS8",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS9",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "31d86db5-82c5-41b9-90fe-8447e72cdd86",
+    "registry": "rnemp:110381",
+    "denomination": "SALUD PLUS S.A.",
+    "shortName": "SALUD PLUS",
+    "tiers": [
+      {
+        "name": "1000",
+        "code": 997
+      },
+      {
+        "name": "1000T",
+        "code": 997
+      },
+      {
+        "name": "2000",
+        "code": 1002
+      },
+      {
+        "name": "2000T",
+        "code": 1002
+      },
+      {
+        "name": "3000",
+        "code": 1003
+      },
+      {
+        "name": "3000T",
+        "code": 1003
+      },
+      {
+        "name": "5000",
+        "code": 1004
+      },
+      {
+        "name": "5000T",
+        "code": 1004
+      }
+    ]
+  },
+  {
+    "id": "321fa0da-890c-b9a9-2d66-3de22062a389",
+    "registry": "rnemp:110565",
+    "denomination": "CENTRO MEDICO PUEYRREDON",
+    "shortName": "CENTRO MEDICO PUEYRREDON",
+    "tiers": [
+      {
+        "name": "ALFA CON COPAGO",
+        "code": 1112
+      },
+      {
+        "name": "ALFA",
+        "code": 1114
+      },
+      {
+        "name": "BETA",
+        "code": 1115
+      },
+      {
+        "name": "BETA CON COPAGO",
+        "code": 1116
+      }
+    ]
+  },
+  {
+    "id": "329f17b3-de96-4697-bcb5-5c3a604fc60e",
+    "registry": "rnas:4-0260-8",
+    "denomination": "Obra Social Asociacion De Servicios Sociales Para Empresarios Y Personal De Direccion De Empresas Del Comercio, Servicios, Produccion, Industria Y Civil (Asspe )",
+    "shortName": "ASSPE",
+    "tiers": []
+  },
+  {
+    "id": "32defac4-7b98-4155-9ada-afd1a3cad8e5",
+    "registry": "rnemp:315830",
+    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES CULTURALES Y SOCIALES",
+    "shortName": "AMEBS",
+    "tiers": [
+      {
+        "name": "PLAN F",
+        "code": 1982
+      },
+      {
+        "name": "PLAN M",
+        "code": 1982
+      }
+    ]
+  },
+  {
+    "id": "336e92a4-ea5e-401b-9526-75d553e50dc2",
+    "registry": null,
+    "denomination": "Instituto Provincial De Seguro De Salud Rio Negro",
+    "shortName": "IPROSS",
+    "tiers": []
+  },
+  {
+    "id": "339cf75b-7a95-48f1-8e38-82ab202acde1",
+    "registry": null,
+    "denomination": "Andesalud S.A.",
+    "shortName": "ANDESALUD",
+    "tiers": [
+      {
+        "name": "Classic",
+        "code": null
+      },
+      {
+        "name": "Platinum",
+        "code": null
+      },
+      {
+        "name": "Black",
+        "code": null
+      },
+      {
+        "name": "Titanium",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "33abb70b-3049-b79c-4b11-20d1aa50ab90",
+    "registry": "rnemp:117665",
+    "denomination": "SANATORIO MAPACI S.A.",
+    "shortName": "SANATORIO MAPACI",
+    "tiers": [
+      {
+        "name": "PLAN 1150 A",
+        "code": null
+      },
+      {
+        "name": "Plan 1150 B",
+        "code": null
+      },
+      {
+        "name": "Plan 1150 C",
+        "code": null
+      },
+      {
+        "name": "PLAN 1150 D",
+        "code": null
+      },
+      {
+        "name": "Plan 850 A",
+        "code": null
+      },
+      {
+        "name": "Plan 850 B",
+        "code": null
+      },
+      {
+        "name": "Plan 850 C",
+        "code": null
+      },
+      {
+        "name": "Plan 850 D",
+        "code": null
+      },
+      {
+        "name": "Plan 850 Joven",
+        "code": null
+      },
+      {
+        "name": "PLAN TRADICIONAL",
+        "code": null
+      },
+      {
+        "name": "PLAN TRADICIONAL MAYOR",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "367619c1-8034-a611-fa2e-668f925c934a",
+    "registry": "rnemp:314929",
+    "denomination": "ASOCIACION MUTUAL DE SERVICIOS PARA INTERNACIONES Y OPERACIONES",
+    "shortName": "ASIO",
+    "tiers": [
+      {
+        "name": "PLAN  J",
+        "code": null
+      },
+      {
+        "name": "PLAN A",
+        "code": null
+      },
+      {
+        "name": "PLAN B",
+        "code": null
+      },
+      {
+        "name": "PLAN C",
+        "code": null
+      },
+      {
+        "name": "PLAN D",
+        "code": null
+      },
+      {
+        "name": "PLAN M",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "368be8b2-d9bf-46f1-298d-31f63f0761b5",
+    "registry": "rnemp:311579",
+    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES ARGENTINOS ESTATALES (AMTAE)",
+    "shortName": "M+ (AMTAE)",
+    "tiers": [
+      {
+        "name": "PLAN BRONCE",
+        "code": null
+      },
+      {
+        "name": "PLAN BRONCE HABERES",
+        "code": null
+      },
+      {
+        "name": "PLAN DORADO",
+        "code": null
+      },
+      {
+        "name": "PLAN DORADO HABERES",
+        "code": null
+      },
+      {
+        "name": "PLAN PLATA",
+        "code": null
+      },
+      {
+        "name": "PLAN PLATA HABERES",
+        "code": null
+      },
+      {
+        "name": "PLAN PLATINO",
+        "code": null
+      },
+      {
+        "name": "PLAN PLATINO HABERES",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "36a5d78f-aae5-4dc9-ea66-a90c7390ca51",
+    "registry": "rnemp:115065",
+    "denomination": "PRIVAMED S.A",
+    "shortName": "PRIVAMED",
+    "tiers": [
+      {
+        "name": "550 CXD",
+        "code": null
+      },
+      {
+        "name": "550 CXD NOVA",
+        "code": null
+      },
+      {
+        "name": "660 CXE",
+        "code": null
+      },
+      {
+        "name": "660 CXE NOVA",
+        "code": null
+      },
+      {
+        "name": "770 CCD",
+        "code": null
+      },
+      {
+        "name": "770 CCD NOVA",
+        "code": null
+      },
+      {
+        "name": "770 CCE",
+        "code": null
+      },
+      {
+        "name": "770 CCE NOVA",
+        "code": null
+      },
+      {
+        "name": "770 CXD",
+        "code": null
+      },
+      {
+        "name": "770 CXD NOVA",
+        "code": null
+      },
+      {
+        "name": "770 CXE",
+        "code": null
+      },
+      {
+        "name": "770 CXE NOVA",
+        "code": null
+      },
+      {
+        "name": "880 CCD",
+        "code": null
+      },
+      {
+        "name": "880 CCD NOVA",
+        "code": null
+      },
+      {
+        "name": "880 CCE",
+        "code": null
+      },
+      {
+        "name": "880 CCE NOVA",
+        "code": null
+      },
+      {
+        "name": "880 CXD",
+        "code": null
+      },
+      {
+        "name": "880 CXD NOVA",
+        "code": null
+      },
+      {
+        "name": "880 CXE",
+        "code": null
+      },
+      {
+        "name": "880 CXE NOVA",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "3763005f-13bc-4a34-8b9d-6cc42f700375",
+    "registry": null,
+    "denomination": "Instituto De Obra Social De La Provincia De Entre Rios",
+    "shortName": "IOSPER",
+    "tiers": []
+  },
+  {
+    "id": "37decc79-cdea-4579-22f5-e34d9dfa7ae2",
+    "registry": "rnemp:113052",
+    "denomination": "SOCORRO MEDICO PRIVADO S.A.",
+    "shortName": "VITTAL",
+    "tiers": [
+      {
+        "name": "INTEGRAL",
+        "code": 2141
+      },
+      {
+        "name": "UP",
+        "code": 2141
+      },
+      {
+        "name": "BIENESTAR",
+        "code": 2142
+      },
+      {
+        "name": "INTEGRAL",
+        "code": 2143
+      }
+    ]
+  },
+  {
+    "id": "388ea929-e7e6-7f0a-2aa7-9dd816c44778",
+    "registry": "rnemp:312398",
+    "denomination": "ASOCIACION MUTUAL DE PROTECCION FAMILIAR",
+    "shortName": "AMPF SALUD",
+    "tiers": [
+      {
+        "name": "SMA",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "38970782-22b0-4212-b266-cf99c3f2ef75",
+    "registry": "rnas:4-0280-6",
+    "denomination": "Obra Social De Direccion De La Actividad Aerocomercial Privada",
+    "shortName": "OSDAAP",
+    "tiers": []
+  },
+  {
+    "id": "38bae72a-d153-4ed9-ad2e-972a421c666c",
+    "registry": "rnas:1-0880-2",
+    "denomination": "Obra Social Del Personal Del Transporte",
+    "shortName": "OSPT",
+    "tiers": []
+  },
+  {
+    "id": "38bb6039-ea74-d978-9b01-7415fd91b237",
+    "registry": "rnemp:113151",
+    "denomination": "CENTRO MEDICO MONDE GRAN SA",
+    "shortName": "CENTRO MEDICO",
+    "tiers": [
+      {
+        "name": "PLAN ORO",
+        "code": 615
+      },
+      {
+        "name": "PLAN PLATA",
+        "code": 616
+      },
+      {
+        "name": "PLAN OSPM PLATA",
+        "code": 1038
+      },
+      {
+        "name": "PLAN OSPM ORO",
+        "code": 1039
+      },
+      {
+        "name": "PLAN OSPM PMO",
+        "code": 1040
+      },
+      {
+        "name": "PLAN OSPM COORPORATIVO",
+        "code": 1286
+      },
+      {
+        "name": "PLAN FIRST",
+        "code": 1293
+      },
+      {
+        "name": "PLAN PROMEDAM",
+        "code": 1401
+      }
+    ]
+  },
+  {
+    "id": "38ed75c0-dfac-20ee-a668-56ff3618b135",
+    "registry": "rnemp:113328",
+    "denomination": "SWISS MEDICAL S.A.",
+    "shortName": "SWISS MEDICAL",
+    "tiers": [
+      {
+        "name": "S1",
+        "code": null
+      },
+      {
+        "name": "S2",
+        "code": null
+      },
+      {
+        "name": "SMG02",
+        "code": null
+      },
+      {
+        "name": "SMG20",
+        "code": null
+      },
+      {
+        "name": "SMG30",
+        "code": null
+      },
+      {
+        "name": "SMG40",
+        "code": null
+      },
+      {
+        "name": "SMG50",
+        "code": null
+      },
+      {
+        "name": "SMG60",
+        "code": null
+      },
+      {
+        "name": "SMG70",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "3a286f5f-342d-41bb-c8da-2aae8808dd1e",
+    "registry": "rnemp:315885",
+    "denomination": "ASOCIACION MUTUAL GRAN ROSARIO",
+    "shortName": "LA MUTUAL DE AMR",
+    "tiers": [
+      {
+        "name": "Mutualmedic",
+        "code": 2121
+      }
+    ]
+  },
+  {
+    "id": "3abf2344-e66b-428d-a51d-c3ec91dc37f0",
+    "registry": "rnas:1-0150-4",
+    "denomination": "Obra Social Del Personal De La Industria Del Caucho",
+    "shortName": "OSPIC",
+    "tiers": []
+  },
+  {
+    "id": "3b08c95d-c7c9-a0c1-4fc2-a7df9623df90",
+    "registry": "rnemp:510334",
+    "denomination": "FUNDACION SERVICIOS SOCIALES TECHINT",
+    "shortName": "APSOT",
+    "tiers": [
+      {
+        "name": "PLAN APSOT 1",
+        "code": 370
+      },
+      {
+        "name": "PLAN APSOT 11",
+        "code": 384
+      }
+    ]
+  },
+  {
+    "id": "3bbc2421-4487-4fa2-964f-b0f2fd86cabb",
+    "registry": "rnas:1-0020-4",
+    "denomination": "Obra Social De Empleados De Aduana",
+    "shortName": "OSEAD",
+    "tiers": []
+  },
+  {
+    "id": "3d117bba-a346-42a4-aeb7-77466a922fcc",
+    "registry": "rnemp:311357",
+    "denomination": "PRENAPA ASOC.MUTUAL COMPENSADORA SANITARIA",
+    "shortName": "PRE-NA-PA",
+    "tiers": [
+      {
+        "name": "COBERTURA PRENAPA",
+        "code": 761
+      }
+    ]
+  },
+  {
+    "id": "3eda2a53-3f5e-43f4-9613-899a1f0b1ef8",
+    "registry": null,
+    "denomination": "Servicio Medico Previsional",
+    "shortName": "SEMPRE",
+    "tiers": []
+  },
+  {
+    "id": "41db6ecf-f798-86d7-854f-88efb5a2fd4c",
+    "registry": "rnemp:110640",
+    "denomination": "SALUD ROSARIO S.A.",
+    "shortName": "BRITANICA SALUD",
+    "tiers": [
+      {
+        "name": "Plan BS A MAYOR",
+        "code": null
+      },
+      {
+        "name": "Plan BS 100",
+        "code": 179
+      },
+      {
+        "name": "Plan BS 180",
+        "code": 180
+      },
+      {
+        "name": "Plan BS 360",
+        "code": 181
+      },
+      {
+        "name": "Plan Pulso",
+        "code": 182
+      },
+      {
+        "name": "Plan universitario",
+        "code": 697
+      },
+      {
+        "name": "Plan BS 180C",
+        "code": 760
+      }
+    ]
+  },
+  {
+    "id": "4333052b-cddd-424b-9054-9544bee103f7",
+    "registry": "rnas:1-2130-4",
+    "denomination": "Obra Social De La Federacion De Trabajadores De La Industria Del Plastico",
+    "shortName": "OSFTIP",
+    "tiers": []
+  },
+  {
+    "id": "44fe6c4f-3444-f58a-9f2b-969f0364c236",
+    "registry": "rnemp:111162",
+    "denomination": "CENTROMEDICA",
+    "shortName": "AYUDA MEDICA",
+    "tiers": [
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "45071441-a2b0-4e58-a6fd-6efdfe5f3737",
+    "registry": "rnemp:313414",
+    "denomination": "MUTUAL DE INTEGRANTES DEL PODER JUDICIAL",
+    "shortName": "MUTUAL PODER JUDICIAL",
+    "tiers": [
+      {
+        "name": "CUOTA SOCIAL FLIAR.C/FCIA.",
+        "code": 2321
+      },
+      {
+        "name": "CUOTA SOCIAL IND.C/FCIA.",
+        "code": 2322
+      },
+      {
+        "name": "CUOTA ADICIONAL C/FCIA.",
+        "code": 2381
+      },
+      {
+        "name": "CUOTA SOCIAL FLIAR.S/FCIA.",
+        "code": 2382
+      },
+      {
+        "name": "CUOTA SOCIAL IND.S/FCIA.",
+        "code": 2383
+      },
+      {
+        "name": "CUOTA ADICIONAL S/FCIA.",
+        "code": 2384
+      },
+      {
+        "name": "CUOTA SOC.FLIAR.C/FCIA.ACTIVO",
+        "code": 2385
+      },
+      {
+        "name": "CUOTA SOC.IND.C/FCIA.ACTIVO",
+        "code": 2386
+      },
+      {
+        "name": "CUOTA ADICIONAL C/FCIA.ACTIVO",
+        "code": 2387
+      },
+      {
+        "name": "CUOTA SOC.FLIAR.S/FCIA.ACTIVO",
+        "code": 2388
+      },
+      {
+        "name": "CUOTA SOC.IND.S/FCIA.ACTIVO",
+        "code": 2389
+      },
+      {
+        "name": "CUOTA ADIC.S/FCIA.ACTIVO",
+        "code": 2390
+      }
+    ]
+  },
+  {
+    "id": "46fa10a2-fe6a-4efe-80ed-f17664c1b272",
+    "registry": "rnas:1-1250-1",
+    "denomination": "Obra Social Del Personal De Los Tribunales",
+    "shortName": "OSPT",
+    "tiers": []
+  },
+  {
+    "id": "479f0920-4f2a-ef21-7af3-41c29ca90639",
+    "registry": "rnemp:311777",
+    "denomination": "ASOCIACION MUTUAL Y PROTECCION RECIPROCA UNISOL SALUD",
+    "shortName": "ASOCIACION MUTUAL Y PROTECCION RECIPROCA UNISOL SALUD",
+    "tiers": [
+      {
+        "name": "PLAN UyE",
+        "code": 1781
+      }
+    ]
+  },
+  {
+    "id": "47c9fd4b-0659-49c8-a939-da2bd39d9d00",
+    "registry": "rnas:1-0790-8",
+    "denomination": "Obra Social Del Personal De Sanidad",
+    "shortName": "OSPSA",
+    "tiers": []
+  },
+  {
+    "id": "49a19653-7c79-434d-b038-c44e1488beab",
+    "registry": "rnas:1-0700-7",
+    "denomination": "Obra Social Del Personal De Petroleo",
+    "shortName": "OSPP",
+    "tiers": []
+  },
+  {
+    "id": "4a593152-9f88-4376-8f28-d2c367cbbd9c",
+    "registry": null,
+    "denomination": "Caja De Servicios Sociales De Santa Cruz",
+    "shortName": "CSS",
+    "tiers": []
+  },
+  {
+    "id": "4badeb0b-8c8f-005d-4878-012833fccdac",
+    "registry": "rnemp:317096",
+    "denomination": "Asociacion Mutual de Participantes de Economias Solidarias AMPES",
+    "shortName": "AMPES SALUD",
+    "tiers": [
+      {
+        "name": "FAMILIAR CON COSEGURO",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR SIN COSEGURO",
+        "code": null
+      },
+      {
+        "name": "PLATINO INDIVIDUAL CON COSEGURO",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "4ce7e890-f231-4001-a335-22d56351341e",
+    "registry": null,
+    "denomination": "Direccion De Obra Social Del Estado Provincial",
+    "shortName": "DOSEP",
+    "tiers": []
+  },
+  {
+    "id": "4dacd256-7c86-4b2c-972b-e5fdd7c96ed2",
+    "registry": "rnas:1-0100-9",
+    "denomination": "Obra Social Del Personal Del Espectaculo Publico",
+    "shortName": "OSPEP",
+    "tiers": []
+  },
+  {
+    "id": "4dfe5331-35c8-09e9-ef74-08a0060a82db",
+    "registry": "rnemp:620653",
+    "denomination": "OBRA SOCIAL ASOCIACION DE SERVICIOS SOCIALES PARA EMPRESARIOS Y PERSONAL DE DIRECCION DE EMPRESAS DEL COMERCIO, SERVICIOS, PRODUCCION, INDUSTRIA Y CIVIL (ASSPE )",
+    "shortName": "ASSPE",
+    "tiers": [
+      {
+        "name": "Asspe Salud 100",
+        "code": 944
+      },
+      {
+        "name": "Asspe Salud 200",
+        "code": 945
+      },
+      {
+        "name": "Asspe Salud 300",
+        "code": 946
+      },
+      {
+        "name": "Asspe Salud 100",
+        "code": 947
+      },
+      {
+        "name": "Asspe Salud 200",
+        "code": 948
+      },
+      {
+        "name": "Asspe Salud 300",
+        "code": 949
+      },
+      {
+        "name": "Asspe Salud 100 A",
+        "code": 1163
+      },
+      {
+        "name": "Asspe Salud 100 A",
+        "code": 1166
+      }
+    ]
+  },
+  {
+    "id": "4e861655-4412-4a64-a3bf-3e7e019825a4",
+    "registry": "rnemp:116693",
+    "denomination": "ROI SA",
+    "shortName": "GRUPO ROISA",
+    "tiers": [
+      {
+        "name": "DOCTORED 1000",
+        "code": 645
+      },
+      {
+        "name": "DOCTORED 2000",
+        "code": 647
+      },
+      {
+        "name": "DOCTORED 3000",
+        "code": 648
+      },
+      {
+        "name": "DOCTORED 500 PLUS",
+        "code": 1366
+      }
+    ]
+  },
+  {
+    "id": "4ec6778e-36c6-963a-a6e6-192817dbf384",
+    "registry": "rnemp:112370",
+    "denomination": "SOCORRO MEDICO SAN MARTIN S.A.",
+    "shortName": "SOCORRO MEDICO SAN MARTIN S.A.",
+    "tiers": [
+      {
+        "name": "VITTAL DOCTA",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "4f03bf93-b049-4111-b897-14b83d339a52",
+    "registry": "rnas:1-0510-0",
+    "denomination": "Obra Social De Capitanes Y Baqueanos Fluviales",
+    "shortName": "OSCBF",
+    "tiers": []
+  },
+  {
+    "id": "4f5ed6e3-e470-4fd8-9f90-6a9dfaa3d239",
+    "registry": "rnemp:110183",
+    "denomination": "VS GROUP S.A.",
+    "shortName": "VS GROUP",
+    "tiers": [
+      {
+        "name": "AS100",
+        "code": null
+      },
+      {
+        "name": "AS105",
+        "code": null
+      },
+      {
+        "name": "AS110",
+        "code": null
+      },
+      {
+        "name": "HM",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "4f820b83-1ad4-0b97-7646-ad18f653ecdd",
+    "registry": "rnemp:112981",
+    "denomination": "MPE S.A.",
+    "shortName": "VITTAL",
+    "tiers": [
+      {
+        "name": "INTEGRAL",
+        "code": 2164
+      },
+      {
+        "name": "UP",
+        "code": 2164
+      },
+      {
+        "name": "BIENESTAR",
+        "code": 2165
+      },
+      {
+        "name": "INTEGRAL",
+        "code": 2166
+      }
+    ]
+  },
+  {
+    "id": "4fe8bb59-6d96-df27-f4f4-712228992328",
+    "registry": "rnemp:310743",
+    "denomination": "ASOCIACION MUTUAL ARGUS SALUD",
+    "shortName": "MUTUAL ARGUS",
+    "tiers": [
+      {
+        "name": "PLAN PLATINO",
+        "code": 400
+      },
+      {
+        "name": "PLAN JOVEN",
+        "code": 401
+      },
+      {
+        "name": "PLAN INTEGRAL",
+        "code": 402
+      }
+    ]
+  },
+  {
+    "id": "503a4c5e-d613-4bf0-a188-7c4e228ed465",
+    "registry": "rnas:1-0810-9",
+    "denomination": "Obra Social Del Personal De Servicios Funerarios",
+    "shortName": "OSPSF",
+    "tiers": []
+  },
+  {
+    "id": "50981504-0149-4abf-9d4f-bd24d1bdf7cf",
+    "registry": "rnemp:614081",
+    "denomination": "OBRA SOCIAL DE EJECUTIVOS Y DEL PERSONAL DE DIRECCION DE EMPRESAS",
+    "shortName": "OSDE",
+    "tiers": [
+      {
+        "name": "2 210 INDIVIDUAL",
+        "code": 537
+      },
+      {
+        "name": "2 310 INDIVIDUAL",
+        "code": 538
+      },
+      {
+        "name": "2 410 INDIVIDUAL",
+        "code": 539
+      },
+      {
+        "name": "2 450 INDIVIDUAL",
+        "code": 540
+      },
+      {
+        "name": "2 510 INDIVIDUAL",
+        "code": 541
+      },
+      {
+        "name": "6 030 INDIVIDUAL",
+        "code": 863
+      },
+      {
+        "name": "7 700 INDIVIDUAL",
+        "code": 1413
+      }
+    ]
+  },
+  {
+    "id": "518c234d-4a22-e03e-1f29-2f0c82388a05",
+    "registry": "rnemp:112431",
+    "denomination": "INTERNATIONAL HEALTH SERVICES ARGENTINA S.A",
+    "shortName": "EMERGENCIAS SALUD",
+    "tiers": [
+      {
+        "name": "PLAN ESENCIAL +",
+        "code": null
+      },
+      {
+        "name": "PLAN ESTANDAR",
+        "code": null
+      },
+      {
+        "name": "PLAN FLEX",
+        "code": null
+      },
+      {
+        "name": "PLAN PREFERENCIAL",
+        "code": null
+      },
+      {
+        "name": "PLAN PREMIUM",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "51e63403-5c62-48db-854c-f6428b4b420c",
+    "registry": "rnas:1-0650-9",
+    "denomination": "Obra Social Del Personal De La Industria Parlantista",
+    "shortName": "OSPIP",
+    "tiers": []
+  },
+  {
+    "id": "53205182-9649-15e4-b51a-a973b8309c8e",
+    "registry": "rnemp:614869",
+    "denomination": "OBRA SOCIAL DE EMPRESARIOS PROFESIONALES Y MONOTRIBUTISTAS",
+    "shortName": "OSDEPYM",
+    "tiers": [
+      {
+        "name": "P 1000",
+        "code": null
+      },
+      {
+        "name": "PLAN 2500 Plus",
+        "code": null
+      },
+      {
+        "name": "PLAN 3000 Plus",
+        "code": null
+      },
+      {
+        "name": "PLAN 4000 Plus",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "537f358f-490d-d643-3e63-c1b541506112",
+    "registry": "rnemp:615473",
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE AERONAVEGACION DE ENTES PRIVADOS",
+    "shortName": "OSPADEP",
+    "tiers": [
+      {
+        "name": "AS300",
+        "code": 1009
+      },
+      {
+        "name": "AS800",
+        "code": 1010
+      },
+      {
+        "name": "BRONCE",
+        "code": 1011
+      },
+      {
+        "name": "PLATA",
+        "code": 1012
+      },
+      {
+        "name": "ORO",
+        "code": 1013
+      },
+      {
+        "name": "NUBIAL MS",
+        "code": 1014
+      },
+      {
+        "name": "PO62",
+        "code": 1015
+      },
+      {
+        "name": "PO64",
+        "code": 1016
+      },
+      {
+        "name": "SB02",
+        "code": 1017
+      },
+      {
+        "name": "SB04",
+        "code": 1018
+      },
+      {
+        "name": "PLAN 220",
+        "code": 1019
+      },
+      {
+        "name": "PLAN 330",
+        "code": 1020
+      },
+      {
+        "name": "LAN1",
+        "code": 1238
+      },
+      {
+        "name": "LAN2",
+        "code": 1239
+      },
+      {
+        "name": "LAN3",
+        "code": 1240
+      },
+      {
+        "name": "LAN4",
+        "code": 1241
+      },
+      {
+        "name": "LAN5",
+        "code": 1242
+      }
+    ]
+  },
+  {
+    "id": "53c68383-6026-4730-b4f2-2392a0d63b14",
+    "registry": "rnas:9-0170-9",
+    "denomination": "Mutual Medica Concordia",
+    "shortName": "MUTUAL CONCORDIA",
+    "tiers": []
+  },
+  {
+    "id": "54b66a99-25b5-4b13-b901-7d1c3851eaef",
+    "registry": null,
+    "denomination": "Instituto De Obra Social Del Empleado Provincial Santiago Del Estero",
+    "shortName": "IOSEP",
+    "tiers": []
+  },
+  {
+    "id": "55076c9e-6e45-4a16-9d3a-1641ce2e4d3a",
+    "registry": "rnemp:311371",
+    "denomination": "ASOCIACION MUTUAL SANCOR",
+    "shortName": "SANCOR SALUD",
+    "tiers": [
+      {
+        "name": "1500 B GEN",
+        "code": 284
+      },
+      {
+        "name": "1500 B GEN SC",
+        "code": 284
+      },
+      {
+        "name": "S1500B GEN CC",
+        "code": 285
+      },
+      {
+        "name": "S1500B SC",
+        "code": 286
+      },
+      {
+        "name": "S1500B CC",
+        "code": 287
+      },
+      {
+        "name": "S1500 GEN SC",
+        "code": 288
+      },
+      {
+        "name": "S1500 GEN CC",
+        "code": 289
+      },
+      {
+        "name": "S1500 SC",
+        "code": 290
+      },
+      {
+        "name": "S3000R GEN",
+        "code": 292
+      },
+      {
+        "name": "S3000R GEN CC",
+        "code": 292
+      },
+      {
+        "name": "S3000R",
+        "code": 293
+      },
+      {
+        "name": "S3000 GEN",
+        "code": 296
+      },
+      {
+        "name": "S3000 GEN SC",
+        "code": 296
+      },
+      {
+        "name": "S3000",
+        "code": 297
+      },
+      {
+        "name": "S3500",
+        "code": 299
+      },
+      {
+        "name": "S4000 GEN",
+        "code": 300
+      },
+      {
+        "name": "S4000 GEN SC",
+        "code": 300
+      },
+      {
+        "name": "S4000",
+        "code": 301
+      },
+      {
+        "name": "S4500 GEN",
+        "code": 302
+      },
+      {
+        "name": "S4500 GEN SC",
+        "code": 302
+      },
+      {
+        "name": "S4500",
+        "code": 303
+      },
+      {
+        "name": "S5000 GEN",
+        "code": 304
+      },
+      {
+        "name": "S5000 GEN SC",
+        "code": 304
+      },
+      {
+        "name": "S5000",
+        "code": 305
+      },
+      {
+        "name": "S6000",
+        "code": 306
+      },
+      {
+        "name": "S1000R GEN SC",
+        "code": 318
+      },
+      {
+        "name": "S1000R GEN CC",
+        "code": 319
+      },
+      {
+        "name": "S1000R SC",
+        "code": 320
+      },
+      {
+        "name": "S1000R CC",
+        "code": 321
+      },
+      {
+        "name": "S1000B GEN SC",
+        "code": 322
+      },
+      {
+        "name": "S1000B GEN CC",
+        "code": 323
+      },
+      {
+        "name": "S1000B SC",
+        "code": 324
+      },
+      {
+        "name": "S1000B CC",
+        "code": 325
+      },
+      {
+        "name": "S1000 GEN SC",
+        "code": 326
+      },
+      {
+        "name": "S1000 GEN CC",
+        "code": 327
+      },
+      {
+        "name": "S1000 SC",
+        "code": 328
+      },
+      {
+        "name": "S1000 CC",
+        "code": 329
+      },
+      {
+        "name": "S1500 GEN SC",
+        "code": 330
+      },
+      {
+        "name": "S1500R GEN SC",
+        "code": 330
+      },
+      {
+        "name": "S1500R GEN CC",
+        "code": 331
+      },
+      {
+        "name": "S1500R SC",
+        "code": 332
+      },
+      {
+        "name": "S1500R CC",
+        "code": 333
+      },
+      {
+        "name": "F700",
+        "code": 793
+      },
+      {
+        "name": "F800",
+        "code": 794
+      },
+      {
+        "name": "F800 SC",
+        "code": 794
+      },
+      {
+        "name": "S304JB GEN",
+        "code": 931
+      },
+      {
+        "name": "F801",
+        "code": 1125
+      },
+      {
+        "name": "F801 SC",
+        "code": 1125
+      },
+      {
+        "name": "S1501 SC",
+        "code": 1169
+      },
+      {
+        "name": "S1500R GEN CC",
+        "code": 1170
+      },
+      {
+        "name": "S1500R GEN SC",
+        "code": 1170
+      },
+      {
+        "name": "S1501 GEN SC",
+        "code": 1170
+      },
+      {
+        "name": "S1501 GEN CC",
+        "code": 1172
+      },
+      {
+        "name": "S1500 Con Copagos",
+        "code": 1262
+      },
+      {
+        "name": "S3500 Gen",
+        "code": 1263
+      },
+      {
+        "name": "S3500 GEN SC",
+        "code": 1263
+      },
+      {
+        "name": "PLAN 1000 DIGITAL FLEX",
+        "code": 1264
+      },
+      {
+        "name": "F80DF",
+        "code": 1338
+      },
+      {
+        "name": "F801 DIGITAL FLEX",
+        "code": 1339
+      },
+      {
+        "name": "S1501 CC",
+        "code": 1429
+      },
+      {
+        "name": "F800 CC",
+        "code": 1430
+      },
+      {
+        "name": "F801 CC",
+        "code": 1431
+      },
+      {
+        "name": "F802 CC",
+        "code": 1432
+      },
+      {
+        "name": "ON 1",
+        "code": 2021
+      },
+      {
+        "name": "ON 3",
+        "code": 2041
+      },
+      {
+        "name": "ON 2",
+        "code": 2061
+      }
+    ]
+  },
+  {
+    "id": "56a4eb5c-da8e-4a71-80b0-7898c41c0ee2",
+    "registry": "rnas:1-0240-8",
+    "denomination": "Obra Social De Conductores Navales",
+    "shortName": "OSCON",
+    "tiers": []
+  },
+  {
+    "id": "571e47fe-686f-4ca0-b560-321823589d69",
+    "registry": null,
+    "denomination": "Instituto De Seguros De Jujuy",
+    "shortName": "ISJ",
+    "tiers": []
+  },
+  {
+    "id": "57fc52b1-b1a1-2d8e-f411-3ab166c99cfe",
+    "registry": "rnemp:413343",
+    "denomination": "DEPARTAMENTO EMPRESARIO DE MEDICINA INTEGRAL",
+    "shortName": "DEMI SALUD",
+    "tiers": [
+      {
+        "name": "DS 1000",
+        "code": null
+      },
+      {
+        "name": "PLAN AZUL PLUS",
+        "code": null
+      },
+      {
+        "name": "PLAN DEMI OP-",
+        "code": null
+      },
+      {
+        "name": "PLAN VERDE - O",
+        "code": null
+      },
+      {
+        "name": "PLAN VERDE - V",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "58e810cf-f142-47c2-8118-b11c96d47dfa",
+    "registry": "rnas:1-1010-9",
+    "denomination": "Obra Social Del Personal De La Federacion De Empleados De Comercio",
+    "shortName": "OSECAC",
+    "tiers": [
+      {
+        "name": "PMO",
+        "code": null
+      },
+      {
+        "name": "Plan Azul",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "58ff9a07-d6a2-4d99-9927-27e76113487d",
+    "registry": "rnemp:111834",
+    "denomination": "MEDICUS SOCIEDAD ANONIMA DE ASISTENCIA MEDICA Y CIENTIFICA",
+    "shortName": "MEDICUS",
+    "tiers": [
+      {
+        "name": "01_AZ01_C_N AZUL 1 COPAGO",
+        "code": null
+      },
+      {
+        "name": "02_AZ02_N AZUL 2",
+        "code": null
+      },
+      {
+        "name": "02_AZ02_NX AZUL X",
+        "code": null
+      },
+      {
+        "name": "02_AZ02FLEX_N AZUL FLEX",
+        "code": null
+      },
+      {
+        "name": "04_AZ04_N AZUL 4",
+        "code": null
+      },
+      {
+        "name": "05_AZ05_N AZUL 5",
+        "code": null
+      },
+      {
+        "name": "06_AZ06_N AZUL 6",
+        "code": null
+      },
+      {
+        "name": "AT_CE01_C_N CELESTE 1 COPAGO",
+        "code": null
+      },
+      {
+        "name": "AT_CE02_N CELESTE 2",
+        "code": null
+      },
+      {
+        "name": "AT_CE02_NX CELESTE X",
+        "code": null
+      },
+      {
+        "name": "AT_CE02FLEX_N CELESTE FLEX",
+        "code": null
+      },
+      {
+        "name": "AT_CE06_N CELESTE 6",
+        "code": null
+      },
+      {
+        "name": "FC_25000_N FAMILY",
+        "code": null
+      },
+      {
+        "name": "FC_26000_C_N FAMILY COPAGO",
+        "code": null
+      },
+      {
+        "name": "FC_FLEX_N FAMILY FLEX",
+        "code": null
+      },
+      {
+        "name": "FC_NX FAMILY X",
+        "code": null
+      },
+      {
+        "name": "FR_24000_N FAMILY R",
+        "code": null
+      },
+      {
+        "name": "MD_29000_N INTEGRA 2",
+        "code": null
+      },
+      {
+        "name": "MD_30000_C_N INTEGRA 2 COPAGO",
+        "code": null
+      },
+      {
+        "name": "MD_FLEX_N INTEGRA 2 FLEX",
+        "code": null
+      },
+      {
+        "name": "MD_NX INTEGRA X",
+        "code": null
+      },
+      {
+        "name": "PC_32000_N CONECTA",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "5926c2f9-4aa4-429e-83e0-98f471151c31",
+    "registry": "rnemp:314950",
+    "denomination": "ASOCIACION MUTUAL DE PROFESIONALES DEL HOSPITAL ITALIANO DE CORDOBA",
+    "shortName": "AMPHI",
+    "tiers": [
+      {
+        "name": "PLAN MILANO",
+        "code": 262
+      },
+      {
+        "name": "PLAN TRENTINO",
+        "code": 264
+      },
+      {
+        "name": "PLAN MAYOR",
+        "code": 265
+      },
+      {
+        "name": "PLAN MAYOR RI",
+        "code": 1541
+      }
+    ]
+  },
+  {
+    "id": "59a87df8-dc10-4d26-3784-5ae2734cdea7",
+    "registry": "rnemp:412272",
+    "denomination": "ASOCIACION MEDICA DE ALMIERANTE BROWN",
+    "shortName": "AMAB",
+    "tiers": [
+      {
+        "name": "PC",
+        "code": 743
+      },
+      {
+        "name": "S1",
+        "code": 745
+      },
+      {
+        "name": "S35",
+        "code": 747
+      },
+      {
+        "name": "S45",
+        "code": 748
+      },
+      {
+        "name": "OME1",
+        "code": 749
+      },
+      {
+        "name": "PS",
+        "code": 1278
+      }
+    ]
+  },
+  {
+    "id": "59dcfab6-bda2-492f-aa9b-ebc0a460565d",
+    "registry": "rnas:1-0390-6",
+    "denomination": "Obra Social Del Personal Grafico",
+    "shortName": "OSPG",
+    "tiers": []
+  },
+  {
+    "id": "5af1988d-a445-47e3-acb3-e6af2cf04770",
+    "registry": "rnas:1-0140-5",
+    "denomination": "Obra Social Del Personal De La Industria Cartonera",
+    "shortName": "OSPIC",
+    "tiers": []
+  },
+  {
+    "id": "5af66bbd-54f9-49a0-aad7-3e4156eca378",
+    "registry": "rnemp:110077",
+    "denomination": "MEDICINA ESENCIAL S.A.",
+    "shortName": "MEDICINA ESENCIAL",
+    "tiers": [
+      {
+        "name": "ESENCIAL.AR",
+        "code": 51
+      },
+      {
+        "name": "MTA N2",
+        "code": 52
+      },
+      {
+        "name": "PLAN E N2",
+        "code": 106
+      },
+      {
+        "name": "PLATINO",
+        "code": 107
+      },
+      {
+        "name": "PLATA N2",
+        "code": 108
+      },
+      {
+        "name": "GRUPO ORONO N2",
+        "code": 109
+      },
+      {
+        "name": "PLUS N2",
+        "code": 110
+      },
+      {
+        "name": "PLAN AHORRO",
+        "code": 670
+      }
+    ]
+  },
+  {
+    "id": "5b635bd2-27d1-44f4-b46b-c95fe2cebc56",
+    "registry": "rnemp:113397",
+    "denomination": "AMCE S.A.",
+    "shortName": "AMCE",
+    "tiers": [
+      {
+        "name": "U",
+        "code": 2221
+      }
+    ]
+  },
+  {
+    "id": "5b849210-a202-4ca3-b1e3-7cf0c3207dfa",
+    "registry": "rnas:1-0190-0",
+    "denomination": "Obra Social Del Personal De La Ceramica, Sanitarios Y Porcelana De Mesa",
+    "shortName": "OSPC",
+    "tiers": []
+  },
+  {
+    "id": "5bdc3589-24e4-0728-bfa2-0013f0a77897",
+    "registry": "rnemp:413145",
+    "denomination": "SOCIEDAD ITALIANA DE BENEFICENCIA EN BUENOS AIRES",
+    "shortName": "HOSPITAL ITALIANO",
+    "tiers": [
+      {
+        "name": "MAGNA",
+        "code": null
+      },
+      {
+        "name": "VITA",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "5c5d2cdd-5ded-4043-94af-a01fb5e272b8",
+    "registry": "rnemp:310149",
+    "denomination": "ASOCIACION MUTUAL DEL PERSONAL JERARQUICO DE BANCOS OFICIALES NACIONALES",
+    "shortName": "JERARQUICOS SALUD",
+    "tiers": [
+      {
+        "name": "PMI",
+        "code": 202
+      },
+      {
+        "name": "PMI 2886",
+        "code": 202
+      },
+      {
+        "name": "PMI 2000",
+        "code": 203
+      },
+      {
+        "name": "PMI 2886 2000",
+        "code": 203
+      },
+      {
+        "name": "PMI 3000",
+        "code": 204
+      },
+      {
+        "name": "JS CONECTA",
+        "code": 1419
+      },
+      {
+        "name": "JS AVANZA",
+        "code": 1420
+      },
+      {
+        "name": "JS ELITE",
+        "code": 1422
+      },
+      {
+        "name": "JS IMPULSA",
+        "code": 1425
+      }
+    ]
+  },
+  {
+    "id": "5cf7c147-2332-4327-b4da-8d79d0a0e18f",
+    "registry": null,
+    "denomination": "Administracion Provincial Del Seguro De Salud",
+    "shortName": "APROSS",
+    "tiers": []
+  },
+  {
+    "id": "5d0e1929-8248-2512-ab47-b5a9e7543602",
+    "registry": "rnemp:120177",
+    "denomination": "NOBIS SA",
+    "shortName": "NOBIS MEDICAL",
+    "tiers": [
+      {
+        "name": "B150",
+        "code": null
+      },
+      {
+        "name": "B200",
+        "code": null
+      },
+      {
+        "name": "B300",
+        "code": null
+      },
+      {
+        "name": "N200",
+        "code": null
+      },
+      {
+        "name": "N400",
+        "code": null
+      },
+      {
+        "name": "N500",
+        "code": null
+      },
+      {
+        "name": "N200",
+        "code": 217
+      },
+      {
+        "name": "N400",
+        "code": 1045
+      },
+      {
+        "name": "B150",
+        "code": 1057
+      },
+      {
+        "name": "B200",
+        "code": 1058
+      },
+      {
+        "name": "B300",
+        "code": 1059
+      },
+      {
+        "name": "N500",
+        "code": 1060
+      }
+    ]
+  },
+  {
+    "id": "5df0156d-e5b4-7a83-d76f-592f7e00bd09",
+    "registry": "rnemp:412555",
+    "denomination": "ASOCIACION HOSPITAL BRITANICO DE BUENOS AIRES",
+    "shortName": "HOSPITAL BRITANICO",
+    "tiers": [
+      {
+        "name": "RED HB",
+        "code": 895
+      },
+      {
+        "name": "CLASSIC PLUS",
+        "code": 896
+      },
+      {
+        "name": "PREMIUM PLUS",
+        "code": 897
+      }
+    ]
+  },
+  {
+    "id": "601e0178-364b-7714-1354-db7c70efccf2",
+    "registry": "rnemp:113212",
+    "denomination": "MET CORDOBA S.A",
+    "shortName": "MET MEDICINA PREPAGA",
+    "tiers": [
+      {
+        "name": "MA SUPRA",
+        "code": 394
+      },
+      {
+        "name": "MB INTEGRAL",
+        "code": 417
+      },
+      {
+        "name": "MC CLASSIC",
+        "code": 418
+      },
+      {
+        "name": "MA SUPRA CC",
+        "code": 605
+      },
+      {
+        "name": "SUPRA CORP",
+        "code": 795
+      },
+      {
+        "name": "INTEGRAL CORP",
+        "code": 796
+      },
+      {
+        "name": "CLASSIC CORP",
+        "code": 1247
+      }
+    ]
+  },
+  {
+    "id": "60e440ae-ddfc-a214-ba68-c7f16c89c1f5",
+    "registry": "rnemp:112851",
+    "denomination": "GALENO ARGENTINA S.A.",
+    "shortName": "GALENO",
+    "tiers": [
+      {
+        "name": "Azul 150",
+        "code": null
+      },
+      {
+        "name": "Azul 200",
+        "code": null
+      },
+      {
+        "name": "Azul 220",
+        "code": null
+      },
+      {
+        "name": "Oro 400",
+        "code": null
+      },
+      {
+        "name": "Oro 430",
+        "code": null
+      },
+      {
+        "name": "Oro 431",
+        "code": null
+      },
+      {
+        "name": "Oro 440",
+        "code": null
+      },
+      {
+        "name": "Oro 550",
+        "code": null
+      },
+      {
+        "name": "Plata 300",
+        "code": null
+      },
+      {
+        "name": "Plata 301",
+        "code": null
+      },
+      {
+        "name": "Plata 330",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "62319bbf-b37b-f4c9-3d08-2de35074807d",
+    "registry": "rnemp:117115",
+    "denomination": "ENSALUD",
+    "shortName": "ENSALUD",
+    "tiers": [
+      {
+        "name": "DELTA PLUS",
+        "code": 139
+      },
+      {
+        "name": "DELTA_PLUS",
+        "code": 139
+      },
+      {
+        "name": "KRONO",
+        "code": 140
+      },
+      {
+        "name": "QUANTUM",
+        "code": 141
+      },
+      {
+        "name": "KRONO PLUS",
+        "code": 142
+      },
+      {
+        "name": "KRONO_PLUS",
+        "code": 142
+      },
+      {
+        "name": "QUANTUM PLUS",
+        "code": 143
+      },
+      {
+        "name": "QUANTUM_PLUS",
+        "code": 143
+      },
+      {
+        "name": "INTEGRAL",
+        "code": 144
+      },
+      {
+        "name": "TOTAL",
+        "code": 145
+      },
+      {
+        "name": "GLOBAL",
+        "code": 146
+      },
+      {
+        "name": "TOTAL PLUS",
+        "code": 147
+      },
+      {
+        "name": "TOTAL_PLUS",
+        "code": 147
+      },
+      {
+        "name": "GLOBAL PLUS",
+        "code": 148
+      },
+      {
+        "name": "GLOBAL_PLUS",
+        "code": 148
+      },
+      {
+        "name": "AMBULATORIO",
+        "code": 1341
+      },
+      {
+        "name": "AMBULATORIOS",
+        "code": 1341
+      },
+      {
+        "name": "AMBULATORIO_PLUS",
+        "code": 1342
+      },
+      {
+        "name": "AMBULATORIOS PLUS",
+        "code": 1342
+      }
+    ]
+  },
+  {
+    "id": "6447a48d-2852-1ce4-444b-13ec900c854e",
+    "registry": "rnemp:116792",
+    "denomination": "PrevenciOn Salud S.A.",
+    "shortName": "PREVENCION SALUD",
+    "tiers": [
+      {
+        "name": "A1",
+        "code": 221
+      },
+      {
+        "name": "A2",
+        "code": 222
+      },
+      {
+        "name": "A4",
+        "code": 223
+      },
+      {
+        "name": "A5",
+        "code": 224
+      },
+      {
+        "name": "A6",
+        "code": 225
+      },
+      {
+        "name": "On Demand",
+        "code": 864
+      },
+      {
+        "name": "A1 CP",
+        "code": 892
+      },
+      {
+        "name": "A1CP",
+        "code": 892
+      },
+      {
+        "name": "A2 CP",
+        "code": 893
+      },
+      {
+        "name": "A2CP",
+        "code": 893
+      },
+      {
+        "name": "A4 CP",
+        "code": 1341
+      }
+    ]
+  },
+  {
+    "id": "64520bb8-0398-ce73-ace8-3b15fbac5ba3",
+    "registry": "rnemp:411446",
+    "denomination": "CIRCULO MEDICO DE LOMAS DE ZAMORA",
+    "shortName": "CMLZ CIRCULO MEDICO",
+    "tiers": [
+      {
+        "name": "3210",
+        "code": null
+      },
+      {
+        "name": "3310",
+        "code": null
+      },
+      {
+        "name": "4310",
+        "code": null
+      },
+      {
+        "name": "4910",
+        "code": null
+      },
+      {
+        "name": "4920",
+        "code": null
+      },
+      {
+        "name": "5310",
+        "code": null
+      },
+      {
+        "name": "5810",
+        "code": null
+      },
+      {
+        "name": "5820",
+        "code": null
+      },
+      {
+        "name": "8810",
+        "code": null
+      },
+      {
+        "name": "9810",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "64684400-40ca-b03c-e0c1-ef6e744579d9",
+    "registry": "rnemp:311159",
+    "denomination": "ASOCIACION MUTUAL CON-SER CONFIANZA Y SERVICIO",
+    "shortName": "ASOCIACION MUTUAL CONFIANZA Y SERVICIO",
+    "tiers": [
+      {
+        "name": "A1",
+        "code": 727
+      },
+      {
+        "name": "A2",
+        "code": 728
+      },
+      {
+        "name": "J1",
+        "code": 865
+      },
+      {
+        "name": "J2",
+        "code": 866
+      },
+      {
+        "name": "J3",
+        "code": 867
+      },
+      {
+        "name": "LSV",
+        "code": 868
+      },
+      {
+        "name": "A3",
+        "code": 872
+      }
+    ]
+  },
+  {
+    "id": "64e017f1-878a-ed7d-9d88-805111fce02e",
+    "registry": "rnemp:310712",
+    "denomination": "ASOCIACION MUTUAL PARA AFILIADOS AL SINDICATO DE OBREROS CAMIONEROS",
+    "shortName": "ASOCIACION MUTUAL PARA AFILIADOS AL SINDICATO DE OBREROS CAMIONEROS",
+    "tiers": [
+      {
+        "name": "AMSC",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "6652f48f-2bcb-f7b0-59bf-ce2d498ca971",
+    "registry": "rnemp:610133",
+    "denomination": "OBRA SOCIAL DEL PRESONAL DE DIRECCION DE SANIDAD LUIS PASTEUR",
+    "shortName": "LUIS PASTEUR",
+    "tiers": [
+      {
+        "name": "N",
+        "code": 46
+      },
+      {
+        "name": "NOVO",
+        "code": 47
+      },
+      {
+        "name": "P",
+        "code": 48
+      },
+      {
+        "name": "S",
+        "code": 49
+      },
+      {
+        "name": "V",
+        "code": 50
+      }
+    ]
+  },
+  {
+    "id": "68d3e6e6-b405-ab49-353f-f1776a5638e2",
+    "registry": "rnemp:111438",
+    "denomination": "MEDICINA PREPAGA HOMINIS S.A.",
+    "shortName": "HOMINIS",
+    "tiers": [
+      {
+        "name": "Vita Mas",
+        "code": 1149
+      },
+      {
+        "name": "Aqua Mas",
+        "code": 1150
+      }
+    ]
+  },
+  {
+    "id": "6912e815-7168-2fed-d190-3575165ef5ba",
+    "registry": "rnemp:411255",
+    "denomination": "ASOCIACION MEDICA DPTO CASTELLANOS",
+    "shortName": "ASMEDICA",
+    "tiers": [
+      {
+        "name": "ADVANCE IN",
+        "code": 433
+      },
+      {
+        "name": "ADVANCE",
+        "code": 434
+      },
+      {
+        "name": "ADVANCE UNO",
+        "code": 435
+      },
+      {
+        "name": "ADVANCE ORO",
+        "code": 436
+      },
+      {
+        "name": "PREMIUM A",
+        "code": 437
+      }
+    ]
+  },
+  {
+    "id": "6b74d184-b7d5-4c5c-5ae0-2ca2331243d3",
+    "registry": "rnemp:114819",
+    "denomination": "ASISTIR SA",
+    "shortName": "ASISTIR SERVICIOS MEDICOS",
+    "tiers": [
+      {
+        "name": "FAMILIAR CON COSEGURO",
+        "code": null
+      },
+      {
+        "name": "FAMILIAR SIN COSEGURO",
+        "code": null
+      },
+      {
+        "name": "PLATINO INDIVIDUAL CON COSEGURO",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "6d16d117-a7d3-77f0-5f4b-2edb6e45dd03",
+    "registry": "rnemp:311241",
+    "denomination": "MUTUAL MEDICA RIO CUARTO",
+    "shortName": "MUTUAL MEDICA",
+    "tiers": [
+      {
+        "name": "X VOS",
+        "code": 193
+      },
+      {
+        "name": "VIDA PLUS",
+        "code": 194
+      },
+      {
+        "name": "SOL VIDA",
+        "code": 195
+      },
+      {
+        "name": "SOL MEDICOS VIDA",
+        "code": 196
+      },
+      {
+        "name": "FAMILIA",
+        "code": 197
+      }
+    ]
+  },
+  {
+    "id": "6e09f1a1-6501-a2c6-d9da-223a93637e9e",
+    "registry": "rnemp:610553",
+    "denomination": "OBRA SOCIAL DEL PERSONAL JERARQUICO DE LA REPUBLICA ARGENTINA PARA EL PERSONAL JERARQUICO DE LA INDUSTRIA GRAFICA Y EL PERSONAL JERARQUICO DEL AGUA Y LA ENERGIA",
+    "shortName": "OBRA SOCIAL DEL PERSONAL JERARQUICO DE LA REPUBLICA ARGENTINA PARA EL PERSONAL JERARQUICO DE LA INDUSTRIA GRAFICA Y EL PERSONAL JERARQUICO DEL AGUA Y LA ENERGIA",
+    "tiers": [
+      {
+        "name": "DOR 800",
+        "code": null
+      },
+      {
+        "name": "PSO 700",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "6edc061c-c003-ef8d-d177-6a5d17859f95",
+    "registry": "rnemp:117658",
+    "denomination": "AMSTERDAM SALUD SA",
+    "shortName": "AMSTERDAM SALUD",
+    "tiers": [
+      {
+        "name": "AMS 10",
+        "code": 1129
+      },
+      {
+        "name": "AMS 10 JOVEN",
+        "code": 1129
+      },
+      {
+        "name": "AMS 20",
+        "code": 1130
+      },
+      {
+        "name": "AMS 20 JOVEN",
+        "code": 1130
+      },
+      {
+        "name": "AMS 21",
+        "code": 1130
+      },
+      {
+        "name": "AMS 22",
+        "code": 1130
+      },
+      {
+        "name": "AMS 4",
+        "code": 1132
+      },
+      {
+        "name": "AMS 40",
+        "code": 1132
+      },
+      {
+        "name": "AMS 40 JOVEN",
+        "code": 1132
+      }
+    ]
+  },
+  {
+    "id": "70283940-48f7-4ddc-9b0d-939dcf79a5bd",
+    "registry": null,
+    "denomination": "Obra Social Del Estado Fueguino",
+    "shortName": "OSEF",
+    "tiers": []
+  },
+  {
+    "id": "7052c354-5242-63dc-6594-f949a1e3d4b3",
+    "registry": "rnemp:110442",
+    "denomination": "GILSA",
+    "shortName": "INTEGRAL SALUD",
+    "tiers": [
+      {
+        "name": "Arrayan",
+        "code": null
+      },
+      {
+        "name": "Cedro",
+        "code": null
+      },
+      {
+        "name": "Ceibo",
+        "code": null
+      },
+      {
+        "name": "MI 850",
+        "code": null
+      },
+      {
+        "name": "Roble",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "70764815-e1d2-701a-eb16-9f0772b1b508",
+    "registry": "rnemp:311036",
+    "denomination": "ASOCIACION MUTUAL RURALISTA",
+    "shortName": "AMUR",
+    "tiers": [
+      {
+        "name": "P",
+        "code": null
+      },
+      {
+        "name": "P20",
+        "code": null
+      },
+      {
+        "name": "V  -AD",
+        "code": null
+      },
+      {
+        "name": "G40",
+        "code": 167
+      },
+      {
+        "name": "G40-HIJ",
+        "code": 167
+      },
+      {
+        "name": "G20",
+        "code": 170
+      },
+      {
+        "name": "G20-HIJ",
+        "code": 170
+      },
+      {
+        "name": "P40",
+        "code": 171
+      },
+      {
+        "name": "P40-HIJ",
+        "code": 171
+      },
+      {
+        "name": "E40",
+        "code": 172
+      },
+      {
+        "name": "E40-HIJ",
+        "code": 172
+      },
+      {
+        "name": "S40",
+        "code": 173
+      },
+      {
+        "name": "S40-HIJ",
+        "code": 173
+      }
+    ]
+  },
+  {
+    "id": "709376c0-1b01-45af-6a53-9f7539a943a1",
+    "registry": "rnemp:611174",
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE DIRECCION DE LAS EMPRESAS DE LA ALIMENTACION Y DEMAS ACTIVIDADES EPRESARIAS",
+    "shortName": "OPDEA",
+    "tiers": [
+      {
+        "name": "03",
+        "code": 395
+      },
+      {
+        "name": "04",
+        "code": 396
+      },
+      {
+        "name": "10",
+        "code": 397
+      },
+      {
+        "name": "12",
+        "code": 398
+      },
+      {
+        "name": "15",
+        "code": 399
+      }
+    ]
+  },
+  {
+    "id": "77df6901-e14f-3f19-7344-4b524319e494",
+    "registry": "rnemp:317515",
+    "denomination": "ASOCIACION MUTUAL MECANICA ENTRE OBREROS, EMPLEADOS, TECNICOS Y PROFESIONALES AFILIADOS AL SINDICATO DE MECANICOS Y AFINES DEL TRANSPORTE AUTOMOTOR (SMATA)",
+    "shortName": "ASOCIACION MUTUAL MECANICA",
+    "tiers": [
+      {
+        "name": "Plan 30 35",
+        "code": null
+      },
+      {
+        "name": "Plan 36 40",
+        "code": null
+      },
+      {
+        "name": "Plan 41 50",
+        "code": null
+      },
+      {
+        "name": "Plan 51 60",
+        "code": null
+      },
+      {
+        "name": "Plan 61 63",
+        "code": null
+      },
+      {
+        "name": "Plan Joven 29",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "79529c4c-3a88-4029-96f0-b16430ce6dec",
+    "registry": null,
+    "denomination": "Instituto De Seguridad Social Del Neuquen",
+    "shortName": "ISSN",
+    "tiers": []
+  },
+  {
+    "id": "7972eb06-48bf-e5b7-0c28-596ea0170564",
+    "registry": "rnemp:614173",
+    "denomination": "OBRA SOCIAL DE AGENTES DE PROPAGANDA MEDICA DE LA REPUBLICA ARGENTINA",
+    "shortName": "OS APM",
+    "tiers": [
+      {
+        "name": "5000-DE 0 A 25 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-DE 26 A 39 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-DE 40 A 59 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-DE 60 A 64 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-DE 65 A 69 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-DE 70 A 74 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-DE 75 AÑOS Y MAS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL 1 HIJO",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL 2 HIJOS",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL 35 A 44 AÑOS",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL 35 A 44 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL 45 A 64 AÑOS",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL 45 A 64 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL 65 AÑOS O MAS",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL 65 AÑOS O MAS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL CON 1 HIJO",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL CON 2 HIJOS",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL CON 3 HIJOS",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL CON 4 HIJOS",
+        "code": null
+      },
+      {
+        "name": "5000-INDIVIDUAL JOVEN",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO 1 HIJO",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO CON 1 HIJO",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO CON 2 HIJOS",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO CON 3 HIJOS",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO CON 4 HIJOS",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO DE 0 A 25 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO DE 26 A 39 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO DE 40 A 59 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO DE 60 A 64 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO DE 65 A 69 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO DE 70 A 74 AÑOS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO DE 75 AÑOS Y MAS (Jubilado)",
+        "code": null
+      },
+      {
+        "name": "5000-MATRIMONIO MAYOR DE 65 AÑOS",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "7bc2a446-9872-47aa-78fe-c435f54b33d8",
+    "registry": "rnemp:411866",
+    "denomination": "CIRCULO MEDICO DE ESTEBAN ECHEVERRIA",
+    "shortName": "C.M.E.E",
+    "tiers": [
+      {
+        "name": "F300",
+        "code": null
+      },
+      {
+        "name": "FAZ",
+        "code": null
+      },
+      {
+        "name": "FBL",
+        "code": null
+      },
+      {
+        "name": "FCEL",
+        "code": null
+      },
+      {
+        "name": "FNAR",
+        "code": null
+      },
+      {
+        "name": "FPL",
+        "code": null
+      },
+      {
+        "name": "FRUB",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "7fecca93-b050-ce96-f03c-6668be759316",
+    "registry": "rnemp:620646",
+    "denomination": "OBRA SOCIAL DE PETROLEROS",
+    "shortName": "OSPE",
+    "tiers": [
+      {
+        "name": "OSPe-D 456",
+        "code": null
+      },
+      {
+        "name": "OSPe-D JOVEN",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "8042c679-3ef2-790f-f311-024e45360042",
+    "registry": "rnemp:113236",
+    "denomination": "D.I.M.SA. S.A.",
+    "shortName": "D.I.M.SA. S.A.",
+    "tiers": [
+      {
+        "name": "CORAL",
+        "code": 797
+      },
+      {
+        "name": "INTEGRAL",
+        "code": 811
+      },
+      {
+        "name": "MAXIMO",
+        "code": 812
+      }
+    ]
+  },
+  {
+    "id": "841822a6-57b4-7bfb-db21-29e6958483ff",
+    "registry": "rnemp:111551",
+    "denomination": "PRESTADORES SANATORIALES SA",
+    "shortName": "CONSALUD UNA ELECCION DE VIDA",
+    "tiers": [
+      {
+        "name": "PLAN INTEGRAL 30",
+        "code": 710
+      }
+    ]
+  },
+  {
+    "id": "84562783-517c-c1e0-3f2f-263f1eed7010",
+    "registry": "rnemp:320232",
+    "denomination": "MUTUAL DEL PERSONAL DE AGUA Y ENERGIA ELECTRICA DE SANTA FE",
+    "shortName": "AMRGESTION",
+    "tiers": [
+      {
+        "name": "Plan Plata",
+        "code": 1379
+      },
+      {
+        "name": "Plan Oro",
+        "code": 1380
+      },
+      {
+        "name": "Plan Platino",
+        "code": 1381
+      }
+    ]
+  },
+  {
+    "id": "84e5a9e1-3785-8fd2-5daa-50c844a643f4",
+    "registry": "rnemp:110824",
+    "denomination": "MEDI-CARDIO S.R.L.",
+    "shortName": "MEDICARDIO",
+    "tiers": [
+      {
+        "name": "PLAN 100",
+        "code": null
+      },
+      {
+        "name": "PLAN AZUL",
+        "code": null
+      },
+      {
+        "name": "PLAN BLACK",
+        "code": null
+      },
+      {
+        "name": "PLAN BLACK PLUS MAYORES 69 A�OS",
+        "code": null
+      },
+      {
+        "name": "PLAN BLACK PLUS MENORES 69 A�OS",
+        "code": null
+      },
+      {
+        "name": "PLAN GOLD",
+        "code": null
+      },
+      {
+        "name": "PLAN PLATINUM",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "84f2cadc-d0d7-39ff-654f-892e0ef7a9bd",
+    "registry": "rnemp:113946",
+    "denomination": "FAMILY EMERGENCIAS MEDICAS SRL",
+    "shortName": "FAMILY EMERGENCIAS",
+    "tiers": [
+      {
+        "name": "PLAN DORADO",
+        "code": null
+      },
+      {
+        "name": "PLAN SIS",
+        "code": null
+      },
+      {
+        "name": "PLAN VIDA",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "86873014-59b6-3392-4a7a-8f702784bc5f",
+    "registry": "rnemp:410597",
+    "denomination": "CIRCULO MEDICO DE TRENQUE LAUQUEN",
+    "shortName": "SAMI",
+    "tiers": [
+      {
+        "name": "ESPECIAL S",
+        "code": 53
+      },
+      {
+        "name": "GOLD S",
+        "code": 54
+      },
+      {
+        "name": "CERRADO S",
+        "code": 55
+      }
+    ]
+  },
+  {
+    "id": "872de56e-c184-776c-457f-6061980e5343",
+    "registry": "rnemp:317058",
+    "denomination": "MUTUAL DE LOS INMIGRANTES ESPANOLES Y SUS DESCENDIENTES EN LA ARGENTINA",
+    "shortName": "OSPAÑA",
+    "tiers": [
+      {
+        "name": "GLOBAL1",
+        "code": 791
+      },
+      {
+        "name": "TOTAL1",
+        "code": 792
+      }
+    ]
+  },
+  {
+    "id": "87b6f763-1f54-4415-6786-6580c4551d43",
+    "registry": "rnemp:311586",
+    "denomination": "MUTUAL FEDERADA 25 DE JUNIO SOCIEDAD DE PROTECCION RECIPROCA.",
+    "shortName": "FEDERADA COBERTURA MEDICA",
+    "tiers": [
+      {
+        "name": "1000 NG2",
+        "code": 275
+      },
+      {
+        "name": "1000 SUPERIOR",
+        "code": 275
+      },
+      {
+        "name": "2000 NG2",
+        "code": 277
+      },
+      {
+        "name": "3000 NG2",
+        "code": 278
+      },
+      {
+        "name": "4000 NG2",
+        "code": 279
+      },
+      {
+        "name": "JOVEN",
+        "code": 280
+      },
+      {
+        "name": "FAMILIA",
+        "code": 281
+      },
+      {
+        "name": "ROSARIO PLUS",
+        "code": 702
+      },
+      {
+        "name": "ROSARIO",
+        "code": 703
+      },
+      {
+        "name": "CORDOBA",
+        "code": 1190
+      },
+      {
+        "name": "CORDOBA PLUS",
+        "code": 1191
+      },
+      {
+        "name": "INTERNA 3000+",
+        "code": 1661
+      },
+      {
+        "name": "INTERNA 1000+",
+        "code": 1662
+      }
+    ]
+  },
+  {
+    "id": "88a13002-4cef-6e47-8d3d-9f931ff2fffe",
+    "registry": "rnemp:112950",
+    "denomination": "C.R.S. PRESTADORES DE SALUD S.A.",
+    "shortName": "CRSALUD",
+    "tiers": [
+      {
+        "name": "ALFA X",
+        "code": 798
+      },
+      {
+        "name": "BETA X",
+        "code": 860
+      },
+      {
+        "name": "DELTA X",
+        "code": 861
+      },
+      {
+        "name": "DELTA X ",
+        "code": 861
+      },
+      {
+        "name": "GAMMA X",
+        "code": 862
+      },
+      {
+        "name": "GAMMA X ",
+        "code": 862
+      }
+    ]
+  },
+  {
+    "id": "8bd9d08f-880b-9d2a-7ffa-045f8dd9570a",
+    "registry": "rnemp:114567",
+    "denomination": "CALIDAD MEDICA S.A.",
+    "shortName": "SUME SALUD",
+    "tiers": [
+      {
+        "name": "PREPAGO SUME 300",
+        "code": null
+      },
+      {
+        "name": "PREPAGO SUME 500",
+        "code": null
+      },
+      {
+        "name": "SUME 100",
+        "code": null
+      },
+      {
+        "name": "SUME 300",
+        "code": null
+      },
+      {
+        "name": "SUME 500",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "ffebc427-6888-45fa-a9b0-19cbeb13d520",
+    "registry": "rnas:4-0170-4",
+    "denomination": "Instituto Nacional De Servicios Sociales Para Jubilados Y Pensionados",
+    "shortName": "PAMI",
+    "tiers": []
+  },
+  {
+    "id": "8f4663bc-5af8-620d-6e09-1e9f00e392b9",
+    "registry": "rnemp:410573",
+    "denomination": "COLEGIO MEDICO DE LA PAMPA",
+    "shortName": "COLEGIO MEDICO DE LA PAMPA",
+    "tiers": [
+      {
+        "name": "Plan PL",
+        "code": 476
+      },
+      {
+        "name": "Plan PY",
+        "code": 477
+      },
+      {
+        "name": "Plan 2A",
+        "code": 478
+      }
+    ]
+  },
+  {
+    "id": "8f6f750f-27a6-2cc3-f984-a493048ed903",
+    "registry": "rnemp:410863",
+    "denomination": "HOSPITAL ALEMAN ASOCIACION CIVIL",
+    "shortName": "HOSPITAL ALEMAN",
+    "tiers": [
+      {
+        "name": "L700",
+        "code": 712
+      },
+      {
+        "name": "L600",
+        "code": 713
+      },
+      {
+        "name": "L200",
+        "code": 714
+      },
+      {
+        "name": "L300",
+        "code": 715
+      }
+    ]
+  },
+  {
+    "id": "8fff2ff4-fbf7-921a-f46b-47a83db82c44",
+    "registry": "rnemp:111728",
+    "denomination": "MEDIN S.A.S.M.A",
+    "shortName": "MEDIN",
+    "tiers": [
+      {
+        "name": "OPTIMO",
+        "code": 501
+      }
+    ]
+  },
+  {
+    "id": "918681a4-e6c3-518f-84ae-0e21f14da641",
+    "registry": "rnemp:313261",
+    "denomination": "PROTECCION INTEGRAL PARA LA FAMILIA ASOCIACION MUTUAL",
+    "shortName": "GRUPO EMERGER",
+    "tiers": [
+      {
+        "name": "PLAN BRONCE",
+        "code": null
+      },
+      {
+        "name": "PLAN ORO",
+        "code": null
+      },
+      {
+        "name": "PLAN ORO PLUS",
+        "code": null
+      },
+      {
+        "name": "PLAN PLATA",
+        "code": null
+      },
+      {
+        "name": "PLAN PLATINO",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "94e7666e-a09d-7ce2-018a-e5907909c874",
+    "registry": "rnemp:114697",
+    "denomination": "SUM S.A.",
+    "shortName": "SUM SA",
+    "tiers": [
+      {
+        "name": "PLAN BASICO",
+        "code": null
+      },
+      {
+        "name": "PLAN INTEGRAL",
+        "code": null
+      },
+      {
+        "name": "PLAN PREMIUM",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "9836f97f-30fc-f23d-ffea-ac76f90767b4",
+    "registry": "rnemp:613842",
+    "denomination": "OBRA SOCIAL DEL PERSONAL DEL ORGANISMO DE CONTROL EXTERNO",
+    "shortName": "OSPOCE",
+    "tiers": [
+      {
+        "name": "Mi 2000",
+        "code": 696
+      },
+      {
+        "name": "Mi 900  ROBLE",
+        "code": 1008
+      },
+      {
+        "name": "Mi 900  ROBLE SUPERADOR",
+        "code": 1008
+      },
+      {
+        "name": "Mi 700  ARRAYAN",
+        "code": 1033
+      },
+      {
+        "name": "Mi 700  ARRAYAN BASE",
+        "code": 1033
+      },
+      {
+        "name": "Mi 700  ARRAYAN SUPERADOR",
+        "code": 1033
+      },
+      {
+        "name": "Mi 800  NOGAL",
+        "code": 1034
+      },
+      {
+        "name": "Mi 1000  OSPOCE 01",
+        "code": 1035
+      },
+      {
+        "name": "Mi 2000 Plus",
+        "code": 1111
+      }
+    ]
+  },
+  {
+    "id": "9863a674-ba71-b69a-1f9c-5ec514fc86e6",
+    "registry": "rnemp:314134",
+    "denomination": "ASOC. MUTUAL INTERCOOOP. SOLID.PROV. DE CBA. (AMICOS)",
+    "shortName": "AMICOS",
+    "tiers": [
+      {
+        "name": "AMI 2",
+        "code": 1362
+      },
+      {
+        "name": "AMI 4",
+        "code": 1364
+      }
+    ]
+  },
+  {
+    "id": "9bbfbd34-698e-04e8-6477-1cb1175e0b9a",
+    "registry": "rnemp:211947",
+    "denomination": "AVALIAN SALUD Y BIENESTAR COOPERATIVA LIMITADA EX ACA SALUD COOPERATIVA DE PRESTACION DE SERVICIOS MEDICO ASISTENCIALES LTDA",
+    "shortName": "AVALIAN",
+    "tiers": [
+      {
+        "name": "AS100",
+        "code": null
+      },
+      {
+        "name": "AS200",
+        "code": null
+      },
+      {
+        "name": "AS200H",
+        "code": null
+      },
+      {
+        "name": "AS200SC",
+        "code": null
+      },
+      {
+        "name": "AS204",
+        "code": null
+      },
+      {
+        "name": "AS300",
+        "code": null
+      },
+      {
+        "name": "AS400",
+        "code": null
+      },
+      {
+        "name": "AS500",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "9c79054f-c728-8aa9-2186-715b0ce08cc3",
+    "registry": "rnemp:111896",
+    "denomination": "UNIDAD CORONARIA MOVIL QUILMES",
+    "shortName": "GRUPO AYUDA MEDICA GAM",
+    "tiers": [
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS1",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS10",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS2",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS3",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS4",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS5",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS6",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS7",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS8",
+        "code": null
+      },
+      {
+        "name": "EMERGENCIAS MEDICAS Y TRASLADOS SANITARIOS9",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "9e7a4a1e-39cd-43c1-9e71-79d0e0ffd8c1",
+    "registry": "rnemp:111612",
+    "denomination": "APRES S.A.",
+    "shortName": "APRES COBERTURA MEDICA",
+    "tiers": [
+      {
+        "name": "PLAN A",
+        "code": 227
+      },
+      {
+        "name": "PLAN A ",
+        "code": 227
+      },
+      {
+        "name": "PLAN RS",
+        "code": 255
+      },
+      {
+        "name": "PLAN T",
+        "code": 256
+      },
+      {
+        "name": "PLAN GLOBAL CLASSIC",
+        "code": 257
+      },
+      {
+        "name": "PLAN GLOBAL PLUS",
+        "code": 258
+      },
+      {
+        "name": "PLAN GLOBAL PREMIUM",
+        "code": 259
+      },
+      {
+        "name": "PLAN CLASSIC",
+        "code": 260
+      },
+      {
+        "name": "PLAN PLUS",
+        "code": 261
+      },
+      {
+        "name": "PLAN PREMIUM",
+        "code": 262
+      },
+      {
+        "name": "PLAN GLOBAL CLASSIC",
+        "code": 263
+      },
+      {
+        "name": "PLAN GLOBAL PLUS",
+        "code": 264
+      },
+      {
+        "name": "PLAN GLOBAL PREMIUM",
+        "code": 266
+      },
+      {
+        "name": "PLAN A  CON COPAGOS",
+        "code": 592
+      },
+      {
+        "name": "PLAN RS  CON COPAGOS",
+        "code": 593
+      },
+      {
+        "name": "PLAN T  CON COPAGOS",
+        "code": 594
+      },
+      {
+        "name": "PLAN CLASSIC CON COPAGOS",
+        "code": 595
+      },
+      {
+        "name": "PLAN PLUS CON COPAGOS",
+        "code": 596
+      },
+      {
+        "name": "PLAN PREMIUM CON COPAGOS",
+        "code": 597
+      },
+      {
+        "name": "PLAN GLOBAL CLASSIC CON COPAGOS",
+        "code": 598
+      },
+      {
+        "name": "PLAN GLOBAL PLUS CON COPAGOS",
+        "code": 599
+      },
+      {
+        "name": "PLAN GLOBAL CLASSIC CON COPAGOS",
+        "code": 600
+      },
+      {
+        "name": "PLAN GLOBAL PLUS CON COPAGOS",
+        "code": 601
+      },
+      {
+        "name": "PLAN GLOBAL PREMIUM CON COPAGOS",
+        "code": 602
+      },
+      {
+        "name": "PLAN GLOBAL PREMIUM CON COPAGOS",
+        "code": 603
+      }
+    ]
+  },
+  {
+    "id": "a25dc89a-b122-4211-20dd-777c7971d057",
+    "registry": "rnemp:310491",
+    "denomination": "ASOCIACION MUTUAL DR. ESTEBAN LAUREANO MARADONA SALUD",
+    "shortName": "MARADONA SALUD",
+    "tiers": [
+      {
+        "name": "PLAN CLASICO MARADONA",
+        "code": 175
+      },
+      {
+        "name": "CLASICO JOVEN MARADONA",
+        "code": 176
+      },
+      {
+        "name": "PLAN CLASICO JOVEN MARADONA",
+        "code": 176
+      },
+      {
+        "name": "PLAN SUPERIOR MARADONA",
+        "code": 177
+      },
+      {
+        "name": "SUPERIOR MARADONA",
+        "code": 177
+      },
+      {
+        "name": "PLAN SUPERIOR JOVEN MARADONA",
+        "code": 178
+      },
+      {
+        "name": "SUPERIOR JOVEN MARADONA",
+        "code": 178
+      }
+    ]
+  },
+  {
+    "id": "a5c1e759-ddb6-f2ad-44d9-22e258090bdf",
+    "registry": "rnemp:111520",
+    "denomination": "CORPORACION ASISTENCIAL S.A.",
+    "shortName": "CORPORACION MEDICA",
+    "tiers": [
+      {
+        "name": "101",
+        "code": 374
+      },
+      {
+        "name": "505",
+        "code": 375
+      },
+      {
+        "name": "606",
+        "code": 376
+      },
+      {
+        "name": "808",
+        "code": 378
+      }
+    ]
+  },
+  {
+    "id": "a7527e58-513f-4db4-87b2-49c2c203df62",
+    "registry": null,
+    "denomination": "Instituto De Obra Medico Asistencial",
+    "shortName": "IOMA",
+    "tiers": []
+  },
+  {
+    "id": "a851ce33-8fea-3db3-1e97-7b379f3ebbef",
+    "registry": "rnemp:111650",
+    "denomination": "COBERTURA DE SALUD S.A.",
+    "shortName": "BOREAL",
+    "tiers": [
+      {
+        "name": "PLAN1",
+        "code": null
+      },
+      {
+        "name": "PLAN2",
+        "code": null
+      },
+      {
+        "name": "PLAN3",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "a8eb714b-1c7d-4e08-83cf-bdf27989154d",
+    "registry": null,
+    "denomination": "Instituto De Obra Social De La Provincia De Corrientes",
+    "shortName": "IOSCOR",
+    "tiers": []
+  },
+  {
+    "id": "a9a142ff-1d7b-0ccb-de59-4c18339d8aab",
+    "registry": "rnemp:112660",
+    "denomination": "SABER S.A.",
+    "shortName": "SABER+",
+    "tiers": [
+      {
+        "name": "ONIX",
+        "code": 799
+      },
+      {
+        "name": "CORAL",
+        "code": 800
+      },
+      {
+        "name": "AMBAR",
+        "code": 801
+      },
+      {
+        "name": "GEMA",
+        "code": 802
+      },
+      {
+        "name": "NACAR",
+        "code": 803
+      },
+      {
+        "name": "RUBI",
+        "code": 804
+      },
+      {
+        "name": "MARFIL",
+        "code": 805
+      }
+    ]
+  },
+  {
+    "id": "b09e9c7c-6008-6158-6f72-2da6e2aca8e4",
+    "registry": "rnemp:318037",
+    "denomination": "ASOCIACION MUTUAL DEL PERSONAL, ASESORES Y DIRECTIVOS DE GRUPO SAN NICOLAS SRL",
+    "shortName": "GSN MUTUAL",
+    "tiers": [
+      {
+        "name": "B2100",
+        "code": 403
+      },
+      {
+        "name": "B3100",
+        "code": 404
+      },
+      {
+        "name": "B4100",
+        "code": 405
+      },
+      {
+        "name": "AMBULATORIO",
+        "code": 1221
+      },
+      {
+        "name": "INTERNACION",
+        "code": 1222
+      }
+    ]
+  },
+  {
+    "id": "b15b84a7-6e6b-6fc7-0e54-3acd88aea09c",
+    "registry": "rnemp:110916",
+    "denomination": "ASISTENCIA SANITARIA INTEGRAL S.A.",
+    "shortName": "ASI SALUD",
+    "tiers": [
+      {
+        "name": "CLASSIC",
+        "code": 440
+      },
+      {
+        "name": "SENIOR",
+        "code": 441
+      },
+      {
+        "name": "MASTER",
+        "code": 442
+      }
+    ]
+  },
+  {
+    "id": "b2681bf4-be98-0ab8-5772-7f9301c7daa5",
+    "registry": "rnemp:610720",
+    "denomination": "OBRA SOCIAL ASOCIACION MUTUAL DEL PERSONAL DE PHILIPS ARGENTINA (AMPAR)",
+    "shortName": "AMPAR",
+    "tiers": [
+      {
+        "name": "PLAN COPAGOS AMPAR",
+        "code": 1225
+      }
+    ]
+  },
+  {
+    "id": "b2b04c9d-72f7-8b49-32a8-b4f47e3da854",
+    "registry": "rnemp:320263",
+    "denomination": "ASOCIACION MUTUAL DE CHOFERES DE TAXI DE LA CIUDAD DE VILLA CARLOS PAZ Y VALLE DE PUNILLA",
+    "shortName": "MUTUAL DE TAXI CARLOS PAZ",
+    "tiers": [
+      {
+        "name": "A",
+        "code": null
+      },
+      {
+        "name": "B",
+        "code": null
+      },
+      {
+        "name": "D",
+        "code": null
+      },
+      {
+        "name": "M",
+        "code": null
+      },
+      {
+        "name": "S",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "b337cdb5-af7f-a6c6-8035-552b8b4aac22",
+    "registry": "rnemp:311814",
+    "denomination": "ASOCIACION MUTUAL ARGENTINA DEL TURISMO",
+    "shortName": "AMAT SALUD",
+    "tiers": [
+      {
+        "name": "CEMIC 759",
+        "code": 151
+      },
+      {
+        "name": "CEMIC 459",
+        "code": 152
+      },
+      {
+        "name": "CEMIC 659",
+        "code": 154
+      }
+    ]
+  },
+  {
+    "id": "b57342e8-c0ee-4993-9134-329789ef2591",
+    "registry": null,
+    "denomination": "Instituto De Salud Prestacional De Salta",
+    "shortName": "IPS",
+    "tiers": []
+  },
+  {
+    "id": "b6a80469-c2cf-589f-77ab-5aa4872788cc",
+    "registry": "rnemp:315281",
+    "denomination": "MUTUAL DE EMPLEADOS DE SISTEMAS MEDICOS DE EMERGENCIAS DE LA REPUBLICA ARGENTINA",
+    "shortName": "MUTUAL DE EMPLEADOS DE SISTEMAS MEDICOS DE EMERGENCIAS DE LA REPUBLICA ARGENTINA",
+    "tiers": [
+      {
+        "name": "PLAN ESMERALDA",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "b700aadb-1c86-97eb-4c8e-04b1a00e4d57",
+    "registry": "rnemp:612528",
+    "denomination": "OBRA SOCIAL DE VIAJANTES VENDEDORES DE LA REPUBLICA ARGENTINA.",
+    "shortName": "ANDAR TE HACE BIEN",
+    "tiers": [
+      {
+        "name": "CLASICO",
+        "code": null
+      },
+      {
+        "name": "ESPECIAL",
+        "code": null
+      },
+      {
+        "name": "PLUS",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "b8990f33-2b0e-2a4c-c0f7-388b2f03eda6",
+    "registry": "rnemp:110312",
+    "denomination": "RED DE SEGURO MEDICO SRL",
+    "shortName": "RED DE SEGURO MEDICO SRL",
+    "tiers": [
+      {
+        "name": "PLATINUM",
+        "code": 717
+      },
+      {
+        "name": "PREMIUM",
+        "code": 718
+      },
+      {
+        "name": "PLATINUM",
+        "code": 1455
+      }
+    ]
+  },
+  {
+    "id": "b8e75d9c-e15e-0107-4cc0-760c13e6b007",
+    "registry": "rnemp:311333",
+    "denomination": "MUTUAL MEDICA CONCORDIA",
+    "shortName": "UNIMEDICA CONCORDIA",
+    "tiers": [
+      {
+        "name": "Unimedica 50",
+        "code": 1144
+      },
+      {
+        "name": "Unimedica 100",
+        "code": 1145
+      }
+    ]
+  },
+  {
+    "id": "ba86a8e2-5c27-7ce2-d14c-de62c623a9f0",
+    "registry": "rnemp:612511",
+    "denomination": "OBRA SOCIAL MUTUALIDAD INDUSTRIAL TEXTIL ARGENTINA",
+    "shortName": "OSMITA PROMOVIENDO SALUD",
+    "tiers": [
+      {
+        "name": "MIPLAN10",
+        "code": 1248
+      },
+      {
+        "name": "MIPLAN20",
+        "code": 1249
+      },
+      {
+        "name": "MIPLAN30",
+        "code": 1250
+      },
+      {
+        "name": "FG24",
+        "code": 1251
+      },
+      {
+        "name": "MG5",
+        "code": 1252
+      },
+      {
+        "name": "MG6",
+        "code": 1253
+      },
+      {
+        "name": "MG7",
+        "code": 1254
+      },
+      {
+        "name": "MG8",
+        "code": 1255
+      },
+      {
+        "name": "SIMECO SENIOR",
+        "code": 1256
+      }
+    ]
+  },
+  {
+    "id": "baed150c-352e-7222-dbd3-415ed37225f5",
+    "registry": "rnemp:316338",
+    "denomination": "ASOCIACION MUTUAL PREVINOR",
+    "shortName": "S/D",
+    "tiers": [
+      {
+        "name": "COMPLEMENTARIO;GRUPO;FAMILIAR",
+        "code": null
+      },
+      {
+        "name": "COMPLEMENTARIO;TITULAR;SOLO",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "bbb34223-2762-7cc2-25b9-be111e968c8c",
+    "registry": "rnemp:312589",
+    "denomination": "MUTUAL DEL PERSONAL DEL CENTRO INDUSTRIAL ACINDAR",
+    "shortName": "MAS MUTUAL ACINDAR SALUD",
+    "tiers": [
+      {
+        "name": "AC 300",
+        "code": 341
+      },
+      {
+        "name": "ACERO 300",
+        "code": 341
+      },
+      {
+        "name": "AC 200",
+        "code": 342
+      },
+      {
+        "name": "ACERO 200",
+        "code": 342
+      }
+    ]
+  },
+  {
+    "id": "bc1f5c69-73f0-a4cb-5b4a-22d9dfabf382",
+    "registry": "rnemp:111797",
+    "denomination": "INSTITUTO DE INVESTIGACIONES DEL CORAZON INICOR",
+    "shortName": "INSTITUTO DE INVESTIGACIONES DEL CORAZON INICOR",
+    "tiers": [
+      {
+        "name": "INICOR",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "c1cfb31e-8673-f909-5cc5-23b08b9c4556",
+    "registry": "rnemp:113922",
+    "denomination": "UNIMED SA",
+    "shortName": "UNIMED",
+    "tiers": [
+      {
+        "name": "HS 45",
+        "code": 425
+      },
+      {
+        "name": "HS 65",
+        "code": 426
+      },
+      {
+        "name": "HS 85",
+        "code": 427
+      },
+      {
+        "name": "HS 95",
+        "code": 428
+      },
+      {
+        "name": "SPS 55",
+        "code": 429
+      },
+      {
+        "name": "SPS 75",
+        "code": 430
+      },
+      {
+        "name": "SPS 95",
+        "code": 431
+      }
+    ]
+  },
+  {
+    "id": "c31c4773-60e0-9b1a-b665-fce2ba62a043",
+    "registry": "rnemp:113465",
+    "denomination": "PREVINCA SALUD S.A.",
+    "shortName": "PREVINCA SALUD",
+    "tiers": [
+      {
+        "name": "A",
+        "code": 2222
+      },
+      {
+        "name": "B",
+        "code": 2223
+      },
+      {
+        "name": "B70",
+        "code": 2224
+      },
+      {
+        "name": "B71",
+        "code": 2225
+      },
+      {
+        "name": "C30",
+        "code": 2226
+      },
+      {
+        "name": "C31",
+        "code": 2227
+      },
+      {
+        "name": "I50",
+        "code": 2228
+      },
+      {
+        "name": "I51",
+        "code": 2229
+      },
+      {
+        "name": "M40",
+        "code": 2230
+      },
+      {
+        "name": "M41",
+        "code": 2231
+      },
+      {
+        "name": "P70",
+        "code": 2232
+      },
+      {
+        "name": "P71",
+        "code": 2233
+      },
+      {
+        "name": "S50",
+        "code": 2234
+      },
+      {
+        "name": "S51",
+        "code": 2249
+      }
+    ]
+  },
+  {
+    "id": "c33dd491-56bc-0a6d-c540-9d1ec5ee4fbc",
+    "registry": "rnemp:115416",
+    "denomination": "MEMED S.A.",
+    "shortName": "MEMED",
+    "tiers": [
+      {
+        "name": "FLEX 1 24",
+        "code": 364
+      },
+      {
+        "name": "ORO 24",
+        "code": 365
+      },
+      {
+        "name": "ORO D 24",
+        "code": 365
+      },
+      {
+        "name": "SILVER 24",
+        "code": 366
+      },
+      {
+        "name": "I PLUS 24",
+        "code": 401
+      },
+      {
+        "name": "JUB 3 24",
+        "code": 402
+      },
+      {
+        "name": "SILVER D 24",
+        "code": 1076
+      },
+      {
+        "name": "JUB VIP 24",
+        "code": 1282
+      }
+    ]
+  },
+  {
+    "id": "c37ef9a1-ad9c-048e-c34f-fa52658ebd65",
+    "registry": "rnemp:615114",
+    "denomination": "OBRA SOCIAL DE LA ACTIVIDAD DE SEGUROS, REASEGUROS, CAPITALIZACION Y AHORRO Y PRESTAMO PARA LA VIVIENDA",
+    "shortName": "OSSEG",
+    "tiers": [
+      {
+        "name": "ADHERENTE 2021",
+        "code": 903
+      },
+      {
+        "name": "OSSEG 450",
+        "code": 904
+      }
+    ]
+  },
+  {
+    "id": "c6e6e862-547f-ce4a-b7eb-ef0b75e67cee",
+    "registry": "rnemp:412593",
+    "denomination": "CENTRO DE EDUCACION MEDICA E INVESTIGACIONES CLINICAS",
+    "shortName": "CEMIC",
+    "tiers": [
+      {
+        "name": "00550-87",
+        "code": 283
+      },
+      {
+        "name": "00609-00",
+        "code": 283
+      },
+      {
+        "name": "00609-1500",
+        "code": 283
+      },
+      {
+        "name": "00650-87",
+        "code": 283
+      },
+      {
+        "name": "00659-30",
+        "code": 283
+      },
+      {
+        "name": "00659-38",
+        "code": 283
+      },
+      {
+        "name": "00509-00",
+        "code": 334
+      },
+      {
+        "name": "00509-05",
+        "code": 334
+      },
+      {
+        "name": "00509-07",
+        "code": 334
+      },
+      {
+        "name": "00509-1500",
+        "code": 334
+      },
+      {
+        "name": "00705-25",
+        "code": 335
+      },
+      {
+        "name": "00705-26",
+        "code": 335
+      },
+      {
+        "name": "00709-00",
+        "code": 335
+      },
+      {
+        "name": "00709-05",
+        "code": 335
+      },
+      {
+        "name": "00709-06",
+        "code": 335
+      },
+      {
+        "name": "00709-07",
+        "code": 335
+      },
+      {
+        "name": "00709-11",
+        "code": 335
+      },
+      {
+        "name": "00709-12",
+        "code": 335
+      },
+      {
+        "name": "00709-1500",
+        "code": 335
+      },
+      {
+        "name": "00719-2112",
+        "code": 335
+      },
+      {
+        "name": "00759-30",
+        "code": 335
+      },
+      {
+        "name": "00759-31",
+        "code": 335
+      },
+      {
+        "name": "00759-33",
+        "code": 335
+      },
+      {
+        "name": "00759-38",
+        "code": 335
+      },
+      {
+        "name": "00760-87",
+        "code": 335
+      },
+      {
+        "name": "00409-00",
+        "code": 336
+      },
+      {
+        "name": "00409-03",
+        "code": 336
+      },
+      {
+        "name": "00409-05",
+        "code": 336
+      },
+      {
+        "name": "00409-06",
+        "code": 336
+      },
+      {
+        "name": "00409-07",
+        "code": 336
+      },
+      {
+        "name": "00409-11",
+        "code": 336
+      },
+      {
+        "name": "00409-12",
+        "code": 336
+      },
+      {
+        "name": "00409-1500",
+        "code": 336
+      },
+      {
+        "name": "00450-87",
+        "code": 336
+      },
+      {
+        "name": "00459-30",
+        "code": 336
+      },
+      {
+        "name": "00459-31",
+        "code": 336
+      },
+      {
+        "name": "00459-38",
+        "code": 336
+      },
+      {
+        "name": "08300-1500",
+        "code": 337
+      },
+      {
+        "name": "00250-87",
+        "code": 338
+      },
+      {
+        "name": "01000-00",
+        "code": 2421
+      },
+      {
+        "name": "01019-00",
+        "code": 2421
+      }
+    ]
+  },
+  {
+    "id": "ca452886-171e-6312-d43b-31de38303241",
+    "registry": "rnemp:318457",
+    "denomination": "ASOCIACION MUTUAL FRANCO ANDINA REGIONALMENDOZA",
+    "shortName": "ASOCIACION MUTUAL FRANCO ANDINA REGIONAL MENDOZA",
+    "tiers": [
+      {
+        "name": "PLAN 100 desregulados",
+        "code": null
+      },
+      {
+        "name": "PLAN 200 desregulados",
+        "code": null
+      },
+      {
+        "name": "PLAN 200 directos",
+        "code": null
+      },
+      {
+        "name": "PLAN 300 desregulados",
+        "code": null
+      },
+      {
+        "name": "PLAN 300 directos",
+        "code": null
+      },
+      {
+        "name": "PLAN 400 desregulados",
+        "code": null
+      },
+      {
+        "name": "PLAN 400 directos",
+        "code": null
+      },
+      {
+        "name": "PLAN 75 desregulados",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "caed72c9-0ff8-765e-b564-cd56ef74251b",
+    "registry": "rnemp:112172",
+    "denomination": "GRUPO DDM SA",
+    "shortName": "PREMEDIC",
+    "tiers": [
+      {
+        "name": "200",
+        "code": null
+      },
+      {
+        "name": "300",
+        "code": null
+      },
+      {
+        "name": "400",
+        "code": null
+      },
+      {
+        "name": "500",
+        "code": null
+      },
+      {
+        "name": "C100",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "cb5720eb-2d1f-2f3b-71a0-cfd109cb0291",
+    "registry": "rnemp:114383",
+    "denomination": "GRUPO MEDICO INCAS S.A.",
+    "shortName": "LEAL MEDICA",
+    "tiers": [
+      {
+        "name": "PLAN 500",
+        "code": 474
+      },
+      {
+        "name": "PLAN 1000",
+        "code": 475
+      }
+    ]
+  },
+  {
+    "id": "cc9d13e6-ec3c-df62-84ea-44a026044d60",
+    "registry": "rnemp:614234",
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE DIRECCION DE LA INDUSTRIA CERVECERA Y MALTERA",
+    "shortName": "SERVESALUD",
+    "tiers": [
+      {
+        "name": "AS500",
+        "code": 1332
+      },
+      {
+        "name": "AS700",
+        "code": 1333
+      },
+      {
+        "name": "AS800",
+        "code": 1334
+      },
+      {
+        "name": "OM4",
+        "code": 1335
+      },
+      {
+        "name": "OM6",
+        "code": 1336
+      }
+    ]
+  },
+  {
+    "id": "ccd5dbaa-8b49-3551-d520-cb4f7d125ff9",
+    "registry": "rnemp:612870",
+    "denomination": "OBRA SOCIAL DE LOS  LEGISLADORES DE LA REPUBLICA ARGENTINA",
+    "shortName": "OSLERA",
+    "tiers": [
+      {
+        "name": "Dorado",
+        "code": null
+      },
+      {
+        "name": "OSLeRA 210",
+        "code": null
+      },
+      {
+        "name": "OSLeRA 310",
+        "code": null
+      },
+      {
+        "name": "Platino",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "cdd247cb-b33a-b278-ebc4-965be055021c",
+    "registry": "rnemp:615510",
+    "denomination": "OBRA SOCIAL DE DIRECCION DE LA ACTIVIDAD AEROCOMERCIAL PRIVADA",
+    "shortName": "OSDAAP",
+    "tiers": [
+      {
+        "name": "AS300",
+        "code": 1022
+      },
+      {
+        "name": "AS800",
+        "code": 1023
+      },
+      {
+        "name": "BRONCE",
+        "code": 1024
+      },
+      {
+        "name": "PLATA",
+        "code": 1025
+      },
+      {
+        "name": "ORO",
+        "code": 1026
+      },
+      {
+        "name": "NUBIAL MS",
+        "code": 1027
+      },
+      {
+        "name": "PO62",
+        "code": 1028
+      },
+      {
+        "name": "PO64",
+        "code": 1029
+      },
+      {
+        "name": "SB02",
+        "code": 1030
+      },
+      {
+        "name": "SB04",
+        "code": 1031
+      }
+    ]
+  },
+  {
+    "id": "d0536661-9e84-f59e-c69c-6af60bc59bf0",
+    "registry": "rnemp:414063",
+    "denomination": "CIRCULO MEDICO DE MATANZA",
+    "shortName": "SAMI OSMECON MATANZA",
+    "tiers": [
+      {
+        "name": "GENESIS INTEGRAL",
+        "code": 64
+      },
+      {
+        "name": "EXTRA INTEGRAL",
+        "code": 125
+      },
+      {
+        "name": "NOVO INTEGRAL",
+        "code": 209
+      },
+      {
+        "name": "TEKNE INTEGRAL",
+        "code": 210
+      },
+      {
+        "name": "PRAXIS INTEGRAL",
+        "code": 211
+      },
+      {
+        "name": "JOVEN INTEGRAL",
+        "code": 212
+      },
+      {
+        "name": "JOVEN 30-40",
+        "code": 213
+      },
+      {
+        "name": "GENESIS COPAGO",
+        "code": 214
+      },
+      {
+        "name": "PREMIUM INTEGRAL",
+        "code": 215
+      },
+      {
+        "name": "PERTENECER INTEGRAL",
+        "code": 216
+      },
+      {
+        "name": "NARANJA SAMI",
+        "code": 570
+      },
+      {
+        "name": "ORIGEN",
+        "code": 683
+      }
+    ]
+  },
+  {
+    "id": "d2ecb464-f375-4102-556e-909056f80ba4",
+    "registry": "rnemp:110053",
+    "denomination": "FAMYL S.A. SALUD PARA LA FAMILIA",
+    "shortName": "FAMYL",
+    "tiers": [
+      {
+        "name": "MYL20",
+        "code": 135
+      },
+      {
+        "name": "MYL40",
+        "code": 136
+      },
+      {
+        "name": "MYL100",
+        "code": 137
+      }
+    ]
+  },
+  {
+    "id": "d345a050-14d3-9e44-dfe9-0734843564f2",
+    "registry": "rnemp:313018",
+    "denomination": "LA RECIPROCA A.A.M.E.B.P.B.A.",
+    "shortName": "LA RECIPROCA",
+    "tiers": [
+      {
+        "name": "EMERGENCIAS MEDICAS",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "d3a8904b-7fc3-d7e0-eea9-6fd396b2836a",
+    "registry": "rnemp:310163",
+    "denomination": "ASOCIACION MUTUAL DE EMPLEADOS PROVINCIALES DE LA PROVINCIA DE BUENOS AIRES.",
+    "shortName": "ASOCIACION MUTUAL DE EMPLEADOS PROVINCIALES DE LA PROVINCIA DE BUENOS AIRES.",
+    "tiers": [
+      {
+        "name": "PLAN PLENO II",
+        "code": 2281
+      }
+    ]
+  },
+  {
+    "id": "d76fe663-310b-3c8d-e75e-d88985bc0028",
+    "registry": "rnemp:312831",
+    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES PORTUARIOS DE LA REPUBLICA ARGENTINA",
+    "shortName": "ASOCIACION MUTUAL DE TRABAJADORES PORTUARIOS DE LA REPUBLICA ARGENTINA",
+    "tiers": [
+      {
+        "name": "Plan Basico",
+        "code": 1146
+      }
+    ]
+  },
+  {
+    "id": "d87bcb52-3279-e46e-abe0-942d7a3c5613",
+    "registry": "rnemp:110282",
+    "denomination": "CRUZ AZUL SALUD",
+    "shortName": "CRUZ AZUL SALUD",
+    "tiers": [
+      {
+        "name": "A PARTIR DEL TERCER HIJO DENTRO DEL GF",
+        "code": null
+      },
+      {
+        "name": "CONYUGE ADULTO",
+        "code": null
+      },
+      {
+        "name": "CONYUGE JOVEN",
+        "code": null
+      },
+      {
+        "name": "CONYUGE JUNIOR",
+        "code": null
+      },
+      {
+        "name": "INDIVIDUAL ADULTO",
+        "code": null
+      },
+      {
+        "name": "INDIVIDUAL JOVEN",
+        "code": null
+      },
+      {
+        "name": "INDIVIDUAL JUNIOR",
+        "code": null
+      },
+      {
+        "name": "POR CADA MAYOR DE 65 A",
+        "code": null
+      },
+      {
+        "name": "PRIMER HIJO DENTRO DEL GF",
+        "code": null
+      },
+      {
+        "name": "SEGUNDO HIJO DENTRO DEL GF",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "da781aca-6fc1-1387-23df-b4793948ac69",
+    "registry": "rnemp:610195",
+    "denomination": "OBRA SOCIAL UNION PERSONAL DE LA UNION PERSONAL CIVIL DE LA NACION",
+    "shortName": "UNION PERSONAL",
+    "tiers": [
+      {
+        "name": "Accord 4.2",
+        "code": 1175
+      },
+      {
+        "name": "Accord 3.2",
+        "code": 1176
+      },
+      {
+        "name": "Accord 2.2",
+        "code": 1177
+      },
+      {
+        "name": "Accord 1.5",
+        "code": 1178
+      }
+    ]
+  },
+  {
+    "id": "dba9a478-3d27-4304-9639-ecab0065060a",
+    "registry": null,
+    "denomination": "Instituto De Seguridad Social Y Seguros",
+    "shortName": "SEROS",
+    "tiers": []
+  },
+  {
+    "id": "df57e551-442e-3414-fa7e-92a5a75cb12e",
+    "registry": "rnemp:115485",
+    "denomination": "LPSM S.A.",
+    "shortName": "LPSM S.A.",
+    "tiers": [
+      {
+        "name": "INTEGRAL",
+        "code": 2161
+      },
+      {
+        "name": "UP",
+        "code": 2161
+      },
+      {
+        "name": "BIENESTAR",
+        "code": 2162
+      },
+      {
+        "name": "INTEGRAL",
+        "code": 2163
+      }
+    ]
+  },
+  {
+    "id": "e12e674b-befd-4220-8178-138816523270",
+    "registry": "rnas:1-1050-4",
+    "denomination": "Obra Social De La Federacion Argentina De Trabajadores De Luz Y Fuerza",
+    "shortName": "OSFATLYF",
+    "tiers": []
+  },
+  {
+    "id": "e35f47e5-ebe0-8d97-73dd-75dfa663bbce",
+    "registry": "rnemp:120023",
+    "denomination": "A.M.R. SALUD S.A.S.",
+    "shortName": "AMR SALUD",
+    "tiers": [
+      {
+        "name": "1000/01",
+        "code": 719
+      },
+      {
+        "name": "1000/01 ",
+        "code": 719
+      },
+      {
+        "name": "2000/01",
+        "code": 720
+      },
+      {
+        "name": "H+E",
+        "code": 721
+      },
+      {
+        "name": "PLAN RED",
+        "code": 725
+      },
+      {
+        "name": "PLAN RED AMR",
+        "code": 725
+      },
+      {
+        "name": "PLAN RED CON COSEGURO",
+        "code": 726
+      }
+    ]
+  },
+  {
+    "id": "e3907a3f-5843-6904-e54b-4e02025e6505",
+    "registry": "rnemp:111537",
+    "denomination": "COBENSIL",
+    "shortName": "COBER",
+    "tiers": [
+      {
+        "name": "CLASSIC X",
+        "code": 505
+      },
+      {
+        "name": "COBER X",
+        "code": 506
+      },
+      {
+        "name": "TAYLORED",
+        "code": 511
+      },
+      {
+        "name": "WAGON",
+        "code": 512
+      }
+    ]
+  },
+  {
+    "id": "e823556a-16fb-b8c5-459c-f1199b2a6eb1",
+    "registry": "rnemp:610270",
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE LAS TELECOMUNICACIONES DE LA REPUBLICA ARGENTINA",
+    "shortName": "OSPETELCO",
+    "tiers": [
+      {
+        "name": "ADHERENTE",
+        "code": 998
+      },
+      {
+        "name": "ADHERENTE ADIC. HIJO",
+        "code": 998
+      },
+      {
+        "name": "PLAN ADHERENTE",
+        "code": 998
+      }
+    ]
+  },
+  {
+    "id": "e84c9792-f7db-360d-6122-7bda2027c179",
+    "registry": "rnemp:112684",
+    "denomination": "REYLES S.A.",
+    "shortName": "REYLES S.A.",
+    "tiers": [
+      {
+        "name": "PLAN FAMILIA",
+        "code": 1323
+      },
+      {
+        "name": "SALUD",
+        "code": 1324
+      },
+      {
+        "name": "SALUD PLUS",
+        "code": 1325
+      },
+      {
+        "name": "JOVEN DESREGULADO",
+        "code": 1326
+      },
+      {
+        "name": "ITALICO",
+        "code": 1327
+      },
+      {
+        "name": "ITALICO  ",
+        "code": 1327
+      },
+      {
+        "name": "ITALICO RI",
+        "code": 1328
+      },
+      {
+        "name": "ITALICO RI ",
+        "code": 1328
+      },
+      {
+        "name": "ATTIVA",
+        "code": 1329
+      }
+    ]
+  },
+  {
+    "id": "e8a36ec1-719c-a046-89fd-dfeb1cc308aa",
+    "registry": "rnemp:112974",
+    "denomination": "SISTEMA DE URGENCIAS DEL ROSAFE S.A.U",
+    "shortName": "URG URGENCIAS",
+    "tiers": [
+      {
+        "name": "URG EMER MED CONSULTAS ESPECIALIDAD CON COS",
+        "code": 681
+      },
+      {
+        "name": "URG EMER MED CONSULTAS ESPECIALIDAD PLUS",
+        "code": 681
+      },
+      {
+        "name": "URG EMER MED CONSULTAS ESPECIALIDAD SIN COS",
+        "code": 681
+      },
+      {
+        "name": "URG EMER MEDICAS Y CONSULTAS POR ESPECIALISTAS",
+        "code": 681
+      },
+      {
+        "name": "URG CONECTA",
+        "code": 2481
+      },
+      {
+        "name": "URG EMER MED CONSULTAS ESPECIALIDAD PLUS",
+        "code": 2541
+      }
+    ]
+  },
+  {
+    "id": "e96f7c0f-6f32-53cf-7ba0-f0a4d13dc9a8",
+    "registry": "rnemp:315090",
+    "denomination": "ASOCIACION MUTUAL DE TRABAJADORES DEL TRANSPORTE AUTOMOTOR DE CARGAS",
+    "shortName": "A.M.T.T.A.C",
+    "tiers": [
+      {
+        "name": "MS 105",
+        "code": null
+      },
+      {
+        "name": "MS 205",
+        "code": null
+      },
+      {
+        "name": "MS 405",
+        "code": null
+      },
+      {
+        "name": "MS 505",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "ebde165c-0ebe-015a-2e71-f752eddf9049",
+    "registry": "rnemp:312015",
+    "denomination": "ASOCIACION MUTUAL MEDICA VILLA MARIA",
+    "shortName": "SOS SALUD",
+    "tiers": [
+      {
+        "name": "CON VOS",
+        "code": null
+      },
+      {
+        "name": "DESTACADO",
+        "code": null
+      },
+      {
+        "name": "DOR",
+        "code": null
+      },
+      {
+        "name": "DORADO F",
+        "code": null
+      },
+      {
+        "name": "DORADO MAX",
+        "code": null
+      },
+      {
+        "name": "DORPACK",
+        "code": null
+      },
+      {
+        "name": "INTEGRAL",
+        "code": null
+      },
+      {
+        "name": "INTEGRAL F",
+        "code": null
+      },
+      {
+        "name": "PRIMORDIAL",
+        "code": null
+      },
+      {
+        "name": "PRIMORDIAL FULL",
+        "code": null
+      },
+      {
+        "name": "PRIVILEGIO",
+        "code": null
+      },
+      {
+        "name": "SOS SALUD",
+        "code": null
+      },
+      {
+        "name": "TOTAL",
+        "code": null
+      },
+      {
+        "name": "INTEGRAL",
+        "code": 62
+      },
+      {
+        "name": "DESTACADO",
+        "code": 63
+      },
+      {
+        "name": "INTEGRAL F",
+        "code": 79
+      },
+      {
+        "name": "PRIMORDIAL FULL",
+        "code": 82
+      },
+      {
+        "name": "PRIMORDIAL",
+        "code": 83
+      },
+      {
+        "name": "PRIVILEGIO",
+        "code": 84
+      },
+      {
+        "name": "TOTAL",
+        "code": 86
+      },
+      {
+        "name": "CON VOS",
+        "code": 1070
+      }
+    ]
+  },
+  {
+    "id": "ed3804ea-97c7-b8ea-c00b-88d96468613b",
+    "registry": "rnemp:610034",
+    "denomination": "OBRA SOCIAL ACEROS PARANA S.A. Y EMPRESAS ANTECESORAS",
+    "shortName": "OSAP",
+    "tiers": [
+      {
+        "name": "ADHERENTES",
+        "code": 383
+      },
+      {
+        "name": "ADHERENTES JOVEN",
+        "code": 383
+      },
+      {
+        "name": "ADHERENTES MAYOR",
+        "code": 383
+      }
+    ]
+  },
+  {
+    "id": "edd42de0-88c8-d219-a114-ab0e1e20c3b3",
+    "registry": "rnemp:612771",
+    "denomination": "OBRA SOCIAL PARA EL PERSONAL DE DIRECCION DE LA INDUSTRIA VITIVINICOLA Y AFINES",
+    "shortName": "OSEDEIV",
+    "tiers": [
+      {
+        "name": "W",
+        "code": 1001
+      }
+    ]
+  },
+  {
+    "id": "ee93d349-1b24-6f35-1137-d2be99736560",
+    "registry": "rnemp:310767",
+    "denomination": "MUTUAL COSECHA SALUD",
+    "shortName": "MCS",
+    "tiers": [
+      {
+        "name": "Parcial PMO Pymes Vip Dorado",
+        "code": 2167
+      },
+      {
+        "name": "Parcial PMO Pymes Premium",
+        "code": 2168
+      },
+      {
+        "name": "Parcial PMO Pymes Integral",
+        "code": 2169
+      },
+      {
+        "name": "Parcial PMO Pymes Integral A",
+        "code": 2170
+      },
+      {
+        "name": "Parcial PMO Pymes Integral B1",
+        "code": 2171
+      },
+      {
+        "name": "Parcial PMO Pymes Ambulatorio",
+        "code": 2172
+      }
+    ]
+  },
+  {
+    "id": "eefcd2d1-c524-f5d5-4d9d-57d5239f5374",
+    "registry": "rnemp:611488",
+    "denomination": "OBRA SOCIAL DEL PERSONAL DE DIRECCION DE PERFUMERIA E.W. HOPE",
+    "shortName": "WILLIAM HOPE",
+    "tiers": [
+      {
+        "name": "N25",
+        "code": null
+      },
+      {
+        "name": "N35",
+        "code": null
+      },
+      {
+        "name": "NR",
+        "code": null
+      },
+      {
+        "name": "NT",
+        "code": null
+      },
+      {
+        "name": "NU",
+        "code": null
+      },
+      {
+        "name": "NW",
+        "code": null
+      },
+      {
+        "name": "NX",
+        "code": null
+      },
+      {
+        "name": "NY",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "f0ab8026-33f9-4cd7-9789-e521138dfc4a",
+    "registry": null,
+    "denomination": "Instituto De Seguridad Social, Seguros Y Prestamos",
+    "shortName": "INSSSeP",
+    "tiers": []
+  },
+  {
+    "id": "f3068c2e-8bd2-7195-3629-b52c4388a655",
+    "registry": "rnemp:113366",
+    "denomination": "OMINT S.A. DE SERVICIOS",
+    "shortName": "OMINT",
+    "tiers": [
+      {
+        "name": "PLAN 1500_22E",
+        "code": null
+      },
+      {
+        "name": "PLAN 1500_22I",
+        "code": null
+      },
+      {
+        "name": "PLAN 1500_24I",
+        "code": null
+      },
+      {
+        "name": "PLAN 2500_20E",
+        "code": null
+      },
+      {
+        "name": "PLAN 2500_20I",
+        "code": null
+      },
+      {
+        "name": "PLAN 2500_24E",
+        "code": null
+      },
+      {
+        "name": "PLAN 4021_20E",
+        "code": null
+      },
+      {
+        "name": "PLAN 4021_20I",
+        "code": null
+      },
+      {
+        "name": "PLAN 4021_22E",
+        "code": null
+      },
+      {
+        "name": "PLAN 4021_22I",
+        "code": null
+      },
+      {
+        "name": "PLAN 4500_20 A",
+        "code": null
+      },
+      {
+        "name": "PLAN 4500_20 B",
+        "code": null
+      },
+      {
+        "name": "PLAN 4500_20E",
+        "code": null
+      },
+      {
+        "name": "PLAN 4500_20I",
+        "code": null
+      },
+      {
+        "name": "PLAN 4500_23E",
+        "code": null
+      },
+      {
+        "name": "PLAN 4500_23I",
+        "code": null
+      },
+      {
+        "name": "PLAN 4500_24E",
+        "code": null
+      },
+      {
+        "name": "PLAN 4500_24I",
+        "code": null
+      },
+      {
+        "name": "PLAN 6500_20 A",
+        "code": null
+      },
+      {
+        "name": "PLAN 6500_20 B",
+        "code": null
+      },
+      {
+        "name": "PLAN 6500_20E",
+        "code": null
+      },
+      {
+        "name": "PLAN 6500_20I",
+        "code": null
+      },
+      {
+        "name": "PLAN 6500_21E",
+        "code": null
+      },
+      {
+        "name": "PLAN 6500_21I",
+        "code": null
+      },
+      {
+        "name": "PLAN 6500_22E",
+        "code": null
+      },
+      {
+        "name": "PLAN 6500_22I",
+        "code": null
+      },
+      {
+        "name": "PLAN 8500_21E",
+        "code": null
+      },
+      {
+        "name": "PLAN 8500_21I",
+        "code": null
+      },
+      {
+        "name": "PLAN 8500_22E",
+        "code": null
+      },
+      {
+        "name": "PLAN 8500_22I",
+        "code": null
+      },
+      {
+        "name": "PLAN Midoc_E",
+        "code": null
+      },
+      {
+        "name": "PLAN Midoc_I",
+        "code": null
+      },
+      {
+        "name": "PLAN 1500_22 A",
+        "code": 432
+      },
+      {
+        "name": "PLAN 1500_22 B",
+        "code": 432
+      },
+      {
+        "name": "PLAN 1500_22E",
+        "code": 432
+      },
+      {
+        "name": "PLAN 1500_22I",
+        "code": 432
+      },
+      {
+        "name": "PLAN 2500_20 A",
+        "code": 444
+      },
+      {
+        "name": "PLAN 2500_20 B",
+        "code": 444
+      },
+      {
+        "name": "PLAN 2500_20E",
+        "code": 444
+      },
+      {
+        "name": "PLAN 2500_20I",
+        "code": 444
+      },
+      {
+        "name": "PLAN 2500_24 A",
+        "code": 445
+      },
+      {
+        "name": "PLAN 2500_24 B",
+        "code": 445
+      },
+      {
+        "name": "PLAN 2500_24E",
+        "code": 445
+      },
+      {
+        "name": "PLAN 2500_24I",
+        "code": 445
+      },
+      {
+        "name": "PLAN 4021_20E",
+        "code": 446
+      },
+      {
+        "name": "PLAN 4021_20I",
+        "code": 446
+      },
+      {
+        "name": "PLAN 4021_22 A",
+        "code": 447
+      },
+      {
+        "name": "PLAN 4021_22 B",
+        "code": 447
+      },
+      {
+        "name": "PLAN 4021_22E",
+        "code": 447
+      },
+      {
+        "name": "PLAN 4021_22I",
+        "code": 447
+      },
+      {
+        "name": "PLAN 4500_20E",
+        "code": 448
+      },
+      {
+        "name": "PLAN 4500_20I",
+        "code": 448
+      },
+      {
+        "name": "PLAN 4500_23 A",
+        "code": 449
+      },
+      {
+        "name": "PLAN 4500_23 B",
+        "code": 449
+      },
+      {
+        "name": "PLAN 4500_23E",
+        "code": 449
+      },
+      {
+        "name": "PLAN 4500_23I",
+        "code": 449
+      },
+      {
+        "name": "PLAN 4500_24 A",
+        "code": 450
+      },
+      {
+        "name": "PLAN 4500_24 B",
+        "code": 450
+      },
+      {
+        "name": "PLAN 4500_24E",
+        "code": 450
+      },
+      {
+        "name": "PLAN 4500_24I",
+        "code": 450
+      },
+      {
+        "name": "PLAN 6500_20E",
+        "code": 451
+      },
+      {
+        "name": "PLAN 6500_20I",
+        "code": 451
+      },
+      {
+        "name": "PLAN 6500_21 A",
+        "code": 452
+      },
+      {
+        "name": "PLAN 6500_21 B",
+        "code": 452
+      },
+      {
+        "name": "PLAN 6500_21E",
+        "code": 452
+      },
+      {
+        "name": "PLAN 6500_21I",
+        "code": 452
+      },
+      {
+        "name": "PLAN 6500_22 A",
+        "code": 453
+      },
+      {
+        "name": "PLAN 6500_22 B",
+        "code": 453
+      },
+      {
+        "name": "PLAN 6500_22E",
+        "code": 453
+      },
+      {
+        "name": "PLAN 6500_22I",
+        "code": 453
+      },
+      {
+        "name": "PLAN 8500_21 A",
+        "code": 454
+      },
+      {
+        "name": "PLAN 8500_21 B",
+        "code": 454
+      },
+      {
+        "name": "PLAN 8500_21E",
+        "code": 454
+      },
+      {
+        "name": "PLAN 8500_21I",
+        "code": 454
+      },
+      {
+        "name": "PLAN 8500_22 A",
+        "code": 455
+      },
+      {
+        "name": "PLAN 8500_22 B",
+        "code": 455
+      },
+      {
+        "name": "PLAN 8500_22E",
+        "code": 455
+      },
+      {
+        "name": "PLAN 8500_22I",
+        "code": 455
+      },
+      {
+        "name": "PLAN Midoc_A",
+        "code": 456
+      },
+      {
+        "name": "PLAN Midoc_B",
+        "code": 456
+      },
+      {
+        "name": "PLAN Midoc_E",
+        "code": 456
+      },
+      {
+        "name": "PLAN Midoc_I",
+        "code": 456
+      }
+    ]
+  },
+  {
+    "id": "f476cdfa-9573-f1a0-d2fd-2ba824280e21",
+    "registry": "rnemp:610737",
+    "denomination": "OBRA SOCIAL DE AGENTES DE PROPAGANDA MEDICA DE CORDOBA",
+    "shortName": "OSAPM (OBRA SOCIAL AGENTES DE PROPAGANDA MEDICA",
+    "tiers": [
+      {
+        "name": "INTEGRAL CONYUGE",
+        "code": null
+      },
+      {
+        "name": "INTEGRAL CONYUGE C",
+        "code": null
+      },
+      {
+        "name": "INTEGRAL HIJO",
+        "code": null
+      },
+      {
+        "name": "INTEGRAL HIJO C",
+        "code": null
+      },
+      {
+        "name": "INTEGRAL TITULAR",
+        "code": null
+      },
+      {
+        "name": "INTEGRAL TITULAR C",
+        "code": null
+      },
+      {
+        "name": "INTEGRALCONYUGE",
+        "code": null
+      },
+      {
+        "name": "INTEGRALCONYUGEC",
+        "code": null
+      },
+      {
+        "name": "INTEGRALHIJO",
+        "code": null
+      },
+      {
+        "name": "INTEGRALHIJOC",
+        "code": null
+      },
+      {
+        "name": "INTEGRALTITULAR",
+        "code": null
+      },
+      {
+        "name": "INTEGRALTITULARC",
+        "code": null
+      },
+      {
+        "name": "OPTIMO CONYUGE",
+        "code": null
+      },
+      {
+        "name": "OPTIMO CONYUGE C",
+        "code": null
+      },
+      {
+        "name": "OPTIMO HIJO",
+        "code": null
+      },
+      {
+        "name": "OPTIMO HIJO C",
+        "code": null
+      },
+      {
+        "name": "OPTIMO TITULAR",
+        "code": null
+      },
+      {
+        "name": "OPTIMO TITULAR C",
+        "code": null
+      },
+      {
+        "name": "OPTIMOCONYUGE",
+        "code": null
+      },
+      {
+        "name": "OPTIMOCONYUGEC",
+        "code": null
+      },
+      {
+        "name": "OPTIMOHIJO",
+        "code": null
+      },
+      {
+        "name": "OPTIMOHIJOC",
+        "code": null
+      },
+      {
+        "name": "OPTIMOTITULAR",
+        "code": null
+      },
+      {
+        "name": "OPTIMOTITULARC",
+        "code": null
+      },
+      {
+        "name": "PLATINO J HIJO",
+        "code": null
+      },
+      {
+        "name": "PLATINO J HIJO C",
+        "code": null
+      },
+      {
+        "name": "PLATINO J TITULAR",
+        "code": null
+      },
+      {
+        "name": "PLATINO J TITULAR C",
+        "code": null
+      },
+      {
+        "name": "PLATINOJ CONYUGE",
+        "code": null
+      },
+      {
+        "name": "PLATINOJ CONYUGE C",
+        "code": null
+      },
+      {
+        "name": "PLATINOJCONYUGE",
+        "code": null
+      },
+      {
+        "name": "PLATINOJCONYUGEC",
+        "code": null
+      },
+      {
+        "name": "PLATINOJHIJO",
+        "code": null
+      },
+      {
+        "name": "PLATINOJHIJOC",
+        "code": null
+      },
+      {
+        "name": "PLATINOJTITULAR",
+        "code": null
+      },
+      {
+        "name": "PLATINOJTITULARC",
+        "code": null
+      },
+      {
+        "name": "SELECTO CONYUGE",
+        "code": null
+      },
+      {
+        "name": "SELECTO CONYUGE C",
+        "code": null
+      },
+      {
+        "name": "SELECTO HIJO",
+        "code": null
+      },
+      {
+        "name": "SELECTO HIJO C",
+        "code": null
+      },
+      {
+        "name": "SELECTO TITULAR",
+        "code": null
+      },
+      {
+        "name": "SELECTO TITULAR C",
+        "code": null
+      },
+      {
+        "name": "SELECTOCONYUGE",
+        "code": null
+      },
+      {
+        "name": "SELECTOCONYUGEC",
+        "code": null
+      },
+      {
+        "name": "SELECTOHIJO",
+        "code": null
+      },
+      {
+        "name": "SELECTOHIJOC",
+        "code": null
+      },
+      {
+        "name": "SELECTOTITULAR",
+        "code": null
+      },
+      {
+        "name": "SELECTOTITULARC",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "f78ba4f7-7022-e55a-0a3f-66081e80b8d3",
+    "registry": "rnemp:118484",
+    "denomination": "MEDYCIN ARGENTINO S.A.",
+    "shortName": "MEDYCIN",
+    "tiers": [
+      {
+        "name": "Classic",
+        "code": null
+      },
+      {
+        "name": "Delta",
+        "code": null
+      },
+      {
+        "name": "VIP",
+        "code": null
+      },
+      {
+        "name": "VIP",
+        "code": 1414
+      },
+      {
+        "name": "Classic",
+        "code": 1417
+      },
+      {
+        "name": "Delta",
+        "code": 1418
+      }
+    ]
+  },
+  {
+    "id": "f7c12b47-4c83-e50f-a009-35b7fc882f45",
+    "registry": "rnemp:110510",
+    "denomination": "BRISTOL MEDICINE",
+    "shortName": "BRISTOL MEDICINE",
+    "tiers": [
+      {
+        "name": "BM180",
+        "code": 464
+      },
+      {
+        "name": "BM200",
+        "code": 465
+      },
+      {
+        "name": "BM400",
+        "code": 466
+      },
+      {
+        "name": "BM500",
+        "code": 467
+      }
+    ]
+  },
+  {
+    "id": "f9a7fdde-d310-49e2-02a2-e90b1a37e5b5",
+    "registry": "rnemp:313872",
+    "denomination": "ASOCIACION MUTUAL DEL CONTROL INTEGRAL",
+    "shortName": "AMCI",
+    "tiers": [
+      {
+        "name": "AMCI INTEGRAL ROBLE",
+        "code": 972
+      },
+      {
+        "name": "AMCI SM NUBIAL",
+        "code": 978
+      },
+      {
+        "name": "AMCI INTEGRAL ARRAYAN",
+        "code": 995
+      },
+      {
+        "name": "AMCI SM SB04",
+        "code": 996
+      }
+    ]
+  },
+  {
+    "id": "fad07ef2-2bc5-2baa-254a-b31eb1fa90fe",
+    "registry": "rnemp:120030",
+    "denomination": "SISTEMA INTEGRADO DE PRESTADORES DE SALUD SA",
+    "shortName": "SIPSSA MEDICINA PRIVADA",
+    "tiers": [
+      {
+        "name": "P1000",
+        "code": 183
+      },
+      {
+        "name": "P1000 2do Int",
+        "code": 183
+      },
+      {
+        "name": "P1000 Hijo",
+        "code": 183
+      },
+      {
+        "name": "P1000 Titular",
+        "code": 183
+      },
+      {
+        "name": "P2000",
+        "code": 237
+      },
+      {
+        "name": "P2000 2do Int",
+        "code": 237
+      },
+      {
+        "name": "P2000 Hijo",
+        "code": 237
+      },
+      {
+        "name": "P2000 Titular",
+        "code": 237
+      },
+      {
+        "name": "P3000",
+        "code": 238
+      },
+      {
+        "name": "P3000 2do Int",
+        "code": 238
+      },
+      {
+        "name": "P3000 Hijo",
+        "code": 238
+      },
+      {
+        "name": "P3000 Titular",
+        "code": 238
+      },
+      {
+        "name": "P4000",
+        "code": 239
+      },
+      {
+        "name": "P4000 2do Int",
+        "code": 239
+      },
+      {
+        "name": "P4000 Hijo",
+        "code": 239
+      },
+      {
+        "name": "P4000 Titular",
+        "code": 239
+      },
+      {
+        "name": "S1000",
+        "code": 241
+      },
+      {
+        "name": "S1000 2do Int",
+        "code": 241
+      },
+      {
+        "name": "S1000 Hijo",
+        "code": 241
+      },
+      {
+        "name": "S1000 Titular",
+        "code": 241
+      },
+      {
+        "name": "S2000",
+        "code": 242
+      },
+      {
+        "name": "S2000 2do Int",
+        "code": 242
+      },
+      {
+        "name": "S2000 Hijo",
+        "code": 242
+      },
+      {
+        "name": "S2000 Titular",
+        "code": 242
+      },
+      {
+        "name": "S3000",
+        "code": 243
+      },
+      {
+        "name": "S3000 2do Int",
+        "code": 243
+      },
+      {
+        "name": "S3000 Hijo",
+        "code": 243
+      },
+      {
+        "name": "S3000 Titular",
+        "code": 243
+      },
+      {
+        "name": "S4000",
+        "code": 244
+      },
+      {
+        "name": "S4000 2do Int",
+        "code": 244
+      },
+      {
+        "name": "S4000 Hijo",
+        "code": 244
+      },
+      {
+        "name": "S4000 Titular",
+        "code": 244
+      }
+    ]
+  },
+  {
+    "id": "fee47366-bb3b-7aac-5eaf-162198c6f4be",
+    "registry": "rnemp:412258",
+    "denomination": "MEDIFE ASOCIACION CIVIL",
+    "shortName": "MEDIFE",
+    "tiers": [
+      {
+        "name": "MEDIFE MAS",
+        "code": 265
+      },
+      {
+        "name": "BRONCE CLASSIC",
+        "code": 268
+      },
+      {
+        "name": "BRONCE",
+        "code": 269
+      },
+      {
+        "name": "PLATA",
+        "code": 271
+      },
+      {
+        "name": "ORO",
+        "code": 272
+      },
+      {
+        "name": "PLATINUM",
+        "code": 273
+      }
+    ]
+  }
+]

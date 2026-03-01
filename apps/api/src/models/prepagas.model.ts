@@ -10,11 +10,7 @@ export default function (app: Application): typeof Model {
       primaryKey: true,
       defaultValue: DataTypes.UUIDV4
     },
-    rnas: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    enemp: {
+    registry: {
       type: DataTypes.STRING,
       allowNull: true
     },
@@ -25,6 +21,11 @@ export default function (app: Application): typeof Model {
     shortName: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    tiers: {
+      type: DataTypes.JSONB,
+      allowNull: false,
+      defaultValue: []
     }
   }, {
     hooks: {

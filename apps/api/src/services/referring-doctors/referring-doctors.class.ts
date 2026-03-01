@@ -77,9 +77,9 @@ export class ReferringDoctors {
     const pdIds = upds.map(upd => upd.personalDataId as string);
     const pds = pdIds.length
       ? await this.app.service('personal-data').find({
-          query: { id: { $in: pdIds }, $select: ['id', 'firstName', 'lastName'] },
-          paginate: false,
-        }) as PersonalData[]
+        query: { id: { $in: pdIds }, $select: ['id', 'firstName', 'lastName'] },
+        paginate: false,
+      }) as PersonalData[]
       : [];
 
     const pdById = new Map(pds.map(pd => [pd.id.toString(), pd]));

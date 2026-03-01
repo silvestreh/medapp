@@ -1,19 +1,45 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Search, Plus } from 'lucide-react';
 import { Link, useLoaderData, useSearchParams } from '@remix-run/react';
-import { TextInput, Stack, Loader, Group, Button } from '@mantine/core';
+import { TextInput, Stack, Loader, Group, Button, Autocomplete, Select } from '@mantine/core';
+import dayjs from 'dayjs';
 
-import { useFind } from '~/components/provider';
+import { useFind, useFeathers } from '~/components/provider';
 import { authenticatedLoader, getAuthenticatedClient, isMedicVerified } from '~/utils/auth.server';
 import Portal from '~/components/portal';
 import { media } from '~/media';
 import { StudiesTable, toStudyItems } from '~/components/studies-table';
 import type { Study } from '~/components/studies-table';
 import { Fab } from '~/components/fab';
+import {
+  DateRangePopover,
+  resolveDateRange,
+  type DateRangeFilterState,
+  type ResolvedDateRange,
+} from '~/components/date-range-popover';
+
+type Prepaga = {
+  id: string;
+  shortName: string;
+  denomination: string;
+};
+
+const STUDY_TYPES = ['anemia', 'anticoagulation', 'compatibility', 'hemostasis', 'myelogram', 'thrombophilia'] as const;
+
+const STUDY_TYPE_I18N: Record<string, string> = {
+  anemia: 'studies.type_anemia',
+  anticoagulation: 'studies.type_anticoagulation',
+  compatibility: 'studies.type_compatibility',
+  hemostasis: 'studies.type_hemostasis',
+  myelogram: 'studies.type_myelogram',
+  thrombophilia: 'studies.type_thrombophilia',
+};
+
+const MIN_RANGE_START = '1900-01-01';
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
@@ -48,6 +74,71 @@ export default function StudiesIndex() {
   const inputRef = useRef<HTMLInputElement>(null);
   const isDesktop = useMediaQuery(media.md);
 
+  // -------------------------------------------------------------------------
+  // Filter state
+  // -------------------------------------------------------------------------
+
+  const [selectedInsurerId, setSelectedInsurerId] = useState<string | null>(null);
+  const [insurerSearch, setInsurerSearch] = useState('');
+  const [debouncedInsurerSearch] = useDebouncedValue(insurerSearch, 300);
+
+  const [selectedStudyType, setSelectedStudyType] = useState<string | null>(null);
+  const [rangeFilter, setRangeFilter] = useState<DateRangeFilterState>({
+    mode: 'in_last',
+    lastAmount: 6,
+    lastUnit: 'month',
+    singleDate: dayjs().format('YYYY-MM-DD'),
+    betweenRange: [dayjs().subtract(6, 'month').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+  });
+  const [activeRange, setActiveRange] = useState<ResolvedDateRange | null>(() =>
+    resolveDateRange(rangeFilter, {
+      minRangeStart: MIN_RANGE_START,
+      maxDate: dayjs().format('YYYY-MM-DD'),
+      precision: 'day',
+    })
+  );
+
+  // -------------------------------------------------------------------------
+  // Insurer autocomplete — live DB search
+  // -------------------------------------------------------------------------
+
+  const feathers = useFeathers();
+  const [insurerResults, setInsurerResults] = useState<Prepaga[]>([]);
+
+  useEffect(() => {
+    if (debouncedInsurerSearch.length < 2) {
+      setInsurerResults([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await feathers.service('prepagas').find({
+          query: { $search: debouncedInsurerSearch, $limit: 20, $sort: { shortName: 1 } },
+        });
+        if (cancelled) return;
+        const list = Array.isArray(res) ? res : (res?.data ?? []);
+        setInsurerResults(list);
+      } catch {
+        if (!cancelled) setInsurerResults([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedInsurerSearch, feathers]);
+
+  const insurerAutocompleteData = useMemo(() => [...new Set(insurerResults.map(p => p.shortName))], [insurerResults]);
+
+  const insurerByName = useMemo(() => new Map(insurerResults.map(p => [p.shortName, p.id])), [insurerResults]);
+
+  // -------------------------------------------------------------------------
+  // URL sync for search
+  // -------------------------------------------------------------------------
+
   useEffect(() => {
     const newParams = new URLSearchParams(searchParams);
     let changed = false;
@@ -69,29 +160,104 @@ export default function StudiesIndex() {
 
   const page = parseInt(searchParams.get('page') || '1', 10);
 
-  const setPage = (newPage: number) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (newPage > 1) {
-      newParams.set('page', newPage.toString());
-    } else {
-      newParams.delete('page');
-    }
-    setSearchParams(newParams, { replace: true, preventScrollReset: true });
-  };
+  const setPage = useCallback(
+    (newPage: number) => {
+      const newParams = new URLSearchParams(searchParams);
+      if (newPage > 1) {
+        newParams.set('page', newPage.toString());
+      } else {
+        newParams.delete('page');
+      }
+      setSearchParams(newParams, { replace: true, preventScrollReset: true });
+    },
+    [searchParams, setSearchParams]
+  );
 
   // -------------------------------------------------------------------------
-  // Studies query — search is handled entirely server-side
+  // Filter handlers
   // -------------------------------------------------------------------------
 
-  const query = useMemo(
-    () => ({
+  const handleInsurerChange = useCallback(
+    (value: string) => {
+      setInsurerSearch(value);
+      if (!value) {
+        setSelectedInsurerId(null);
+        setPage(1);
+      }
+    },
+    [setPage]
+  );
+
+  const handleInsurerOptionSubmit = useCallback(
+    (value: string) => {
+      const id = insurerByName.get(value) ?? null;
+      if (id) {
+        setSelectedInsurerId(id);
+        setInsurerSearch(value);
+        setPage(1);
+      }
+    },
+    [insurerByName, setPage]
+  );
+
+  const handleApplyRange = useCallback(
+    (nextState: DateRangeFilterState, range: ResolvedDateRange) => {
+      setRangeFilter(nextState);
+      setActiveRange(range);
+      setPage(1);
+    },
+    [setPage]
+  );
+
+  const handleSelectStudyType = useCallback(
+    (value: string | null) => {
+      setSelectedStudyType(value);
+      setPage(1);
+    },
+    [setPage]
+  );
+
+  const studyTypeOptions = useMemo(
+    () =>
+      STUDY_TYPES.map(key => ({
+        value: key,
+        label: t(STUDY_TYPE_I18N[key], { defaultValue: key }),
+      })),
+    [t]
+  );
+
+  // -------------------------------------------------------------------------
+  // Studies query
+  // -------------------------------------------------------------------------
+
+  const query = useMemo(() => {
+    const q: Record<string, unknown> = {
       $sort: { createdAt: -1 },
       $limit: PAGE_SIZE,
       $skip: (page - 1) * PAGE_SIZE,
-      ...(debouncedInputValue ? { q: debouncedInputValue } : {}),
-    }),
-    [debouncedInputValue, page]
-  );
+    };
+
+    if (debouncedInputValue) {
+      q.q = debouncedInputValue;
+    }
+
+    if (activeRange) {
+      q.date = {
+        $gte: dayjs(activeRange.from).format('YYYY-MM-DD'),
+        $lt: dayjs(activeRange.to).add(1, 'day').format('YYYY-MM-DD'),
+      };
+    }
+
+    if (selectedInsurerId) {
+      q.insurerId = selectedInsurerId;
+    }
+
+    if (selectedStudyType) {
+      q.studies = { $contains: [selectedStudyType] };
+    }
+
+    return q;
+  }, [debouncedInputValue, page, activeRange, selectedInsurerId, selectedStudyType]);
 
   const { response, isLoading } = useFind('studies', query);
   const { data: studies = [], total = 0 } = response as PaginatedResponse;
@@ -101,7 +267,7 @@ export default function StudiesIndex() {
   return (
     <Stack gap={0}>
       <Portal id="toolbar">
-        <Group justify="space-between" align="center" w="100%">
+        <Group justify="space-between" align="center" w="100%" wrap="nowrap">
           <TextInput
             ref={inputRef}
             autoFocus
@@ -116,13 +282,78 @@ export default function StudiesIndex() {
             autoComplete="off"
             data-1p-ignore
           />
-          {isDesktop && isVerified && (
-            <Button component={Link} to="/studies/new" leftSection={<Plus size={16} />}>
-              {t('studies.new_study')}
-            </Button>
+          {isDesktop && (
+            <Group gap="sm" wrap="nowrap">
+              <Select
+                data={studyTypeOptions}
+                value={selectedStudyType}
+                onChange={handleSelectStudyType}
+                placeholder={t('studies.filter_study_type', { defaultValue: 'Study type' })}
+                clearable
+                comboboxProps={{ withinPortal: true }}
+                w={160}
+              />
+              <Autocomplete
+                data={insurerAutocompleteData}
+                value={insurerSearch}
+                onChange={handleInsurerChange}
+                onOptionSubmit={handleInsurerOptionSubmit}
+                placeholder={t('studies.filter_insurer', { defaultValue: 'Insurer' })}
+                comboboxProps={{ withinPortal: true }}
+                maxDropdownHeight={300}
+                w={200}
+              />
+              <DateRangePopover
+                value={rangeFilter}
+                onApply={handleApplyRange}
+                minRangeStart={MIN_RANGE_START}
+                maxDate={dayjs().format('YYYY-MM-DD')}
+                precision="day"
+              />
+              {isVerified && (
+                <Button component={Link} to="/studies/new" leftSection={<Plus size={16} />}>
+                  {t('studies.new_study')}
+                </Button>
+              )}
+            </Group>
           )}
         </Group>
       </Portal>
+
+      {!isDesktop && (
+        <Group gap="xs" px="sm" py="xs" wrap="nowrap" style={{ overflowX: 'auto' }}>
+          <Select
+            data={studyTypeOptions}
+            value={selectedStudyType}
+            onChange={handleSelectStudyType}
+            placeholder={t('studies.filter_study_type', { defaultValue: 'Study type' })}
+            clearable
+            comboboxProps={{ withinPortal: true }}
+            size="xs"
+            w={140}
+            styles={{ input: { minHeight: 32 } }}
+          />
+          <Autocomplete
+            data={insurerAutocompleteData}
+            value={insurerSearch}
+            onChange={handleInsurerChange}
+            onOptionSubmit={handleInsurerOptionSubmit}
+            placeholder={t('studies.filter_insurer', { defaultValue: 'Insurer' })}
+            comboboxProps={{ withinPortal: true }}
+            maxDropdownHeight={300}
+            size="xs"
+            w={180}
+            styles={{ input: { minHeight: 32 } }}
+          />
+          <DateRangePopover
+            value={rangeFilter}
+            onApply={handleApplyRange}
+            minRangeStart={MIN_RANGE_START}
+            maxDate={dayjs().format('YYYY-MM-DD')}
+            precision="day"
+          />
+        </Group>
+      )}
 
       {!isDesktop && isVerified && <Fab to="/studies/new" />}
 

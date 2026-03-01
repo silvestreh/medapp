@@ -27,6 +27,18 @@ import type {
 const SEEDS_DIR = path.join(__dirname, './seeds');
 const resetPasswords = process.argv.includes('--reset-passwords');
 
+function toStartCase(s: string): string {
+  if (!s || !s.trim()) return s;
+  return s
+    .trim()
+    .split(/\s+/)
+    .map((word) => {
+      if (word.length > 1 && word === word.toUpperCase()) return word;
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
 async function loadSeed<T>(filename: string): Promise<T> {
   const content = await fs.readFile(path.join(SEEDS_DIR, filename), 'utf-8');
   return JSON.parse(content) as T;
@@ -107,12 +119,26 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
 
   // Seed prepagas
   const prepagasRaw: any[] = JSON.parse(
-    await fs.readFile(path.join(SEEDS_DIR, 'prepagas.json'), 'utf-8'),
+    await fs.readFile(path.join(SEEDS_DIR, 'prepagas-from-cuadros.json'), 'utf-8'),
   );
+
+  for (const prepaga of prepagasRaw) {
+    const seenCodes = new Set<number>();
+    prepaga.tiers = (prepaga.tiers || []).filter((tier: any) => {
+      if (tier.code == null) return true;
+      if (seenCodes.has(tier.code)) return false;
+      seenCodes.add(tier.code);
+      return true;
+    });
+  }
+
   const prepagasService = app.service('prepagas');
   const prepagasBar = multibar.create(prepagasRaw.length, 0, { title: 'Prepagas' });
   for (let i = 0; i < prepagasRaw.length; i += chunkSize) {
-    const chunk = prepagasRaw.slice(i, i + chunkSize);
+    const chunk = prepagasRaw.slice(i, i + chunkSize).map((p: any) => ({
+      ...p,
+      denomination: toStartCase(p.denomination ?? ''),
+    }));
     await prepagasService.create(chunk);
     prepagasBar.increment(chunk.length);
   }

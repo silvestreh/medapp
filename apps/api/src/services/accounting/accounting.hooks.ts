@@ -1,6 +1,7 @@
 import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
+import { checkPermissions } from '../../hooks/check-permissions';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -10,6 +11,7 @@ export default {
     all: [
       authenticate('jwt'),
       verifyOrganizationMembership(),
+      checkPermissions(),
     ],
     find: [],
     get: [],

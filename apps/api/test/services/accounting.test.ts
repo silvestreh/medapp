@@ -60,13 +60,13 @@ describe('\'accounting\' service', () => {
       });
     });
 
-    const existingSettings = await app.service('md-settings').find({
+    const existingAcctSettings = await app.service('accounting-settings').find({
       query: { userId: medic.id, $limit: 1 },
       paginate: false,
     }) as any[];
 
-    if (existingSettings.length) {
-      await app.service('md-settings').patch(existingSettings[0].id, {
+    if (existingAcctSettings.length) {
+      await app.service('accounting-settings').patch(existingAcctSettings[0].id, {
         insurerPrices: {
           [prepaga.id]: {
             encounter: 5000,
@@ -77,9 +77,8 @@ describe('\'accounting\' service', () => {
         },
       } as any);
     } else {
-      await app.service('md-settings').create({
+      await app.service('accounting-settings').create({
         userId: medic.id,
-        encounterDuration: 30,
         insurerPrices: {
           [prepaga.id]: {
             encounter: 5000,
@@ -88,6 +87,18 @@ describe('\'accounting\' service', () => {
             anticoagulation: 1500,
           },
         },
+      } as any);
+    }
+
+    const existingMdSettings = await app.service('md-settings').find({
+      query: { userId: medic.id, $limit: 1 },
+      paginate: false,
+    }) as any[];
+
+    if (!existingMdSettings.length) {
+      await app.service('md-settings').create({
+        userId: medic.id,
+        encounterDuration: 30,
       } as any);
     }
   });
@@ -206,9 +217,9 @@ describe('\'accounting\' service', () => {
     const otherPrepaga = existingOther.length
       ? existingOther[0]
       : await app.service('prepagas').create({
-          shortName: 'ACC-OTHER',
-          denomination: 'Accounting Other Prepaga',
-        });
+        shortName: 'ACC-OTHER',
+        denomination: 'Accounting Other Prepaga',
+      });
 
     await app.service('encounters').create({
       data: { simple: { values: { note: 'other insurer' } } },
@@ -363,5 +374,358 @@ describe('\'accounting\' service', () => {
     assert.ok(thrombRow, 'Thrombophilia row exists');
     assert.strictEqual(thrombRow.protocol, study.protocol, 'Protocol number matches');
     assert.strictEqual(thrombRow.kind, 'thrombophilia');
+  });
+
+  describe('extra cost sections', () => {
+    let extraCostStudy: any;
+
+    before(async () => {
+      const existingSettings = await app.service('accounting-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 3000,
+            hemostasis: {
+              type: 'fixed',
+              value: 2000,
+              extras: { regular_blood_plasma_correction: 500 },
+            },
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+
+      const today = dayjs();
+
+      extraCostStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['hemostasis'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+        results: [{
+          type: 'hemostasis',
+          data: {
+            quick: '12',
+            regular_blood_plasma_correction_quick: '11',
+          },
+        }],
+      } as any);
+    });
+
+    it('adds extra cost when plasma correction section has values', async () => {
+      const today = dayjs();
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'hemostasis' && r.id === extraCostStudy.id
+      );
+      assert.ok(row, 'Hemostasis row exists');
+      assert.strictEqual(row.cost, 2500, 'Cost includes base (2000) + extra (500)');
+    });
+
+    it('does not add extra cost when plasma correction section is empty', async () => {
+      const today = dayjs();
+
+      const studyWithoutCorrection = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['hemostasis'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+        results: [{
+          type: 'hemostasis',
+          data: {
+            quick: '13',
+            aptt: '35',
+          },
+        }],
+      } as any);
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'hemostasis' && r.id === studyWithoutCorrection.id
+      );
+      assert.ok(row, 'Hemostasis row exists');
+      assert.strictEqual(row.cost, 2000, 'Cost is base only (2000) without extras');
+    });
+
+    it('works with multiplier pricing type for extras', async () => {
+      const existingSettings = await app.service('accounting-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 3000,
+            hemostasis: {
+              type: 'multiplier',
+              baseValue: 100,
+              multiplier: 20,
+              extras: { regular_blood_plasma_correction: 5 },
+            },
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+
+      const today = dayjs();
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'hemostasis' && r.id === extraCostStudy.id
+      );
+      assert.ok(row, 'Hemostasis row exists');
+      assert.strictEqual(row.cost, 2500, 'Cost = base (100*20) + extra (100*5) = 2500');
+    });
+  });
+
+  describe('emergency pricing', () => {
+    before(async () => {
+      const existingSettings = await app.service('accounting-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: {
+              type: 'fixed',
+              value: 3000,
+              emergencyValue: 6000,
+            },
+            hemostasis: {
+              type: 'fixed',
+              value: 2000,
+              emergencyValue: 4000,
+              extras: { regular_blood_plasma_correction: 500 },
+              emergencyExtras: { regular_blood_plasma_correction: 1000 },
+            },
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+    });
+
+    it('uses emergency pricing for emergency studies with fixed type', async () => {
+      const today = dayjs();
+
+      const emergencyStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['anemia'],
+        noOrder: false,
+        emergency: true,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+      } as any);
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'anemia' && r.id === emergencyStudy.id
+      );
+      assert.ok(row, 'Emergency anemia row exists');
+      assert.strictEqual(row.cost, 6000, 'Uses emergencyValue (6000) instead of value (3000)');
+    });
+
+    it('uses normal pricing for non-emergency studies', async () => {
+      const today = dayjs();
+
+      const normalStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['anemia'],
+        noOrder: false,
+        emergency: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+      } as any);
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'anemia' && r.id === normalStudy.id
+      );
+      assert.ok(row, 'Normal anemia row exists');
+      assert.strictEqual(row.cost, 3000, 'Uses normal value (3000)');
+    });
+
+    it('uses emergency extras for emergency studies', async () => {
+      const today = dayjs();
+
+      const emergencyHemoStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['hemostasis'],
+        noOrder: false,
+        emergency: true,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+        results: [{
+          type: 'hemostasis',
+          data: {
+            quick: '12',
+            regular_blood_plasma_correction_quick: '10',
+          },
+        }],
+      } as any);
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'hemostasis' && r.id === emergencyHemoStudy.id
+      );
+      assert.ok(row, 'Emergency hemostasis row exists');
+      assert.strictEqual(row.cost, 5000, 'Cost = emergencyValue (4000) + emergencyExtras (1000)');
+    });
+
+    it('works with multiplier pricing type for emergency', async () => {
+      const existingSettings = await app.service('accounting-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: {
+              type: 'multiplier',
+              baseValue: 100,
+              multiplier: 30,
+              emergencyMultiplier: 60,
+            },
+            hemostasis: 2000,
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+
+      const today = dayjs();
+
+      const emergencyMultStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['anemia'],
+        noOrder: false,
+        emergency: true,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+      } as any);
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'anemia' && r.id === emergencyMultStudy.id
+      );
+      assert.ok(row, 'Emergency anemia multiplier row exists');
+      assert.strictEqual(row.cost, 6000, 'Cost = baseValue (100) * emergencyMultiplier (60) = 6000');
+    });
+
+    it('falls back to normal cost when emergency value is not configured', async () => {
+      const existingSettings = await app.service('accounting-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: {
+              type: 'fixed',
+              value: 3000,
+              emergencyValue: 0,
+            },
+            hemostasis: 2000,
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+
+      const today = dayjs();
+
+      const study = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['anemia'],
+        noOrder: false,
+        emergency: true,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+      } as any);
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+        },
+        user: medic,
+      } as any);
+
+      const row = result.records.find(
+        (r: any) => r.kind === 'anemia' && r.id === study.id
+      );
+      assert.ok(row, 'Emergency anemia row exists');
+      assert.strictEqual(row.cost, 3000, 'Falls back to normal value (3000) since emergency is 0');
+    });
   });
 });

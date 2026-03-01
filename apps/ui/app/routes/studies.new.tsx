@@ -28,18 +28,18 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     throw redirect('/studies');
   }
 
-  const settingsResponse = await client.service('md-settings').find({
+  const acctSettingsResponse = await client.service('accounting-settings').find({
     query: { userId: user.id, $limit: 1 },
     paginate: false,
   });
 
-  const settingsList = Array.isArray(settingsResponse)
-    ? settingsResponse
-    : ((settingsResponse as { data?: unknown[] }).data ?? []);
-  const mdSettings = settingsList[0] as { insurerPrices?: unknown } | undefined;
+  const acctSettingsList = Array.isArray(acctSettingsResponse)
+    ? acctSettingsResponse
+    : ((acctSettingsResponse as { data?: unknown[] }).data ?? []);
+  const acctSettings = acctSettingsList[0] as { insurerPrices?: unknown } | undefined;
 
   return json({
-    insurerPrices: normalizeInsurerPrices(mdSettings?.insurerPrices),
+    insurerPrices: normalizeInsurerPrices(acctSettings?.insurerPrices),
   });
 });
 
@@ -55,7 +55,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const study = await client.service('studies').create(payload);
 
-  return redirect(`/studies/${study.id}`);
+  return redirect('/studies');
 };
 
 // ---------------------------------------------------------------------------
@@ -107,6 +107,7 @@ export default function NewStudy() {
   const [medicId, setMedicId] = useState<string | null>(null);
   const [comment, setComment] = useState('');
   const [noOrder, setNoOrder] = useState(false);
+  const [emergency, setEmergency] = useState(false);
   const [selectedStudies, setSelectedStudies] = useState<string[]>([]);
   const [cost, setCost] = useState(0);
   const [costManuallyEdited, setCostManuallyEdited] = useState(false);
@@ -125,9 +126,9 @@ export default function NewStudy() {
     }
 
     if (!costManuallyEdited) {
-      setCost(resolveStudyCost(selectedStudies, insurerPracticePrices));
+      setCost(resolveStudyCost(selectedStudies, insurerPracticePrices, emergency));
     }
-  }, [costManuallyEdited, insurerId, insurerPracticePrices, selectedStudies]);
+  }, [costManuallyEdited, insurerId, insurerPracticePrices, selectedStudies, emergency]);
 
   const toggleStudy = useCallback((key: string) => {
     setSelectedStudies(prev => (prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]));
@@ -146,6 +147,7 @@ export default function NewStudy() {
       date: date.toISOString(),
       studies: selectedStudies,
       noOrder,
+      emergency,
       comment: comment || undefined,
       ...(medicId ? { medicId } : { referringDoctor: referringDoctor || undefined }),
       insurerId,
@@ -153,7 +155,7 @@ export default function NewStudy() {
     };
 
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
-  }, [canSave, patientId, date, selectedStudies, noOrder, comment, referringDoctor, medicId, insurerId, cost, fetcher]);
+  }, [canSave, patientId, date, selectedStudies, noOrder, emergency, comment, referringDoctor, medicId, insurerId, cost, fetcher]);
 
   const handleCostChange = useCallback((value: string | number) => {
     setCostManuallyEdited(true);
@@ -181,6 +183,8 @@ export default function NewStudy() {
         onToggleStudy={toggleStudy}
         noOrder={noOrder}
         onNoOrderChange={setNoOrder}
+        emergency={emergency}
+        onEmergencyChange={setEmergency}
         comment={comment}
         onCommentChange={setComment}
         date={date}
