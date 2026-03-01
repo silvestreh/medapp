@@ -1,5 +1,32 @@
 [
   {
+    "id": "owner",
+    "permissions": [
+      "roles:create",
+      "roles:find",
+      "roles:get:all",
+      "roles:patch:all",
+      "roles:remove:all",
+      "users:create",
+      "users:find",
+      "users:get:all",
+      "users:patch:all",
+      "users:remove:all",
+      "organizations:patch",
+      "organizations:get",
+      "invites:create",
+      "invites:find",
+      "invites:get:all",
+      "invites:patch:all",
+      "invites:remove:all",
+      "organization-users:find",
+      "organization-users:remove:all",
+      "user-roles:find",
+      "user-roles:create",
+      "user-roles:remove:all"
+    ]
+  },
+  {
     "id": "admin",
     "permissions": [
       "roles:create",
@@ -55,17 +82,13 @@
       "patients:patch:all",
       "patients:remove:all",
       "users:find",
-      "users:get"
+      "users:get",
+      "prepagas:find"
     ]
   },
   {
     "id": "medic",
     "permissions": [
-      "appointments:create",
-      "appointments:find",
-      "appointments:get:all",
-      "appointments:patch:all",
-      "appointments:remove:all",
       "encounters:create",
       "encounters:find",
       "encounters:get",
@@ -73,11 +96,6 @@
       "md-settings:find",
       "md-settings:get",
       "md-settings:patch",
-      "time-off-events:create",
-      "time-off-events:find",
-      "time-off-events:get",
-      "time-off-events:patch",
-      "time-off-events:remove",
       "patients:create",
       "patients:find",
       "patients:get:all",
@@ -93,20 +111,12 @@
       "study-results:get:all",
       "study-results:patch:all",
       "study-results:remove:all",
-      "accounting-settings:create",
-      "accounting-settings:find",
-      "accounting-settings:get",
-      "accounting-settings:patch"
+      "prepagas:find"
     ]
   },
   {
     "id": "lab-tech",
     "permissions": [
-      "appointments:create",
-      "appointments:find",
-      "appointments:get:all",
-      "appointments:patch:all",
-      "appointments:remove:all",
       "patients:create",
       "patients:find",
       "patients:get:all",
@@ -123,7 +133,8 @@
       "study-results:find",
       "study-results:get:all",
       "study-results:patch:all",
-      "study-results:remove:all"
+      "study-results:remove:all",
+      "prepagas:find"
     ]
   },
   {

@@ -26,8 +26,7 @@ describe('\'accounting\' service', () => {
       medic = await app.service('users').create({
         username: 'test.medic.accounting',
         password: 'SuperSecret1',
-        roleId: 'medic',
-      });
+      } as any);
     }
 
     const existingPrepagas = await app.service('prepagas').find({

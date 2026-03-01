@@ -2,7 +2,9 @@ export interface UserOrganization {
   id: string;
   name: string;
   slug: string;
-  role: string;
+  isActive: boolean;
+  roleIds: string[];
+  permissions: string[];
 }
 
 export interface Account {
@@ -10,11 +12,8 @@ export interface Account {
   username: string;
   twoFactorEnabled?: boolean;
   hasWeakPassword?: boolean;
+  isSuperAdmin?: boolean;
   organizations?: UserOrganization[];
-  role: {
-    id: string;
-    permissions: string[];
-  };
   personalData?: PersonalData;
   contactData?: ContactData;
   settings?: {

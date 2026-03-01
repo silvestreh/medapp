@@ -17,10 +17,17 @@ const populateMembers = (): Hook => async (context: HookContext): Promise<HookCo
     if (!item.userId) return;
     try {
       const user = await app.service('users').get(item.userId, { provider: undefined } as any);
+
+      const userRoles: any[] = await app.service('user-roles').find({
+        query: { userId: item.userId, organizationId: item.organizationId },
+        paginate: false,
+      } as any);
+      const roleIds = userRoles.map((ur: any) => ur.roleId);
+
       item.user = {
         id: user.id,
         username: user.username,
-        roleId: user.roleId,
+        roleIds,
         personalData: user.personalData || null,
         contactData: user.contactData || null,
       };

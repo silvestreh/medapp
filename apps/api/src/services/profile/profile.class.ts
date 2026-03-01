@@ -198,20 +198,46 @@ export class Profile {
             internalParams as any
           );
         } else if (personalDataPayload.documentValue) {
-          const newPersonal = await this.app.service('personal-data').create(
-            {
-              firstName: personalDataPayload.firstName ?? undefined,
-              lastName: personalDataPayload.lastName ?? undefined,
-              nationality: personalDataPayload.nationality ?? undefined,
-              documentType: personalDataPayload.documentType ?? undefined,
-              documentValue: personalDataPayload.documentValue,
-              maritalStatus: personalDataPayload.maritalStatus ?? undefined,
-              birthDate: personalDataPayload.birthDate ?? undefined,
-            },
-            internalParams as any
-          );
+          const existing = await this.app.service('personal-data').find({
+            query: { documentValue: personalDataPayload.documentValue, $limit: 1 },
+            paginate: false,
+            ...internalParams,
+          } as any);
+          const existingRecord = Array.isArray(existing) ? existing[0] : null;
+
+          let personalDataId: string;
+          if (existingRecord) {
+            personalDataId = String(existingRecord.id);
+            await this.app.service('personal-data').patch(
+              personalDataId,
+              {
+                firstName: personalDataPayload.firstName ?? undefined,
+                lastName: personalDataPayload.lastName ?? undefined,
+                nationality: personalDataPayload.nationality ?? undefined,
+                documentType: personalDataPayload.documentType ?? undefined,
+                maritalStatus: personalDataPayload.maritalStatus ?? undefined,
+                birthDate: personalDataPayload.birthDate ?? undefined,
+              },
+              internalParams as any
+            );
+          } else {
+            const newPersonal = await this.app.service('personal-data').create(
+              {
+                firstName: personalDataPayload.firstName ?? undefined,
+                lastName: personalDataPayload.lastName ?? undefined,
+                nationality: personalDataPayload.nationality ?? undefined,
+                documentType: personalDataPayload.documentType ?? undefined,
+                documentValue: personalDataPayload.documentValue,
+                maritalStatus: personalDataPayload.maritalStatus ?? undefined,
+                birthDate: personalDataPayload.birthDate ?? undefined,
+              },
+              internalParams as any
+            );
+            personalDataId = String(newPersonal.id);
+          }
+
           await this.app.service('user-personal-data').create(
-            { ownerId: user.id, personalDataId: newPersonal.id },
+            { ownerId: user.id, personalDataId },
             internalParams as any
           );
         }
@@ -252,10 +278,11 @@ export class Profile {
       }
 
       const mdSettingsPayload = data?.mdSettings;
+      const profileOrgRoleIds: string[] = (params as any)?.orgRoleIds || [];
       if (
         mdSettingsPayload &&
         typeof mdSettingsPayload === 'object' &&
-        (user as any).roleId === 'medic'
+        profileOrgRoleIds.includes('medic')
       ) {
         const existing = await this.app.service('md-settings').find({
           query: { userId: user.id, $limit: 1 },

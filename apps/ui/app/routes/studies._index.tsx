@@ -9,7 +9,8 @@ import { TextInput, Stack, Loader, Group, Button, Autocomplete, Select } from '@
 import dayjs from 'dayjs';
 
 import { useFind, useFeathers } from '~/components/provider';
-import { authenticatedLoader, getAuthenticatedClient, isMedicVerified } from '~/utils/auth.server';
+import { authenticatedLoader, getAuthenticatedClient, isMedicVerified, getCurrentOrgRoleIds } from '~/utils/auth.server';
+import { getCurrentOrganizationId } from '~/session';
 import Portal from '~/components/portal';
 import { media } from '~/media';
 import { StudiesTable, toStudyItems } from '~/components/studies-table';
@@ -43,7 +44,9 @@ const MIN_RANGE_START = '1900-01-01';
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
-  const isVerified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  const orgId = await getCurrentOrganizationId(request);
+  const orgRoleIds = getCurrentOrgRoleIds(user, orgId);
+  const isVerified = await isMedicVerified(client, String((user as any).id), orgRoleIds);
   return json({ isVerified });
 });
 

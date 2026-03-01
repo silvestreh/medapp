@@ -4,11 +4,11 @@ import { useLoaderData, useRouteLoaderData } from '@remix-run/react';
 import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { Title } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { useTranslation } from 'react-i18next';
 import '@mantine/dates/styles.css';
 
 import AppointmentsList from '~/components/appointments-list';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
+import RouteErrorFallback from '~/components/route-error-fallback';
 import { generateSlots, formatInLocale } from '~/utils';
 import { styled } from '~/styled-system/jsx';
 import { css } from '~/styled-system/css';
@@ -104,7 +104,4 @@ export default function AppointmentsForDate() {
   );
 }
 
-export const ErrorBoundary = () => {
-  const { t } = useTranslation();
-  return <div>{t('common.something_went_wrong')}</div>;
-};
+export const ErrorBoundary = RouteErrorFallback;

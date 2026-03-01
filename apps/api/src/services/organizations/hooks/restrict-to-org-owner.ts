@@ -2,16 +2,14 @@ import { Hook, HookContext } from '@feathersjs/feathers';
 import { Forbidden } from '@feathersjs/errors';
 
 const restrictToOrgOwner = (): Hook => async (context: HookContext): Promise<HookContext> => {
-  const { app, id, params } = context;
-  const userId = params.user?.id;
-  if (!userId || !id) throw new Forbidden('Not allowed');
+  const { params } = context;
 
-  const memberships: any[] = await app.service('organization-users').find({
-    query: { organizationId: id, userId, role: 'owner' },
-    paginate: false,
-  } as any);
+  if (!params.provider || !params.user) return context;
 
-  if (memberships.length === 0) {
+  if (params.isSuperAdmin) return context;
+
+  const orgRoleIds: string[] = params.orgRoleIds || [];
+  if (!orgRoleIds.includes('owner')) {
     throw new Forbidden('Only the organization owner can perform this action');
   }
 

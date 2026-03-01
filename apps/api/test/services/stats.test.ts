@@ -1,7 +1,7 @@
 import assert from 'assert';
 import dayjs from 'dayjs';
 import app from '../../src/app';
-import client from '../test-client';
+import { createTestClient } from '../test-client';
 
 describe('\'stats\' service', () => {
   let labOwner: any;
@@ -11,6 +11,7 @@ describe('\'stats\' service', () => {
   let org: any;
   let server: any;
   let studyWithResults: any;
+  let client: any;
   const uniqueSuffix = Date.now().toString();
 
   before(async () => {
@@ -49,29 +50,39 @@ describe('\'stats\' service', () => {
       slug: `stats-test-lab-${uniqueSuffix}`,
     });
 
+    client = createTestClient(org.id as string);
+
     labOwner = await app.service('users').create({
       username: `stats.labowner.${uniqueSuffix}`,
       password: 'Password123',
-      roleId: 'lab-owner',
-    });
+    } as any);
 
     await app.service('organization-users').create({
       organizationId: org.id,
       userId: labOwner.id,
-      role: 'member',
-    });
+    } as any);
+
+    await app.service('user-roles').create({
+      userId: labOwner.id,
+      roleId: 'lab-owner',
+      organizationId: org.id,
+    } as any);
 
     medic = await app.service('users').create({
       username: `stats.medic.${uniqueSuffix}`,
       password: 'Password123',
-      roleId: 'medic',
-    });
+    } as any);
 
     await app.service('organization-users').create({
       organizationId: org.id,
       userId: medic.id,
-      role: 'member',
-    });
+    } as any);
+
+    await app.service('user-roles').create({
+      userId: medic.id,
+      roleId: 'medic',
+      organizationId: org.id,
+    } as any);
 
     patient1 = await app.service('patients').create({
       medicare: `stats-med-1-${uniqueSuffix}`,

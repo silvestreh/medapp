@@ -5,6 +5,7 @@ import createPersonalData from '../../hooks/create-personal-data';
 import createContactData from '../../hooks/create-contact-data';
 import includeData from '../../hooks/include-data';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
+import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { lowerCase } from '../../hooks/lowerCase';
 import populateUser from './hooks/populate-user';
 import { prepareSignupOrganization, handleSignupOrganization } from './hooks/handle-signup-organization';
@@ -25,6 +26,13 @@ const validatePassword = () => (context: any) => {
   return context;
 };
 
+const stripSuperAdmin = () => (context: any) => {
+  if (context.data) {
+    delete context.data.isSuperAdmin;
+  }
+  return context;
+};
+
 export default {
   before: {
     all: [],
@@ -39,6 +47,7 @@ export default {
       restrictUserToOrganization(),
     ],
     create: [
+      stripSuperAdmin(),
       lowerCase('username'),
       validatePassword(),
       prepareSignupOrganization(),
@@ -51,6 +60,8 @@ export default {
     ],
     patch: [
       authenticate('jwt'),
+      stripSuperAdmin(),
+      enforceActiveOrganization(),
       lowerCase('username'),
       hashPassword('password'),
     ],

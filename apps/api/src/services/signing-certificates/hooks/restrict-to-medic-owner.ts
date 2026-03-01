@@ -7,7 +7,8 @@ export const restrictToMedicOwner = (): Hook => async (context: HookContext): Pr
 
   if (!params.provider || !user) return context;
 
-  if ((user as any).roleId !== 'medic') {
+  const orgRoleIds: string[] = params.orgRoleIds || [];
+  if (!orgRoleIds.includes('medic')) {
     throw new Forbidden('Only medics can manage signing certificates');
   }
 

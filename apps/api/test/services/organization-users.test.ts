@@ -14,7 +14,6 @@ describe('\'organization-users\' service', () => {
     user = await app.service('users').create({
       username: 'org.member.test',
       password: 'SuperSecret1',
-      roleId: 'medic'
     });
   });
 
@@ -27,20 +26,17 @@ describe('\'organization-users\' service', () => {
     const membership: any = await app.service('organization-users').create({
       organizationId: org.id,
       userId: user.id,
-      role: 'owner'
     });
 
     assert.ok(membership.id, 'Membership has an ID');
     assert.strictEqual(membership.organizationId, org.id);
     assert.strictEqual(membership.userId, user.id);
-    assert.strictEqual(membership.role, 'owner');
   });
 
-  it('defaults role to member', async () => {
+  it('creates membership without role field', async () => {
     const anotherUser = await app.service('users').create({
       username: 'org.default.role',
       password: 'SuperSecret1',
-      roleId: 'receptionist'
     });
 
     const membership: any = await app.service('organization-users').create({
@@ -48,14 +44,15 @@ describe('\'organization-users\' service', () => {
       userId: anotherUser.id
     });
 
-    assert.strictEqual(membership.role, 'member');
+    assert.strictEqual(membership.organizationId, org.id);
+    assert.strictEqual(membership.userId, anotherUser.id);
+    assert.strictEqual(membership.role, undefined);
   });
 
   it('enforces unique organization-user pair', async () => {
     const uniqueUser = await app.service('users').create({
       username: 'org.unique.pair',
       password: 'SuperSecret1',
-      roleId: 'medic'
     });
 
     await app.service('organization-users').create({

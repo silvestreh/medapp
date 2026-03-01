@@ -5,6 +5,7 @@ import createPersonalData from '../../hooks/create-personal-data';
 import createContactData from '../../hooks/create-contact-data';
 import { checkPermissions } from '../../hooks/check-permissions';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
+import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { findByPersonalData, sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import includeData from '../../hooks/include-data';
 import { encryptFields, decryptFields } from '../../hooks/encryption';
@@ -19,6 +20,7 @@ export default {
     all: [
       authenticate('jwt'),
       verifyOrganizationMembership(),
+      enforceActiveOrganization(),
       checkPermissions({ scopeToOrganization: false }),
       softDelete()
     ],

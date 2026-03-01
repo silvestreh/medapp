@@ -1,14 +1,15 @@
 export async function getUserPermissions(
-  app: any, userId: string, primaryRoleId: string
+  app: any, userId: string, organizationId: string
 ): Promise<string[]> {
-  const additionalRoles: any[] = await app.service('user-roles').find({
-    query: { userId },
+  const userRoles: any[] = await app.service('user-roles').find({
+    query: { userId, organizationId },
     paginate: false
   } as any);
 
-  const roleIds: string[] = additionalRoles.map((ur: any) => ur.roleId);
-  if (!roleIds.includes(primaryRoleId)) {
-    roleIds.push(primaryRoleId);
+  const roleIds: string[] = userRoles.map((ur: any) => ur.roleId);
+
+  if (roleIds.length === 0) {
+    return [];
   }
 
   const roles = await Promise.all(

@@ -2,6 +2,7 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import app from '../../src/app';
+import { createTestUser, createTestOrganization } from '../test-helpers';
 
 const CERT_PATH = path.join(__dirname, '../fixtures/test-certificate.p12');
 
@@ -12,10 +13,12 @@ describe('\'signing-certificates\' service', () => {
   before(async () => {
     p12Buffer = fs.readFileSync(CERT_PATH);
 
-    medic = await app.service('users').create({
+    const org = await createTestOrganization();
+    medic = await createTestUser({
       username: 'cert.test.medic',
       password: 'SuperSecret1',
-      roleId: 'medic',
+      roleIds: ['medic'],
+      organizationId: org.id,
     });
   });
 
@@ -53,11 +56,17 @@ describe('\'signing-certificates\' service', () => {
   });
 
   it('find strips certificate data for external calls', async () => {
+    const org = (await app.service('organization-users').find({
+      query: { userId: medic.id },
+      paginate: false,
+    } as any) as any[])[0];
+
     const results = await app.service('signing-certificates').find({
       query: { userId: medic.id },
       provider: 'rest',
       user: medic,
       authenticated: true,
+      organizationId: org.organizationId,
     } as any);
 
     const items = (results as any).data || results;

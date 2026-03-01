@@ -34,13 +34,10 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING,
       allowNull: true
     },
-    roleId: {
-      type: DataTypes.STRING,
+    isSuperAdmin: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
-      references: {
-        model: 'roles',
-        key: 'id'
-      }
+      defaultValue: false
     },
     currentChallenge: {
       type: DataTypes.STRING,
@@ -63,8 +60,6 @@ export default function (app: Application): typeof Model {
       encounters,
       user_personal_data,
       user_contact_data,
-      user_roles,
-      roles,
       studies,
       time_off_events,
       passkey_credentials,
@@ -92,13 +87,6 @@ export default function (app: Application): typeof Model {
     users.hasMany(encounters, {
       foreignKey: 'medicId',
       constraints: false
-    });
-    users.belongsTo(roles, { foreignKey: 'roleId' });
-    users.belongsToMany(roles, {
-      through: { model: user_roles, unique: true },
-      foreignKey: 'userId',
-      otherKey: 'roleId',
-      as: 'additionalRoles'
     });
     users.hasMany(studies, {
       foreignKey: 'medicId',

@@ -56,15 +56,11 @@ const resolveAndNotify = (): Hook => async (context: HookContext): Promise<HookC
     }
 
     const tempPassword = generateTempPassword();
-    const roleId = ['admin', 'medic', 'receptionist', 'lab-tech', 'lab-owner'].includes(invite.role)
-      ? invite.role
-      : 'receptionist';
 
     const newUser = await app.service('users').create(
       {
         username,
         password: tempPassword,
-        roleId,
         contactData: { email: invite.email },
       },
       { provider: undefined } as any

@@ -1,11 +1,12 @@
 import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { NavLink, Outlet, useLoaderData } from '@remix-run/react';
+import { NavLink, Outlet, useLoaderData, useRouteLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
 import { FormContainer } from '~/components/forms/styles';
 import Portal from '~/components/portal';
+import RouteErrorFallback from '~/components/route-error-fallback';
 import { css } from '~/styled-system/css';
 
 type MdSettingsProfile = {
@@ -35,7 +36,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const { client, user } = await getAuthenticatedClient(request);
     const profile = await client.service('profile').get('me');
     const fullUser = await client.service('users').get(user.id);
-    const isMedic = (fullUser as { roleId?: string }).roleId === 'medic';
+    const currentOrganizationId = await getCurrentOrganizationId(request);
+    const orgs = (fullUser as any).organizations as
+      | Array<{ id: string; name: string; slug: string; isActive: boolean; roleIds: string[]; permissions: string[] }>
+      | undefined;
+    const currentMembership = orgs?.find(o => o.id === currentOrganizationId);
+    const currentOrgRoleIds = currentMembership?.roleIds || [];
+    const isMedic = currentOrgRoleIds.includes('medic');
     let mdSettingsRecord: MdSettingsProfile | null = null;
     if (isMedic) {
       const settings = (fullUser as { settings?: unknown }).settings;
@@ -114,25 +121,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     let isOrgOwner = false;
     let currentOrg: { id: string; name: string; slug: string; settings?: Record<string, any> } | null = null;
-    const currentOrganizationId = await getCurrentOrganizationId(request);
-    const orgs = (fullUser as any).organizations as
-      | Array<{ id: string; name: string; slug: string; role: string }>
-      | undefined;
-    if (orgs?.length && currentOrganizationId) {
-      const membership = orgs.find(o => o.id === currentOrganizationId);
-      if (membership?.role === 'owner') {
-        isOrgOwner = true;
-        try {
-          const org = await client.service('organizations').get(membership.id);
-          currentOrg = {
-            id: org.id,
-            name: org.name,
-            slug: org.slug,
-            settings: (org as any)?.settings || {},
-          };
-        } catch {
-          currentOrg = { id: membership.id, name: membership.name, slug: membership.slug, settings: {} };
-        }
+    if (currentMembership?.roleIds?.includes('owner')) {
+      isOrgOwner = true;
+      try {
+        const org = await client.service('organizations').get(currentMembership.id);
+        currentOrg = {
+          id: org.id,
+          name: org.name,
+          slug: org.slug,
+          settings: (org as any)?.settings || {},
+        };
+      } catch {
+        currentOrg = { id: currentMembership.id, name: currentMembership.name, slug: currentMembership.slug, settings: {} };
       }
     }
 
@@ -214,25 +214,46 @@ function TabLink({ to, end, children }: { to: string; end?: boolean; children: R
   );
 }
 
-export default function ProfileLayout() {
-  const { isMedic, isOrgOwner } = useLoaderData<typeof loader>();
+function ProfileTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: boolean }) {
   const { t } = useTranslation();
 
   return (
+    <Portal id="toolbar">
+      <nav className={tabListClass}>
+        <TabLink to="/profile" end>
+          {t('profile.tab_profile')}
+        </TabLink>
+        <TabLink to="/profile/security">{t('profile.tab_security')}</TabLink>
+        {isMedic && <TabLink to="/profile/signature">{t('profile.tab_signature')}</TabLink>}
+        {isOrgOwner && <TabLink to="/profile/organization">{t('profile.tab_organization')}</TabLink>}
+      </nav>
+    </Portal>
+  );
+}
+
+export default function ProfileLayout() {
+  const { isMedic, isOrgOwner } = useLoaderData<typeof loader>();
+
+  return (
     <FormContainer style={{ padding: '2rem', maxWidth: 720, margin: '0 auto' }}>
-      <Portal id="toolbar">
-        <nav className={tabListClass}>
-          <TabLink to="/profile" end>
-            {t('profile.tab_profile')}
-          </TabLink>
-          <TabLink to="/profile/security">{t('profile.tab_security')}</TabLink>
-          {isMedic && <TabLink to="/profile/signature">{t('profile.tab_signature')}</TabLink>}
-          {isOrgOwner && <TabLink to="/profile/organization">{t('profile.tab_organization')}</TabLink>}
-        </nav>
-      </Portal>
+      <ProfileTabs isMedic={isMedic} isOrgOwner={isOrgOwner} />
 
       <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>
         <Outlet />
+      </div>
+    </FormContainer>
+  );
+}
+
+export function ErrorBoundary() {
+  const data = useRouteLoaderData<typeof loader>('routes/profile');
+
+  return (
+    <FormContainer style={{ padding: '2rem', maxWidth: 720, margin: '0 auto' }}>
+      {data && <ProfileTabs isMedic={data.isMedic} isOrgOwner={data.isOrgOwner} />}
+
+      <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>
+        <RouteErrorFallback />
       </div>
     </FormContainer>
   );

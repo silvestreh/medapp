@@ -1,24 +1,21 @@
 import { HookContext } from '@feathersjs/feathers';
-import { getUserPermissions } from '../../../utils/get-user-permissions';
 
 const populateUser = () => {
   return async (context: HookContext) => {
     const { app, result } = context;
 
-    if (result.roleId) {
-      const mergedPermissions = await getUserPermissions(app, result.id, result.roleId);
+    const hasMedicInAnyOrg = async (): Promise<boolean> => {
+      if (result.isSuperAdmin) return false;
+      const medicRoles: any[] = await app.service('user-roles').find({
+        query: { userId: result.id, roleId: 'medic' },
+        paginate: false,
+      } as any);
+      return medicRoles.length > 0;
+    };
 
-      result.role = {
-        id: result.roleId,
-        permissions: mergedPermissions
-      };
-    }
-
-    if (result.roleId === 'medic') {
+    if (await hasMedicInAnyOrg()) {
       const [settings] = await app.service('md-settings').find({
-        query: {
-          userId: result.id
-        },
+        query: { userId: result.id },
         paginate: false
       });
       result.settings = settings;
@@ -35,12 +32,45 @@ const populateUser = () => {
         orgIds.map((id: string) => app.service('organizations').get(id))
       );
 
-      result.organizations = orgs.map((org: any, i: number) => ({
-        id: org.id,
-        name: org.name,
-        slug: org.slug,
-        role: memberships[i].role
-      }));
+      const userRolesAll: any[] = await app.service('user-roles').find({
+        query: { userId: result.id },
+        paginate: false,
+      } as any);
+
+      const rolesByOrg = new Map<string, string[]>();
+      for (const ur of userRolesAll) {
+        const existing = rolesByOrg.get(ur.organizationId) || [];
+        existing.push(ur.roleId);
+        rolesByOrg.set(ur.organizationId, existing);
+      }
+
+      const allRoleIds = [...new Set(userRolesAll.map((ur: any) => ur.roleId))];
+      const roleRecords = await Promise.all(
+        allRoleIds.map((roleId: string) =>
+          app.service('roles').get(roleId).catch(() => null)
+        )
+      );
+      const permsByRole = new Map<string, string[]>();
+      for (const record of roleRecords) {
+        if (record) {
+          permsByRole.set(record.id, record.permissions || []);
+        }
+      }
+
+      result.organizations = orgs.map((org: any) => {
+        const orgRoleIds = rolesByOrg.get(org.id) || [];
+        const orgPerms = [...new Set(
+          orgRoleIds.flatMap((rId: string) => permsByRole.get(rId) || [])
+        )];
+        return {
+          id: org.id,
+          name: org.name,
+          slug: org.slug,
+          isActive: org.isActive,
+          roleIds: orgRoleIds,
+          permissions: orgPerms,
+        };
+      });
     } else {
       result.organizations = [];
     }

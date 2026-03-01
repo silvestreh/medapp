@@ -17,19 +17,22 @@ describe('\'invites\' service', () => {
     adminUser = await app.service('users').create({
       username: 'invite.admin',
       password: 'SuperSecret1',
-      roleId: 'admin'
     });
 
     await app.service('organization-users').create({
       organizationId: org.id,
       userId: adminUser.id,
-      role: 'owner'
     });
+
+    await app.service('user-roles').create({
+      userId: adminUser.id,
+      roleId: 'admin',
+      organizationId: org.id,
+    } as any);
 
     existingUser = await app.service('users').create({
       username: 'invite.existing',
       password: 'SuperSecret1',
-      roleId: 'medic',
       contactData: { email: 'existing@example.com' }
     });
   });
@@ -42,7 +45,7 @@ describe('\'invites\' service', () => {
   describe('creating invites', () => {
     it('creates an invite for a new user (no matching email)', async () => {
       const invite: any = await app.service('invites').create(
-        { email: 'brand-new@example.com', role: 'receptionist' },
+        { email: 'brand-new@example.com', roleId: 'receptionist' },
         {
           provider: 'rest',
           user: adminUser,
@@ -64,12 +67,11 @@ describe('\'invites\' service', () => {
 
       const newUser: any = await app.service('users').get(fetched.userId);
       assert.ok(newUser, 'The new user exists');
-      assert.strictEqual(newUser.roleId, 'receptionist');
     });
 
     it('creates an invite for an existing user (matching email)', async () => {
       const invite: any = await app.service('invites').create(
-        { email: 'existing@example.com', role: 'medic' },
+        { email: 'existing@example.com', roleId: 'medic' },
         {
           provider: 'rest',
           user: adminUser,
@@ -89,7 +91,7 @@ describe('\'invites\' service', () => {
     it('rejects invite when email is missing', async () => {
       try {
         await app.service('invites').create(
-          { role: 'receptionist' },
+          { roleId: 'receptionist' },
           {
             provider: 'rest',
             user: adminUser,
@@ -123,14 +125,12 @@ describe('\'invites\' service', () => {
       const memberUser: any = await app.service('users').create({
         username: 'invite.already.member',
         password: 'SuperSecret1',
-        roleId: 'medic',
         contactData: { email: 'already-member@example.com' }
       });
 
       await app.service('organization-users').create({
         organizationId: org.id,
         userId: memberUser.id,
-        role: 'member'
       });
 
       try {
@@ -161,11 +161,16 @@ describe('\'invites\' service', () => {
       await app.service('organization-users').create({
         organizationId: secondOrg.id,
         userId: adminUser.id,
-        role: 'owner'
       });
 
+      await app.service('user-roles').create({
+        userId: adminUser.id,
+        roleId: 'admin',
+        organizationId: secondOrg.id,
+      } as any);
+
       const invite: any = await app.service('invites').create(
-        { email: 'existing@example.com', role: 'medic' },
+        { email: 'existing@example.com', roleId: 'medic' },
         {
           provider: 'rest',
           user: adminUser,
@@ -191,7 +196,6 @@ describe('\'invites\' service', () => {
       } as any) as any[];
 
       assert.strictEqual(memberships.length, 1, 'User was added to org');
-      assert.strictEqual(memberships[0].role, 'member');
     });
 
     it('accepts an invite for a new user and sets password', async () => {
@@ -203,11 +207,16 @@ describe('\'invites\' service', () => {
       await app.service('organization-users').create({
         organizationId: thirdOrg.id,
         userId: adminUser.id,
-        role: 'owner'
       });
 
+      await app.service('user-roles').create({
+        userId: adminUser.id,
+        roleId: 'admin',
+        organizationId: thirdOrg.id,
+      } as any);
+
       const invite: any = await app.service('invites').create(
-        { email: 'totally-new@example.com', role: 'receptionist' },
+        { email: 'totally-new@example.com', roleId: 'receptionist' },
         {
           provider: 'rest',
           user: adminUser,
@@ -245,11 +254,16 @@ describe('\'invites\' service', () => {
       await app.service('organization-users').create({
         organizationId: org4.id,
         userId: adminUser.id,
-        role: 'owner'
       });
 
+      await app.service('user-roles').create({
+        userId: adminUser.id,
+        roleId: 'admin',
+        organizationId: org4.id,
+      } as any);
+
       const invite: any = await app.service('invites').create(
-        { email: 'double-accept@example.com', role: 'receptionist' },
+        { email: 'double-accept@example.com', roleId: 'receptionist' },
         {
           provider: 'rest',
           user: adminUser,
@@ -281,7 +295,7 @@ describe('\'invites\' service', () => {
   describe('finding invites by token', () => {
     it('allows public lookup by token', async () => {
       const invite: any = await app.service('invites').create(
-        { email: 'token-lookup@example.com', role: 'receptionist' },
+        { email: 'token-lookup@example.com', roleId: 'receptionist' },
         {
           provider: 'rest',
           user: adminUser,

@@ -7,7 +7,8 @@ import { Group, Stack, Button, ActionIcon, Tooltip, Tabs, Text } from '@mantine/
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { X, FileDown, Printer, Plus } from 'lucide-react';
 
-import { getAuthenticatedClient, authenticatedLoader, isMedicVerified } from '~/utils/auth.server';
+import { getAuthenticatedClient, authenticatedLoader, isMedicVerified, getCurrentOrgRoleIds } from '~/utils/auth.server';
+import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
 import EncounterTree from '~/components/encounter-tree';
 import Portal from '~/components/portal';
@@ -98,7 +99,9 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     throw new Response('Patient ID is required', { status: 400 });
   }
 
-  const isMedic = (user as any).roleId === 'medic';
+  const loaderOrgId = await getCurrentOrganizationId(request);
+  const orgRoleIds = getCurrentOrgRoleIds(user, loaderOrgId);
+  const isMedic = orgRoleIds.includes('medic');
 
   const [patient, encounters, studies, isVerified] = await Promise.all([
     client.service('patients').get(patientId),
@@ -115,7 +118,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
         $sort: { createdAt: -1 },
       },
     }),
-    isMedicVerified(client, String((user as any).id), (user as any).roleId),
+    isMedicVerified(client, String((user as any).id), orgRoleIds),
   ]);
 
   let hasCertificate = false;

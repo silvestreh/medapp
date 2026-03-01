@@ -19,6 +19,7 @@ function encryptWithPin(data: Buffer, pin: string): Buffer {
 }
 
 describe('\'signed-exports\' service', () => {
+  let org: any;
   let medic: any;
   let patient: any;
   let study: any;
@@ -27,10 +28,15 @@ describe('\'signed-exports\' service', () => {
   before(async () => {
     p12Buffer = fs.readFileSync(CERT_PATH);
 
+    org = await app.service('organizations').create({
+      name: 'Signed Exports Test Clinic',
+      slug: `signed-exports-test-${Date.now()}`,
+      settings: {},
+    });
+
     medic = await app.service('users').create({
       username: 'export.test.medic',
       password: 'SuperSecret1',
-      roleId: 'medic',
       personalData: {
         firstName: 'Export',
         lastName: 'Doctor',
@@ -38,6 +44,17 @@ describe('\'signed-exports\' service', () => {
         documentValue: '99000111',
       },
     });
+
+    await app.service('organization-users').create({
+      organizationId: org.id,
+      userId: medic.id,
+    } as any);
+
+    await app.service('user-roles').create({
+      userId: medic.id,
+      roleId: 'medic',
+      organizationId: org.id,
+    } as any);
 
     patient = await app.service('patients').create({
       medicare: 'EXP-MED-001',
@@ -99,7 +116,7 @@ describe('\'signed-exports\' service', () => {
         patientId: patient.id,
         content: 'encounters',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -118,7 +135,7 @@ describe('\'signed-exports\' service', () => {
         patientId: patient.id,
         content: 'studies',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -133,7 +150,7 @@ describe('\'signed-exports\' service', () => {
         patientId: patient.id,
         content: 'both',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -173,7 +190,7 @@ describe('\'signed-exports\' service', () => {
         content: 'both',
         certificatePassword: CERT_PASSWORD,
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -189,15 +206,25 @@ describe('\'signed-exports\' service', () => {
       const noCertMedic = await app.service('users').create({
         username: 'export.nocert.medic',
         password: 'SuperSecret1',
-        roleId: 'medic',
       });
+
+      await app.service('organization-users').create({
+        organizationId: org.id,
+        userId: noCertMedic.id,
+      } as any);
+
+      await app.service('user-roles').create({
+        userId: noCertMedic.id,
+        roleId: 'medic',
+        organizationId: org.id,
+      } as any);
 
       try {
         await app.service('signed-exports').create({
           patientId: patient.id,
           certificatePassword: 'some-password',
           delivery: 'download',
-        }, { user: noCertMedic } as any);
+        }, { user: noCertMedic, orgRoleIds: ['medic'], organizationId: org.id } as any);
         assert.fail('Should throw BadRequest');
       } catch (error: any) {
         assert.strictEqual(error.name, 'BadRequest');
@@ -209,14 +236,24 @@ describe('\'signed-exports\' service', () => {
       const receptionist = await app.service('users').create({
         username: 'export.receptionist',
         password: 'SuperSecret1',
-        roleId: 'receptionist',
       });
+
+      await app.service('organization-users').create({
+        organizationId: org.id,
+        userId: receptionist.id,
+      } as any);
+
+      await app.service('user-roles').create({
+        userId: receptionist.id,
+        roleId: 'receptionist',
+        organizationId: org.id,
+      } as any);
 
       try {
         await app.service('signed-exports').create({
           patientId: patient.id,
           delivery: 'download',
-        }, { user: receptionist } as any);
+        }, { user: receptionist, orgRoleIds: ['receptionist'], organizationId: org.id } as any);
         assert.fail('Should throw Forbidden');
       } catch (error: any) {
         assert.strictEqual(error.name, 'Forbidden');
@@ -242,7 +279,7 @@ describe('\'signed-exports\' service', () => {
         patientId: patient.id,
         content: 'both',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -261,7 +298,7 @@ describe('\'signed-exports\' service', () => {
         patientId: patient.id,
         content: 'both',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       const pdfText = result.pdf.toString('utf-8');
       assert.strictEqual(pdfText.includes('/Type /Sig'), false, 'No /Type /Sig in unsigned PDF');
@@ -273,7 +310,7 @@ describe('\'signed-exports\' service', () => {
         patientId: patient.id,
         content: 'encounters',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -288,7 +325,7 @@ describe('\'signed-exports\' service', () => {
         patientId: patient.id,
         content: 'studies',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -305,7 +342,7 @@ describe('\'signed-exports\' service', () => {
         endDate: '2024-03-31',
         content: 'both',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -322,7 +359,7 @@ describe('\'signed-exports\' service', () => {
         content: 'both',
         delivery: 'download',
         locale: 'es',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -336,7 +373,7 @@ describe('\'signed-exports\' service', () => {
         patientId: patient.id,
         studyId: study.id,
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -357,7 +394,7 @@ describe('\'signed-exports\' service', () => {
         startDate: '2099-01-01',
         endDate: '2099-12-31',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF is still generated despite out-of-range dates');
@@ -373,7 +410,7 @@ describe('\'signed-exports\' service', () => {
           patientId: patient.id,
           studyId: '00000000-0000-0000-0000-000000000000',
           delivery: 'download',
-        }, { user: medic } as any);
+        }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
         assert.fail('Should throw NotFound');
       } catch (error: any) {
         assert.strictEqual(error.name, 'NotFound');
@@ -389,7 +426,7 @@ describe('\'signed-exports\' service', () => {
         endDate: '2024-03-31',
         content: 'encounters',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -404,7 +441,7 @@ describe('\'signed-exports\' service', () => {
         patientId: patient.id,
         content: 'both',
         delivery: 'download',
-      }, { user: medic } as any);
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -418,7 +455,6 @@ describe('\'signed-exports\' service', () => {
       encryptedMedic = await app.service('users').create({
         username: 'export.encrypted.medic',
         password: 'SuperSecret1',
-        roleId: 'medic',
         personalData: {
           firstName: 'Encrypted',
           lastName: 'Doctor',
@@ -426,6 +462,17 @@ describe('\'signed-exports\' service', () => {
           documentValue: '77000333',
         },
       });
+
+      await app.service('organization-users').create({
+        organizationId: org.id,
+        userId: encryptedMedic.id,
+      } as any);
+
+      await app.service('user-roles').create({
+        userId: encryptedMedic.id,
+        roleId: 'medic',
+        organizationId: org.id,
+      } as any);
 
       const encryptedCert = encryptWithPin(p12Buffer, TEST_PIN);
 
@@ -458,7 +505,7 @@ describe('\'signed-exports\' service', () => {
         certificatePassword: CERT_PASSWORD,
         encryptionPin: TEST_PIN,
         delivery: 'download',
-      }, { user: encryptedMedic } as any);
+      }, { user: encryptedMedic, orgRoleIds: ['medic'], organizationId: org.id } as any);
 
       assert.strictEqual(result.success, true);
       assert.ok(result.pdf, 'PDF buffer is present');
@@ -476,7 +523,7 @@ describe('\'signed-exports\' service', () => {
           certificatePassword: CERT_PASSWORD,
           encryptionPin: 'wrong-pin',
           delivery: 'download',
-        }, { user: encryptedMedic } as any);
+        }, { user: encryptedMedic, orgRoleIds: ['medic'], organizationId: org.id } as any);
         assert.fail('Should throw BadRequest');
       } catch (error: any) {
         assert.strictEqual(error.name, 'BadRequest');
@@ -491,7 +538,7 @@ describe('\'signed-exports\' service', () => {
           content: 'both',
           certificatePassword: CERT_PASSWORD,
           delivery: 'download',
-        }, { user: encryptedMedic } as any);
+        }, { user: encryptedMedic, orgRoleIds: ['medic'], organizationId: org.id } as any);
         assert.fail('Should throw BadRequest');
       } catch (error: any) {
         assert.strictEqual(error.name, 'BadRequest');

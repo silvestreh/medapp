@@ -24,14 +24,30 @@ export default function (app: Application): typeof Model {
         model: 'roles',
         key: 'id'
       }
+    },
+    organizationId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      references: {
+        model: 'organizations',
+        key: 'id'
+      }
     }
+  }, {
+    indexes: [
+      {
+        unique: true,
+        fields: ['userId', 'roleId', 'organizationId']
+      }
+    ]
   });
 
   (userRoles as any).associate = function (models: any): void {
-    const { users, roles } = models;
+    const { users, roles, organizations } = models;
 
     userRoles.belongsTo(users, { foreignKey: 'userId' });
     userRoles.belongsTo(roles, { foreignKey: 'roleId' });
+    userRoles.belongsTo(organizations, { foreignKey: 'organizationId' });
   };
 
   return userRoles;

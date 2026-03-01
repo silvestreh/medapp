@@ -1,6 +1,7 @@
 import assert from 'assert';
 import app from '../../src/app';
-import client from '../test-client';
+import { createTestClient } from '../test-client';
+import { createTestOrganization, createTestUser } from '../test-helpers';
 
 describe('\'roles\' service', () => {
   let medicUser: any;
@@ -8,14 +9,20 @@ describe('\'roles\' service', () => {
   let patient: any;
   let encounter: any;
   let server: any;
+  let org: any;
+  let client: any;
 
   before(async () => {
     server = await app.listen(app.get('port'));
 
-    medicUser = await app.service('users').create({
+    org = await createTestOrganization();
+    client = createTestClient(org.id as string);
+
+    medicUser = await createTestUser({
       username: 'test.medic',
       password: 'SuperSecret1',
-      roleId: 'medic'
+      roleIds: ['medic'],
+      organizationId: org.id,
     });
     await app.service('md-settings').create({
       userId: medicUser.id,
@@ -23,10 +30,11 @@ describe('\'roles\' service', () => {
       isVerified: true,
     });
 
-    receptionistUser = await app.service('users').create({
+    receptionistUser = await createTestUser({
       username: 'test.receptionist',
       password: 'SuperSecret1',
-      roleId: 'receptionist'
+      roleIds: ['receptionist'],
+      organizationId: org.id,
     });
 
     patient = await app.service('patients').create({
@@ -34,7 +42,6 @@ describe('\'roles\' service', () => {
       medicareNumber: '12345'
     });
 
-    // Create a new role with limited permissions
     await app.service('roles').create({
       id: 'limited-patch',
       permissions: [
@@ -42,11 +49,11 @@ describe('\'roles\' service', () => {
       ]
     });
 
-    // Create a user with the new role
-    await app.service('users').create({
+    await createTestUser({
       username: 'limited.user',
       password: 'SuperSecret1',
-      roleId: 'limited-patch'
+      roleIds: ['limited-patch'],
+      organizationId: org.id,
     });
   });
 
@@ -113,10 +120,11 @@ describe('\'roles\' service', () => {
     it('enforces ownership for medics', async () => {
       await client.logout();
 
-      const anotherMedic = await app.service('users').create({
+      const anotherMedic = await createTestUser({
         username: 'another.medic',
         password: 'SuperSecret1',
-        roleId: 'medic'
+        roleIds: ['medic'],
+        organizationId: org.id,
       });
       await app.service('md-settings').create({
         userId: anotherMedic.id,

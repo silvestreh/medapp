@@ -1,13 +1,15 @@
 import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
+import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
+import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 
 const { authenticate } = authentication.hooks;
 
 export default {
   before: {
-    all: [authenticate('jwt')],
+    all: [authenticate('jwt'), verifyOrganizationMembership()],
     get: [],
-    create: [],
+    create: [enforceActiveOrganization()],
   },
   after: {
     all: [],

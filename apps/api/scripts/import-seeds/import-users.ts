@@ -33,12 +33,8 @@ export async function importUsers({ users, resetPasswords, organizationId, bar }
 
   await Promise.all(users.map(user => limit(async () => {
     try {
-      const { mdSettings, additionalRoleIds, ...userData } = user;
+      const { mdSettings, additionalRoleIds, roleId, ...userData } = user;
 
-      // Seed passwords are bcrypt hashes from the mongo dump. Sending them
-      // through the service hooks would double-hash them (and some fail
-      // validatePassword). Always use a known plaintext password so the
-      // hashPassword hook produces a valid hash.
       userData.password = resetPasswords
         ? DEFAULT_PASSWORD
         : DEFAULT_PASSWORD;
@@ -46,16 +42,20 @@ export async function importUsers({ users, resetPasswords, organizationId, bar }
       await usersService.create(userData as any);
       validUserIds.add(user.id);
 
-      const orgRole = user.id === JUANCA_ID ? 'owner' : (user.roleId === 'admin' ? 'admin' : 'member');
       await orgUsersService.create({
         organizationId,
         userId: user.id,
-        role: orgRole,
       } as any);
 
+      if (user.id === JUANCA_ID) {
+        await userRolesService.create({ userId: user.id, roleId: 'owner', organizationId } as any);
+      }
+
+      await userRolesService.create({ userId: user.id, roleId, organizationId } as any);
+
       if (additionalRoleIds) {
-        for (const roleId of additionalRoleIds) {
-          await userRolesService.create({ userId: user.id, roleId });
+        for (const addlRoleId of additionalRoleIds) {
+          await userRolesService.create({ userId: user.id, roleId: addlRoleId, organizationId } as any);
         }
       }
 

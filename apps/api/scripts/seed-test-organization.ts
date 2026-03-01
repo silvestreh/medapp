@@ -249,6 +249,7 @@ function buildStudyResult(studyType: string): { type: string; data: string } {
       await sequelize.query('DELETE FROM time_off_events WHERE "organizationId" = :id', { replacements: { id: oldId } });
       await sequelize.query('DELETE FROM md_settings WHERE "organizationId" = :id', { replacements: { id: oldId } });
       const patientIds = (await sequelize.query<{ patientId: string }>('SELECT "patientId" FROM organization_patients WHERE "organizationId" = :id', { replacements: { id: oldId }, type: QueryTypes.SELECT }));
+      await sequelize.query('DELETE FROM user_roles WHERE "organizationId" = :id', { replacements: { id: oldId } });
       await sequelize.query('DELETE FROM organization_users WHERE "organizationId" = :id', { replacements: { id: oldId } });
       await sequelize.query('DELETE FROM organization_patients WHERE "organizationId" = :id', { replacements: { id: oldId } });
       if (patientIds.length > 0) {
@@ -267,6 +268,7 @@ function buildStudyResult(studyType: string): { type: string; data: string } {
     );
     if (orphanUsers.length > 0) {
       const uids = orphanUsers.map(r => r.id);
+      await sequelize.query('DELETE FROM user_roles WHERE "userId" IN (:uids)', { replacements: { uids } });
       await sequelize.query('DELETE FROM organization_users WHERE "userId" IN (:uids)', { replacements: { uids } });
       await sequelize.query('DELETE FROM md_settings WHERE "userId" IN (:uids)', { replacements: { uids } });
       await sequelize.query('DELETE FROM personal_data WHERE id IN (SELECT "personalDataId" FROM user_personal_data WHERE "ownerId" IN (:uids))', { replacements: { uids } });
@@ -292,10 +294,10 @@ function buildStudyResult(studyType: string): { type: string; data: string } {
     const orgUsersService = app.service('organization-users');
 
     const userSpecs = [
-      { username: 'admin.sur', roleId: 'admin' as const, orgRole: 'owner' },
-      { username: 'dr.ramirez', roleId: 'medic' as const, orgRole: 'member' },
-      { username: 'dra.gonzalez', roleId: 'medic' as const, orgRole: 'member' },
-      { username: 'recep.sur', roleId: 'receptionist' as const, orgRole: 'member' },
+      { username: 'admin.sur', roleIds: ['owner', 'admin'] },
+      { username: 'dr.ramirez', roleIds: ['medic'] },
+      { username: 'dra.gonzalez', roleIds: ['medic'] },
+      { username: 'recep.sur', roleIds: ['receptionist'] },
     ];
 
     const userIds: string[] = [];
@@ -309,7 +311,6 @@ function buildStudyResult(studyType: string): { type: string; data: string } {
       const user = (await usersService.create({
         username: spec.username,
         password,
-        roleId: spec.roleId,
         personalData: {
           firstName,
           lastName,
@@ -330,10 +331,17 @@ function buildStudyResult(studyType: string): { type: string; data: string } {
       await orgUsersService.create({
         organizationId,
         userId: user.id,
-        role: spec.orgRole,
       } as any);
 
-      if (spec.roleId === 'medic') {
+      for (const roleId of spec.roleIds) {
+        await app.service('user-roles').create({
+          userId: user.id,
+          roleId,
+          organizationId,
+        } as any);
+      }
+
+      if (spec.roleIds.includes('medic')) {
         medicIds.push(user.id);
         await mdSettingsService.create({
           userId: user.id,
@@ -361,7 +369,7 @@ function buildStudyResult(studyType: string): { type: string; data: string } {
         } as any);
       }
 
-      console.log(`  ${spec.roleId.padEnd(14)} ${spec.username} (${firstName} ${lastName})`);
+      console.log(`  ${spec.roleIds.join(',').padEnd(14)} ${spec.username} (${firstName} ${lastName})`);
     }
 
     // 3. Create patients

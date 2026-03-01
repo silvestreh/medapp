@@ -1,6 +1,7 @@
 import assert from 'assert';
 import app from '../../src/app';
 import { Study, StudyResult, User, Patient } from '../../src/declarations';
+import { createTestUser, createTestOrganization } from '../test-helpers';
 
 describe('\'studies\' service', () => {
   let medic: User;
@@ -14,10 +15,12 @@ describe('\'studies\' service', () => {
       permissions: ['studies:create', 'studies:patch', 'studies:get', 'studies:find']
     }).catch(() => null);
 
-    medic = await app.service('users').create({
+    const org = await createTestOrganization();
+    medic = await createTestUser({
       username: 'medic1',
       password: 'Password123',
-      roleId: 'medic'
+      roleIds: ['medic'],
+      organizationId: org.id,
     });
 
     patient = await app.service('patients').create({

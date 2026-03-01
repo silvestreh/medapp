@@ -1,15 +1,18 @@
 import assert from 'assert';
 import app from '../../src/app';
+import { createTestUser, createTestOrganization } from '../test-helpers';
 
 describe('\'time-off-events\' service', () => {
   let medic: any;
   const svc = app.service('time-off-events') as any;
 
   before(async () => {
-    medic = await app.service('users').create({
+    const org = await createTestOrganization();
+    medic = await createTestUser({
       username: 'timeoff.medic',
       password: 'SuperSecret1',
-      roleId: 'medic'
+      roleIds: ['medic'],
+      organizationId: org.id,
     });
   });
 

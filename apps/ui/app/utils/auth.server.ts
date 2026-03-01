@@ -80,8 +80,8 @@ export async function getAuthenticatedClient(request: Request): Promise<{ client
   }
 }
 
-export async function isMedicVerified(client: Application, userId: string, roleId?: string): Promise<boolean> {
-  if (roleId !== 'medic') {
+export async function isMedicVerified(client: Application, userId: string, orgRoleIds?: string[]): Promise<boolean> {
+  if (!orgRoleIds || !orgRoleIds.includes('medic')) {
     return true;
   }
 
@@ -96,4 +96,10 @@ export async function isMedicVerified(client: Application, userId: string, roleI
 
   const record = list[0] as { isVerified?: boolean } | undefined;
   return record?.isVerified === true;
+}
+
+export function getCurrentOrgRoleIds(user: any, organizationId?: string): string[] {
+  if (!user?.organizations?.length || !organizationId) return [];
+  const org = user.organizations.find((o: any) => o.id === organizationId);
+  return org?.roleIds || [];
 }

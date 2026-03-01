@@ -1,6 +1,7 @@
 import assert from 'assert';
 import app from '../../src/app';
 import { Sequelize, QueryTypes } from 'sequelize';
+import { createTestUser, createTestOrganization } from '../test-helpers';
 
 describe('\'encounters\' service', () => {
   let medic: any;
@@ -8,10 +9,12 @@ describe('\'encounters\' service', () => {
   let prepaga: any;
 
   before(async () => {
-    medic = await app.service('users').create({
+    const org = await createTestOrganization();
+    medic = await createTestUser({
       username: 'test.medic.encounter',
       password: 'SuperSecret1',
-      roleId: 'medic'
+      roleIds: ['medic'],
+      organizationId: org.id,
     });
 
     patient = await app.service('patients').create({

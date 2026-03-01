@@ -1,11 +1,10 @@
 import { useCallback } from 'react';
 import { type MetaFunction, type LoaderFunctionArgs, redirect } from '@remix-run/node';
 import { useLoaderData, Outlet, useNavigate } from '@remix-run/react';
-import { useTranslation } from 'react-i18next';
-
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import MedicList from '~/components/medic-list';
 import Portal from '~/components/portal';
+import RouteErrorFallback from '~/components/route-error-fallback';
 import { getPageTitle } from '~/utils/meta';
 
 export const meta: MetaFunction = ({ matches }) => {
@@ -16,8 +15,20 @@ const DEFAULT_MEDIC_ID = '540dc81947771d1f3f8b4567';
 
 export const loader = authenticatedLoader(async ({ request, params }: LoaderFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
-  const query = { roleId: 'medic', $skip: 0, $limit: 100 };
-  const { data: medics } = await client.service('users').find({ query });
+  const membersResponse = await client.service('organization-users').find({
+    query: { $populate: true, $limit: 200 },
+  });
+  const allMembers = Array.isArray(membersResponse) ? membersResponse : ((membersResponse as any)?.data ?? []);
+
+  const userRolesResponse = await client.service('user-roles').find({
+    query: { roleId: 'medic', $limit: 500 },
+  });
+  const medicUserRoles = Array.isArray(userRolesResponse) ? userRolesResponse : ((userRolesResponse as any)?.data ?? []);
+  const medicUserIds = new Set(medicUserRoles.map((ur: any) => ur.userId));
+
+  const medics = allMembers
+    .filter((m: any) => m.user && medicUserIds.has(m.userId))
+    .map((m: any) => m.user);
 
   if (!params.medicId) {
     const defaultMedic = medics.find((m: { id: string }) => m.id === DEFAULT_MEDIC_ID) ?? medics[0];
@@ -50,7 +61,4 @@ export default function AppointmentsLayout() {
   );
 }
 
-export const ErrorBoundary = () => {
-  const { t } = useTranslation();
-  return <div>{t('common.something_went_wrong')}</div>;
-};
+export const ErrorBoundary = RouteErrorFallback;

@@ -5,7 +5,8 @@ import { useLoaderData, useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Stack, Center, Text, NumberInput, Paper } from '@mantine/core';
 
-import { getAuthenticatedClient, authenticatedLoader, isMedicVerified } from '~/utils/auth.server';
+import { getAuthenticatedClient, authenticatedLoader, isMedicVerified, getCurrentOrgRoleIds } from '~/utils/auth.server';
+import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
@@ -62,7 +63,9 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   }
 
   const { client, user } = await getAuthenticatedClient(request);
-  const verified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  const actionOrgId = await getCurrentOrganizationId(request);
+  const actionOrgRoleIds = getCurrentOrgRoleIds(user, actionOrgId);
+  const verified = await isMedicVerified(client, String((user as any).id), actionOrgRoleIds);
   if (!verified) {
     return redirect(`/encounters/${patientId}`);
   }
@@ -93,7 +96,9 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     throw new Response('Patient ID is required', { status: 400 });
   }
 
-  const verified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  const loaderOrgId = await getCurrentOrganizationId(request);
+  const loaderOrgRoleIds = getCurrentOrgRoleIds(user, loaderOrgId);
+  const verified = await isMedicVerified(client, String((user as any).id), loaderOrgRoleIds);
   if (!verified) {
     throw redirect(`/encounters/${patientId}`);
   }

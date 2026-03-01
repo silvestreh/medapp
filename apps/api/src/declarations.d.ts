@@ -90,7 +90,7 @@ export interface User {
   twoFactorSecret?: string | null;
   twoFactorTempSecret?: string | null;
   currentChallenge?: string | null;
-  roleId: Id;
+  isSuperAdmin: boolean;
   personalData: Partial<PersonalData>;
   contactData: Partial<ContactData>;
 }
@@ -209,13 +209,20 @@ export interface Organization {
   name: string;
   slug: string;
   settings: Record<string, any>;
+  isActive: boolean;
 }
 
 export interface OrganizationUser {
   id: Id;
   organizationId: Id;
   userId: Id;
-  role: string;
+}
+
+export interface UserRole {
+  id: Id;
+  userId: Id;
+  roleId: string;
+  organizationId: Id;
 }
 
 export interface OrganizationPatient {
@@ -228,7 +235,7 @@ export interface Invite {
   id: Id;
   email: string;
   organizationId: Id;
-  role: string;
+  roleId: string;
   invitedBy: Id;
   userId: Id | null;
   token: string;

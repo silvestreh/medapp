@@ -16,7 +16,6 @@ const prepareSignupOrganization = () => async (context: HookContext) => {
 
   context.params._signupOrganization = orgName.trim();
   delete context.data.signupOrganization;
-  context.data.roleId = 'admin';
 
   return context;
 };
@@ -27,7 +26,7 @@ const handleSignupOrganization = () => async (context: HookContext) => {
 
   const { app, result } = context;
   const sequelize = app.get('sequelizeClient');
-  const { organizations, organization_users } = sequelize.models;
+  const { organizations, organization_users, user_roles } = sequelize.models;
 
   const orgId = randomUUID();
   const slug = `${slugify(orgName)}-${randomUUID().slice(0, 8)}`;
@@ -43,7 +42,13 @@ const handleSignupOrganization = () => async (context: HookContext) => {
     id: randomUUID(),
     organizationId: orgId,
     userId: result.id,
-    role: 'owner',
+  });
+
+  await user_roles.create({
+    id: randomUUID(),
+    userId: result.id,
+    roleId: 'owner',
+    organizationId: orgId,
   });
 
   context.result.signupOrganizationId = orgId;

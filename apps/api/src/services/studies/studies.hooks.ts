@@ -2,6 +2,8 @@ import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { checkPermissions } from '../../hooks/check-permissions';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
+import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
+import { blockSuperAdmin } from '../../hooks/block-super-admin';
 import populateResults from './hooks/populate-results';
 import populatePatient from './hooks/populate-patient';
 import autoProtocol from './hooks/auto-protocol';
@@ -22,6 +24,8 @@ export default {
     all: [
       authenticate('jwt'),
       verifyOrganizationMembership(),
+      blockSuperAdmin(),
+      enforceActiveOrganization(),
       checkPermissions()
     ],
     find: [

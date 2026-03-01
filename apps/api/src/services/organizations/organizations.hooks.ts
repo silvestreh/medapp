@@ -1,5 +1,6 @@
 import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
+import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import restrictToOrgOwner from './hooks/restrict-to-org-owner';
 
 const { authenticate } = authentication.hooks;
@@ -11,8 +12,8 @@ export default {
     get: [],
     create: [],
     update: [],
-    patch: [restrictToOrgOwner()],
-    remove: [restrictToOrgOwner()]
+    patch: [verifyOrganizationMembership(), restrictToOrgOwner()],
+    remove: [verifyOrganizationMembership(), restrictToOrgOwner()]
   },
 
   after: {

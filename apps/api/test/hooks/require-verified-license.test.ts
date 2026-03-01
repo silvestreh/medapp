@@ -17,7 +17,8 @@ describe('requireVerifiedLicense hook', () => {
       },
       params: {
         provider: undefined,
-        user: { id: 'u1', roleId: 'medic' },
+        user: { id: 'u1' },
+        orgRoleIds: ['medic'],
       },
     };
 
@@ -39,7 +40,8 @@ describe('requireVerifiedLicense hook', () => {
       },
       params: {
         provider: 'rest',
-        user: { id: 'u1', roleId: 'admin' },
+        user: { id: 'u1' },
+        orgRoleIds: ['admin'],
       },
     };
 
@@ -61,7 +63,8 @@ describe('requireVerifiedLicense hook', () => {
       },
       params: {
         provider: 'rest',
-        user: { id: 'u1', roleId: 'medic' },
+        user: { id: 'u1' },
+        orgRoleIds: ['medic'],
       },
     };
 
@@ -89,7 +92,8 @@ describe('requireVerifiedLicense hook', () => {
       },
       params: {
         provider: 'rest',
-        user: { id: 'u1', roleId: 'medic' },
+        user: { id: 'u1' },
+        orgRoleIds: ['medic'],
       },
     };
 
@@ -116,7 +120,8 @@ describe('requireVerifiedLicense hook', () => {
       },
       params: {
         provider: 'rest',
-        user: { id: 'u1', roleId: 'medic' },
+        user: { id: 'u1' },
+        orgRoleIds: ['medic'],
       },
     };
 

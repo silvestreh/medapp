@@ -25,17 +25,5 @@ export default function (app: Application): typeof Model {
     }
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  (roles as any).associate = function (models: any): void {
-    const { users, user_roles } = models;
-
-    roles.belongsToMany(users, {
-      through: { model: user_roles, unique: true },
-      foreignKey: 'roleId',
-      otherKey: 'userId',
-      as: 'usersWithRole'
-    });
-  };
-
   return roles;
 }

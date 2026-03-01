@@ -314,7 +314,6 @@ async function importData(multibar: cliProgress.MultiBar) {
         id: user._id.$oid,
         username: user.username ?? 'weird_user',
         password: 'retrete',
-        roleId: user.__class === 'SuperUser' ? 'admin' : user.__class === 'Receptionist' ? 'receptionist' : 'medic',
         personalData: Object.keys(user.personal_data || {}).length > 0
           ? {
             firstName: startCase((await normalizeNameWithLLM(user.personal_data?.first_name))?.toLowerCase?.()),

@@ -23,6 +23,11 @@ export default function (app: Application): typeof Model {
       type: DataTypes.JSONB,
       allowNull: false,
       defaultValue: {}
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
     }
   }, {
     hooks: {

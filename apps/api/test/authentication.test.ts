@@ -1,6 +1,8 @@
 import assert from 'assert';
 import app from '../src/app';
 import type { User } from '../src/declarations';
+import { createTestUser, createTestOrganization } from './test-helpers';
+
 describe('authentication', () => {
   let user: User;
 
@@ -12,12 +14,16 @@ describe('authentication', () => {
     const userInfo = {
       username: 'someone@example.com',
       password: 'SuperSecret1',
-      roleId: 'receptionist'
     };
 
     before(async () => {
       try {
-        user = await app.service('users').create(userInfo);
+        const org = await createTestOrganization();
+        user = await createTestUser({
+          ...userInfo,
+          roleIds: ['receptionist'],
+          organizationId: org.id,
+        });
       } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
         // Do nothing, it just means the user already exists and can be tested
       }
@@ -31,6 +37,23 @@ describe('authentication', () => {
 
       assert.ok(accessToken, 'Created access token for user');
       assert.ok(authenticatedUser, 'Includes user in authentication data');
+
+      const userRoles = await app.service('user-roles').find({
+        query: { userId: user.id },
+        paginate: false,
+      } as any) as any[];
+      for (const ur of userRoles) {
+        await app.service('user-roles').remove(ur.id);
+      }
+
+      const orgUsers = await app.service('organization-users').find({
+        query: { userId: user.id },
+        paginate: false,
+      } as any) as any[];
+      for (const ou of orgUsers) {
+        await app.service('organization-users').remove(ou.id);
+      }
+
       await app.service('users').remove(user.id);
     });
   });

@@ -101,7 +101,8 @@ export class EncounterAiChatMessages extends Service<EncounterAiChatMessageRecor
     if (!userId || !organizationId) {
       throw new Forbidden('Authentication and organization are required');
     }
-    if (String(params?.user?.roleId || '') !== 'medic') {
+    const orgRoleIds: string[] = (params as any)?.orgRoleIds || [];
+    if (!orgRoleIds.includes('medic')) {
       throw new Forbidden('Only medics can access encounter AI chat history');
     }
     return { userId, organizationId };

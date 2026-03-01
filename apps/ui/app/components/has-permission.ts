@@ -1,6 +1,6 @@
 import React from 'react';
 import intersection from 'lodash/intersection';
-import { useAccount } from '~/components/provider';
+import { useAccount, useOrganization } from '~/components/provider';
 
 interface HasPermissionProps {
   permissions: string[];
@@ -9,6 +9,7 @@ interface HasPermissionProps {
 
 const HasPermission: React.FC<HasPermissionProps> = ({ permissions, children }) => {
   const { user } = useAccount();
+  const { currentOrganizationId } = useOrganization();
 
   if (!user) {
     return null;
@@ -18,7 +19,9 @@ const HasPermission: React.FC<HasPermissionProps> = ({ permissions, children }) 
     return children;
   }
 
-  const hasPermission = intersection(permissions, user.role?.permissions || []).length > 0;
+  const currentOrg = user.organizations?.find(o => o.id === currentOrganizationId);
+  const orgPermissions = currentOrg?.permissions ?? [];
+  const hasPermission = intersection(permissions, orgPermissions).length > 0;
 
   return hasPermission ? children : null;
 };

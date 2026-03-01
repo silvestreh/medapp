@@ -46,7 +46,8 @@ export class SignedExports {
     const t = getPdfTranslations(locale);
 
     if (!user) throw new Forbidden('Authentication required');
-    if ((user as any).roleId !== 'medic') throw new Forbidden('Only medics can export medical history');
+    const orgRoleIds: string[] = params.orgRoleIds || [];
+    if (!orgRoleIds.includes('medic')) throw new Forbidden('Only medics can export medical history');
     if (!patientId) throw new BadRequest('patientId is required');
     if (delivery === 'email' && !emailTo) throw new BadRequest('emailTo is required for email delivery');
 

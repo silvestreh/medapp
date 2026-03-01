@@ -1,11 +1,9 @@
-import { captureRemixErrorBoundaryError } from '@sentry/remix';
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError, useRouteLoaderData } from '@remix-run/react';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from '@remix-run/react';
 import { json, type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
-import { useTranslation } from 'react-i18next';
 import '~/global.css';
 import '@mantine/core/styles.layer.css';
 import '@mantine/notifications/styles.layer.css';
@@ -14,6 +12,7 @@ import '~/panda.css';
 import { localeCookie, resolveLocale } from '~/i18n/i18next.server';
 import { FeathersProvider } from '~/components/provider';
 import MainLayout from '~/components/main-layout';
+import RouteErrorFallback from '~/components/route-error-fallback';
 import { getToken, getUser } from '~/utils/auth.server';
 import { getCurrentOrganizationId, setCurrentOrganizationId } from '~/session';
 import { breakpoints } from '~/media';
@@ -99,13 +98,21 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 export const ErrorBoundary = () => {
-  const { t } = useTranslation();
-  const error = useRouteError();
-  captureRemixErrorBoundaryError(error);
+  const data = useRouteLoaderData<typeof loader>('root');
+
+  if (data) {
+    return (
+      <Document>
+        <AppLayout>
+          <RouteErrorFallback />
+        </AppLayout>
+      </Document>
+    );
+  }
 
   return (
     <Document>
-      <div>{t('common.something_went_wrong')}</div>
+      <RouteErrorFallback />
     </Document>
   );
 };

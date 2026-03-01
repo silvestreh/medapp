@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Button, Tooltip } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { Form } from '@remix-run/react';
@@ -97,11 +97,27 @@ export function ProfileForm({
 
   const profileForm = useForm({
     initialValues: initialProfile,
+    validate: {
+      documentValue: v => (v ? null : t('patients.document_required')),
+    },
   });
+
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     profileForm.setValues(initialProfile);
+    profileForm.clearErrors();
   }, [user, mdSettings]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      const validation = profileForm.validate();
+      if (validation.hasErrors) {
+        e.preventDefault();
+      }
+    },
+    [profileForm]
+  );
 
   const hasProfileSuccess = actionData?.ok && actionData.intent === 'update-profile';
   const isProfileError = actionData?.ok === false && actionData.intent === 'update-profile';
@@ -169,7 +185,7 @@ export function ProfileForm({
   }, [profileForm.values, isMedic]);
 
   return (
-    <Form id="profile-update-form" method="post" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <Form id="profile-update-form" method="post" ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <input type="hidden" name="intent" value="update-profile" />
       <input type="hidden" name="payload" value={JSON.stringify(payload)} />
       <SectionTitle icon={<User />}>{t('profile.personal_data')}</SectionTitle>

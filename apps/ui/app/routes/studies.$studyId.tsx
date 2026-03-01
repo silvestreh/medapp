@@ -7,7 +7,8 @@ import { useMediaQuery, useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Printer, Save } from 'lucide-react';
 
-import { getAuthenticatedClient, authenticatedLoader, isMedicVerified } from '~/utils/auth.server';
+import { getAuthenticatedClient, authenticatedLoader, isMedicVerified, getCurrentOrgRoleIds } from '~/utils/auth.server';
+import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { useGet, useFeathers } from '~/components/provider';
 import Portal from '~/components/portal';
@@ -30,7 +31,9 @@ export const meta: MetaFunction = ({ matches }) => {
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
-  const isVerified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  const orgId = await getCurrentOrganizationId(request);
+  const orgRoleIds = getCurrentOrgRoleIds(user, orgId);
+  const isVerified = await isMedicVerified(client, String((user as any).id), orgRoleIds);
   return json({ isVerified });
 });
 
@@ -39,7 +42,9 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   if (!studyId) throw new Response('Study ID is required', { status: 400 });
 
   const { client, user } = await getAuthenticatedClient(request);
-  const verified = await isMedicVerified(client, String((user as any).id), (user as any).roleId);
+  const actionOrgId = await getCurrentOrganizationId(request);
+  const actionOrgRoleIds = getCurrentOrgRoleIds(user, actionOrgId);
+  const verified = await isMedicVerified(client, String((user as any).id), actionOrgRoleIds);
   if (!verified) {
     return json({ success: false }, { status: 403 });
   }

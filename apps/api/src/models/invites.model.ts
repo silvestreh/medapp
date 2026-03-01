@@ -21,7 +21,7 @@ export default function (app: Application): typeof Model {
         key: 'id'
       }
     },
-    role: {
+    roleId: {
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: 'member'

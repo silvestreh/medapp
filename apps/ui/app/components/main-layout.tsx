@@ -77,8 +77,15 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    if (!user) {
+      setIsVerified(true); // Hide banner when logged out
+      return;
+    }
+
     const checkVerification = async () => {
-      if (user && (user as any).roleId === 'medic') {
+      const currentOrg = (user as any)?.organizations?.[0];
+      const orgRoleIds: string[] = currentOrg?.roleIds || [];
+      if (orgRoleIds.includes('medic')) {
         try {
           const mdSettingsResponse = await feathers.service('md-settings').find({
             query: { userId: user.id },
@@ -96,7 +103,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
       }
     };
 
-    if (isMounted && user) {
+    if (isMounted) {
       checkVerification();
     }
   }, [isMounted, user, feathers]);

@@ -1,16 +1,15 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
-import { useLoaderData, useParams, Outlet, useNavigate, useRouteError } from '@remix-run/react';
+import { useLoaderData, useParams, Outlet, useNavigate } from '@remix-run/react';
 import { type LoaderFunctionArgs } from '@remix-run/node';
 import { Skeleton } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { useTranslation } from 'react-i18next';
-
 import { media } from '~/media';
 import { generateEmptySlots, getWorkDaysFromSettings } from '~/utils';
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { useFind } from '~/components/provider';
 import { RouteDrawer } from '~/components/route-drawer';
+import RouteErrorFallback from '~/components/route-error-fallback';
 import Calendar from '~/components/calendar';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -229,16 +228,4 @@ export default function AppointmentsForMedic() {
   );
 }
 
-export const ErrorBoundary = () => {
-  const { t } = useTranslation();
-  const error = useRouteError() as any;
-
-  return (
-    <div>
-      <div>{t('common.something_went_wrong')}</div>
-      {process.env.NODE_ENV !== 'production' && error && (
-        <pre style={{ whiteSpace: 'pre-wrap', marginTop: 12 }}>{error?.message || JSON.stringify(error, null, 2)}</pre>
-      )}
-    </div>
-  );
-};
+export const ErrorBoundary = RouteErrorFallback;

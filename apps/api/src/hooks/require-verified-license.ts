@@ -9,14 +9,14 @@ export const requireVerifiedLicense = (): Hook => {
       return context;
     }
 
-    const user = params.user as { id: string; roleId?: string };
-    if (user.roleId !== 'medic') {
+    const orgRoleIds: string[] = params.orgRoleIds || [];
+    if (!orgRoleIds.includes('medic')) {
       return context;
     }
 
     const sequelize = app.get('sequelizeClient');
     const mdSettings = await sequelize.models.md_settings.findOne({
-      where: { userId: user.id },
+      where: { userId: params.user.id },
       raw: true,
     });
 

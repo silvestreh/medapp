@@ -1,14 +1,17 @@
 import assert from 'assert';
 import app from '../../src/app';
+import { createTestUser, createTestOrganization } from '../test-helpers';
 
 describe('\'md-settings\' service', () => {
   let user: any;
 
   before(async () => {
-    user = await app.service('users').create({
+    const org = await createTestOrganization();
+    user = await createTestUser({
       username: 'test.medic.md.settings.accounting',
       password: 'SuperSecret1',
-      roleId: 'medic'
+      roleIds: ['medic'],
+      organizationId: org.id,
     });
   });
 

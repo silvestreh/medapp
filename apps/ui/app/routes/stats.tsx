@@ -4,6 +4,7 @@ import '@mantine/dates/styles.css';
 import '@mantine/charts/styles.css';
 
 import { getPageTitle } from '~/utils/meta';
+import RouteErrorFallback from '~/components/route-error-fallback';
 
 export const links: LinksFunction = () => [];
 
@@ -14,3 +15,5 @@ export const meta: MetaFunction = ({ matches }) => {
 export default function Stats() {
   return <Outlet />;
 }
+
+export const ErrorBoundary = RouteErrorFallback;

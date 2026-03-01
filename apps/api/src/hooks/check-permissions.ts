@@ -18,8 +18,16 @@ export const checkPermissions = (options: CheckPermissionOptions = {}): Hook => 
       return context;
     }
 
-    const { user } = params;
-    const permissions = await getUserPermissions(app, user.id, user.roleId);
+    if (params.isSuperAdmin) {
+      if (scopeToOrganization && params.organizationId) {
+        applyOrgScoping(context, params.organizationId, method, id, service);
+      }
+      return context;
+    }
+
+    const permissions: string[] = params.orgPermissions
+      || await getUserPermissions(app, params.user.id, params.organizationId);
+
     const basePermission = `${path}:${method}`;
     const allPermission = `${basePermission}:all`;
 
@@ -44,30 +52,8 @@ export const checkPermissions = (options: CheckPermissionOptions = {}): Hook => 
       }
     }
 
-    // --- Organization scoping ---
     if (scopeToOrganization && params.organizationId) {
-      const orgId = params.organizationId;
-
-      if (method === 'find') {
-        context.params.query = {
-          ...context.params.query,
-          organizationId: orgId
-        };
-      }
-
-      if (method === 'create') {
-        context.data = {
-          ...context.data,
-          organizationId: orgId
-        };
-      }
-
-      if (['get', 'update', 'patch', 'remove'].includes(method) && id) {
-        const record = await service.get(id, { ...params, provider: undefined });
-        if (record.organizationId && record.organizationId !== orgId) {
-          throw new Forbidden('This record belongs to a different organization');
-        }
-      }
+      await applyOrgScoping(context, params.organizationId, method, id, service);
     }
 
     if (hasAllPermission) {
@@ -77,7 +63,7 @@ export const checkPermissions = (options: CheckPermissionOptions = {}): Hook => 
     if (method === 'find' && options.foreignKey) {
       context.params.query = {
         ...context.params.query,
-        [options.foreignKey]: user.id
+        [options.foreignKey]: params.user.id
       };
       return context;
     }
@@ -85,7 +71,7 @@ export const checkPermissions = (options: CheckPermissionOptions = {}): Hook => 
     if (method === 'create' && options.foreignKey) {
       context.data = {
         ...context.data,
-        [options.foreignKey]: user.id
+        [options.foreignKey]: params.user.id
       };
       return context;
     }
@@ -97,7 +83,7 @@ export const checkPermissions = (options: CheckPermissionOptions = {}): Hook => 
 
       const record = await service.get(id);
 
-      if (record[options.foreignKey] !== user.id) {
+      if (record[options.foreignKey] !== params.user.id) {
         throw new Forbidden('You can only access your own records');
       }
     }
@@ -105,3 +91,28 @@ export const checkPermissions = (options: CheckPermissionOptions = {}): Hook => 
     return context;
   };
 };
+
+async function applyOrgScoping(
+  context: HookContext, orgId: string, method: string, id: any, service: any
+): Promise<void> {
+  if (method === 'find') {
+    context.params.query = {
+      ...context.params.query,
+      organizationId: orgId
+    };
+  }
+
+  if (method === 'create') {
+    context.data = {
+      ...context.data,
+      organizationId: orgId
+    };
+  }
+
+  if (['get', 'update', 'patch', 'remove'].includes(method) && id) {
+    const record = await service.get(id, { ...context.params, provider: undefined });
+    if (record.organizationId && record.organizationId !== orgId) {
+      throw new Forbidden('This record belongs to a different organization');
+    }
+  }
+}

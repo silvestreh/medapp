@@ -23,8 +23,7 @@ describe('\'accounting-settings\' service', () => {
       medic = await app.service('users').create({
         username: 'test.medic.acct-settings',
         password: 'SuperSecret1',
-        roleId: 'medic',
-      });
+      } as any);
     }
   });
 
@@ -81,8 +80,7 @@ describe('\'accounting-settings\' service', () => {
     const other = await app.service('users').create({
       username: `test.medic.acct-default-${Date.now()}`,
       password: 'SuperSecret1',
-      roleId: 'medic',
-    });
+    } as any);
 
     const settings = await app.service('accounting-settings').create({
       userId: other.id,

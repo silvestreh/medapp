@@ -45,18 +45,22 @@ describe('\'organizations\' service', () => {
     const owner: any = await app.service('users').create({
       username: 'org.owner.patch',
       password: 'SuperSecret1',
-      roleId: 'medic'
     });
 
     await app.service('organization-users').create({
       organizationId: org.id,
       userId: owner.id,
-      role: 'owner'
     });
+
+    await app.service('user-roles').create({
+      userId: owner.id,
+      roleId: 'owner',
+      organizationId: org.id,
+    } as any);
 
     const patched: any = await app.service('organizations').patch(org.id, {
       name: 'Updated By Owner'
-    }, { user: owner } as any);
+    }, { user: owner, provider: 'rest', authenticated: true, organizationId: org.id } as any);
 
     assert.strictEqual(patched.name, 'Updated By Owner');
   });
@@ -70,19 +74,23 @@ describe('\'organizations\' service', () => {
     const member: any = await app.service('users').create({
       username: 'org.member.patch',
       password: 'SuperSecret1',
-      roleId: 'medic'
     });
 
     await app.service('organization-users').create({
       organizationId: org.id,
       userId: member.id,
-      role: 'member'
     });
+
+    await app.service('user-roles').create({
+      userId: member.id,
+      roleId: 'medic',
+      organizationId: org.id,
+    } as any);
 
     try {
       await app.service('organizations').patch(org.id, {
         name: 'Should Not Work'
-      }, { user: member } as any);
+      }, { user: member, provider: 'rest', authenticated: true, organizationId: org.id } as any);
       assert.fail('Should not allow non-owner to patch');
     } catch (error: any) {
       assert.strictEqual(error.name, 'Forbidden');

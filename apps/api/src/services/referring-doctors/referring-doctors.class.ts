@@ -2,7 +2,6 @@ import { Op, Sequelize } from 'sequelize';
 import type { Params } from '@feathersjs/feathers';
 import type {
   Application,
-  OrganizationUser,
   UserPersonalData,
   PersonalData,
 } from '../../declarations';
@@ -41,25 +40,29 @@ export class ReferringDoctors {
       .filter(Boolean)
       .map(name => ({ name, medicId: null }));
 
-    let medicUserIds: string[] | null = null;
+    let medicUserIds: string[] = [];
     if (organizationId) {
-      const orgUsers = await this.app.service('organization-users').find({
-        query: { organizationId },
-        paginate: false,
-      }) as OrganizationUser[];
-      medicUserIds = orgUsers.map(ou => ou.userId as string);
+      const medicRoles = await sequelize.models.user_roles.findAll({
+        where: { organizationId, roleId: 'medic' },
+        attributes: ['userId'],
+        raw: true,
+      }) as unknown as { userId: string }[];
+      medicUserIds = medicRoles.map(r => r.userId);
+    } else {
+      const allMedicRoles = await sequelize.models.user_roles.findAll({
+        where: { roleId: 'medic' },
+        attributes: ['userId'],
+        raw: true,
+      }) as unknown as { userId: string }[];
+      medicUserIds = [...new Set(allMedicRoles.map(r => r.userId))];
     }
 
-    const userWhere: Record<string, unknown> = { roleId: 'medic' };
-    if (medicUserIds !== null) {
-      if (medicUserIds.length === 0) {
-        return studyDoctors.sort((a, b) => a.name.localeCompare(b.name));
-      }
-      userWhere.id = { [Op.in]: medicUserIds };
+    if (medicUserIds.length === 0) {
+      return studyDoctors.sort((a, b) => a.name.localeCompare(b.name));
     }
 
     const userRows = await sequelize.models.users.findAll({
-      where: userWhere,
+      where: { id: { [Op.in]: medicUserIds } },
       attributes: ['id'],
       raw: true,
     }) as unknown as { id: string }[];

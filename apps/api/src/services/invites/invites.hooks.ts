@@ -1,6 +1,7 @@
 import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
+import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import requireUserManagement from './hooks/require-user-management';
 import prepareInvite from './hooks/prepare-invite';
 import resolveAndNotify from './hooks/resolve-and-notify';
@@ -19,6 +20,7 @@ export default {
     create: [
       authenticate('jwt'),
       verifyOrganizationMembership(),
+      enforceActiveOrganization(),
       requireUserManagement(),
       prepareInvite(),
     ],

@@ -44,7 +44,15 @@ const handleAcceptAction = (): Hook => async (context: HookContext): Promise<Hoo
     {
       organizationId: invite.organizationId,
       userId: invite.userId,
-      role: 'member',
+    },
+    { provider: undefined } as any
+  );
+
+  await app.service('user-roles').create(
+    {
+      userId: invite.userId,
+      roleId: invite.roleId,
+      organizationId: invite.organizationId,
     },
     { provider: undefined } as any
   );

@@ -217,7 +217,7 @@ const sections: Section[] = [
   {
     labelKey: 'users_roles',
     icon: <Shield />,
-    permissions: ['users:create', 'users:find', 'users:get', 'roles:find', 'roles:get', 'roles:patch'],
+    permissions: ['roles:find', 'roles:get', 'roles:patch'],
     path: '/users',
     color: 'red',
   },

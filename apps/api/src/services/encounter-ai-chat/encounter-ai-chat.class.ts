@@ -67,7 +67,8 @@ export class EncounterAiChat {
       throw new Forbidden('Authentication required');
     }
 
-    if ((params.user as any).roleId !== 'medic') {
+    const orgRoleIds: string[] = params?.orgRoleIds || [];
+    if (!orgRoleIds.includes('medic')) {
       throw new Forbidden('Only medics can use encounter AI chat');
     }
 

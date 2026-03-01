@@ -24,11 +24,6 @@ export default function (app: Application): typeof Model {
         model: 'users',
         key: 'id'
       }
-    },
-    role: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: 'member'
     }
   }, {
     indexes: [

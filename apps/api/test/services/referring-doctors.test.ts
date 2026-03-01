@@ -1,5 +1,6 @@
 import assert from 'assert';
 import app from '../../src/app';
+import { createTestOrganization } from '../test-helpers';
 
 describe('\'referring-doctors\' service', () => {
   let medic: any;
@@ -7,27 +8,31 @@ describe('\'referring-doctors\' service', () => {
   let org: any;
 
   before(async () => {
-    org = await app.service('organizations').create({
+    org = await createTestOrganization({
       name: 'Referring Docs Clinic',
-      slug: 'ref-docs-test'
+      slug: `ref-docs-test-${Date.now()}`,
     });
 
     medic = await app.service('users').create({
       username: 'refdoc.medic',
       password: 'SuperSecret1',
-      roleId: 'medic',
       personalData: {
         firstName: 'Carlos',
         lastName: 'Gomez',
         documentValue: 'REFDOC001'
       }
-    });
+    } as any);
 
     await app.service('organization-users').create({
       organizationId: org.id,
       userId: medic.id,
-      role: 'owner'
-    });
+    } as any);
+
+    await app.service('user-roles').create({
+      userId: medic.id,
+      roleId: 'medic',
+      organizationId: org.id,
+    } as any);
 
     patient = await app.service('patients').create({
       medicare: 'REFDOC_OSDE',

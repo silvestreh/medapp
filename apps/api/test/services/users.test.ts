@@ -19,7 +19,6 @@ describe('\'users\' service', () => {
       const userData: Partial<User> = {
         username: 'test5',
         password: 'Password123',
-        roleId: 'receptionist',
         contactData: {
           streetAddress: '123 Test St',
           city: 'Test City',
@@ -55,7 +54,6 @@ describe('\'users\' service', () => {
       const userData = {
         username: 'test2',
         password: 'Password123',
-        roleId: 'receptionist'
       };
 
       user = await service.create(userData);
@@ -75,7 +73,6 @@ describe('\'users\' service', () => {
       const userData = {
         username: 'test3',
         password: 'Password123',
-        roleId: 'receptionist',
         personalData: {
           firstName: 'Test',
           lastName: 'User',
@@ -105,7 +102,6 @@ describe('\'users\' service', () => {
       const userData = {
         username: 'test4',
         password: 'Password123',
-        roleId: 'receptionist'
       };
 
       user = await service.create(userData);
