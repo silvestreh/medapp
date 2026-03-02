@@ -69,6 +69,7 @@ export type Patient = {
     nationality: string;
     birthDate: string | null;
   };
+  insurer?: Prepaga | null;
 };
 
 export type Appointment = {

@@ -2,35 +2,30 @@ import { Text, Tooltip, Group } from '@mantine/core';
 import { TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { useGet } from '~/components/provider';
-import type { Patient, Prepaga } from '~/declarations';
+import type { Patient } from '~/declarations';
 
 interface MedicareDisplayProps {
-  patient: Pick<Patient, 'medicareId' | 'medicare' | 'prepaga'>;
+  patient: Pick<Patient, 'medicareId' | 'medicare' | 'insurer'>;
   size?: 'sm' | 'xs';
   fallback?: string;
 }
 
 export function MedicareDisplay({ patient, size = 'sm', fallback }: MedicareDisplayProps) {
   const { t } = useTranslation();
-  const { medicareId, medicare, prepaga: preloaded } = patient;
+  const { medicareId, medicare, insurer } = patient;
 
-  const { data: fetched } = useGet('prepagas', medicareId!, {
-    enabled: !!medicareId && !preloaded,
-  });
+  console.log('insurer', patient);
 
-  const prepaga = (preloaded ?? fetched) as Prepaga | undefined;
-
-  if (medicareId && prepaga) {
-    return (
-      <Text size={size}>
-        {prepaga.shortName}
-      </Text>
-    );
+  if (medicareId && insurer) {
+    return <Text size={size}>{insurer.shortName}</Text>;
   }
 
-  if (medicareId && !prepaga) {
-    return <Text size={size} c="dimmed">…</Text>;
+  if (medicareId && !insurer) {
+    return (
+      <Text size={size} c="dimmed">
+        …
+      </Text>
+    );
   }
 
   if (!medicareId && medicare) {
@@ -53,11 +48,11 @@ export function MedicareDisplay({ patient, size = 'sm', fallback }: MedicareDisp
   );
 }
 
-export function getMedicareLabel(patient: Pick<Patient, 'medicareId' | 'medicare' | 'prepaga'>): string {
-  const { medicareId, medicare, prepaga } = patient;
+export function getMedicareLabel(patient: Pick<Patient, 'medicareId' | 'medicare' | 'insurer'>): string {
+  const { medicareId, medicare, insurer } = patient;
 
-  if (medicareId && prepaga) {
-    return prepaga.shortName;
+  if (medicareId && insurer) {
+    return insurer.shortName;
   }
 
   if (medicare) {

@@ -11,6 +11,7 @@ import includeData from '../../hooks/include-data';
 import { encryptFields, decryptFields } from '../../hooks/encryption';
 import { scopePatientsToOrganization } from '../../hooks/scope-patients-to-organization';
 import { linkPatientToOrganization } from '../../hooks/link-patient-to-organization';
+import { populateMedicare } from './hooks/populate-medicare';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -44,15 +45,17 @@ export default {
   after: {
     all: [],
     find: [
+      populateMedicare(),
       includeData('personal'),
       includeData('contact'),
       decryptFields('medicareNumber', 'mugshot', 'gender'),
-      sortByPersonalDataRank({ foreignKey: 'id' })
+      sortByPersonalDataRank({ foreignKey: 'id' }),
     ],
     get: [
+      populateMedicare(),
       includeData('personal'),
       includeData('contact'),
-      decryptFields('medicareNumber', 'mugshot', 'gender')
+      decryptFields('medicareNumber', 'mugshot', 'gender'),
     ],
     create: [
       createPersonalData('patient'),

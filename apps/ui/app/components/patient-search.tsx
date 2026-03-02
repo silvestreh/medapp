@@ -74,8 +74,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
       data.push(display);
     }
 
-    const showCreateNew =
-      createNewPatientSlot && (inputValue === '' || patients.length === 0);
+    const showCreateNew = createNewPatientSlot && (inputValue === '' || patients.length === 0);
     if (showCreateNew) {
       data.push(CREATE_NEW_VALUE);
     }
@@ -137,7 +136,11 @@ const PatientSearch: FC<PatientSearchProps> = ({
       maxDropdownHeight={300}
       renderOption={({ option }) => {
         if (option.value === CREATE_NEW_VALUE) {
-          return <Text size="sm" c="blue">{t('patients.new_patient')}</Text>;
+          return (
+            <Text size="sm" c="blue">
+              {t('patients.new_patient')}
+            </Text>
+          );
         }
         const patient = patientByValue.get(option.value);
         if (!patient) return option.value;

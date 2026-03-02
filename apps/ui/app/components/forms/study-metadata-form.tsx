@@ -118,7 +118,7 @@ export function StudyMetadataForm({
   const isCreateMode = mode === 'create';
 
   const { response: doctorsResponse } = useFind('referring-doctors');
-  const doctors: any[] = Array.isArray(doctorsResponse) ? doctorsResponse : [];
+  const doctors: any[] = useMemo(() => (Array.isArray(doctorsResponse) ? doctorsResponse : []), [doctorsResponse]);
   const autocompleteData = useMemo(() => doctors.map((d: any) => d.name), [doctors]);
   const doctorsByName = useMemo(() => new Map(doctors.map((d: any) => [d.name, d.medicId])), [doctors]);
 
@@ -169,14 +169,7 @@ export function StudyMetadataForm({
         </FieldRow>
 
         <FieldRow label={t('studies.insurance')}>
-          <MedicareDisplay
-            patient={{
-              medicareId: patient?.medicareId,
-              medicare: patient?.medicare,
-              prepaga: patient?.prepaga,
-            }}
-            fallback="—"
-          />
+          {patient && <MedicareDisplay patient={patient} fallback="—" />}
         </FieldRow>
 
         <FieldRow label={t('studies.extraction_date')}>
