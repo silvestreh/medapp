@@ -9,6 +9,7 @@ import { styled } from '~/styled-system/jsx';
 interface MedicListProps {
   onChange: (value: string | null) => void;
   medics?: any[];
+  value?: string | null;
 }
 
 const Option = styled(Group, {
@@ -20,7 +21,7 @@ const Option = styled(Group, {
   },
 });
 
-const MedicList: FC<MedicListProps> = ({ onChange, medics = [] }) => {
+const MedicList: FC<MedicListProps> = ({ onChange, medics = [], value }) => {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [selectedMedic, setSelectedMedic] = useState<string | null>(null);
@@ -47,14 +48,18 @@ const MedicList: FC<MedicListProps> = ({ onChange, medics = [] }) => {
     </Option>
   );
 
-  const handleChange = (value: string | null) => {
-    setSelectedMedic(value);
-    onChange(value);
+  const handleChange = (newValue: string | null) => {
+    if (value === undefined) {
+      setSelectedMedic(newValue);
+    }
+    onChange(newValue);
   };
 
   useEffect(() => {
-    setSelectedMedic(params.medicId || null);
-  }, [params.medicId]);
+    if (value === undefined) {
+      setSelectedMedic(params.medicId || null);
+    }
+  }, [params.medicId, value]);
 
   return (
     <Select
@@ -66,7 +71,7 @@ const MedicList: FC<MedicListProps> = ({ onChange, medics = [] }) => {
       clearable={false}
       placeholder={t('appointments.search_medic_placeholder')}
       renderOption={handleRenderOption}
-      value={selectedMedic || params.medicId}
+      value={value !== undefined ? value : (selectedMedic || params.medicId)}
       variant="filled"
       onChange={handleChange}
       key={options.length}

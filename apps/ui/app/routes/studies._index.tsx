@@ -9,13 +9,18 @@ import { TextInput, Stack, Loader, Group, Button, Autocomplete, Select } from '@
 import dayjs from 'dayjs';
 
 import { useFind, useFeathers } from '~/components/provider';
-import { authenticatedLoader, getAuthenticatedClient, isMedicVerified, getCurrentOrgRoleIds } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
 import Portal from '~/components/portal';
 import { media } from '~/media';
 import { StudiesTable, toStudyItems } from '~/components/studies-table';
 import type { Study } from '~/components/studies-table';
 import { Fab } from '~/components/fab';
+import {
+  authenticatedLoader,
+  getAuthenticatedClient,
+  isMedicVerified,
+  getCurrentOrgRoleIds,
+} from '~/utils/auth.server';
 import {
   DateRangePopover,
   resolveDateRange,
@@ -50,10 +55,6 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   return json({ isVerified });
 });
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 interface PaginatedResponse {
   data: Study[];
   total: number;
@@ -62,10 +63,6 @@ interface PaginatedResponse {
 }
 
 const PAGE_SIZE = 15;
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 
 export default function StudiesIndex() {
   const { t } = useTranslation();
@@ -294,6 +291,7 @@ export default function StudiesIndex() {
                 placeholder={t('studies.filter_study_type', { defaultValue: 'Study type' })}
                 clearable
                 comboboxProps={{ withinPortal: true }}
+                variant="filled"
                 w={160}
               />
               <Autocomplete
@@ -305,6 +303,7 @@ export default function StudiesIndex() {
                 comboboxProps={{ withinPortal: true }}
                 maxDropdownHeight={300}
                 w={200}
+                variant="filled"
               />
               <DateRangePopover
                 value={rangeFilter}
@@ -312,6 +311,7 @@ export default function StudiesIndex() {
                 minRangeStart={MIN_RANGE_START}
                 maxDate={dayjs().format('YYYY-MM-DD')}
                 precision="day"
+                variant="filled"
               />
               {isVerified && (
                 <Button component={Link} to="/studies/new" leftSection={<Plus size={16} />}>

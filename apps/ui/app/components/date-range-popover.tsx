@@ -79,6 +79,7 @@ interface DateRangePopoverProps {
   precision?: DateRangePrecision;
   fullWidth?: boolean;
   withinPortal?: boolean;
+  variant?: 'default' | 'filled';
 }
 
 function formatSummaryDate(value: dayjs.Dayjs, precision: DateRangePrecision): string {
@@ -171,6 +172,7 @@ export function DateRangePopover({
   precision = 'day',
   fullWidth = false,
   withinPortal = true,
+  variant = 'default',
 }: DateRangePopoverProps) {
   const labels = useDateRangeLabels();
   const [draft, setDraft] = useState<DateRangeFilterState>(value);
@@ -276,11 +278,16 @@ export function DateRangePopover({
         <Popover.Target>
           <div ref={setControlNode}>
             <Button
-              variant="default"
+              variant={variant}
+              bg={variant === 'filled' ? 'gray.1' : undefined}
+              c={variant === 'filled' ? 'gray.7' : undefined}
+              fw={500}
               onClick={handleToggle}
               rightSection={<ChevronDown size={14} />}
               fullWidth={fullWidth}
-              styles={{ label: { flex: fullWidth ? 1 : undefined } }}
+              styles={{
+                label: { flex: fullWidth ? 1 : undefined },
+              }}
             >
               {summary}
             </Button>

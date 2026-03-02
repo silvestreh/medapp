@@ -14,13 +14,13 @@ import {
   TextInput,
   Title,
   Input,
+  Switch,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 
 import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';
 import Portal from '~/components/portal';
-import { ToolbarTitle } from '~/components/toolbar-title';
 import {
   ACCOUNTING_PRACTICE_KEYS,
   PARTICULAR_INSURER_ID,
@@ -93,22 +93,30 @@ const practiceI18nKey = {
   thrombophilia: 'accounting.type_thrombophilia',
 } as const;
 
-export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
-  const { client, user } = await getAuthenticatedClient(request);
+export const loader = authenticatedLoader(async ({ request, params }: LoaderFunctionArgs) => {
+  const { client } = await getAuthenticatedClient(request);
+  const { medicId } = params;
+
+  if (!medicId) {
+    throw new Response('Medic ID is required', { status: 400 });
+  }
 
   const acctSettingsResponse = await client.service('accounting-settings').find({
-    query: { userId: user.id, $limit: 1 },
+    query: { userId: medicId, $limit: 1 },
     paginate: false,
   });
 
   const acctSettingsList = Array.isArray(acctSettingsResponse)
     ? acctSettingsResponse
     : ((acctSettingsResponse as { data?: unknown[] }).data ?? []);
-  const acctSettings = acctSettingsList[0] as { id: string; insurerPrices?: unknown } | undefined;
+  const acctSettings = acctSettingsList[0] as
+    | { id: string; insurerPrices?: unknown; hiddenInsurers?: string[] }
+    | undefined;
   const insurerPrices = normalizeInsurerPrices(acctSettings?.insurerPrices);
+  const hiddenInsurers = Array.isArray(acctSettings?.hiddenInsurers) ? acctSettings.hiddenInsurers : [];
 
   const dbInsurerIds: string[] = await (client.service('accounting') as any).get('insurers', {
-    query: { medicId: user.id },
+    query: { medicId: medicId },
   });
 
   const allInsurerIds = [
@@ -146,16 +154,22 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     acctSettingsId: acctSettings?.id ?? null,
     insurerPrices,
     insurers,
+    hiddenInsurers,
   });
 });
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const { client, user } = await getAuthenticatedClient(request);
+export const action = async ({ request, params }: ActionFunctionArgs) => {
+  const { client } = await getAuthenticatedClient(request);
+  const { medicId } = params;
   const formData = await request.formData();
-  const payload = parseFormJson<{ insurerPrices?: unknown }>(formData.get('payload'));
+  const payload = parseFormJson<{ insurerPrices?: unknown; hiddenInsurers?: string[] }>(formData.get('payload'));
+
+  if (!medicId) {
+    throw new Response('Medic ID is required', { status: 400 });
+  }
 
   const acctSettingsResponse = await client.service('accounting-settings').find({
-    query: { userId: user.id, $limit: 1 },
+    query: { userId: medicId, $limit: 1 },
     paginate: false,
   });
   const acctSettingsList = Array.isArray(acctSettingsResponse)
@@ -164,13 +178,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const acctSettings = acctSettingsList[0] as { id: string } | undefined;
 
   const insurerPrices = normalizeInsurerPrices(payload.insurerPrices);
+  const hiddenInsurers = Array.isArray(payload.hiddenInsurers) ? payload.hiddenInsurers : [];
 
   if (acctSettings?.id) {
-    await client.service('accounting-settings').patch(acctSettings.id, { insurerPrices });
+    await client.service('accounting-settings').patch(acctSettings.id, { insurerPrices, hiddenInsurers });
   } else {
     await client.service('accounting-settings').create({
-      userId: user.id,
+      userId: medicId,
       insurerPrices,
+      hiddenInsurers,
     } as any);
   }
 
@@ -185,6 +201,7 @@ export default function AccountingSettingsPage() {
   const [insurers, setInsurers] = useState<Prepaga[]>(data.insurers as Prepaga[]);
   const [activeInsurerId, setActiveInsurerId] = useState<string | null>(data.insurers[0]?.id ?? null);
   const [pricingMode, setPricingMode] = useState<'normal' | 'emergency'>('normal');
+  const [hiddenInsurers, setHiddenInsurers] = useState<string[]>(data.hiddenInsurers || []);
 
   const isSaving = fetcher.state !== 'idle';
 
@@ -219,12 +236,26 @@ export default function AccountingSettingsPage() {
   }, [activeInsurerId, insurerPrices]);
 
   const handleSave = useCallback(() => {
-    fetcher.submit({ payload: JSON.stringify({ insurerPrices }) }, { method: 'post' });
-  }, [fetcher, insurerPrices]);
+    fetcher.submit({ payload: JSON.stringify({ insurerPrices, hiddenInsurers }) }, { method: 'post' });
+  }, [fetcher, insurerPrices, hiddenInsurers]);
 
   const handleSelectInsurer = useCallback((insurerId: string) => {
     setActiveInsurerId(insurerId);
   }, []);
+
+  const handleToggleVisibility = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      if (!activeInsurerId) return;
+      const isHidden = !event.currentTarget.checked;
+      setHiddenInsurers(prev => {
+        if (isHidden) {
+          return [...prev, activeInsurerId];
+        }
+        return prev.filter(id => id !== activeInsurerId);
+      });
+    },
+    [activeInsurerId]
+  );
 
   const getPracticeConfig = useCallback(
     (practiceKey: string): PricingConfig => toPricingConfig(activePrices[practiceKey]),
@@ -514,10 +545,6 @@ export default function AccountingSettingsPage() {
 
   return (
     <Layout>
-      <Portal id="toolbar">
-        <ToolbarTitle title={t('navigation.accounting_settings', { defaultValue: 'Accounting Settings' })} />
-      </Portal>
-
       <Portal id="form-actions">
         <Group justify="flex-end" flex={1}>
           {hasAnyMultiplier && (
@@ -570,7 +597,7 @@ export default function AccountingSettingsPage() {
               fullWidth
               justify="flex-start"
               onClick={getSelectInsurerHandler(insurer.id)}
-              style={{ borderRadius: 0 }}
+              style={{ borderRadius: 0, opacity: hiddenInsurers.includes(insurer.id) ? 0.5 : 1 }}
             >
               {insurer.id === PARTICULAR_INSURER_ID ? t('accounting.settings_particular') : insurer.shortName}
             </Button>
@@ -597,6 +624,11 @@ export default function AccountingSettingsPage() {
                     : activeInsurer.denomination}
                 </Text>
               </Stack>
+              <Switch
+                label={t('accounting.settings_visible', { defaultValue: 'Visible' })}
+                checked={!hiddenInsurers.includes(activeInsurer.id)}
+                onChange={handleToggleVisibility}
+              />
             </Group>
 
             <SegmentedControl

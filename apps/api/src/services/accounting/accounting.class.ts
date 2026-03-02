@@ -283,10 +283,14 @@ export class Accounting {
     const sequelize: Sequelize = this.app.get('sequelizeClient');
     const organizationId = params?.organizationId;
     const query = params?.query || {};
-    const { from, to, insurerId } = query;
+    const { from, to, insurerId, medicId } = query;
 
     if (!from || !to) {
       throw new BadRequest('Both "from" and "to" query params are required');
+    }
+
+    if (!medicId) {
+      throw new BadRequest('medicId query param is required');
     }
 
     const fromDate = dayjs(from);
@@ -305,10 +309,10 @@ export class Accounting {
 
     const dateFilter = { [Op.gte]: fromISO, [Op.lte]: toISO };
 
-    const encounterWhere: Record<string, unknown> = { date: dateFilter };
+    const encounterWhere: Record<string, unknown> = { date: dateFilter, medicId };
     if (organizationId) encounterWhere.organizationId = organizationId;
 
-    const studyWhere: Record<string, unknown> = { date: dateFilter };
+    const studyWhere: Record<string, unknown> = { date: dateFilter, medicId };
     if (organizationId) studyWhere.organizationId = organizationId;
 
     const [encounterRows, studyRows] = await Promise.all([

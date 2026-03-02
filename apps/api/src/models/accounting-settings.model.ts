@@ -31,6 +31,11 @@ export default function (app: Application): typeof Model {
       allowNull: false,
       defaultValue: {},
     },
+    hiddenInsurers: {
+      type: DataTypes.JSONB,
+      allowNull: false,
+      defaultValue: [],
+    },
   }, {
     hooks: {
       beforeCount(options: any): HookReturn {

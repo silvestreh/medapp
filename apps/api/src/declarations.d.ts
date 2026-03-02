@@ -202,6 +202,7 @@ export interface AccountingSettings {
   organizationId: Id | null;
   userId: Id;
   insurerPrices: Record<string, Record<string, number | PricingConfig>>;
+  hiddenInsurers: string[];
 }
 
 export interface Organization {

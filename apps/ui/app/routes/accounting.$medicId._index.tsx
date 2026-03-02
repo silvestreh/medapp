@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Link, useLoaderData } from '@remix-run/react';
+import { Link, useLoaderData, useParams } from '@remix-run/react';
 import { BarChart } from '@mantine/charts';
 import { Button, Group, Menu, Paper, Stack, Text, Title, Table } from '@mantine/core';
 import { ChevronDown } from 'lucide-react';
@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 
 import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';
 import Portal from '~/components/portal';
-import { ToolbarTitle } from '~/components/toolbar-title';
 import { DateRangePopover, resolveDateRange, type DateRangeFilterState } from '~/components/date-range-popover';
 import { useFeathers } from '~/components/provider';
 import { normalizeInsurerPrices } from '~/utils/accounting';
@@ -72,18 +71,24 @@ const STUDY_TYPE_I18N: Record<string, string> = {
   thrombophilia: 'accounting.type_thrombophilia',
 };
 
-export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
-  const { client, user } = await getAuthenticatedClient(request);
+export const loader = authenticatedLoader(async ({ request, params }: LoaderFunctionArgs) => {
+  const { client } = await getAuthenticatedClient(request);
+  const { medicId } = params;
+
+  if (!medicId) {
+    throw new Response('Medic ID is required', { status: 400 });
+  }
 
   const acctSettingsResponse = await client.service('accounting-settings').find({
-    query: { userId: user.id, $limit: 1 },
+    query: { userId: medicId, $limit: 1 },
     paginate: false,
   });
   const acctSettingsList = Array.isArray(acctSettingsResponse)
     ? acctSettingsResponse
     : ((acctSettingsResponse as { data?: unknown[] }).data ?? []);
-  const acctSettings = acctSettingsList[0] as { insurerPrices?: unknown } | undefined;
+  const acctSettings = acctSettingsList[0] as { insurerPrices?: unknown; hiddenInsurers?: string[] } | undefined;
   const insurerPrices = normalizeInsurerPrices(acctSettings?.insurerPrices);
+  const hiddenInsurers = Array.isArray(acctSettings?.hiddenInsurers) ? acctSettings.hiddenInsurers : [];
   const insurerIds = Object.keys(insurerPrices);
 
   const insurersResponse = insurerIds.length
@@ -96,13 +101,15 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     Array.isArray(insurersResponse) ? insurersResponse : ((insurersResponse as { data?: unknown[] }).data ?? [])
   ) as Prepaga[];
 
-  return json({ insurers });
+  return json({ insurers, hiddenInsurers });
 });
 
 export default function AccountingDashboardPage() {
   const { t } = useTranslation();
   const feathersClient = useFeathers();
-  const { insurers } = useLoaderData<typeof loader>();
+  const { insurers, hiddenInsurers } = useLoaderData<typeof loader>();
+  const params = useParams();
+  const medicId = params.medicId;
   const [selectedInsurerId, setSelectedInsurerId] = useState<string>('all');
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -134,7 +141,7 @@ export default function AccountingDashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (!resolvedRange) return;
+    if (!resolvedRange || !medicId) return;
 
     let cancelled = false;
     setLoading(true);
@@ -142,6 +149,7 @@ export default function AccountingDashboardPage() {
     const query: Record<string, string> = {
       from: dayjs(resolvedRange.from).format('YYYY-MM-DD'),
       to: dayjs(resolvedRange.to).format('YYYY-MM-DD'),
+      medicId: medicId,
     };
     if (selectedInsurerId !== 'all') {
       query.insurerId = selectedInsurerId;
@@ -169,7 +177,7 @@ export default function AccountingDashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [feathersClient, resolvedRange, selectedInsurerId]);
+  }, [feathersClient, resolvedRange, selectedInsurerId, medicId]);
 
   const records = data?.records ?? [];
   const totalRevenue = data?.totalRevenue ?? 0;
@@ -196,15 +204,18 @@ export default function AccountingDashboardPage() {
     setSelectedInsurerId(id);
   }, []);
 
+  const visibleInsurers = useMemo(() => {
+    return insurers.filter((insurer: Prepaga) => !hiddenInsurers.includes(insurer.id));
+  }, [insurers, hiddenInsurers]);
+
   return (
     <ContentWrapper>
-      <Portal id="toolbar">
+      <Portal id="form-actions">
         <Group justify="space-between" align="center" w="100%">
-          <ToolbarTitle title={t('navigation.accounting', { defaultValue: 'Accounting' })} />
           <Group gap="sm">
             <Menu shadow="md" width={260}>
               <Menu.Target>
-                <Button variant="default" rightSection={<ChevronDown size={14} />}>
+                <Button variant="filled" color="gray.1" c="gray.7" fw={500} rightSection={<ChevronDown size={14} />}>
                   {selectedInsurerLabel}
                 </Button>
               </Menu.Target>
@@ -214,7 +225,7 @@ export default function AccountingDashboardPage() {
                   {t('common.all', { defaultValue: 'Everything' })}
                 </Menu.Item>
                 <Menu.Divider />
-                {insurers.map((insurer: Prepaga) => (
+                {visibleInsurers.map((insurer: Prepaga) => (
                   <Menu.Item
                     key={insurer.id}
                     onClick={() => handleSelectInsurer(insurer.id)}
@@ -231,8 +242,9 @@ export default function AccountingDashboardPage() {
               minRangeStart={MIN_RANGE_START}
               maxDate={dayjs().format('YYYY-MM-DD')}
               precision="day"
+              variant="filled"
             />
-            <Button component={Link} to="/accounting/settings" variant="default">
+            <Button component={Link} to="settings" variant="filled" color="gray.1" c="gray.7">
               {t('common.settings')}
             </Button>
           </Group>

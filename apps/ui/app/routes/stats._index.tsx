@@ -265,6 +265,7 @@ export default function StatsIndex() {
               minRangeStart={MIN_RANGE_START}
               maxDate={dayjs().format('YYYY-MM-DD')}
               precision="day"
+              variant="filled"
             />
             {isLoading && <Loader size="sm" />}
           </Group>
