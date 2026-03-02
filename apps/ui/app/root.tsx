@@ -112,7 +112,9 @@ export const ErrorBoundary = () => {
 
   return (
     <Document>
-      <RouteErrorFallback />
+      <MantineProvider theme={theme}>
+        <RouteErrorFallback />
+      </MantineProvider>
     </Document>
   );
 };
