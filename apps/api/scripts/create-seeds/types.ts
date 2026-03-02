@@ -203,8 +203,7 @@ export interface SeedUser {
   id: string;
   username: string;
   password: string;
-  roleId: 'admin' | 'receptionist' | 'medic';
-  additionalRoleIds?: string[];
+  roles: string[];
   personalData?: SeedPersonalData;
   contactData?: SeedContactData;
   mdSettings?: SeedMdSettings;

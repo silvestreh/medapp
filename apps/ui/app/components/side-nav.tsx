@@ -203,7 +203,7 @@ const sections: Section[] = [
   {
     labelKey: 'appointments',
     icon: <Calendar />,
-    permissions: ['appointments:create', 'appointments:find', 'appointments:get'],
+    permissions: ['appointments:create'],
     path: '/appointments',
     color: 'pink',
   },

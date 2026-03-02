@@ -141,21 +141,23 @@ export async function processUsers({
 
     const JUANCA_ID = '540dc81947771d1f3f8b4567';
 
-    const roleId: SeedUser['roleId'] =
+    const baseRole =
       user.__class === 'SuperUser'
         ? 'admin'
         : user.__class === 'Receptionist'
           ? 'receptionist'
           : 'medic';
 
-    const additionalRoleIds = userId === JUANCA_ID ? ['lab-owner'] : undefined;
+    const roles = [baseRole];
+    if (userId === JUANCA_ID) {
+      roles.push('owner', 'lab-owner');
+    }
 
     seedUsers.push({
       id: userId,
       username: user.username?.toLowerCase?.() ?? 'weird_user',
       password: user.bf_password || 'retrete',
-      roleId,
-      additionalRoleIds,
+      roles,
       personalData,
       contactData,
       mdSettings,
