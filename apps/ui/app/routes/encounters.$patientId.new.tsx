@@ -5,7 +5,6 @@ import { useLoaderData, useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Stack, Center, Text, NumberInput, Paper } from '@mantine/core';
 
-import { getAuthenticatedClient, authenticatedLoader, isMedicVerified, getCurrentOrgRoleIds } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
 import Portal from '~/components/portal';
@@ -16,6 +15,12 @@ import { EncounterAiChatPanel } from '~/components/encounter-ai-chat-panel';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
 import { calculatePracticeCost, normalizeInsurerPrices, toNumericPrice } from '~/utils/accounting';
+import {
+  getAuthenticatedClient,
+  authenticatedLoader,
+  isMedicVerified,
+  getCurrentOrgRoleIds,
+} from '~/utils/auth.server';
 
 const Container = styled('div', {
   base: {

@@ -1,12 +1,17 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
-import { Group, Button, NumberInput, Paper } from '@mantine/core';
+import { useFetcher, useNavigate } from '@remix-run/react';
+import { Group, Button } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { Save } from 'lucide-react';
 
-import { getAuthenticatedClient, authenticatedLoader, isMedicVerified, getCurrentOrgRoleIds } from '~/utils/auth.server';
+import {
+  getAuthenticatedClient,
+  authenticatedLoader,
+  isMedicVerified,
+  getCurrentOrgRoleIds,
+} from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { useGet } from '~/components/provider';
@@ -15,7 +20,7 @@ import { styled } from '~/styled-system/jsx';
 import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
-import { normalizeInsurerPrices, resolveStudyCost, toNumericPrice } from '~/utils/accounting';
+import { normalizeInsurerPrices } from '~/utils/accounting';
 
 export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'new_study') }];
@@ -58,7 +63,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const payload = parseFormJson<Record<string, any>>(formData.get('data'));
 
-  const study = await client.service('studies').create(payload);
+  await client.service('studies').create(payload);
 
   return redirect('/studies');
 };
@@ -102,7 +107,6 @@ const PageContainer = styled('div', {
 
 export default function NewStudy() {
   const { t } = useTranslation();
-  const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const fetcher = useFetcher();
 
@@ -114,26 +118,9 @@ export default function NewStudy() {
   const [noOrder, setNoOrder] = useState(false);
   const [emergency, setEmergency] = useState(false);
   const [selectedStudies, setSelectedStudies] = useState<string[]>([]);
-  const [cost, setCost] = useState(0);
-  const [costManuallyEdited, setCostManuallyEdited] = useState(false);
 
   const { data: patient } = useGet('patients', patientId!, { enabled: !!patientId });
   const insurerId = (patient as any)?.medicareId || null;
-
-  const insurerPracticePrices = insurerId ? data.insurerPrices?.[insurerId] : undefined;
-
-  useEffect(() => {
-    if (!insurerId) {
-      if (!costManuallyEdited) {
-        setCost(0);
-      }
-      return;
-    }
-
-    if (!costManuallyEdited) {
-      setCost(resolveStudyCost(selectedStudies, insurerPracticePrices, emergency));
-    }
-  }, [costManuallyEdited, insurerId, insurerPracticePrices, selectedStudies, emergency]);
 
   const toggleStudy = useCallback((key: string) => {
     setSelectedStudies(prev => (prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]));
@@ -160,12 +147,19 @@ export default function NewStudy() {
     };
 
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
-  }, [canSave, patientId, date, selectedStudies, noOrder, emergency, comment, referringDoctor, medicId, insurerId, cost, fetcher]);
-
-  const handleCostChange = useCallback((value: string | number) => {
-    setCostManuallyEdited(true);
-    setCost(toNumericPrice(value));
-  }, []);
+  }, [
+    canSave,
+    patientId,
+    date,
+    selectedStudies,
+    noOrder,
+    emergency,
+    comment,
+    referringDoctor,
+    medicId,
+    insurerId,
+    fetcher,
+  ]);
 
   return (
     <PageContainer>
@@ -203,17 +197,6 @@ export default function NewStudy() {
         onMedicIdChange={setMedicId}
         showEmptyStudyHint
       />
-      <Paper withBorder p="md">
-        <NumberInput
-          label={t('accounting.study_cost', { defaultValue: 'Study cost' })}
-          decimalScale={2}
-          min={0}
-          fixedDecimalScale
-          thousandSeparator=","
-          value={cost}
-          onChange={handleCostChange}
-        />
-      </Paper>
     </PageContainer>
   );
 }

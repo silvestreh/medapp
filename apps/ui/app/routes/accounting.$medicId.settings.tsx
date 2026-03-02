@@ -51,13 +51,7 @@ type Prepaga = {
 
 const Layout = styled('div', {
   base: {
-    display: 'grid',
-    gap: '1rem',
-    gridTemplateColumns: '1fr',
-
-    md: {
-      gridTemplateColumns: '320px 1fr',
-    },
+    display: 'flex',
   },
 });
 
@@ -73,6 +67,10 @@ const Sidebar = styled('div', {
     position: 'sticky',
     top: '5rem',
     overflowY: 'auto',
+
+    lg: {
+      width: '250px',
+    },
   },
 });
 
@@ -80,6 +78,37 @@ const SidebarList = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
+  },
+});
+
+const Content = styled('div', {
+  base: {
+    flex: 1,
+    padding: '1rem',
+
+    lg: {
+      padding: '2rem',
+    },
+  },
+});
+
+const InsurerName = styled('div', {
+  base: {
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    maxWidth: '30vw',
+  },
+});
+
+const InsurerFilter = styled('div', {
+  base: {
+    p: '1rem',
+    borderTop: '1px solid var(--mantine-color-gray-2)',
+    position: 'sticky',
+    bottom: 0,
+    backgroundColor: 'white',
+    marginTop: 'auto',
   },
 });
 
@@ -202,6 +231,7 @@ export default function AccountingSettingsPage() {
   const [activeInsurerId, setActiveInsurerId] = useState<string | null>(data.insurers[0]?.id ?? null);
   const [pricingMode, setPricingMode] = useState<'normal' | 'emergency'>('normal');
   const [hiddenInsurers, setHiddenInsurers] = useState<string[]>(data.hiddenInsurers || []);
+  const [showHiddenInsurers, setShowHiddenInsurers] = useState(false);
 
   const isSaving = fetcher.state !== 'idle';
 
@@ -543,6 +573,10 @@ export default function AccountingSettingsPage() {
     [data.insurers]
   );
 
+  const handleShowHiddenInsurersChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setShowHiddenInsurers(event.currentTarget.checked);
+  }, []);
+
   return (
     <Layout>
       <Portal id="form-actions">
@@ -590,22 +624,27 @@ export default function AccountingSettingsPage() {
           }}
         />
         <SidebarList>
-          {insurers.map(insurer => (
-            <Button
-              key={insurer.id}
-              variant={activeInsurerId === insurer.id ? 'filled' : 'transparent'}
-              fullWidth
-              justify="flex-start"
-              onClick={getSelectInsurerHandler(insurer.id)}
-              style={{ borderRadius: 0, opacity: hiddenInsurers.includes(insurer.id) ? 0.5 : 1 }}
-            >
-              {insurer.id === PARTICULAR_INSURER_ID ? t('accounting.settings_particular') : insurer.shortName}
-            </Button>
-          ))}
+          {insurers
+            .filter(insurer => showHiddenInsurers || !hiddenInsurers.includes(insurer.id))
+            .map(insurer => (
+              <Button
+                key={insurer.id}
+                variant={activeInsurerId === insurer.id ? 'filled' : 'transparent'}
+                fullWidth
+                justify="flex-start"
+                onClick={getSelectInsurerHandler(insurer.id)}
+                style={{ borderRadius: 0, opacity: hiddenInsurers.includes(insurer.id) ? 0.5 : 1 }}
+              >
+                {insurer.id === PARTICULAR_INSURER_ID ? t('accounting.settings_particular') : insurer.shortName}
+              </Button>
+            ))}
         </SidebarList>
+        <InsurerFilter>
+          <Switch label="Show hidden insurers" checked={showHiddenInsurers} onChange={handleShowHiddenInsurersChange} />
+        </InsurerFilter>
       </Sidebar>
 
-      <Paper variant="unstyled" bg="transparent" p="2rem">
+      <Content>
         {!activeInsurer && (
           <Text c="dimmed">{t('common.no_results', { defaultValue: 'No insurers configured yet.' })}</Text>
         )}
@@ -618,11 +657,11 @@ export default function AccountingSettingsPage() {
                     ? t('accounting.settings_particular')
                     : activeInsurer.shortName}
                 </Title>
-                <Text>
+                <InsurerName>
                   {activeInsurer.id === PARTICULAR_INSURER_ID
                     ? t('accounting.settings_particular')
                     : activeInsurer.denomination}
-                </Text>
+                </InsurerName>
               </Stack>
               <Switch
                 label={t('accounting.settings_visible', { defaultValue: 'Visible' })}
@@ -801,7 +840,7 @@ export default function AccountingSettingsPage() {
             )}
           </Stack>
         )}
-      </Paper>
+      </Content>
     </Layout>
   );
 }

@@ -7,7 +7,6 @@ import { useMediaQuery, useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Printer, Save } from 'lucide-react';
 
-import { getAuthenticatedClient, authenticatedLoader, isMedicVerified, getCurrentOrgRoleIds } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { useGet, useFeathers } from '~/components/provider';
@@ -24,6 +23,12 @@ import { pdfDataToBlob, printPdfBlob } from '~/utils/print-pdf';
 import { Fab, FabItem } from '~/components/fab';
 import { ToolbarTitle } from '~/components/toolbar-title';
 import { useUnsavedGuard } from '~/hooks/use-unsaved-guard';
+import {
+  getAuthenticatedClient,
+  authenticatedLoader,
+  isMedicVerified,
+  getCurrentOrgRoleIds,
+} from '~/utils/auth.server';
 
 export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'study') }];
