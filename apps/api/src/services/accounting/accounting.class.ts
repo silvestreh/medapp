@@ -425,6 +425,10 @@ export class Accounting {
         const isEmergency = !!study.emergency;
         const studyTypes: string[] = study.studies || [];
 
+        if (!insurerPricing) {
+          skipped++; continue;
+        }
+
         // Fetch study results for extra cost sections
         const studyResults = await this.app.service('study-results').find({
           query: { studyId: study.id },
@@ -498,6 +502,7 @@ export class Accounting {
         const effectiveInsurerId = await this.resolveEffectiveInsurerId(encounter.insurerId, encounter.patientId);
         const priceKey = effectiveInsurerId || PARTICULAR_INSURER_ID;
         const insurerPricing = insurerPrices[priceKey];
+        if (!insurerPricing) { skipped++; continue; }
 
         const cost = resolveTotalCost({
           insurerPricing,
