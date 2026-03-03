@@ -17,7 +17,7 @@ const requireUserManagement = (): Hook => async (context: HookContext): Promise<
   const permissions: string[] = params.orgPermissions
     || await getUserPermissions(app, params.user.id, params.organizationId);
 
-  if (!permissions.includes('users:create') && !permissions.includes('users:create:all')) {
+  if (!permissions.includes('invites:create') && !permissions.includes('invites:create:all')) {
     throw new Forbidden('You do not have permission to invite users');
   }
 

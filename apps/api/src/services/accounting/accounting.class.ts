@@ -3,23 +3,21 @@ import { BadRequest } from '@feathersjs/errors';
 import type { Params, Id } from '@feathersjs/feathers';
 import dayjs from 'dayjs';
 
-import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@medapp/encounter-schemas';
-
 import type {
   Application,
-  AccountingSettings,
   PatientPersonalData,
   PersonalData,
   Prepaga,
+  PracticeCost,
+  AccountingSettings,
 } from '../../declarations';
-
-const extraCostSectionsByStudyType = new Map<string, ExtraCostSection[]>();
-for (const [studyName, schema] of Object.entries(studySchemas)) {
-  const sections = getExtraCostSections(schema);
-  if (sections.length > 0) {
-    extraCostSectionsByStudyType.set(studyName, sections);
-  }
-}
+import {
+  toInsurerPrices,
+  resolveTotalCost,
+  PARTICULAR_INSURER_ID,
+  extraCostSectionsByStudyType,
+  hasAnyFieldValue,
+} from '../../utils/cost-resolution';
 
 export interface AccountingRecord {
   id: string;
@@ -40,188 +38,11 @@ export interface AccountingResult {
   revenueByInsurer: { insurer: string; revenue: number }[];
 }
 
-type PricingType = 'fixed' | 'multiplier';
-
-interface PricingConfig {
-  type: PricingType;
-  value?: number;
-  baseValue?: number;
-  multiplier?: number;
-  baseName?: string;
-  code?: string;
-  extras?: Record<string, number>;
-  emergencyValue?: number;
-  emergencyMultiplier?: number;
-  emergencyExtras?: Record<string, number>;
-}
-
-type InsurerPricing = Record<string, number | PricingConfig>;
-type InsurerPrices = Record<string, InsurerPricing>;
-
-const PARTICULAR_INSURER_ID = '_particular';
-
-function toNonNegativeNumber(value: unknown): number {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    return 0;
-  }
-  return parsed;
-}
-
-function toInsurerPrices(value: unknown): InsurerPrices {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return {};
-  }
-
-  const result: InsurerPrices = {};
-  for (const [insurerId, insurerValue] of Object.entries(value as Record<string, unknown>)) {
-    if (!insurerId || !insurerValue || typeof insurerValue !== 'object' || Array.isArray(insurerValue)) {
-      continue;
-    }
-    result[insurerId] = insurerValue as InsurerPricing;
-  }
-
-  return result;
-}
-
-function resolveCostFromPrice(price: number | PricingConfig | undefined): number {
-  if (price == null) {
-    return 0;
-  }
-  if (typeof price === 'number') {
-    return toNonNegativeNumber(price);
-  }
-  if (!price || typeof price !== 'object' || Array.isArray(price)) {
-    return 0;
-  }
-
-  if (price.type === 'multiplier') {
-    const baseValue = toNonNegativeNumber(price.baseValue);
-    const multiplier = toNonNegativeNumber(price.multiplier);
-    return baseValue * multiplier;
-  }
-
-  return toNonNegativeNumber(price.value);
-}
-
-function resolveEmergencyCostFromPrice(price: number | PricingConfig | undefined): number {
-  const normalCost = resolveCostFromPrice(price);
-  if (price == null || typeof price === 'number') {
-    return normalCost;
-  }
-  if (!price || typeof price !== 'object' || Array.isArray(price)) {
-    return normalCost;
-  }
-
-  let emergencyCost: number;
-  if (price.type === 'multiplier') {
-    const baseValue = toNonNegativeNumber(price.baseValue);
-    const multiplier = toNonNegativeNumber(price.emergencyMultiplier ?? price.multiplier);
-    emergencyCost = baseValue * multiplier;
-  } else {
-    emergencyCost = toNonNegativeNumber(price.emergencyValue ?? price.value);
-  }
-
-  return Math.max(emergencyCost, normalCost);
-}
-
-function resolveEmergencyExtraCost(
-  price: number | PricingConfig | undefined,
-  activeSections: string[]
-): number {
-  const normalExtra = resolveExtraCost(price, activeSections);
-  if (price == null || typeof price === 'number' || !activeSections.length) {
-    return normalExtra;
-  }
-  const extras = price.emergencyExtras ?? price.extras;
-  if (!extras) {
-    return normalExtra;
-  }
-
-  let total = 0;
-  for (const section of activeSections) {
-    const extraValue = extras[section];
-    if (!extraValue) continue;
-
-    if (price.type === 'multiplier') {
-      total += toNonNegativeNumber(price.baseValue) * toNonNegativeNumber(extraValue);
-    } else {
-      total += toNonNegativeNumber(extraValue);
-    }
-  }
-
-  return Math.max(total, normalExtra);
-}
-
-function resolveExtraCost(
-  price: number | PricingConfig | undefined,
-  activeSections: string[]
-): number {
-  if (price == null || typeof price === 'number' || !activeSections.length) {
-    return 0;
-  }
-  const extras = price.extras;
-  if (!extras) {
-    return 0;
-  }
-
-  let total = 0;
-  for (const section of activeSections) {
-    const extraValue = extras[section];
-    if (!extraValue) continue;
-
-    if (price.type === 'multiplier') {
-      total += toNonNegativeNumber(price.baseValue) * toNonNegativeNumber(extraValue);
-    } else {
-      total += toNonNegativeNumber(extraValue);
-    }
-  }
-
-  return total;
-}
-
-function hasAnyFieldValue(
-  data: Record<string, unknown>,
-  fieldNames: string[]
-): boolean {
-  for (const name of fieldNames) {
-    const val = data[name];
-    if (val != null && val !== '') {
-      return true;
-    }
-  }
-  return false;
-}
-
-interface EncounterRow {
-  id: string;
-  date: Date | string;
-  insurerId: string | null;
-  patientId: string;
-  medicId: string | null;
-}
-
-interface StudyRow {
-  id: string;
-  date: Date | string;
-  studies: string[];
-  protocol: number | null;
-  insurerId: string | null;
-  patientId: string;
-  medicId: string | null;
-  emergency: boolean;
-}
-
 function dateToString(d: Date | string): string {
   if (d instanceof Date) {
     return d.toISOString();
   }
   return String(d);
-}
-
-interface PatientRow {
-  id: string;
-  medicareId: string | null;
 }
 
 export class Accounting {
@@ -231,11 +52,7 @@ export class Accounting {
     this.app = app;
   }
 
-  async get(id: Id, params?: Params): Promise<string[]> {
-    if (id !== 'insurers') {
-      throw new BadRequest(`Unknown resource: ${id}`);
-    }
-
+  async get(id: Id, params?: Params): Promise<unknown> {
     const medicId = params?.query?.medicId;
     if (!medicId) {
       throw new BadRequest('medicId query param is required');
@@ -243,44 +60,150 @@ export class Accounting {
 
     const sequelize: Sequelize = this.app.get('sequelizeClient');
 
-    const encounterRows = await sequelize.models.encounters.findAll({
-      where: { medicId },
-      attributes: ['insurerId', 'patientId'],
-      raw: true,
-    }) as unknown as { insurerId: string | null; patientId: string }[];
-
-    const studyRows = await sequelize.models.studies.findAll({
-      where: { medicId },
-      attributes: ['insurerId', 'patientId'],
-      raw: true,
-    }) as unknown as { insurerId: string | null; patientId: string }[];
-
-    const allRows = [...encounterRows, ...studyRows];
-    const patientIds = [...new Set(allRows.map(r => r.patientId).filter(Boolean))];
-
-    const patients = patientIds.length
-      ? await sequelize.models.patients.findAll({
-        where: { id: { [Op.in]: patientIds } },
-        attributes: ['id', 'medicareId'],
+    if (id === 'insurers') {
+      const rows = await sequelize.models.practice_costs.findAll({
+        where: { medicId },
+        attributes: [[sequelize.fn('DISTINCT', sequelize.col('insurerId')), 'insurerId']],
         raw: true,
-      }) as unknown as PatientRow[]
-      : [];
+      }) as unknown as { insurerId: string | null }[];
 
-    const patientById = new Map(patients.map(p => [p.id, p]));
-
-    const insurerIds = new Set<string>();
-    for (const row of allRows) {
-      const effectiveId = row.insurerId || patientById.get(row.patientId)?.medicareId;
-      if (effectiveId) {
-        insurerIds.add(effectiveId);
-      }
+      return rows
+        .map(r => r.insurerId)
+        .filter((v): v is string => Boolean(v));
     }
 
-    return [...insurerIds];
+    if (id === 'all-insurers') {
+      const [rows] = await sequelize.query(`
+        SELECT DISTINCT "insurerId" FROM studies WHERE "medicId" = :medicId AND "insurerId" IS NOT NULL
+        UNION
+        SELECT DISTINCT "insurerId" FROM encounters WHERE "medicId" = :medicId AND "insurerId" IS NOT NULL
+        UNION
+        SELECT DISTINCT "insurerId" FROM practice_costs WHERE "medicId" = :medicId AND "insurerId" IS NOT NULL
+      `, { replacements: { medicId } }) as [{ insurerId: string }[], unknown];
+
+      return rows.map(r => r.insurerId).filter(Boolean);
+    }
+
+    if (id === 'uncosted') {
+      const { from, to } = params?.query || {};
+      if (!from || !to) {
+        throw new BadRequest('Both "from" and "to" query params are required');
+      }
+
+      const fromDate = dayjs(from);
+      const toDate = dayjs(to);
+      if (!fromDate.isValid() || !toDate.isValid()) {
+        throw new BadRequest('"from" and "to" must be valid dates');
+      }
+
+      const fromISO = fromDate.startOf('day').toISOString();
+      const toISO = toDate.endOf('day').toISOString();
+
+      // Studies without cost rows
+      const uncostsedStudies = await sequelize.models.studies.findAll({
+        where: {
+          medicId,
+          date: { [Op.gte]: fromISO, [Op.lte]: toISO },
+        },
+        attributes: ['id', 'date', 'patientId', 'insurerId', 'emergency', 'studies', 'organizationId', 'medicId'],
+        raw: true,
+      }) as unknown as {
+        id: string; date: string; patientId: string; insurerId: string | null;
+        emergency: boolean; studies: string[]; organizationId: string; medicId: string;
+      }[];
+
+      // Encounters without cost rows
+      const uncostedEncounters = await sequelize.models.encounters.findAll({
+        where: {
+          medicId,
+          date: { [Op.gte]: fromISO, [Op.lte]: toISO },
+        },
+        attributes: ['id', 'date', 'patientId', 'insurerId', 'organizationId', 'medicId'],
+        raw: true,
+      }) as unknown as {
+        id: string; date: string; patientId: string; insurerId: string | null;
+        organizationId: string; medicId: string;
+      }[];
+
+      // Get all practice_costs practiceIds in that range to filter out already costed
+      const existingCosts = await sequelize.models.practice_costs.findAll({
+        where: {
+          medicId,
+          date: { [Op.gte]: fromISO, [Op.lte]: toISO },
+        },
+        attributes: ['practiceId'],
+        raw: true,
+      }) as unknown as { practiceId: string }[];
+
+      const costedIds = new Set(existingCosts.map(r => r.practiceId));
+
+      const uncostedStudyRows = uncostsedStudies.filter(s => !costedIds.has(s.id));
+      const uncostedEncounterRows = uncostedEncounters.filter(e => !costedIds.has(e.id));
+
+      // Enrich with patient names
+      const allPatientIds = [
+        ...new Set([
+          ...uncostedStudyRows.map(s => s.patientId),
+          ...uncostedEncounterRows.map(e => e.patientId),
+        ]),
+      ];
+
+      const ppds = allPatientIds.length
+        ? await this.app.service('patient-personal-data').find({
+          query: { ownerId: { $in: allPatientIds } },
+          paginate: false,
+        }) as PatientPersonalData[]
+        : [];
+
+      const pdIds = ppds.map(ppd => ppd.personalDataId as string);
+      const pds = pdIds.length
+        ? await this.app.service('personal-data').find({
+          query: { id: { $in: pdIds }, $select: ['id', 'firstName', 'lastName'] },
+          paginate: false,
+        }) as PersonalData[]
+        : [];
+
+      const pdById = new Map(pds.map(pd => [pd.id.toString(), pd]));
+      const ppdByOwnerId = new Map(ppds.map(ppd => [ppd.ownerId.toString(), ppd]));
+
+      const getPatientName = (patientId: string): string => {
+        const ppd = ppdByOwnerId.get(patientId);
+        const pd = ppd ? pdById.get(ppd.personalDataId.toString()) : null;
+        const first = pd?.firstName || '';
+        const last = pd?.lastName || '';
+        return `${first} ${last}`.trim() || '-';
+      };
+
+      const results = [
+        ...uncostedStudyRows.map(s => ({
+          practiceId: s.id,
+          practiceType: 'studies' as const,
+          date: s.date,
+          patientId: s.patientId,
+          insurerId: s.insurerId,
+          emergency: s.emergency,
+          studies: s.studies,
+          patientName: getPatientName(s.patientId),
+        })),
+        ...uncostedEncounterRows.map(e => ({
+          practiceId: e.id,
+          practiceType: 'encounters' as const,
+          date: e.date,
+          patientId: e.patientId,
+          insurerId: e.insurerId,
+          emergency: false,
+          patientName: getPatientName(e.patientId),
+        })),
+      ];
+
+      results.sort((a, b) => b.date.localeCompare(a.date));
+      return results;
+    }
+
+    throw new BadRequest(`Unknown resource: ${id}`);
   }
 
   async find(params?: Params): Promise<AccountingResult> {
-    const sequelize: Sequelize = this.app.get('sequelizeClient');
     const organizationId = params?.organizationId;
     const query = params?.query || {};
     const { from, to, insurerId, medicId } = query;
@@ -307,224 +230,105 @@ export class Accounting {
     const fromISO = fromDate.startOf('day').toISOString();
     const toISO = toDate.endOf('day').toISOString();
 
-    const dateFilter = { [Op.gte]: fromISO, [Op.lte]: toISO };
+    // Query practice_costs
+    const where: Record<string, unknown> = {
+      medicId,
+      date: { [Op.gte]: fromISO, [Op.lte]: toISO },
+    };
+    if (organizationId) where.organizationId = organizationId;
+    if (insurerId) where.insurerId = insurerId;
 
-    const encounterWhere: Record<string, unknown> = { date: dateFilter, medicId };
-    if (organizationId) encounterWhere.organizationId = organizationId;
+    const sequelize: Sequelize = this.app.get('sequelizeClient');
+    const costRows = await sequelize.models.practice_costs.findAll({
+      where,
+      raw: true,
+    }) as unknown as PracticeCost[];
 
-    const studyWhere: Record<string, unknown> = { date: dateFilter, medicId };
-    if (organizationId) studyWhere.organizationId = organizationId;
+    // Collect unique patient and insurer IDs for display lookups
+    const patientIds = [...new Set(costRows.map(r => String(r.patientId)).filter(Boolean))];
+    const allInsurerIds = [...new Set(costRows.map(r => String(r.insurerId)).filter(id => id && id !== 'null'))];
 
-    const [encounterRows, studyRows] = await Promise.all([
-      sequelize.models.encounters.findAll({
-        where: encounterWhere,
-        attributes: ['id', 'date', 'insurerId', 'patientId', 'medicId'],
-        raw: true,
-      }) as Promise<unknown> as Promise<EncounterRow[]>,
-      sequelize.models.studies.findAll({
-        where: studyWhere,
-        attributes: ['id', 'date', 'studies', 'protocol', 'insurerId', 'patientId', 'medicId', 'emergency'],
-        raw: true,
-      }) as Promise<unknown> as Promise<StudyRow[]>,
-    ]);
-
-    const patientIds = [
-      ...new Set([
-        ...encounterRows.map(e => e.patientId),
-        ...studyRows.map(s => s.patientId),
-      ].filter(Boolean)),
+    // Collect study practiceIds to fetch protocol numbers
+    const studyPracticeIds = [
+      ...new Set(
+        costRows
+          .filter(r => r.practiceType === 'studies')
+          .map(r => String(r.practiceId))
+      ),
     ];
 
-    const patients = patientIds.length
-      ? await sequelize.models.patients.findAll({
-        where: { id: { [Op.in]: patientIds } },
-        attributes: ['id', 'medicareId'],
-        raw: true,
-      }) as unknown as PatientRow[]
-      : [];
-    const patientById = new Map(patients.map(p => [p.id, p]));
-
-    const [ppds, allInsurerIds] = await (async () => {
-      const ppdRows = patientIds.length
-        ? await this.app.service('patient-personal-data').find({
+    // Bulk fetch patient names, insurers, and study protocols
+    const [ppds, prepagas, studyRows] = await Promise.all([
+      patientIds.length
+        ? this.app.service('patient-personal-data').find({
           query: { ownerId: { $in: patientIds } },
           paginate: false,
-        }) as PatientPersonalData[]
-        : [];
-
-      const ids = new Set<string>();
-      for (const e of encounterRows) {
-        const effective = e.insurerId || patientById.get(e.patientId)?.medicareId;
-        if (effective) ids.add(effective);
-      }
-      for (const s of studyRows) {
-        const effective = s.insurerId || patientById.get(s.patientId)?.medicareId;
-        if (effective) ids.add(effective);
-      }
-
-      return [ppdRows, [...ids]] as const;
-    })();
-
-    const pdIds = ppds.map(ppd => ppd.personalDataId as string);
-    const [pds, prepagas] = await Promise.all([
-      pdIds.length
-        ? this.app.service('personal-data').find({
-          query: { id: { $in: pdIds }, $select: ['id', 'firstName', 'lastName'] },
-          paginate: false,
-        }) as Promise<PersonalData[]>
-        : Promise.resolve([] as PersonalData[]),
+        }) as Promise<PatientPersonalData[]>
+        : Promise.resolve([] as PatientPersonalData[]),
       allInsurerIds.length
         ? this.app.service('prepagas').find({
           query: { id: { $in: allInsurerIds } },
           paginate: false,
         }) as Promise<Prepaga[]>
         : Promise.resolve([] as Prepaga[]),
+      studyPracticeIds.length
+        ? sequelize.models.studies.findAll({
+          where: { id: { [Op.in]: studyPracticeIds } },
+          attributes: ['id', 'protocol'],
+          raw: true,
+        }) as Promise<unknown> as Promise<{ id: string; protocol: number | null }[]>
+        : Promise.resolve([] as { id: string; protocol: number | null }[]),
     ]);
+
+    const pdIds = ppds.map(ppd => ppd.personalDataId as string);
+    const pds = pdIds.length
+      ? await this.app.service('personal-data').find({
+        query: { id: { $in: pdIds }, $select: ['id', 'firstName', 'lastName'] },
+        paginate: false,
+      }) as PersonalData[]
+      : [];
 
     const pdById = new Map(pds.map(pd => [pd.id.toString(), pd]));
     const ppdByOwnerId = new Map(ppds.map(ppd => [ppd.ownerId.toString(), ppd]));
     const prepagaById = new Map(prepagas.map(p => [p.id.toString(), p]));
+    const protocolByStudyId = new Map(studyRows.map(s => [s.id, s.protocol]));
 
-    interface RawRow {
-      id: string;
-      date: string;
-      kind: string;
-      protocol: number | null;
-      medicId: string | null;
-      insurerId: string | null;
-      patientId: string;
-      emergency: boolean;
-    }
-
-    const rawRows: RawRow[] = [];
-
-    for (const e of encounterRows) {
-      const effectiveInsurerId = e.insurerId || patientById.get(e.patientId)?.medicareId || null;
-      if (insurerId && effectiveInsurerId !== insurerId) continue;
-      rawRows.push({
-        id: e.id,
-        date: dateToString(e.date),
-        kind: 'encounter',
-        protocol: null,
-        medicId: e.medicId,
-        insurerId: effectiveInsurerId,
-        patientId: e.patientId,
-        emergency: false,
-      });
-    }
-
-    for (const s of studyRows) {
-      const effectiveInsurerId = s.insurerId || patientById.get(s.patientId)?.medicareId || null;
-      if (insurerId && effectiveInsurerId !== insurerId) continue;
-      for (const studyType of (s.studies || [])) {
-        rawRows.push({
-          id: s.id,
-          date: dateToString(s.date),
-          kind: studyType,
-          protocol: s.protocol,
-          medicId: s.medicId,
-          insurerId: effectiveInsurerId,
-          patientId: s.patientId,
-          emergency: !!s.emergency,
-        });
-      }
-    }
-
-    rawRows.sort((a, b) => {
-      const dateCompare = b.date.localeCompare(a.date);
-      if (dateCompare !== 0) return dateCompare;
-      return a.kind.localeCompare(b.kind);
-    });
-
-    const medicIds = [
-      ...new Set(rawRows.map(r => r.medicId).filter((id): id is string => Boolean(id))),
-    ];
-    const settingsList = medicIds.length
-      ? await this.app.service('accounting-settings').find({
-        query: { userId: { $in: medicIds } },
-        paginate: false,
-      }) as AccountingSettings[]
-      : [];
-    const insurerPricesByMedicId = new Map<string, InsurerPrices>(
-      settingsList.map(s => [s.userId as string, toInsurerPrices(s.insurerPrices)])
-    );
-
-    // Determine which studies need extra-cost section checks
-    const studyIdsWithExtraCost = new Set<string>();
-    for (const row of rawRows) {
-      if (row.kind !== 'encounter' && extraCostSectionsByStudyType.has(row.kind)) {
-        studyIdsWithExtraCost.add(row.id);
-      }
-    }
-
-    // studyId+studyType -> active section names
-    const activeExtrasByRow = new Map<string, string[]>();
-
-    if (studyIdsWithExtraCost.size > 0) {
-      const studyResultRows = await this.app.service('study-results').find({
-        query: {
-          studyId: { $in: [...studyIdsWithExtraCost] },
-        },
-        paginate: false,
-      }) as { studyId: string; type: string; data: Record<string, unknown> }[];
-
-      for (const result of studyResultRows) {
-        const sections = extraCostSectionsByStudyType.get(result.type);
-        if (!sections || !result.data) continue;
-
-        const data = typeof result.data === 'string'
-          ? JSON.parse(result.data)
-          : result.data;
-
-        const active: string[] = [];
-        for (const section of sections) {
-          if (hasAnyFieldValue(data, section.fieldNames)) {
-            active.push(section.name);
-          }
-        }
-
-        if (active.length > 0) {
-          activeExtrasByRow.set(`${result.studyId}:${result.type}`, active);
-        }
-      }
-    }
-
-    const records: AccountingRecord[] = rawRows.map(row => {
-      const ppd = ppdByOwnerId.get(row.patientId);
+    // Build records
+    const records: AccountingRecord[] = costRows.map(row => {
+      const ppd = ppdByOwnerId.get(String(row.patientId));
       const pd = ppd ? pdById.get(ppd.personalDataId.toString()) : null;
       const firstName = pd?.firstName || '';
       const lastName = pd?.lastName || '';
       const patientName = `${firstName} ${lastName}`.trim() || '-';
 
-      const prepaga = row.insurerId ? prepagaById.get(row.insurerId) : null;
+      const prepaga = row.insurerId ? prepagaById.get(String(row.insurerId)) : null;
       const insurerName = prepaga?.shortName || 'Particular';
 
-      const medicPrices = row.medicId ? insurerPricesByMedicId.get(row.medicId) : undefined;
-      const priceKey = row.insurerId || PARTICULAR_INSURER_ID;
-      const insurerPracticePrices = medicPrices ? medicPrices[priceKey] : undefined;
-      const practicePrice = insurerPracticePrices ? insurerPracticePrices[row.kind] : undefined;
-      const baseCost = row.emergency
-        ? resolveEmergencyCostFromPrice(practicePrice)
-        : resolveCostFromPrice(practicePrice);
-      const activeSections = activeExtrasByRow.get(`${row.id}:${row.kind}`) ?? [];
-      const extraCost = row.emergency
-        ? resolveEmergencyExtraCost(practicePrice, activeSections)
-        : resolveExtraCost(practicePrice, activeSections);
-      const cost = baseCost + extraCost;
+      const kind = row.studyType || 'encounter';
+      const protocol = row.practiceType === 'studies'
+        ? (protocolByStudyId.get(String(row.practiceId)) ?? null)
+        : null;
 
       return {
-        id: row.id,
-        date: row.date,
-        kind: row.kind,
-        protocol: row.protocol,
-        medicId: row.medicId,
-        insurerId: row.insurerId,
+        id: String(row.practiceId),
+        date: dateToString(row.date as unknown as Date | string),
+        kind,
+        protocol,
+        medicId: row.medicId as string | null,
+        insurerId: row.insurerId as string | null,
         insurerName,
         patientName,
-        cost: Number(cost.toFixed(2)),
+        cost: Number(Number(row.cost).toFixed(2)),
       };
     });
 
+    records.sort((a, b) => {
+      const dateCompare = b.date.localeCompare(a.date);
+      if (dateCompare !== 0) return dateCompare;
+      return a.kind.localeCompare(b.kind);
+    });
+
+    // Aggregations
     let totalRevenue = 0;
     const byDay = new Map<string, number>();
     const byInsurer = new Map<string, number>();
@@ -553,5 +357,176 @@ export class Accounting {
       revenueByDay,
       revenueByInsurer,
     };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async create(
+    data: { intent: string; practiceIds: { id: string; practiceType: 'studies' | 'encounters' }[] },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _params?: Params,
+  ): Promise<{ backfilled: number; skipped: number }> {
+    if (data.intent !== 'backfill') {
+      throw new BadRequest(`Unknown intent: ${data.intent}`);
+    }
+
+    if (!Array.isArray(data.practiceIds) || data.practiceIds.length === 0) {
+      throw new BadRequest('practiceIds array is required');
+    }
+
+    const sequelize: Sequelize = this.app.get('sequelizeClient');
+    let backfilled = 0;
+    let skipped = 0;
+
+    // Group by practiceType
+    const studyIds = data.practiceIds.filter(p => p.practiceType === 'studies').map(p => p.id);
+    const encounterIds = data.practiceIds.filter(p => p.practiceType === 'encounters').map(p => p.id);
+
+    // Process studies
+    if (studyIds.length > 0) {
+      const studies = await sequelize.models.studies.findAll({
+        where: { id: { [Op.in]: studyIds } },
+        raw: true,
+      }) as unknown as {
+        id: string; date: string; patientId: string; insurerId: string | null;
+        emergency: boolean; studies: string[]; organizationId: string; medicId: string;
+      }[];
+
+      for (const study of studies) {
+        if (!study.medicId) { skipped++; continue; }
+
+        const insurerPrices = await this.getMedicInsurerPrices(study.medicId);
+        const effectiveInsurerId = await this.resolveEffectiveInsurerId(study.insurerId, study.patientId);
+        const priceKey = effectiveInsurerId || PARTICULAR_INSURER_ID;
+        const insurerPricing = insurerPrices[priceKey];
+        const isEmergency = !!study.emergency;
+        const studyTypes: string[] = study.studies || [];
+
+        // Fetch study results for extra cost sections
+        const studyResults = await this.app.service('study-results').find({
+          query: { studyId: study.id },
+          paginate: false,
+        }) as { type: string; data: Record<string, unknown> | string }[];
+
+        const resultsByType = new Map<string, Record<string, unknown>>();
+        for (const sr of studyResults) {
+          const d = typeof sr.data === 'string' ? JSON.parse(sr.data) : sr.data;
+          resultsByType.set(sr.type, d || {});
+        }
+
+        for (const studyType of studyTypes) {
+          const activeSections: string[] = [];
+          const extraSections = extraCostSectionsByStudyType.get(studyType);
+          if (extraSections) {
+            const resultData = resultsByType.get(studyType);
+            if (resultData) {
+              for (const section of extraSections) {
+                if (hasAnyFieldValue(resultData, section.fieldNames)) {
+                  activeSections.push(section.name);
+                }
+              }
+            }
+          }
+
+          const cost = resolveTotalCost({
+            insurerPricing,
+            practiceType: studyType,
+            emergency: isEmergency,
+            activeSections,
+          });
+
+          try {
+            await this.app.service('practice-costs').create({
+              organizationId: study.organizationId || null,
+              medicId: study.medicId,
+              patientId: study.patientId,
+              practiceId: study.id,
+              practiceType: 'studies',
+              studyType,
+              insurerId: effectiveInsurerId,
+              emergency: isEmergency,
+              date: new Date(study.date),
+              cost,
+            } as any, { provider: undefined });
+            backfilled++;
+          } catch (err: any) {
+            console.warn(`[accounting:backfill] skip study ${study.id}/${studyType}: ${err.message}`);
+            skipped++;
+          }
+        }
+      }
+    }
+
+    // Process encounters
+    if (encounterIds.length > 0) {
+      const encounters = await sequelize.models.encounters.findAll({
+        where: { id: { [Op.in]: encounterIds } },
+        raw: true,
+      }) as unknown as {
+        id: string; date: string; patientId: string; insurerId: string | null;
+        organizationId: string; medicId: string;
+      }[];
+
+      for (const encounter of encounters) {
+        if (!encounter.medicId) { skipped++; continue; }
+
+        const insurerPrices = await this.getMedicInsurerPrices(encounter.medicId);
+        const effectiveInsurerId = await this.resolveEffectiveInsurerId(encounter.insurerId, encounter.patientId);
+        const priceKey = effectiveInsurerId || PARTICULAR_INSURER_ID;
+        const insurerPricing = insurerPrices[priceKey];
+
+        const cost = resolveTotalCost({
+          insurerPricing,
+          practiceType: 'encounter',
+          emergency: false,
+          activeSections: [],
+        });
+
+        try {
+          await this.app.service('practice-costs').create({
+            organizationId: encounter.organizationId || null,
+            medicId: encounter.medicId,
+            patientId: encounter.patientId,
+            practiceId: encounter.id,
+            practiceType: 'encounters',
+            studyType: null,
+            insurerId: effectiveInsurerId,
+            emergency: false,
+            date: new Date(encounter.date),
+            cost,
+          } as any, { provider: undefined });
+          backfilled++;
+        } catch (err: any) {
+          console.warn(`[accounting:backfill] skip encounter ${encounter.id}: ${err.message}`);
+          skipped++;
+        }
+      }
+    }
+
+    return { backfilled, skipped };
+  }
+
+  private async getMedicInsurerPrices(medicId: string) {
+    const settings = await this.app.service('accounting-settings').find({
+      query: { userId: medicId, $limit: 1 },
+      paginate: false,
+    }) as AccountingSettings[];
+
+    if (settings.length === 0) return {};
+    return toInsurerPrices(settings[0].insurerPrices);
+  }
+
+  private async resolveEffectiveInsurerId(
+    insurerId: string | null,
+    patientId: string,
+  ): Promise<string | null> {
+    if (insurerId) return insurerId;
+
+    const sequelize: Sequelize = this.app.get('sequelizeClient');
+    const patient = await sequelize.models.patients.findByPk(patientId, {
+      attributes: ['medicareId'],
+      raw: true,
+    }) as { medicareId: string | null } | null;
+
+    return patient?.medicareId || null;
   }
 }

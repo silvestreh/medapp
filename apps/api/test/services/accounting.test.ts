@@ -131,8 +131,8 @@ describe('\'accounting\' service', () => {
       query: {
         from: today.subtract(1, 'day').format('YYYY-MM-DD'),
         to: today.add(1, 'day').format('YYYY-MM-DD'),
+        medicId: medic.id,
       },
-      user: medic,
     } as any);
 
     const encounterRecords = result.records.filter(
@@ -161,8 +161,8 @@ describe('\'accounting\' service', () => {
       query: {
         from: today.subtract(1, 'day').format('YYYY-MM-DD'),
         to: today.add(1, 'day').format('YYYY-MM-DD'),
+        medicId: medic.id,
       },
-      user: medic,
     } as any);
 
     const studyRows = result.records.filter((r: any) => r.patientName === 'John Doe');
@@ -190,8 +190,8 @@ describe('\'accounting\' service', () => {
       query: {
         from: today.subtract(1, 'day').format('YYYY-MM-DD'),
         to: today.add(1, 'day').format('YYYY-MM-DD'),
+        medicId: medic.id,
       },
-      user: medic,
     } as any);
 
     const studyRows = result.records.filter((r: any) => r.patientName === 'John Doe');
@@ -233,8 +233,8 @@ describe('\'accounting\' service', () => {
         from: today.subtract(1, 'day').format('YYYY-MM-DD'),
         to: today.add(1, 'day').format('YYYY-MM-DD'),
         insurerId: otherPrepaga.id,
+        medicId: medic.id,
       },
-      user: medic,
     } as any);
 
     const allInsurerIds = new Set(result.records.map((r: any) => r.insurerId));
@@ -259,8 +259,8 @@ describe('\'accounting\' service', () => {
       query: {
         from: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
         to: dayjs().add(1, 'day').format('YYYY-MM-DD'),
+        medicId: medic.id,
       },
-      user: medic,
     } as any);
 
     const oldRecords = result.records.filter((r: any) => dayjs(r.date).isBefore(dayjs().subtract(1, 'year')));
@@ -274,8 +274,8 @@ describe('\'accounting\' service', () => {
       query: {
         from: today.subtract(1, 'day').format('YYYY-MM-DD'),
         to: today.add(1, 'day').format('YYYY-MM-DD'),
+        medicId: medic.id,
       },
-      user: medic,
     } as any);
 
     assert.ok(typeof result.totalRevenue === 'number', 'totalRevenue is a number');
@@ -363,8 +363,8 @@ describe('\'accounting\' service', () => {
       query: {
         from: today.subtract(1, 'day').format('YYYY-MM-DD'),
         to: today.add(1, 'day').format('YYYY-MM-DD'),
+        medicId: medic.id,
       },
-      user: medic,
     } as any);
 
     const thrombRow = result.records.find(
@@ -425,8 +425,8 @@ describe('\'accounting\' service', () => {
         query: {
           from: today.subtract(1, 'day').format('YYYY-MM-DD'),
           to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
         },
-        user: medic,
       } as any);
 
       const row = result.records.find(
@@ -459,8 +459,8 @@ describe('\'accounting\' service', () => {
         query: {
           from: today.subtract(1, 'day').format('YYYY-MM-DD'),
           to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
         },
-        user: medic,
       } as any);
 
       const row = result.records.find(
@@ -494,16 +494,33 @@ describe('\'accounting\' service', () => {
 
       const today = dayjs();
 
+      // Create a new study with the multiplier pricing active
+      const multiplierStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['hemostasis'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+        results: [{
+          type: 'hemostasis',
+          data: {
+            quick: '12',
+            regular_blood_plasma_correction_quick: '11',
+          },
+        }],
+      } as any);
+
       const result = await app.service('accounting').find({
         query: {
           from: today.subtract(1, 'day').format('YYYY-MM-DD'),
           to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
         },
-        user: medic,
       } as any);
 
       const row = result.records.find(
-        (r: any) => r.kind === 'hemostasis' && r.id === extraCostStudy.id
+        (r: any) => r.kind === 'hemostasis' && r.id === multiplierStudy.id
       );
       assert.ok(row, 'Hemostasis row exists');
       assert.strictEqual(row.cost, 2500, 'Cost = base (100*20) + extra (100*5) = 2500');
@@ -556,8 +573,8 @@ describe('\'accounting\' service', () => {
         query: {
           from: today.subtract(1, 'day').format('YYYY-MM-DD'),
           to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
         },
-        user: medic,
       } as any);
 
       const row = result.records.find(
@@ -584,8 +601,8 @@ describe('\'accounting\' service', () => {
         query: {
           from: today.subtract(1, 'day').format('YYYY-MM-DD'),
           to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
         },
-        user: medic,
       } as any);
 
       const row = result.records.find(
@@ -619,8 +636,8 @@ describe('\'accounting\' service', () => {
         query: {
           from: today.subtract(1, 'day').format('YYYY-MM-DD'),
           to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
         },
-        user: medic,
       } as any);
 
       const row = result.records.find(
@@ -668,8 +685,8 @@ describe('\'accounting\' service', () => {
         query: {
           from: today.subtract(1, 'day').format('YYYY-MM-DD'),
           to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
         },
-        user: medic,
       } as any);
 
       const row = result.records.find(
@@ -716,8 +733,8 @@ describe('\'accounting\' service', () => {
         query: {
           from: today.subtract(1, 'day').format('YYYY-MM-DD'),
           to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
         },
-        user: medic,
       } as any);
 
       const row = result.records.find(

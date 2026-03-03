@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState, type ChangeEvent } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useFetcher, useLoaderData, useParams } from '@remix-run/react';
 import {
   Button,
   Group,
@@ -15,9 +15,11 @@ import {
   Title,
   Input,
   Switch,
+  Divider,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
+import dayjs from 'dayjs';
+import { Search, Plus, History } from 'lucide-react';
 
 import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';
 import Portal from '~/components/portal';
@@ -34,6 +36,9 @@ import {
 import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@medapp/encounter-schemas';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { styled } from '~/styled-system/jsx';
+import { useFeathers } from '~/components/provider';
+import { PrepagaSelector } from '~/components/prepaga-selector';
+import { DateRangePopover, resolveDateRange, type DateRangeFilterState } from '~/components/date-range-popover';
 
 const extraCostSectionsByPractice: Record<string, ExtraCostSection[]> = {};
 for (const [studyName, schema] of Object.entries(studySchemas)) {
@@ -144,9 +149,10 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
   const insurerPrices = normalizeInsurerPrices(acctSettings?.insurerPrices);
   const hiddenInsurers = Array.isArray(acctSettings?.hiddenInsurers) ? acctSettings.hiddenInsurers : [];
 
-  const dbInsurerIds: string[] = await (client.service('accounting') as any).get('insurers', {
-    query: { medicId: medicId },
-  });
+  const [dbInsurerIds, allHistoricalInsurerIds]: [string[], string[]] = await Promise.all([
+    (client.service('accounting') as any).get('insurers', { query: { medicId } }),
+    (client.service('accounting') as any).get('all-insurers', { query: { medicId } }),
+  ]);
 
   const allInsurerIds = [
     ...new Set([...Object.keys(insurerPrices), ...(Array.isArray(dbInsurerIds) ? dbInsurerIds : [])]),
@@ -184,6 +190,7 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
     insurerPrices,
     insurers,
     hiddenInsurers,
+    allHistoricalInsurerIds: Array.isArray(allHistoricalInsurerIds) ? allHistoricalInsurerIds : [],
   });
 });
 
@@ -226,12 +233,30 @@ export default function AccountingSettingsPage() {
   const { t } = useTranslation();
   const data = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
+  const feathersClient = useFeathers();
+  const params = useParams();
+  const medicId = params.medicId;
   const [insurerPrices, setInsurerPrices] = useState<InsurerPrices>(data.insurerPrices);
   const [insurers, setInsurers] = useState<Prepaga[]>(data.insurers as Prepaga[]);
   const [activeInsurerId, setActiveInsurerId] = useState<string | null>(data.insurers[0]?.id ?? null);
   const [pricingMode, setPricingMode] = useState<'normal' | 'emergency'>('normal');
   const [hiddenInsurers, setHiddenInsurers] = useState<string[]>(data.hiddenInsurers || []);
   const [showHiddenInsurers, setShowHiddenInsurers] = useState(false);
+  const [showAddInsurer, setShowAddInsurer] = useState(false);
+  const [loadingHistorical, setLoadingHistorical] = useState(false);
+  const [backfillRange, setBackfillRange] = useState<DateRangeFilterState>({
+    mode: 'in_last',
+    lastAmount: 30,
+    lastUnit: 'day',
+    singleDate: dayjs().format('YYYY-MM-DD'),
+    betweenRange: [dayjs().subtract(30, 'day').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+  });
+  const [uncostedCount, setUncostedCount] = useState<number | null>(null);
+  const [uncostedPractices, setUncostedPractices] = useState<
+    { practiceId: string; practiceType: 'studies' | 'encounters' }[]
+  >([]);
+  const [backfillLoading, setBackfillLoading] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<{ backfilled: number; skipped: number } | null>(null);
 
   const isSaving = fetcher.state !== 'idle';
 
@@ -496,6 +521,26 @@ export default function AccountingSettingsPage() {
     [activeInsurerId]
   );
 
+  const copyFromOptions = useMemo(() => {
+    return insurers
+      .filter(i => i.id !== activeInsurerId && insurerPrices[i.id])
+      .map(i => ({
+        value: i.id,
+        label: i.id === PARTICULAR_INSURER_ID ? t('accounting.settings_particular') : i.shortName,
+      }));
+  }, [insurers, activeInsurerId, insurerPrices, t]);
+
+  const handleCopyFrom = useCallback(
+    (sourceInsurerId: string | null) => {
+      if (!sourceInsurerId || !activeInsurerId) return;
+      setInsurerPrices(prev => ({
+        ...prev,
+        [activeInsurerId]: JSON.parse(JSON.stringify(prev[sourceInsurerId] ?? {})),
+      }));
+    },
+    [activeInsurerId]
+  );
+
   const getExtraCostChangeHandler = useCallback(
     (practiceKey: string, sectionName: string) => (value: string | number) => {
       handleExtraCostChange(practiceKey, sectionName, value);
@@ -577,10 +622,110 @@ export default function AccountingSettingsPage() {
     setShowHiddenInsurers(event.currentTarget.checked);
   }, []);
 
+  const handleAddInsurer = useCallback(
+    (prepaga: { id: string; shortName: string; denomination: string }) => {
+      if (insurers.some(i => i.id === prepaga.id)) {
+        setActiveInsurerId(prepaga.id);
+        setShowAddInsurer(false);
+        return;
+      }
+      setInsurers(prev => [
+        ...prev,
+        { id: prepaga.id, shortName: prepaga.shortName, denomination: prepaga.denomination },
+      ]);
+      setInsurerPrices(prev => {
+        if (prev[prepaga.id]) return prev;
+        return { ...prev, [prepaga.id]: {} };
+      });
+      setActiveInsurerId(prepaga.id);
+      setShowAddInsurer(false);
+    },
+    [insurers]
+  );
+
+  const handleAddAllHistorical = useCallback(async () => {
+    const historicalIds: string[] = data.allHistoricalInsurerIds || [];
+    const existingIds = new Set(insurers.map(i => i.id));
+    const newIds = historicalIds.filter(id => !existingIds.has(id));
+    if (newIds.length === 0) return;
+
+    setLoadingHistorical(true);
+    try {
+      const response = await feathersClient.service('prepagas').find({
+        query: { id: { $in: newIds }, $limit: newIds.length },
+      });
+      const prepagaList = (Array.isArray(response) ? response : ((response as any).data ?? [])) as Prepaga[];
+      setInsurers(prev => [
+        ...prev,
+        ...prepagaList.map(p => ({ id: p.id, shortName: p.shortName, denomination: p.denomination })),
+      ]);
+    } finally {
+      setLoadingHistorical(false);
+    }
+  }, [data.allHistoricalInsurerIds, insurers, feathersClient]);
+
+  const handleFindUncosted = useCallback(async () => {
+    if (!medicId) return;
+    const resolved = resolveDateRange(backfillRange, {
+      minRangeStart: '1900-01-01',
+      maxDate: dayjs().format('YYYY-MM-DD'),
+      precision: 'day',
+    });
+    if (!resolved) return;
+
+    setBackfillLoading(true);
+    setBackfillResult(null);
+    try {
+      const result = await (feathersClient.service('accounting') as any).get('uncosted', {
+        query: {
+          medicId,
+          from: dayjs(resolved.from).format('YYYY-MM-DD'),
+          to: dayjs(resolved.to).format('YYYY-MM-DD'),
+        },
+      });
+      const practices = Array.isArray(result) ? result : [];
+      setUncostedPractices(practices.map((p: any) => ({ practiceId: p.practiceId, practiceType: p.practiceType })));
+      setUncostedCount(practices.length);
+    } finally {
+      setBackfillLoading(false);
+    }
+  }, [medicId, backfillRange, feathersClient]);
+
+  const handleBackfillAll = useCallback(async () => {
+    if (uncostedPractices.length === 0) return;
+    setBackfillLoading(true);
+    try {
+      const result = await (feathersClient.service('accounting') as any).create({
+        intent: 'backfill',
+        practiceIds: uncostedPractices.map(p => ({ id: p.practiceId, practiceType: p.practiceType })),
+      });
+      setBackfillResult(result);
+      setUncostedCount(0);
+      setUncostedPractices([]);
+    } catch (err: any) {
+      console.error('Backfill failed:', err);
+      setBackfillResult({ backfilled: 0, skipped: 0, error: err.message || 'Backfill failed' } as any);
+    } finally {
+      setBackfillLoading(false);
+    }
+  }, [uncostedPractices, feathersClient]);
+
   return (
     <Layout>
       <Portal id="form-actions">
         <Group justify="flex-end" flex={1}>
+          {activeInsurerId && copyFromOptions.length > 0 && (
+            <Select
+              placeholder={t('accounting.settings_copy_from', { defaultValue: 'Copy from...' })}
+              data={copyFromOptions}
+              value={null}
+              onChange={handleCopyFrom}
+              searchable
+              clearable
+              variant="filled"
+              style={{ width: 200 }}
+            />
+          )}
           {hasAnyMultiplier && (
             <>
               <TextInput
@@ -588,6 +733,7 @@ export default function AccountingSettingsPage() {
                 onChange={handleInsurerBaseNameChange}
                 placeholder={t('accounting.settings_base_name_placeholder')}
                 style={{ width: '120px' }}
+                variant="filled"
               />
               <NumberInput
                 decimalScale={2}
@@ -598,6 +744,7 @@ export default function AccountingSettingsPage() {
                 thousandSeparator=","
                 style={{ width: '120px' }}
                 prefix="$"
+                variant="filled"
               />
             </>
           )}
@@ -623,6 +770,41 @@ export default function AccountingSettingsPage() {
             },
           }}
         />
+        <Stack gap="xs" px="sm">
+          {showAddInsurer ? (
+            <PrepagaSelector
+              value={undefined}
+              onChange={() => {}}
+              onSelectPrepaga={handleAddInsurer}
+              placeholder={t('accounting.settings_search_add_insurer', { defaultValue: 'Search insurer...' })}
+            />
+          ) : (
+            <Group gap="xs">
+              <Button
+                variant="light"
+                size="xs"
+                leftSection={<Plus size={14} />}
+                onClick={() => setShowAddInsurer(true)}
+                flex={1}
+              >
+                {t('accounting.settings_add_insurer', { defaultValue: 'Add insurer' })}
+              </Button>
+              {(data.allHistoricalInsurerIds?.length ?? 0) > 0 && (
+                <Button
+                  variant="light"
+                  color="gray"
+                  size="xs"
+                  leftSection={<History size={14} />}
+                  onClick={handleAddAllHistorical}
+                  loading={loadingHistorical}
+                  flex={1}
+                >
+                  {t('accounting.settings_add_all_past', { defaultValue: 'Add past' })}
+                </Button>
+              )}
+            </Group>
+          )}
+        </Stack>
         <SidebarList>
           {insurers
             .filter(insurer => showHiddenInsurers || !hiddenInsurers.includes(insurer.id))
@@ -640,7 +822,64 @@ export default function AccountingSettingsPage() {
             ))}
         </SidebarList>
         <InsurerFilter>
-          <Switch label="Show hidden insurers" checked={showHiddenInsurers} onChange={handleShowHiddenInsurersChange} />
+          <Stack gap="sm">
+            <Switch
+              label="Show hidden insurers"
+              checked={showHiddenInsurers}
+              onChange={handleShowHiddenInsurersChange}
+            />
+            <Divider />
+            <Text size="xs" fw={600} c="dimmed">
+              {t('accounting.settings_backfill', { defaultValue: 'Backfill costs' })}
+            </Text>
+            <Group gap="xs">
+              <DateRangePopover
+                value={backfillRange}
+                onApply={nextState => setBackfillRange(nextState)}
+                minRangeStart="1900-01-01"
+                maxDate={dayjs().format('YYYY-MM-DD')}
+                precision="day"
+                variant="filled"
+              />
+              <Button size="xs" variant="light" onClick={handleFindUncosted} loading={backfillLoading}>
+                {t('accounting.settings_find_uncosted', { defaultValue: 'Find' })}
+              </Button>
+            </Group>
+            {uncostedCount !== null && (
+              <Group gap="xs" align="center">
+                <Text size="xs" c={uncostedCount > 0 ? 'orange' : 'green'}>
+                  {uncostedCount > 0
+                    ? t('accounting.settings_uncosted_found', {
+                        defaultValue: '{{count}} untracked',
+                        count: uncostedCount,
+                      })
+                    : t('accounting.settings_all_tracked', { defaultValue: 'All tracked' })}
+                </Text>
+                {uncostedCount > 0 && (
+                  <Button
+                    size="xs"
+                    variant="filled"
+                    color="orange"
+                    onClick={handleBackfillAll}
+                    loading={backfillLoading}
+                  >
+                    {t('accounting.settings_backfill_all', { defaultValue: 'Backfill all' })}
+                  </Button>
+                )}
+              </Group>
+            )}
+            {backfillResult && (
+              <Text size="xs" c={(backfillResult as any).error ? 'red' : 'green'}>
+                {(backfillResult as any).error
+                  ? (backfillResult as any).error
+                  : t('accounting.settings_backfill_result', {
+                      defaultValue: '{{backfilled}} backfilled, {{skipped}} skipped',
+                      backfilled: backfillResult.backfilled,
+                      skipped: backfillResult.skipped,
+                    })}
+              </Text>
+            )}
+          </Stack>
         </InsurerFilter>
       </Sidebar>
 

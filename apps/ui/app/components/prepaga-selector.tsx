@@ -94,7 +94,8 @@ export function PrepagaSelector({
   const displayLabel = useMemo(() => {
     if (!selectedPrepaga) return '';
     const p = selectedPrepaga as Prepaga;
-    return `${p.shortName} / ${p.denomination}`;
+    if (!p.shortName && !p.denomination) return '';
+    return `${p.shortName || ''} / ${p.denomination || ''}`;
   }, [selectedPrepaga]);
 
   useEffect(() => {

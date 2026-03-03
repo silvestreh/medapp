@@ -9,6 +9,9 @@ describe('\'invites\' service', () => {
   let existingUser: any;
 
   before(async () => {
+    app.setup();
+    await app.get('sequelizeSync');
+
     org = await app.service('organizations').create({
       name: 'Invites Test Clinic',
       slug: 'invites-test'

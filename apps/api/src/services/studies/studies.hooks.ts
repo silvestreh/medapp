@@ -15,6 +15,8 @@ import { sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import searchStudies from './hooks/search-studies';
 import { requireVerifiedLicense } from '../../hooks/require-verified-license';
 import populateInsurer from './hooks/populate-insurer';
+import { setCost } from '../practice-costs/hooks/set-cost';
+import { updateCost } from '../practice-costs/hooks/update-cost';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -67,11 +69,13 @@ export default {
     ],
     create: [
       upsertStudyResults(),
+      setCost('study'),
       populateReferringDoctor()
     ],
     update: [],
     patch: [
       upsertStudyResults(),
+      updateCost('study'),
       populateReferringDoctor()
     ],
     remove: []

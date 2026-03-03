@@ -12,6 +12,7 @@ import { parseDecryptedAttributes } from '../../hooks/parse-decrypted-attributes
 import { sanitizeEncryptedData } from '../../hooks/sanitize-encrypted-data';
 import { validateEncounterData } from '../../hooks/validate-encounter-data';
 import { requireVerifiedLicense } from '../../hooks/require-verified-license';
+import { setCost } from '../practice-costs/hooks/set-cost';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -43,7 +44,7 @@ export default {
       parseDecryptedAttributes('data'),
       omitForDeleted({ service: 'patients', fkey: 'patientId' })
     ],
-    create: [],
+    create: [setCost('encounter')],
     update: [],
     patch: [],
     remove: []

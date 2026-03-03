@@ -205,6 +205,20 @@ export interface AccountingSettings {
   hiddenInsurers: string[];
 }
 
+export interface PracticeCost {
+  id: Id;
+  organizationId: Id | null;
+  medicId: Id | null;
+  patientId: Id;
+  practiceId: Id;
+  practiceType: 'studies' | 'encounters';
+  studyType: string | null;
+  insurerId: Id | null;
+  emergency: boolean;
+  date: Date;
+  cost: number;
+}
+
 export interface Organization {
   id: Id;
   name: string;

@@ -41,10 +41,13 @@
     "permissions": [
       "accounting:find",
       "accounting:get",
+      "accounting:create",
       "accounting-settings:create",
       "accounting-settings:find",
       "accounting-settings:get:all",
       "accounting-settings:patch:all",
+      "practice-costs:find",
+      "practice-costs:get:all",
       "prepagas:find"
     ]
   },
@@ -100,6 +103,8 @@
       "study-results:get:all",
       "study-results:patch:all",
       "study-results:remove:all",
+      "practice-costs:find",
+      "practice-costs:get",
       "prepagas:find"
     ]
   },
@@ -123,6 +128,8 @@
       "study-results:get:all",
       "study-results:patch:all",
       "study-results:remove:all",
+      "practice-costs:find",
+      "practice-costs:get:all",
       "prepagas:find"
     ]
   },
@@ -134,7 +141,9 @@
       "studies:get:all",
       "studies:patch:all",
       "studies:remove:all",
-      "stats:find:all"
+      "stats:find:all",
+      "practice-costs:find:all",
+      "practice-costs:get:all"
     ]
   }
 ]

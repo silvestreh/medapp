@@ -38,6 +38,7 @@ import llmProviderKeys from './llm-provider-keys/llm-provider-keys.service';
 import llmModels from './llm-models/llm-models.service';
 import accounting from './accounting/accounting.service';
 import accountingSettings from './accounting-settings/accounting-settings.service';
+import practiceCosts from './practice-costs/practice-costs.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -80,4 +81,5 @@ export default function (app: Application): void {
   app.configure(llmModels);
   app.configure(accounting);
   app.configure(accountingSettings);
+  app.configure(practiceCosts);
 }
