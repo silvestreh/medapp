@@ -177,6 +177,8 @@ export const es = {
     event_remove_error_title: 'Error al eliminar',
     event_remove_error_message: 'No se pudo eliminar el evento.',
     no_appointments: 'No hay turnos disponibles.',
+    time_off_day: 'No hay consultas este día.',
+    holiday_warning: 'Este día es feriado ({{name}}) y podría afectar la disponibilidad de turnos.',
   },
   forms: {
     'general/consulta_internacion': 'Motivo de consulta-internación',
@@ -605,7 +607,8 @@ export const es = {
     org_role_admin: 'Administrador',
     org_role_member: 'Miembro',
     remove_member: 'Quitar de la organización',
-    remove_member_confirm: '¿Está seguro que desea quitar a {{username}} de la organización? El usuario seguirá existiendo pero perderá acceso.',
+    remove_member_confirm:
+      '¿Está seguro que desea quitar a {{username}} de la organización? El usuario seguirá existiendo pero perderá acceso.',
     remove_member_success: 'Miembro eliminado de la organización.',
     remove_member_error: 'Error al eliminar el miembro.',
     roles_updated: 'Roles actualizados.',

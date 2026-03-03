@@ -111,6 +111,8 @@ export const en: typeof es = {
     settings_units: 'Units',
     settings_base_name_placeholder: 'e.g. UHB',
     settings_particular: 'Particular',
+    settings_normal: 'Normal',
+    settings_emergency: 'Emergency',
   },
   appointments: {
     today_schedule: "Today's appointments",
@@ -176,6 +178,8 @@ export const en: typeof es = {
     event_remove_error_title: 'Delete failed',
     event_remove_error_message: 'Time-off event could not be removed.',
     no_appointments: 'No appointments available.',
+    time_off_day: 'No consultations this day.',
+    holiday_warning: 'This day is a holiday ({{name}}) and could affect appointment availability.',
   },
   forms: {
     'general/consulta_internacion': 'Reason for Consultation/Admission',
@@ -601,7 +605,8 @@ export const en: typeof es = {
     org_role_admin: 'Admin',
     org_role_member: 'Member',
     remove_member: 'Remove from organization',
-    remove_member_confirm: 'Are you sure you want to remove {{username}} from the organization? The user will still exist but will lose access.',
+    remove_member_confirm:
+      'Are you sure you want to remove {{username}} from the organization? The user will still exist but will lose access.',
     remove_member_success: 'Member removed from the organization.',
     remove_member_error: 'Failed to remove member.',
     roles_updated: 'Roles updated.',
@@ -666,6 +671,7 @@ export const en: typeof es = {
   },
   studies: {
     // Index page
+    emergency: 'Emergency',
     title: 'Studies Book',
     search_placeholder: 'Search by protocol or patient...',
     new_study: 'New Study',

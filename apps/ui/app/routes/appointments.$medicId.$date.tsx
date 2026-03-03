@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import dayjs from 'dayjs';
 import { useLoaderData, useRouteLoaderData } from '@remix-run/react';
+import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
-import { Title } from '@mantine/core';
+import { Title, Text, Alert } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import '@mantine/dates/styles.css';
 
@@ -14,6 +15,7 @@ import { styled } from '~/styled-system/jsx';
 import { css } from '~/styled-system/css';
 import { media } from '~/media';
 import type { Account } from '~/declarations';
+import { CalendarDays } from 'lucide-react';
 
 export const links: LinksFunction = () => [];
 
@@ -54,11 +56,41 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
   });
   const slots = generateSlots(date, appointments, medic);
 
-  return { slots, date: params.date, medicId: params.medicId };
+  let hasTimeOff = false;
+  try {
+    const timeOffResponse = await client.service('time-off-events').find({
+      query: {
+        medicId: params.medicId,
+        startDate: { $lte: date.endOf('day').toISOString() },
+        endDate: { $gte: date.startOf('day').toISOString() },
+      },
+      paginate: false,
+    });
+    hasTimeOff = Array.isArray(timeOffResponse) ? timeOffResponse.length > 0 : (timeOffResponse?.data?.length ?? 0) > 0;
+  } catch {
+    // Keep appointments usable even if time-off service/permissions are not ready.
+  }
+
+  let holiday: { title: string } | null = null;
+  try {
+    const icsResponse = await fetch(`${new URL(request.url).origin}/ics`);
+    const holidays = (await icsResponse.json()) as Array<{ title: string; startDate: string; endDate: string }>;
+    const dateStart = date.startOf('day').toISOString();
+    const dateEnd = date.endOf('day').toISOString();
+    const matchingHoliday = Array.isArray(holidays)
+      ? holidays.find(h => h.startDate <= dateEnd && h.endDate >= dateStart)
+      : null;
+    holiday = matchingHoliday ? { title: matchingHoliday.title } : null;
+  } catch {
+    // Non-blocking: appointments remain usable if ICS fetch fails.
+  }
+
+  return { slots, date: params.date, medicId: params.medicId, hasTimeOff, holiday };
 });
 
 export default function AppointmentsForDate() {
-  const { slots, date, medicId } = useLoaderData<typeof loader>();
+  const { slots, date, medicId, hasTimeOff, holiday } = useLoaderData<typeof loader>();
+  const { t } = useTranslation();
   const rootData = useRouteLoaderData('root') as { locale?: string } | undefined;
   const locale = rootData?.locale ?? 'es';
   const isTablet = useMediaQuery(media.lg);
@@ -66,40 +98,56 @@ export default function AppointmentsForDate() {
     () => formatInLocale(date, locale === 'es' ? 'DD [de] MMMM, YYYY' : 'MMMM D, YYYY', locale),
     [date, locale]
   );
+  const isPastDate = dayjs(date).startOf('day').isBefore(dayjs().startOf('day'));
 
   return (
     <Container>
       <Title order={2} mb="lg" display={isTablet ? 'block' : 'none'}>
         {title}
       </Title>
-      <AppointmentsList
-        slots={slots}
-        medicId={medicId}
-        currentDate={date}
-        className={css({
-          borderTopWidth: 0,
-          borderBottomWidth: 0,
+      {hasTimeOff && (
+        <Text variant="light" ta="center" py="xl">
+          {t('appointments.time_off_day')}
+        </Text>
+      )}
+      {!hasTimeOff && (
+        <>
+          {holiday && (
+            <Alert icon={<CalendarDays size={16} />} color="yellow" variant="light" mb="md" title={holiday.title}>
+              {t('appointments.holiday_warning', { name: holiday.title })}
+            </Alert>
+          )}
+          <AppointmentsList
+            slots={slots}
+            medicId={medicId}
+            currentDate={date}
+            readonly={isPastDate}
+            className={css({
+              borderTopWidth: 0,
+              borderBottomWidth: 0,
 
-          lg: {
-            borderRadius: 8,
-            border: '1px solid var(--mantine-color-gray-2)',
+              lg: {
+                borderRadius: 8,
+                border: '1px solid var(--mantine-color-gray-2)',
 
-            '& .slot': {
-              '&:last-child': {
-                borderBottomWidth: 0,
+                '& .slot': {
+                  '&:last-child': {
+                    borderBottomWidth: 0,
+                  },
+                },
+
+                '& .slot:first-child .slot-time': {
+                  borderTopLeftRadius: '8px',
+                },
+
+                '& .slot:last-child .slot-time': {
+                  borderBottomLeftRadius: '8px',
+                },
               },
-            },
-
-            '& .slot:first-child .slot-time': {
-              borderTopLeftRadius: '8px',
-            },
-
-            '& .slot:last-child .slot-time': {
-              borderBottomLeftRadius: '8px',
-            },
-          },
-        })}
-      />
+            })}
+          />
+        </>
+      )}
     </Container>
   );
 }
