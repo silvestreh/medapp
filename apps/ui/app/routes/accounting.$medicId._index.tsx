@@ -4,6 +4,7 @@ import { json } from '@remix-run/node';
 import { Link, useLoaderData, useParams } from '@remix-run/react';
 import { BarChart } from '@mantine/charts';
 import { Badge, Button, Checkbox, Group, Menu, Paper, Stack, Text, Title, Table } from '@mantine/core';
+import { showNotification } from '@mantine/notifications';
 import { ChevronDown } from 'lucide-react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
@@ -289,15 +290,31 @@ export default function AccountingDashboardPage() {
     });
   }, [uncostedPractices]);
 
+  const refetchAccounting = useCallback(() => {
+    if (!resolvedRange || !medicId) return;
+    const query: Record<string, string> = {
+      from: dayjs(resolvedRange.from).format('YYYY-MM-DD'),
+      to: dayjs(resolvedRange.to).format('YYYY-MM-DD'),
+      medicId,
+    };
+    if (selectedInsurerId !== 'all') {
+      query.insurerId = selectedInsurerId;
+    }
+    feathersClient
+      .service('accounting')
+      .find({ query })
+      .then((result: AccountingResult) => setData(result))
+      .catch(() => {});
+  }, [resolvedRange, medicId, selectedInsurerId, feathersClient]);
+
   const handleBackfillSelected = useCallback(async () => {
     if (selectedForBackfill.size === 0) return;
     setBackfillLoading(true);
     try {
-      const practiceIds = uncostedPractices
-        .filter(p => selectedForBackfill.has(p.practiceId))
-        .map(p => ({ id: p.practiceId, practiceType: p.practiceType }));
+      const backfilledPractices = uncostedPractices.filter(p => selectedForBackfill.has(p.practiceId));
+      const practiceIds = backfilledPractices.map(p => ({ id: p.practiceId, practiceType: p.practiceType }));
 
-      await (feathersClient.service('accounting') as any).create({
+      const result = await (feathersClient.service('accounting') as any).create({
         intent: 'backfill',
         practiceIds,
       });
@@ -305,30 +322,51 @@ export default function AccountingDashboardPage() {
       // Remove backfilled from uncosted list
       setUncostedPractices(prev => prev.filter(p => !selectedForBackfill.has(p.practiceId)));
       setSelectedForBackfill(new Set());
+      refetchAccounting();
 
-      // Refetch accounting data
-      if (resolvedRange && medicId) {
-        const query: Record<string, string> = {
-          from: dayjs(resolvedRange.from).format('YYYY-MM-DD'),
-          to: dayjs(resolvedRange.to).format('YYYY-MM-DD'),
-          medicId,
-        };
-        if (selectedInsurerId !== 'all') {
-          query.insurerId = selectedInsurerId;
-        }
-        feathersClient
-          .service('accounting')
-          .find({ query })
-          .then((result: AccountingResult) => setData(result))
-          .catch(() => {});
-      }
+      const ids: string[] = result.createdIds || [];
+      const msg = t('accounting.settings_backfill_result', {
+        defaultValue: '{{backfilled}} backfilled, {{skipped}} skipped',
+        backfilled: result.backfilled,
+        skipped: result.skipped,
+      });
+      showNotification({
+        color: 'teal',
+        autoClose: ids.length > 0 ? 10000 : 4000,
+        message: (
+          <Group justify="space-between" align="center" wrap="nowrap">
+            <Text size="sm">{msg}</Text>
+            {ids.length > 0 && (
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                color="gray"
+                onClick={() => {
+                  (feathersClient.service('accounting') as any)
+                    .create({ intent: 'undo-backfill', practiceCostIds: ids })
+                    .then(() => {
+                      setUncostedPractices(prev => [...prev, ...backfilledPractices]);
+                      refetchAccounting();
+                      showNotification({ color: 'teal', message: t('common.undone', { defaultValue: 'Undone' }) });
+                    })
+                    .catch((err: any) => {
+                      showNotification({ color: 'red', message: err.message || 'Undo failed' });
+                    });
+                }}
+              >
+                {t('common.undo', { defaultValue: 'Undo' })}
+              </Button>
+            )}
+          </Group>
+        ),
+      });
     } catch (err: any) {
       console.error('Backfill failed:', err);
-      alert(err.message || 'Backfill failed');
+      showNotification({ color: 'red', message: err.message || 'Backfill failed' });
     } finally {
       setBackfillLoading(false);
     }
-  }, [selectedForBackfill, uncostedPractices, feathersClient, resolvedRange, medicId, selectedInsurerId]);
+  }, [selectedForBackfill, uncostedPractices, feathersClient, refetchAccounting, t]);
 
   return (
     <ContentWrapper>

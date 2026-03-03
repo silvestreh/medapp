@@ -705,6 +705,8 @@ export default function AccountingSettingsPage() {
         intent: 'backfill',
         practiceIds: uncostedPractices.map(p => ({ id: p.practiceId, practiceType: p.practiceType })),
       });
+      const prevUncosted = [...uncostedPractices];
+      const prevCount = uncostedPractices.length;
       setUncostedCount(0);
       setUncostedPractices([]);
       const msg = t('accounting.settings_backfill_result', {
@@ -712,9 +714,37 @@ export default function AccountingSettingsPage() {
         backfilled: result.backfilled,
         skipped: result.skipped,
       });
+      const hasErrors = (result.errors?.length ?? 0) > 0;
+      const ids: string[] = result.createdIds || [];
       showNotification({
-        color: (result.errors?.length ?? 0) > 0 ? 'orange' : 'teal',
-        message: result.errors?.length ? `${msg}\n${result.errors.join('; ')}` : msg,
+        color: hasErrors ? 'orange' : 'teal',
+        autoClose: ids.length > 0 ? 10000 : 4000,
+        message: (
+          <Group justify="space-between" align="center" wrap="nowrap">
+            <Text size="sm">{hasErrors ? `${msg}\n${result.errors.join('; ')}` : msg}</Text>
+            {ids.length > 0 && (
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                color="gray"
+                onClick={() => {
+                  (feathersClient.service('accounting') as any)
+                    .create({ intent: 'undo-backfill', practiceCostIds: ids })
+                    .then(() => {
+                      setUncostedPractices(prevUncosted);
+                      setUncostedCount(prevCount);
+                      showNotification({ color: 'teal', message: t('common.undone', { defaultValue: 'Undone' }) });
+                    })
+                    .catch((err: any) => {
+                      showNotification({ color: 'red', message: err.message || 'Undo failed' });
+                    });
+                }}
+              >
+                {t('common.undo', { defaultValue: 'Undo' })}
+              </Button>
+            )}
+          </Group>
+        ),
       });
     } catch (err: any) {
       console.error('Backfill failed:', err);
@@ -856,11 +886,18 @@ export default function AccountingSettingsPage() {
               fullWidth
             />
             <Flex gap="xs">
-              <Button size="xs" variant="light" onClick={handleFindUncosted} loading={backfillLoading}>
+              <Button flex={1} size="xs" variant="light" onClick={handleFindUncosted} loading={backfillLoading}>
                 {t('accounting.settings_find_uncosted', { defaultValue: 'Find' })}
               </Button>
               {uncostedCount !== null && uncostedCount > 0 && (
-                <Button size="xs" variant="filled" color="orange" onClick={handleBackfillAll} loading={backfillLoading}>
+                <Button
+                  flex={1}
+                  size="xs"
+                  variant="filled"
+                  color="orange"
+                  onClick={handleBackfillAll}
+                  loading={backfillLoading}
+                >
                   {t('accounting.settings_backfill_all', {
                     defaultValue: `Backfill ${uncostedCount}`,
                     count: uncostedCount,

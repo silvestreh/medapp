@@ -382,12 +382,24 @@ export class Accounting {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async create(
-    data: { intent: string; practiceIds: { id: string; practiceType: 'studies' | 'encounters' }[] },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _params?: Params,
-  ): Promise<{ backfilled: number; skipped: number; errors: string[] }> {
+  async create(data: any, _params?: Params): Promise<any> {
+    if (data.intent === 'undo-backfill') {
+      const ids: string[] = data.practiceCostIds;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        throw new BadRequest('practiceCostIds array is required');
+      }
+      let removed = 0;
+      for (const id of ids) {
+        try {
+          await this.app.service('practice-costs').remove(id, { provider: undefined });
+          removed++;
+        } catch { /* already deleted */ }
+      }
+      return { removed };
+    }
+
     if (data.intent !== 'backfill') {
       throw new BadRequest(`Unknown intent: ${data.intent}`);
     }
@@ -398,12 +410,14 @@ export class Accounting {
 
     const sequelize: Sequelize = this.app.get('sequelizeClient');
     const errors: string[] = [];
+    const createdIds: string[] = [];
     let backfilled = 0;
     let skipped = 0;
 
     // Group by practiceType
-    const studyIds = data.practiceIds.filter(p => p.practiceType === 'studies').map(p => p.id);
-    const encounterIds = data.practiceIds.filter(p => p.practiceType === 'encounters').map(p => p.id);
+    const practiceIds: { id: string; practiceType: string }[] = data.practiceIds;
+    const studyIds = practiceIds.filter(p => p.practiceType === 'studies').map(p => p.id);
+    const encounterIds = practiceIds.filter(p => p.practiceType === 'encounters').map(p => p.id);
 
     // Process studies
     if (studyIds.length > 0) {
@@ -463,7 +477,7 @@ export class Accounting {
           });
 
           try {
-            await this.app.service('practice-costs').create({
+            const created = await this.app.service('practice-costs').create({
               organizationId: study.organizationId || null,
               medicId: study.medicId,
               patientId: study.patientId,
@@ -475,6 +489,7 @@ export class Accounting {
               date: new Date(study.date),
               cost,
             } as any, { provider: undefined });
+            createdIds.push(String(created.id));
             backfilled++;
           } catch (err: any) {
             console.warn(`[accounting:backfill] skip study ${study.id}/${studyType}: ${err.message}`);
@@ -512,7 +527,7 @@ export class Accounting {
         });
 
         try {
-          await this.app.service('practice-costs').create({
+          const created = await this.app.service('practice-costs').create({
             organizationId: encounter.organizationId || null,
             medicId: encounter.medicId,
             patientId: encounter.patientId,
@@ -524,6 +539,7 @@ export class Accounting {
             date: new Date(encounter.date),
             cost,
           } as any, { provider: undefined });
+          createdIds.push(String(created.id));
           backfilled++;
         } catch (err: any) {
           console.warn(`[accounting:backfill] skip encounter ${encounter.id}: ${err.message}`);
@@ -533,7 +549,7 @@ export class Accounting {
       }
     }
 
-    return { backfilled, skipped, errors };
+    return { backfilled, skipped, errors, createdIds };
   }
 
   private async getMedicInsurerPrices(medicId: string) {
