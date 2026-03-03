@@ -1,43 +1,65 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from '@mantine/hooks';
-import {
-  Badge,
-  Button,
-  ActionIcon,
-  Checkbox,
-  Group,
-  Modal,
-  Popover,
-  Select,
-  Stack,
-  Table,
-  Text,
-  TextInput,
-  UnstyledButton,
-} from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { showNotification } from '@mantine/notifications';
-import { Plus, UserPlus, X } from 'lucide-react';
+import { ActionIcon, Button, Group, Table, Text } from '@mantine/core';
+import { Plus, UserPlus } from 'lucide-react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import Portal from '~/components/portal';
 import { media } from '~/media';
-import { css } from '~/styled-system/css';
+import { styled } from '~/styled-system/jsx';
+import { InviteModal, RemoveConfirmPopover, RoleMultiSelect, type MemberRow } from '~/components/users';
 
-type MemberRow = {
-  id: string;
-  userId: string;
-  user: {
-    id: string;
-    username: string;
-    roleIds: string[];
-    personalData?: { firstName?: string; lastName?: string } | null;
-    contactData?: { email?: string } | null;
-  } | null;
-};
+const CellText = styled('span', {
+  base: {
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    display: 'block',
+    padding: 'var(--mantine-spacing-xs)',
+    fontSize: 'var(--mantine-font-size-sm)',
+  },
+});
+
+const Container = styled('div', {
+  base: {},
+});
+
+const HeaderContainer = styled('div', {
+  base: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    // backgroundColor: '#FAFBFB',
+
+    sm: {
+      padding: '1em',
+    },
+    md: {
+      padding: '2em 2em 1em',
+    },
+  },
+});
+
+const Title = styled('h1', {
+  base: {
+    fontSize: '1.5rem',
+    lineHeight: 1,
+    fontWeight: 700,
+    flex: 1,
+    margin: 0,
+
+    md: {
+      fontSize: '2rem',
+    },
+
+    lg: {
+      fontSize: '2.25rem',
+    },
+  },
+});
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
@@ -110,7 +132,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const toRemove = existing.filter(r => !newRoleIds.includes(r.roleId));
 
       if (toAdd.includes('owner') || toRemove.some(r => r.roleId === 'owner')) {
-        return json({ ok: false, intent, error: 'The owner role cannot be changed from this interface' }, { status: 403 });
+        return json(
+          { ok: false, intent, error: 'The owner role cannot be changed from this interface' },
+          { status: 403 }
+        );
       }
 
       await Promise.all([
@@ -127,202 +152,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   return json({ ok: false, intent, error: 'Invalid action' }, { status: 400 });
 };
 
-const ROLE_COLORS: Record<string, string> = {
-  owner: 'yellow',
-  admin: 'red',
-  medic: 'blue',
-  receptionist: 'green',
-  'lab-tech': 'grape',
-  'lab-owner': 'orange',
-  accounting: 'teal',
-};
-
-function RoleMultiSelect({
-  value,
-  allRoles,
-  userId,
-  isCurrentUser,
-}: {
-  value: string[];
-  allRoles: { id: string; label: string }[];
-  userId: string;
-  isCurrentUser: boolean;
-}) {
-  const { t } = useTranslation();
-  const [opened, setOpened] = useState(false);
-  const fetcher = useFetcher<{ ok: boolean; error?: string }>();
-  const pending = fetcher.state !== 'idle';
-  const latestValue = useRef(value);
-  latestValue.current = value;
-
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.ok) {
-        showNotification({ color: 'teal', message: t('users.roles_updated') });
-      } else {
-        showNotification({ color: 'red', message: fetcher.data.error || t('users.roles_update_error') });
-      }
-    }
-  }, [fetcher.state, fetcher.data, t]);
-
-  const handleToggle = useCallback(
-    (roleId: string) => {
-      if (roleId === 'owner') return;
-
-      const current = latestValue.current;
-      let next: string[];
-
-      if (current.includes(roleId)) {
-        next = current.filter(r => r !== roleId);
-      } else {
-        next = [...current, roleId];
-      }
-
-      if (next.length === 0) {
-        showNotification({ color: 'orange', message: t('users.min_one_role') });
-        return;
-      }
-
-      fetcher.submit(
-        { intent: 'update-roles', userId, roleIds: JSON.stringify(next) },
-        { method: 'post' }
-      );
-    },
-    [userId, t, fetcher]
-  );
-
-  const badges = value.map(roleId => {
-    const color = ROLE_COLORS[roleId] ?? 'gray';
-    const label = allRoles.find(r => r.id === roleId)?.label ?? roleId;
-    return (
-      <Badge key={roleId} color={color} variant="light" size="sm">
-        {label}
-      </Badge>
-    );
-  });
-
-  return (
-    <Popover opened={opened} onChange={setOpened} position="bottom-start" shadow="md" withinPortal>
-      <Popover.Target>
-        <UnstyledButton onClick={() => setOpened(o => !o)}>
-          <Group gap={4} wrap="wrap">
-            {badges.length > 0 ? badges : <Badge color="gray" variant="light" size="sm">—</Badge>}
-          </Group>
-        </UnstyledButton>
-      </Popover.Target>
-
-      <Popover.Dropdown p="xs">
-        <Stack gap={6}>
-          {allRoles.map(role => {
-            const isSelected = value.includes(role.id);
-            const isLastSelected = isSelected && value.length === 1;
-            const isOwnerRole = role.id === 'owner';
-            const locked = isOwnerRole || (isCurrentUser && isLastSelected);
-            return (
-              <Checkbox
-                key={role.id}
-                label={
-                  <Badge color={ROLE_COLORS[role.id] ?? 'gray'} variant={isSelected ? 'filled' : 'light'} size="sm">
-                    {role.label}
-                  </Badge>
-                }
-                checked={isSelected}
-                disabled={pending || locked || isLastSelected}
-                onChange={() => handleToggle(role.id)}
-                styles={{ body: { alignItems: 'center' } }}
-              />
-            );
-          })}
-        </Stack>
-      </Popover.Dropdown>
-    </Popover>
-  );
-}
-
-function RemoveConfirmPopover({
-  member,
-  disabled,
-}: {
-  member: MemberRow;
-  disabled: boolean;
-}) {
-  const { t } = useTranslation();
-  const [opened, setOpened] = useState(false);
-  const fetcher = useFetcher<{ ok: boolean; error?: string }>();
-
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      if (fetcher.data.ok) {
-        showNotification({ color: 'teal', message: t('users.remove_member_success') });
-        setOpened(false);
-      } else {
-        showNotification({ color: 'red', message: fetcher.data.error || t('users.remove_member_error') });
-      }
-    }
-  }, [fetcher.state, fetcher.data, t]);
-
-  const handleConfirm = useCallback(() => {
-    fetcher.submit(
-      { intent: 'remove-member', membershipId: member.id },
-      { method: 'post' }
-    );
-  }, [fetcher, member.id]);
-
-  return (
-    <Popover opened={opened} onChange={setOpened} position="left" shadow="md" withinPortal withArrow>
-      <Popover.Target>
-        <ActionIcon
-          variant="subtle"
-          color="red"
-          size="sm"
-          title={t('users.remove_member')}
-          onClick={() => setOpened(o => !o)}
-          disabled={disabled}
-        >
-          <X size={14} />
-        </ActionIcon>
-      </Popover.Target>
-
-      <Popover.Dropdown p="sm">
-        <Text size="sm" mb="sm">
-          {t('users.remove_member_confirm', { username: member.user?.username ?? '—' })}
-        </Text>
-        <Group justify="flex-end" gap="xs">
-          <Button size="compact-sm" variant="default" onClick={() => setOpened(false)}>
-            {t('common.cancel')}
-          </Button>
-          <Button size="compact-sm" color="red" loading={fetcher.state !== 'idle'} onClick={handleConfirm}>
-            {t('users.remove_member')}
-          </Button>
-        </Group>
-      </Popover.Dropdown>
-    </Popover>
-  );
-}
-
 export default function UsersIndex() {
   const { members, roles, currentUserId } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const isDesktop = useMediaQuery(media.md);
   const [inviteOpen, setInviteOpen] = useState(false);
-
-  const inviteFetcher = useFetcher<{ ok: boolean; intent: string; emailHtml?: string | null; error?: string }>();
-
-  useEffect(() => {
-    if (inviteFetcher.state === 'idle' && inviteFetcher.data) {
-      if (inviteFetcher.data.ok) {
-        setInviteOpen(false);
-        showNotification({ color: 'teal', message: t('users.invite_sent') });
-        if (inviteFetcher.data.emailHtml) {
-          const blob = new Blob([inviteFetcher.data.emailHtml], { type: 'text/html' });
-          const url = URL.createObjectURL(blob);
-          window.open(url, '_blank');
-        }
-      } else {
-        showNotification({ color: 'red', message: inviteFetcher.data.error || t('users.invite_error') });
-      }
-    }
-  }, [inviteFetcher.state, inviteFetcher.data, t]);
 
   const allRoleOptions = useMemo(
     () =>
@@ -333,45 +167,15 @@ export default function UsersIndex() {
     [roles, t]
   );
 
-  const selectRoleOptions = useMemo(
-    () => allRoleOptions.map(r => ({ value: r.id, label: r.label })),
-    [allRoleOptions]
-  );
-
-  const inviteForm = useForm({
-    initialValues: { email: '', role: 'receptionist' },
-    validate: {
-      email: v => (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : t('users.invalid_email')),
-    },
-  });
+  const selectRoleOptions = useMemo(() => allRoleOptions.map(r => ({ value: r.id, label: r.label })), [allRoleOptions]);
 
   const handleOpenInvite = useCallback(() => {
-    inviteForm.reset();
     setInviteOpen(true);
-  }, [inviteForm]);
+  }, []);
 
   const handleCloseInvite = useCallback(() => {
     setInviteOpen(false);
   }, []);
-
-  const handleInviteSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      const validation = inviteForm.validate();
-      if (validation.hasErrors) return;
-
-      inviteFetcher.submit(
-        { intent: 'invite', email: inviteForm.values.email, role: inviteForm.values.role },
-        { method: 'post' }
-      );
-    },
-    [inviteForm, inviteFetcher]
-  );
-
-  const containerClass = css({
-    padding: '1rem',
-    md: { padding: '1.5rem' },
-  });
 
   const getName = useCallback((member: MemberRow) => {
     const pd = member.user?.personalData;
@@ -386,7 +190,7 @@ export default function UsersIndex() {
   }, []);
 
   return (
-    <div className={containerClass}>
+    <Container>
       <Portal id="form-actions">
         <Group>
           {isDesktop && (
@@ -402,6 +206,10 @@ export default function UsersIndex() {
         </Group>
       </Portal>
 
+      <HeaderContainer>
+        <Title>{t('page_titles.users_roles')}</Title>
+      </HeaderContainer>
+
       {members.length === 0 && (
         <Text c="dimmed" ta="center" mt="xl">
           {t('users.no_users')}
@@ -409,14 +217,43 @@ export default function UsersIndex() {
       )}
 
       {members.length > 0 && (
-        <Table striped highlightOnHover>
+        <Table highlightOnHover layout="fixed" bg="white">
           <Table.Thead>
-            <Table.Tr>
-              <Table.Th>{t('users.col_username')}</Table.Th>
-              {isDesktop && <Table.Th>{t('users.col_name')}</Table.Th>}
-              {isDesktop && <Table.Th>{t('users.col_email')}</Table.Th>}
-              <Table.Th>{t('users.col_role')}</Table.Th>
-              <Table.Th w={40} />
+            <Table.Tr bg="blue.0">
+              <Table.Th
+                style={{
+                  border: '1px solid var(--mantine-color-blue-1)',
+                  borderLeft: 'none',
+                }}
+                fw={500}
+                fz="md"
+                py="0.5em"
+              >
+                {t('users.col_username')}
+              </Table.Th>
+              {isDesktop && (
+                <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+                  {t('users.col_name')}
+                </Table.Th>
+              )}
+              {isDesktop && (
+                <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+                  {t('users.col_email')}
+                </Table.Th>
+              )}
+              <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+                {t('users.col_role')}
+              </Table.Th>
+              <Table.Th
+                w={40}
+                style={{
+                  border: '1px solid var(--mantine-color-blue-1)',
+                  borderRight: 'none',
+                }}
+                fw={500}
+                fz="md"
+                py="0.5em"
+              />
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -425,10 +262,20 @@ export default function UsersIndex() {
               const isOwner = (member.user?.roleIds || []).includes('owner');
               const canRemove = !isSelf && !isOwner;
               return (
-                <Table.Tr key={member.id}>
-                  <Table.Td>{member.user?.username ?? '—'}</Table.Td>
-                  {isDesktop && <Table.Td>{getName(member)}</Table.Td>}
-                  {isDesktop && <Table.Td>{getEmail(member)}</Table.Td>}
+                <Table.Tr key={member.id} styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}>
+                  <Table.Td>
+                    <CellText>{member.user?.username ?? '—'}</CellText>
+                  </Table.Td>
+                  {isDesktop && (
+                    <Table.Td>
+                      <CellText>{getName(member)}</CellText>
+                    </Table.Td>
+                  )}
+                  {isDesktop && (
+                    <Table.Td>
+                      <CellText>{getEmail(member)}</CellText>
+                    </Table.Td>
+                  )}
                   <Table.Td>
                     <RoleMultiSelect
                       value={member.user?.roleIds || []}
@@ -447,27 +294,7 @@ export default function UsersIndex() {
         </Table>
       )}
 
-      <Modal opened={inviteOpen} onClose={handleCloseInvite} title={t('users.invite_user')} centered>
-        <form onSubmit={handleInviteSubmit}>
-          <TextInput
-            label={t('users.email')}
-            placeholder="user@example.com"
-            required
-            mb="md"
-            {...inviteForm.getInputProps('email')}
-          />
-          <Select label={t('users.role')} data={selectRoleOptions} mb="xl" {...inviteForm.getInputProps('role')} />
-          <Group justify="flex-end">
-            <Button variant="default" onClick={handleCloseInvite}>
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" leftSection={<UserPlus size={16} />}>
-              {t('users.send_invite')}
-            </Button>
-          </Group>
-        </form>
-      </Modal>
-
-    </div>
+      <InviteModal opened={inviteOpen} onClose={handleCloseInvite} roleOptions={selectRoleOptions} />
+    </Container>
   );
 }

@@ -20,7 +20,6 @@ import { styled } from '~/styled-system/jsx';
 import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
-import { normalizeInsurerPrices } from '~/utils/accounting';
 
 export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'new_study') }];
@@ -36,19 +35,7 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     throw redirect('/studies');
   }
 
-  const acctSettingsResponse = await client.service('accounting-settings').find({
-    query: { userId: user.id, $limit: 1 },
-    paginate: false,
-  });
-
-  const acctSettingsList = Array.isArray(acctSettingsResponse)
-    ? acctSettingsResponse
-    : ((acctSettingsResponse as { data?: unknown[] }).data ?? []);
-  const acctSettings = acctSettingsList[0] as { insurerPrices?: unknown } | undefined;
-
-  return json({
-    insurerPrices: normalizeInsurerPrices(acctSettings?.insurerPrices),
-  });
+  return json({});
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {
