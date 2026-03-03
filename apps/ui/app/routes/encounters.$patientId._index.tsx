@@ -118,7 +118,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
         $sort: { createdAt: -1 },
       },
     }),
-    isMedicVerified(client, String((user as any).id), orgRoleIds),
+    isMedicVerified(user, orgRoleIds),
   ]);
 
   let hasCertificate = false;

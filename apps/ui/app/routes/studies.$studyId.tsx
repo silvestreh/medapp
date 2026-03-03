@@ -35,10 +35,10 @@ export const meta: MetaFunction = ({ matches }) => {
 };
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
-  const { client, user } = await getAuthenticatedClient(request);
+  const { user } = await getAuthenticatedClient(request);
   const orgId = await getCurrentOrganizationId(request);
   const orgRoleIds = getCurrentOrgRoleIds(user, orgId);
-  const isVerified = await isMedicVerified(client, String((user as any).id), orgRoleIds);
+  const isVerified = isMedicVerified(user, orgRoleIds);
   return json({ isVerified });
 });
 
@@ -49,7 +49,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
   const actionOrgId = await getCurrentOrganizationId(request);
   const actionOrgRoleIds = getCurrentOrgRoleIds(user, actionOrgId);
-  const verified = await isMedicVerified(client, String((user as any).id), actionOrgRoleIds);
+  const verified = isMedicVerified(user, actionOrgRoleIds);
   if (!verified) {
     return json({ success: false }, { status: 403 });
   }

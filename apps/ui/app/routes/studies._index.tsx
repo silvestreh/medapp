@@ -48,10 +48,10 @@ const STUDY_TYPE_I18N: Record<string, string> = {
 const MIN_RANGE_START = '1900-01-01';
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
-  const { client, user } = await getAuthenticatedClient(request);
+  const { user } = await getAuthenticatedClient(request);
   const orgId = await getCurrentOrganizationId(request);
   const orgRoleIds = getCurrentOrgRoleIds(user, orgId);
-  const isVerified = await isMedicVerified(client, String((user as any).id), orgRoleIds);
+  const isVerified = isMedicVerified(user, orgRoleIds);
   return json({ isVerified });
 });
 

@@ -16,11 +16,13 @@ import {
   Input,
   Switch,
   Divider,
+  Flex,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { Search, Plus, History } from 'lucide-react';
 
+import { showNotification } from '@mantine/notifications';
 import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';
 import Portal from '~/components/portal';
 import {
@@ -256,7 +258,6 @@ export default function AccountingSettingsPage() {
     { practiceId: string; practiceType: 'studies' | 'encounters' }[]
   >([]);
   const [backfillLoading, setBackfillLoading] = useState(false);
-  const [backfillResult, setBackfillResult] = useState<{ backfilled: number; skipped: number } | null>(null);
 
   const isSaving = fetcher.state !== 'idle';
 
@@ -666,6 +667,7 @@ export default function AccountingSettingsPage() {
 
   const handleFindUncosted = useCallback(async () => {
     if (!medicId) return;
+
     const resolved = resolveDateRange(backfillRange, {
       minRangeStart: '1900-01-01',
       maxDate: dayjs().format('YYYY-MM-DD'),
@@ -674,7 +676,7 @@ export default function AccountingSettingsPage() {
     if (!resolved) return;
 
     setBackfillLoading(true);
-    setBackfillResult(null);
+
     try {
       const result = await (feathersClient.service('accounting') as any).get('uncosted', {
         query: {
@@ -686,6 +688,10 @@ export default function AccountingSettingsPage() {
       const practices = Array.isArray(result) ? result : [];
       setUncostedPractices(practices.map((p: any) => ({ practiceId: p.practiceId, practiceType: p.practiceType })));
       setUncostedCount(practices.length);
+    } catch (err: any) {
+      console.error('Find uncosted failed:', err);
+      setUncostedCount(0);
+      showNotification({ color: 'red', message: err.message || 'Failed to find uncosted practices' });
     } finally {
       setBackfillLoading(false);
     }
@@ -699,16 +705,24 @@ export default function AccountingSettingsPage() {
         intent: 'backfill',
         practiceIds: uncostedPractices.map(p => ({ id: p.practiceId, practiceType: p.practiceType })),
       });
-      setBackfillResult(result);
       setUncostedCount(0);
       setUncostedPractices([]);
+      const msg = t('accounting.settings_backfill_result', {
+        defaultValue: '{{backfilled}} backfilled, {{skipped}} skipped',
+        backfilled: result.backfilled,
+        skipped: result.skipped,
+      });
+      showNotification({
+        color: (result.errors?.length ?? 0) > 0 ? 'orange' : 'teal',
+        message: result.errors?.length ? `${msg}\n${result.errors.join('; ')}` : msg,
+      });
     } catch (err: any) {
       console.error('Backfill failed:', err);
-      setBackfillResult({ backfilled: 0, skipped: 0, error: err.message || 'Backfill failed' } as any);
+      showNotification({ color: 'red', message: err.message || 'Backfill failed' });
     } finally {
       setBackfillLoading(false);
     }
-  }, [uncostedPractices, feathersClient]);
+  }, [uncostedPractices, feathersClient, t]);
 
   return (
     <Layout>
@@ -832,53 +846,28 @@ export default function AccountingSettingsPage() {
             <Text size="xs" fw={600} c="dimmed">
               {t('accounting.settings_backfill', { defaultValue: 'Backfill costs' })}
             </Text>
-            <Group gap="xs">
-              <DateRangePopover
-                value={backfillRange}
-                onApply={nextState => setBackfillRange(nextState)}
-                minRangeStart="1900-01-01"
-                maxDate={dayjs().format('YYYY-MM-DD')}
-                precision="day"
-                variant="filled"
-              />
+            <DateRangePopover
+              value={backfillRange}
+              onApply={nextState => setBackfillRange(nextState)}
+              minRangeStart="1900-01-01"
+              maxDate={dayjs().format('YYYY-MM-DD')}
+              precision="day"
+              variant="filled"
+              fullWidth
+            />
+            <Flex gap="xs">
               <Button size="xs" variant="light" onClick={handleFindUncosted} loading={backfillLoading}>
                 {t('accounting.settings_find_uncosted', { defaultValue: 'Find' })}
               </Button>
-            </Group>
-            {uncostedCount !== null && (
-              <Group gap="xs" align="center">
-                <Text size="xs" c={uncostedCount > 0 ? 'orange' : 'green'}>
-                  {uncostedCount > 0
-                    ? t('accounting.settings_uncosted_found', {
-                        defaultValue: '{{count}} untracked',
-                        count: uncostedCount,
-                      })
-                    : t('accounting.settings_all_tracked', { defaultValue: 'All tracked' })}
-                </Text>
-                {uncostedCount > 0 && (
-                  <Button
-                    size="xs"
-                    variant="filled"
-                    color="orange"
-                    onClick={handleBackfillAll}
-                    loading={backfillLoading}
-                  >
-                    {t('accounting.settings_backfill_all', { defaultValue: 'Backfill all' })}
-                  </Button>
-                )}
-              </Group>
-            )}
-            {backfillResult && (
-              <Text size="xs" c={(backfillResult as any).error ? 'red' : 'green'}>
-                {(backfillResult as any).error
-                  ? (backfillResult as any).error
-                  : t('accounting.settings_backfill_result', {
-                      defaultValue: '{{backfilled}} backfilled, {{skipped}} skipped',
-                      backfilled: backfillResult.backfilled,
-                      skipped: backfillResult.skipped,
-                    })}
-              </Text>
-            )}
+              {uncostedCount !== null && uncostedCount > 0 && (
+                <Button size="xs" variant="filled" color="orange" onClick={handleBackfillAll} loading={backfillLoading}>
+                  {t('accounting.settings_backfill_all', {
+                    defaultValue: `Backfill ${uncostedCount}`,
+                    count: uncostedCount,
+                  })}
+                </Button>
+              )}
+            </Flex>
           </Stack>
         </InsurerFilter>
       </Sidebar>

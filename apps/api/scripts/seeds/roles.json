@@ -88,6 +88,7 @@
       "md-settings:create",
       "md-settings:get",
       "md-settings:patch",
+      "md-settings:find",
       "patients:create",
       "patients:find",
       "patients:get:all",

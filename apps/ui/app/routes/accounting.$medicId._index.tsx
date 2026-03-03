@@ -12,7 +12,7 @@ import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server
 import Portal from '~/components/portal';
 import { DateRangePopover, resolveDateRange, type DateRangeFilterState } from '~/components/date-range-popover';
 import { useFeathers } from '~/components/provider';
-import { normalizeInsurerPrices } from '~/utils/accounting';
+import { normalizeInsurerPrices, PARTICULAR_INSURER_ID } from '~/utils/accounting';
 import { styled } from '~/styled-system/jsx';
 import { css } from '~/styled-system/css';
 
@@ -46,6 +46,7 @@ type UncostedPractice = {
   date: string;
   patientId: string;
   insurerId: string | null;
+  effectiveInsurerId: string;
   emergency: boolean;
   studies?: string[];
   patientName: string;
@@ -200,11 +201,14 @@ export default function AccountingDashboardPage() {
 
     let cancelled = false;
 
-    const query = {
+    const query: Record<string, string> = {
       from: dayjs(resolvedRange.from).format('YYYY-MM-DD'),
       to: dayjs(resolvedRange.to).format('YYYY-MM-DD'),
       medicId,
     };
+    if (selectedInsurerId !== 'all') {
+      query.insurerId = selectedInsurerId;
+    }
 
     (feathersClient.service('accounting') as any)
       .get('uncosted', { query })
@@ -214,14 +218,15 @@ export default function AccountingDashboardPage() {
           setSelectedForBackfill(new Set());
         }
       })
-      .catch(() => {
+      .catch((err: any) => {
+        console.error('Failed to fetch uncosted:', err);
         if (!cancelled) {
           setUncostedPractices([]);
         }
       });
 
     return () => { cancelled = true; };
-  }, [feathersClient, resolvedRange, medicId]);
+  }, [feathersClient, resolvedRange, medicId, selectedInsurerId]);
 
   const records = data?.records ?? [];
   const totalRevenue = data?.totalRevenue ?? 0;
@@ -251,6 +256,15 @@ export default function AccountingDashboardPage() {
   const visibleInsurers = useMemo(() => {
     return insurers.filter((insurer: Prepaga) => !hiddenInsurers.includes(insurer.id));
   }, [insurers, hiddenInsurers]);
+
+  const insurerNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const ins of insurers) {
+      map.set(ins.id, ins.shortName);
+    }
+    map.set(PARTICULAR_INSURER_ID, t('accounting.settings_particular', { defaultValue: 'Particular' }));
+    return map;
+  }, [insurers, t]);
 
   const hasUncosted = uncostedPractices.length > 0;
 
@@ -507,7 +521,7 @@ export default function AccountingDashboardPage() {
                   </CellText>
                 </Table.Td>
                 <Table.Td>
-                  <CellText style={{ color: 'var(--mantine-color-dimmed)' }}>-</CellText>
+                  <CellText>{insurerNameById.get(practice.effectiveInsurerId) || '-'}</CellText>
                 </Table.Td>
                 <Table.Td>
                   <CellText>{practice.patientName}</CellText>

@@ -36,6 +36,7 @@ export interface Account {
     sundayStart: string | null;
     sundayEnd: string | null;
     encounterDuration: number;
+    isVerified?: boolean;
   };
 }
 

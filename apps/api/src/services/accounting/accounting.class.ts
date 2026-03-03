@@ -85,7 +85,7 @@ export class Accounting {
     }
 
     if (id === 'uncosted') {
-      const { from, to } = params?.query || {};
+      const { from, to, insurerId: filterInsurerId } = params?.query || {};
       if (!from || !to) {
         throw new BadRequest('Both "from" and "to" query params are required');
       }
@@ -140,11 +140,32 @@ export class Accounting {
       const uncostedStudyRows = uncostsedStudies.filter(s => !costedIds.has(s.id));
       const uncostedEncounterRows = uncostedEncounters.filter(e => !costedIds.has(e.id));
 
+      // Filter to only practices whose effective insurer has pricing configured
+      const insurerPrices = await this.getMedicInsurerPrices(medicId);
+      const configuredInsurers = new Set(Object.keys(insurerPrices));
+
+      const resolveAndFilter = async <T extends { insurerId: string | null; patientId: string }>(
+        rows: T[],
+      ): Promise<(T & { effectiveInsurerId: string })[]> => {
+        const results: (T & { effectiveInsurerId: string })[] = [];
+        for (const row of rows) {
+          const resolved = await this.resolveEffectiveInsurerId(row.insurerId, row.patientId);
+          const priceKey = resolved || PARTICULAR_INSURER_ID;
+          if (!configuredInsurers.has(priceKey)) continue;
+          if (filterInsurerId && priceKey !== filterInsurerId) continue;
+          results.push({ ...row, effectiveInsurerId: priceKey });
+        }
+        return results;
+      };
+
+      const filteredStudyRows = await resolveAndFilter(uncostedStudyRows);
+      const filteredEncounterRows = await resolveAndFilter(uncostedEncounterRows);
+
       // Enrich with patient names
       const allPatientIds = [
         ...new Set([
-          ...uncostedStudyRows.map(s => s.patientId),
-          ...uncostedEncounterRows.map(e => e.patientId),
+          ...filteredStudyRows.map(s => s.patientId),
+          ...filteredEncounterRows.map(e => e.patientId),
         ]),
       ];
 
@@ -175,28 +196,30 @@ export class Accounting {
       };
 
       const results = [
-        ...uncostedStudyRows.map(s => ({
+        ...filteredStudyRows.map(s => ({
           practiceId: s.id,
           practiceType: 'studies' as const,
           date: s.date,
           patientId: s.patientId,
           insurerId: s.insurerId,
+          effectiveInsurerId: s.effectiveInsurerId,
           emergency: s.emergency,
           studies: s.studies,
           patientName: getPatientName(s.patientId),
         })),
-        ...uncostedEncounterRows.map(e => ({
+        ...filteredEncounterRows.map(e => ({
           practiceId: e.id,
           practiceType: 'encounters' as const,
           date: e.date,
           patientId: e.patientId,
           insurerId: e.insurerId,
+          effectiveInsurerId: e.effectiveInsurerId,
           emergency: false,
           patientName: getPatientName(e.patientId),
         })),
       ];
 
-      results.sort((a, b) => b.date.localeCompare(a.date));
+      results.sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf());
       return results;
     }
 
@@ -364,7 +387,7 @@ export class Accounting {
     data: { intent: string; practiceIds: { id: string; practiceType: 'studies' | 'encounters' }[] },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _params?: Params,
-  ): Promise<{ backfilled: number; skipped: number }> {
+  ): Promise<{ backfilled: number; skipped: number; errors: string[] }> {
     if (data.intent !== 'backfill') {
       throw new BadRequest(`Unknown intent: ${data.intent}`);
     }
@@ -374,6 +397,7 @@ export class Accounting {
     }
 
     const sequelize: Sequelize = this.app.get('sequelizeClient');
+    const errors: string[] = [];
     let backfilled = 0;
     let skipped = 0;
 
@@ -450,6 +474,7 @@ export class Accounting {
             backfilled++;
           } catch (err: any) {
             console.warn(`[accounting:backfill] skip study ${study.id}/${studyType}: ${err.message}`);
+            if (errors.length < 5) errors.push(`study ${study.id}/${studyType}: ${err.message}`);
             skipped++;
           }
         }
@@ -497,12 +522,13 @@ export class Accounting {
           backfilled++;
         } catch (err: any) {
           console.warn(`[accounting:backfill] skip encounter ${encounter.id}: ${err.message}`);
+          if (errors.length < 5) errors.push(`encounter ${encounter.id}: ${err.message}`);
           skipped++;
         }
       }
     }
 
-    return { backfilled, skipped };
+    return { backfilled, skipped, errors };
   }
 
   private async getMedicInsurerPrices(medicId: string) {

@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 import SideNav from '~/components/side-nav';
 import TopNav from '~/components/top-nav';
-import { useAccount, useFeathers } from '~/components/provider';
+import { useAccount } from '~/components/provider';
 import { VerificationBanner } from '~/components/verification-banner';
 
 const MainLayoutContainer = styled(Flex, {
@@ -69,7 +69,6 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const { user } = useAccount();
   const { t } = useTranslation();
-  const feathers = useFeathers();
   const [isVerified, setIsVerified] = useState<boolean | undefined>(true);
 
   useEffect(() => {
@@ -78,35 +77,18 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     if (!user) {
-      setIsVerified(true); // Hide banner when logged out
+      setIsVerified(true);
       return;
     }
 
-    const checkVerification = async () => {
-      const currentOrg = (user as any)?.organizations?.[0];
-      const orgRoleIds: string[] = currentOrg?.roleIds || [];
-      if (orgRoleIds.includes('medic')) {
-        try {
-          const mdSettingsResponse = await feathers.service('md-settings').find({
-            query: { userId: user.id },
-            paginate: false,
-          });
-          const settings = Array.isArray(mdSettingsResponse)
-            ? mdSettingsResponse[0]
-            : (mdSettingsResponse as any)?.data?.[0];
-          setIsVerified(settings?.isVerified);
-        } catch (error) {
-          console.error('Error checking verification status:', error);
-        }
-      } else {
-        setIsVerified(true); // Don't show banner for non-medics
-      }
-    };
-
-    if (isMounted) {
-      checkVerification();
+    const currentOrg = (user as any)?.organizations?.[0];
+    const orgRoleIds: string[] = currentOrg?.roleIds || [];
+    if (!orgRoleIds.includes('medic')) {
+      setIsVerified(true);
+    } else {
+      setIsVerified((user as any)?.settings?.isVerified === true);
     }
-  }, [isMounted, user, feathers]);
+  }, [user]);
 
   const handleDismissBanner = useCallback(() => {
     setBannerDismissed(true);

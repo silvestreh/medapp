@@ -26,10 +26,10 @@ export const meta: MetaFunction = ({ matches }) => {
 };
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
-  const { client, user } = await getAuthenticatedClient(request);
+  const { user } = await getAuthenticatedClient(request);
   const orgId = await getCurrentOrganizationId(request);
   const orgRoleIds = getCurrentOrgRoleIds(user, orgId);
-  const verified = await isMedicVerified(client, String((user as any).id), orgRoleIds);
+  const verified = isMedicVerified(user, orgRoleIds);
 
   if (!verified) {
     throw redirect('/studies');
@@ -42,7 +42,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
   const actionOrgId = await getCurrentOrganizationId(request);
   const actionOrgRoleIds = getCurrentOrgRoleIds(user, actionOrgId);
-  const verified = await isMedicVerified(client, String((user as any).id), actionOrgRoleIds);
+  const verified = isMedicVerified(user, actionOrgRoleIds);
   if (!verified) {
     return redirect('/studies');
   }

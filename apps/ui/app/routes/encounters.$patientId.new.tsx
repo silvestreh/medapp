@@ -70,7 +70,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
   const actionOrgId = await getCurrentOrganizationId(request);
   const actionOrgRoleIds = getCurrentOrgRoleIds(user, actionOrgId);
-  const verified = await isMedicVerified(client, String((user as any).id), actionOrgRoleIds);
+  const verified = isMedicVerified(user, actionOrgRoleIds);
   if (!verified) {
     return redirect(`/encounters/${patientId}`);
   }
@@ -103,7 +103,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 
   const loaderOrgId = await getCurrentOrganizationId(request);
   const loaderOrgRoleIds = getCurrentOrgRoleIds(user, loaderOrgId);
-  const verified = await isMedicVerified(client, String((user as any).id), loaderOrgRoleIds);
+  const verified = isMedicVerified(user, loaderOrgRoleIds);
   if (!verified) {
     throw redirect(`/encounters/${patientId}`);
   }

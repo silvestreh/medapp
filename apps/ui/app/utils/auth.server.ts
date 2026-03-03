@@ -80,22 +80,12 @@ export async function getAuthenticatedClient(request: Request): Promise<{ client
   }
 }
 
-export async function isMedicVerified(client: Application, userId: string, orgRoleIds?: string[]): Promise<boolean> {
+export function isMedicVerified(user: any, orgRoleIds?: string[]): boolean {
   if (!orgRoleIds || !orgRoleIds.includes('medic')) {
     return true;
   }
 
-  const settingsResponse = await client.service('md-settings').find({
-    query: { userId, $limit: 1 },
-    paginate: false,
-  });
-
-  const list = Array.isArray(settingsResponse)
-    ? settingsResponse
-    : ((settingsResponse as { data?: unknown[] }).data ?? []);
-
-  const record = list[0] as { isVerified?: boolean } | undefined;
-  return record?.isVerified === true;
+  return user?.settings?.isVerified === true;
 }
 
 export function getCurrentOrgRoleIds(user: any, organizationId?: string): string[] {
