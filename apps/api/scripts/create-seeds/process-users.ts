@@ -71,6 +71,14 @@ export async function processUsers({
     const isReceptionist = user.__class === 'Receptionist';
     const isSuperUser = user.__class === 'SuperUser';
 
+    // Only keep the "jeniferos" receptionist
+    if (isReceptionist && user.username?.toLowerCase() !== 'jeniferos') {
+      stats.discarded++;
+      stats.reasons['other_receptionist'] = (stats.reasons['other_receptionist'] || 0) + 1;
+      bar.increment();
+      continue;
+    }
+
     if (!isReceptionist && !isSuperUser) {
       const hasEncounters = medicIdsWithEncounters.has(userId);
       const hasStudies = medicIdsWithStudies.has(userId);
@@ -126,6 +134,12 @@ export async function processUsers({
       };
     }
 
+    // Ensure jeniferos has contact email
+    if (user.username?.toLowerCase() === 'jeniferos') {
+      if (!contactData) contactData = {} as SeedContactData;
+      contactData.email = 'jenifercentrodehematologia@hotmail.com';
+    }
+
     // Build mdSettings for Medics
     let mdSettings: SeedMdSettings | undefined;
     if (user.__class === 'Medic') {
@@ -151,6 +165,9 @@ export async function processUsers({
     const roles = [baseRole];
     if (userId === JUANCA_ID) {
       roles.push('owner', 'lab-owner');
+    }
+    if (user.username?.toLowerCase() === 'jeniferos') {
+      roles.push('accounting', 'lab-tech');
     }
 
     seedUsers.push({
