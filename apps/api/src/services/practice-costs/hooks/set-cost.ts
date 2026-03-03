@@ -59,6 +59,10 @@ export function setCost(kind: PracticeKind): Hook {
       const priceKey = effectiveInsurerId || PARTICULAR_INSURER_ID;
       const insurerPricing = insurerPrices[priceKey];
 
+      if (!insurerPricing) {
+        continue;
+      }
+
       if (kind === 'encounter') {
         const cost = resolveTotalCost({
           insurerPricing,
