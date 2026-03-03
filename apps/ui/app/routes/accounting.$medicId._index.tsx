@@ -422,12 +422,14 @@ export default function AccountingDashboardPage() {
           )}
         </Paper>
 
-        <Paper withBorder p="md">
-          <Text fw={600} mb="sm">
-            {t('accounting.revenue_by_insurer', { defaultValue: 'Revenue by insurer' })}
-          </Text>
-          <BarChart h={260} data={revenueByInsurer} dataKey="insurer" series={[{ name: 'revenue', color: 'blue.6' }]} />
-        </Paper>
+        {revenueByInsurer.length > 0 && (
+          <Paper withBorder p="md">
+            <Text fw={600} mb="sm">
+              {t('accounting.revenue_by_insurer', { defaultValue: 'Revenue by insurer' })}
+            </Text>
+            <BarChart h={260} data={revenueByInsurer} dataKey="insurer" series={[{ name: 'revenue', color: 'blue.6' }]} />
+          </Paper>
+        )}
 
         {isClient && loading && (
           <Text c="dimmed" ta="center" py="xl">
