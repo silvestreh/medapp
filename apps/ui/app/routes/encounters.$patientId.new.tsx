@@ -3,7 +3,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { redirect } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Stack, Center, Text, NumberInput, Paper } from '@mantine/core';
+import { Stack, Center, Text } from '@mantine/core';
 
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -14,7 +14,6 @@ import NewEncounterSidebar from '~/components/new-encounter-sidebar';
 import { EncounterAiChatPanel } from '~/components/encounter-ai-chat-panel';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
-import { calculatePracticeCost, normalizeInsurerPrices, toNumericPrice } from '~/utils/accounting';
 import {
   getAuthenticatedClient,
   authenticatedLoader,
@@ -104,28 +103,17 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
   const loaderOrgId = await getCurrentOrganizationId(request);
   const loaderOrgRoleIds = getCurrentOrgRoleIds(user, loaderOrgId);
   const verified = isMedicVerified(user, loaderOrgRoleIds);
+
   if (!verified) {
     throw redirect(`/encounters/${patientId}`);
   }
 
   const patient = await client.service('patients').get(patientId);
-
-  const acctSettingsResponse = await client.service('accounting-settings').find({
-    query: { userId: user.id, $limit: 1 },
-    paginate: false,
-  });
-  const acctSettingsList = Array.isArray(acctSettingsResponse)
-    ? acctSettingsResponse
-    : ((acctSettingsResponse as { data?: unknown[] }).data ?? []);
-  const acctSettings = acctSettingsList[0] as { insurerPrices?: unknown } | undefined;
-  const insurerPrices = normalizeInsurerPrices(acctSettings?.insurerPrices);
   const insurerId = (patient as any).medicareId || null;
-  const defaultCost = insurerId ? calculatePracticeCost(insurerPrices[insurerId]?.encounter) : 0;
 
   return {
     patient,
     insurerId,
-    defaultCost,
   };
 });
 
@@ -162,7 +150,6 @@ export default function NewEncounter() {
   const { patient } = data;
   const [formValues, setFormValues] = useState<any>({});
   const [activeFormKey, setActiveFormKey] = useState<string | undefined>(undefined);
-  const [cost, setCost] = useState<number>(data.defaultCost ?? 0);
 
   const activeForms = useMemo(() => {
     const filtered = ALL_FORMS.filter(key => key === null || formValues[key] !== undefined);
@@ -226,24 +213,12 @@ export default function NewEncounter() {
 
       <Content>
         <Stack key={activeFormKey ?? 'no-active-form'}>
-          <Paper withBorder p="md">
-            <NumberInput
-              label={t('accounting.encounter_cost', { defaultValue: 'Encounter cost' })}
-              value={cost}
-              onChange={value => setCost(toNumericPrice(value))}
-              min={0}
-              decimalScale={2}
-              fixedDecimalScale
-              thousandSeparator=","
-            />
-          </Paper>
           {activeFormKey && (
             <EncounterForm
               encounter={{ patientId: patient.id, data: formValues }}
               readOnly={false}
               activeFormKey={activeFormKey}
               onValuesChange={handleValuesChange}
-              cost={cost}
               insurerId={data.insurerId}
             />
           )}

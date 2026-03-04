@@ -15,7 +15,6 @@ interface EncounterFormProps {
   readOnly?: boolean;
   activeFormKey?: string;
   onValuesChange?: (values: any) => void;
-  cost?: number | null;
   insurerId?: string | null;
 }
 
@@ -53,7 +52,7 @@ const isDataEmpty = (data: any): boolean => {
   });
 };
 
-export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChange, cost, insurerId }: EncounterFormProps) {
+export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChange, insurerId }: EncounterFormProps) {
   const { t } = useTranslation();
   const submit = useSubmit();
 
@@ -88,18 +87,16 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
     submit(
       {
         data: JSON.stringify(form.values),
-        ...(typeof cost === 'number' ? { cost: String(cost) } : {}),
         ...(insurerId ? { insurerId } : {}),
       },
       { method: 'post' }
     );
-  }, [cost, form.values, insurerId, submit, isEmpty]);
+  }, [form.values, insurerId, submit, isEmpty]);
 
   return (
     <Form method="post" id="encounter-form">
       <input type="hidden" name="patientId" value={encounter.patientId} />
       <input type="hidden" name="data" value={JSON.stringify(form.values)} />
-      <input type="hidden" name="cost" value={typeof cost === 'number' ? String(cost) : ''} />
       <input type="hidden" name="insurerId" value={insurerId || ''} />
 
       <FormContainer>
