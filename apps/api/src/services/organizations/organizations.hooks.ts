@@ -11,10 +11,17 @@ export default {
     all: [authenticate('jwt')],
     find: [],
     get: [],
-    create: [],
+    create: [protectIsActive()],
     update: [],
-    patch: [verifyOrganizationMembership(), restrictToOrgOwner(), protectIsActive()],
-    remove: [verifyOrganizationMembership(), restrictToOrgOwner()]
+    patch: [
+      verifyOrganizationMembership(),
+      restrictToOrgOwner(),
+      protectIsActive(),
+    ],
+    remove: [
+      verifyOrganizationMembership(),
+      restrictToOrgOwner(),
+    ],
   },
 
   after: {

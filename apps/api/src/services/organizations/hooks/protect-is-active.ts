@@ -6,6 +6,10 @@ export const protectIsActive = (): Hook => {
       return context;
     }
 
+    if (!context.params.provider) {
+      return context;
+    }
+
     if (context.data && 'isActive' in context.data) {
       delete context.data.isActive;
     }

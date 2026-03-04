@@ -32,6 +32,7 @@ describe('\'signed-exports\' service', () => {
       name: 'Signed Exports Test Clinic',
       slug: `signed-exports-test-${Date.now()}`,
       settings: {},
+      isActive: true,
     });
 
     medic = await app.service('users').create({

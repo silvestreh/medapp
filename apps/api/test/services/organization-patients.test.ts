@@ -8,7 +8,8 @@ describe('\'organization-patients\' service', () => {
   before(async () => {
     org = await app.service('organizations').create({
       name: 'OrgPatients Test Clinic',
-      slug: 'org-patients-test'
+      slug: 'org-patients-test',
+      isActive: true,
     });
 
     patient = await app.service('patients').create({

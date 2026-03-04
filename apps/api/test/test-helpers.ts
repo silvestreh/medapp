@@ -18,7 +18,7 @@ export async function createTestOrganization(
     name: overrides.name || 'Test Organization',
     slug,
     settings: {},
-    ...(overrides.isActive !== undefined ? { isActive: overrides.isActive } : {}),
+    isActive: overrides.isActive ?? true,
   } as any);
   return org as Organization;
 }

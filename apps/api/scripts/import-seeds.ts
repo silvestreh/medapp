@@ -175,6 +175,7 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
       name: 'Hematología Herrera',
       slug: 'hematologia-herrera',
       settings: {},
+      isActive: true,
     } as any);
     const organizationId = (org as any).id;
     console.log(`Organization created: ${organizationId}\n`);

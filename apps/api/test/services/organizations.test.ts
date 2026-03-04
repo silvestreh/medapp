@@ -10,7 +10,8 @@ describe('\'organizations\' service', () => {
   it('creates an organization', async () => {
     const org: any = await app.service('organizations').create({
       name: 'Test Clinic',
-      slug: 'test-clinic'
+      slug: 'test-clinic',
+      isActive: true,
     });
 
     assert.ok(org.id, 'Organization has an ID');
@@ -22,13 +23,15 @@ describe('\'organizations\' service', () => {
   it('enforces unique slug', async () => {
     await app.service('organizations').create({
       name: 'Unique Slug Org',
-      slug: 'unique-slug'
+      slug: 'unique-slug',
+      isActive: true,
     });
 
     try {
       await app.service('organizations').create({
         name: 'Duplicate Slug Org',
-        slug: 'unique-slug'
+        slug: 'unique-slug',
+        isActive: true,
       });
       assert.fail('Should not allow duplicate slug');
     } catch (error: any) {
@@ -39,7 +42,8 @@ describe('\'organizations\' service', () => {
   it('restricts patch to organization owner', async () => {
     const org: any = await app.service('organizations').create({
       name: 'Owner Only Org',
-      slug: 'owner-only-org'
+      slug: 'owner-only-org',
+      isActive: true,
     });
 
     const owner: any = await app.service('users').create({
@@ -68,7 +72,8 @@ describe('\'organizations\' service', () => {
   it('rejects patch from non-owner', async () => {
     const org: any = await app.service('organizations').create({
       name: 'Non Owner Org',
-      slug: 'non-owner-org'
+      slug: 'non-owner-org',
+      isActive: true,
     });
 
     const member: any = await app.service('users').create({
@@ -101,7 +106,8 @@ describe('\'organizations\' service', () => {
     const org: any = await app.service('organizations').create({
       name: 'Settings Org',
       slug: 'settings-org',
-      settings: { theme: 'dark', features: ['lab', 'rx'] }
+      settings: { theme: 'dark', features: ['lab', 'rx'] },
+      isActive: true,
     });
 
     const fetched: any = await app.service('organizations').get(org.id);

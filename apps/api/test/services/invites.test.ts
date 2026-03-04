@@ -14,7 +14,8 @@ describe('\'invites\' service', () => {
 
     org = await app.service('organizations').create({
       name: 'Invites Test Clinic',
-      slug: 'invites-test'
+      slug: 'invites-test',
+      isActive: true,
     });
 
     adminUser = await app.service('users').create({
@@ -158,7 +159,8 @@ describe('\'invites\' service', () => {
     it('accepts an invite for an existing user', async () => {
       const secondOrg: any = await app.service('organizations').create({
         name: 'Accept Test Clinic',
-        slug: 'accept-test'
+        slug: 'accept-test',
+        isActive: true,
       });
 
       await app.service('organization-users').create({
@@ -204,7 +206,8 @@ describe('\'invites\' service', () => {
     it('accepts an invite for a new user and sets password', async () => {
       const thirdOrg: any = await app.service('organizations').create({
         name: 'New User Accept Clinic',
-        slug: 'new-user-accept-test'
+        slug: 'new-user-accept-test',
+        isActive: true,
       });
 
       await app.service('organization-users').create({
@@ -251,7 +254,8 @@ describe('\'invites\' service', () => {
     it('rejects accepting an already-accepted invite', async () => {
       const org4: any = await app.service('organizations').create({
         name: 'Double Accept Clinic',
-        slug: 'double-accept-test'
+        slug: 'double-accept-test',
+        isActive: true,
       });
 
       await app.service('organization-users').create({

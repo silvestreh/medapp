@@ -27,7 +27,7 @@ export default function (app: Application): typeof Model {
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true
+      defaultValue: false
     }
   }, {
     hooks: {

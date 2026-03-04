@@ -283,6 +283,7 @@ function buildStudyResult(studyType: string): { type: string; data: string } {
       name: ORG_NAME,
       slug: ORG_SLUG,
       settings: {},
+      isActive: true,
     } as any);
     const organizationId = (org as any).id;
     console.log(`  Created: ${organizationId}\n`);

@@ -48,6 +48,7 @@ describe('\'stats\' service', () => {
     org = await app.service('organizations').create({
       name: 'Stats Test Lab',
       slug: `stats-test-lab-${uniqueSuffix}`,
+      isActive: true,
     });
 
     client = createTestClient(org.id as string);
