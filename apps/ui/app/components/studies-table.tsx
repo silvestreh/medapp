@@ -89,39 +89,6 @@ const Wrapper = styled('div', {
   base: {},
 });
 
-const HeaderContainer = styled('div', {
-  base: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-
-    sm: {
-      padding: '1em',
-    },
-    md: {
-      padding: '2em 2em 1em',
-    },
-  },
-});
-
-const Title = styled('h1', {
-  base: {
-    fontSize: '1.5rem',
-    lineHeight: 1,
-    fontWeight: 700,
-    flex: 1,
-    margin: 0,
-
-    md: {
-      fontSize: '2rem',
-    },
-
-    lg: {
-      fontSize: '2.25rem',
-    },
-  },
-});
-
 const CellText = styled('span', {
   base: {
     textOverflow: 'ellipsis',
@@ -343,10 +310,6 @@ export function StudiesTable({
 
   return (
     <>
-      <HeaderContainer>
-        <Title>{t('studies.title')}</Title>
-      </HeaderContainer>
-
       {isDesktop && (
         <Wrapper>
           <Table highlightOnHover layout="fixed" bg="white">

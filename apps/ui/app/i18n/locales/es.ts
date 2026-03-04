@@ -42,6 +42,7 @@ export const es = {
     loading: 'Cargando...',
     undo: 'Deshacer',
     undone: 'Deshecho',
+    filters: 'Filtros',
   },
   page_titles: {
     home: 'Inicio',
@@ -126,6 +127,7 @@ export const es = {
     backfill_selected_count: '{{count}} seleccionados para completar',
     backfill_selected: 'Completar seleccionados',
     untracked: 'sin costo',
+    settings_show_hidden_insurers: 'Mostrar ocultos',
   },
   appointments: {
     today_schedule: 'Turnos de Hoy',
@@ -684,11 +686,18 @@ export const es = {
     otp_prompt: 'Por favor, ingrese su código de verificación',
     otp_label: 'Código de verificación',
     otp_invalid: 'Código de verificación inválido',
+    no_account: '¿No tenés una cuenta?',
+    sign_up_link: 'Registrate acá',
+  },
+  organization: {
+    inactive_banner: 'Tu organización aún no está activada. Contactá a ventas para comenzar.',
   },
   studies: {
     // Index page
     title: 'Libro de Estudios',
     search_placeholder: 'Buscar por protocolo o paciente...',
+    filter_study_type: 'Tipo de estudio',
+    filter_insurer: 'Obra social',
     new_study: 'Nuevo Estudio',
     col_protocol: 'Protocolo',
     col_patient: 'Paciente',

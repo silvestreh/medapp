@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 import SideNav from '~/components/side-nav';
 import TopNav from '~/components/top-nav';
-import { useAccount } from '~/components/provider';
+import { useAccount, useOrganization } from '~/components/provider';
 import { VerificationBanner } from '~/components/verification-banner';
 
 const MainLayoutContainer = styled(Flex, {
@@ -68,6 +68,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const [isMounted, setIsMounted] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const { user } = useAccount();
+  const { currentOrganizationId, organizations } = useOrganization();
   const { t } = useTranslation();
   const [isVerified, setIsVerified] = useState<boolean | undefined>(true);
 
@@ -99,6 +100,8 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
   }
 
   const showWeakPasswordBanner = !!user?.hasWeakPassword && !bannerDismissed;
+  const currentOrg = organizations.find((o) => o.id === currentOrganizationId);
+  const isOrgActive = currentOrg?.isActive !== false;
 
   return (
     <MainLayoutContainer>
@@ -106,6 +109,20 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
       <Box flex={1}>
         <VerificationBanner isVerified={isVerified} />
         <TopNav />
+        {!isOrgActive && (
+          <Alert
+            color="orange"
+            icon={<ShieldAlert size={18} />}
+            py="sm"
+            px="md"
+            radius={0}
+          >
+            {t('organization.inactive_banner', 'Your organization is not yet activated. Please contact sales to get started.')}{' '}
+            <Anchor href="mailto:sales@medapp.io" fw={600}>
+              sales@medapp.io
+            </Anchor>
+          </Alert>
+        )}
         {showWeakPasswordBanner && (
           <Alert
             color="orange"

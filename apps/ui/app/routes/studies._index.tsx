@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
+import { useClickOutside, useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Filter } from 'lucide-react';
 import { Link, useLoaderData, useSearchParams } from '@remix-run/react';
-import { TextInput, Stack, Loader, Group, Button, Autocomplete, Select } from '@mantine/core';
+import { TextInput, Stack, Loader, Group, Button, Autocomplete, Select, Popover } from '@mantine/core';
 import dayjs from 'dayjs';
 
 import { useFind, useFeathers } from '~/components/provider';
@@ -15,6 +15,7 @@ import { media } from '~/media';
 import { StudiesTable, toStudyItems } from '~/components/studies-table';
 import type { Study } from '~/components/studies-table';
 import { Fab } from '~/components/fab';
+import { styled } from '~/styled-system/jsx';
 import {
   authenticatedLoader,
   getAuthenticatedClient,
@@ -47,6 +48,39 @@ const STUDY_TYPE_I18N: Record<string, string> = {
 
 const MIN_RANGE_START = '1900-01-01';
 
+const HeaderContainer = styled('div', {
+  base: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+
+    sm: {
+      padding: '1em',
+    },
+    md: {
+      padding: '2em 2em 1em',
+    },
+  },
+});
+
+const Title = styled('h1', {
+  base: {
+    fontSize: '1.5rem',
+    lineHeight: 1,
+    fontWeight: 700,
+    flex: 1,
+    margin: 0,
+
+    md: {
+      fontSize: '2rem',
+    },
+
+    lg: {
+      fontSize: '2.25rem',
+    },
+  },
+});
+
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
   const { user } = await getAuthenticatedClient(request);
   const orgId = await getCurrentOrganizationId(request);
@@ -72,7 +106,7 @@ export default function StudiesIndex() {
   const [inputValue, setInputValue] = useState(initialSearch);
   const [debouncedInputValue] = useDebouncedValue(inputValue, 500);
   const inputRef = useRef<HTMLInputElement>(null);
-  const isDesktop = useMediaQuery(media.md);
+  const isDesktop = useMediaQuery(media.lg);
 
   // -------------------------------------------------------------------------
   // Filter state
@@ -83,6 +117,17 @@ export default function StudiesIndex() {
   const [debouncedInsurerSearch] = useDebouncedValue(insurerSearch, 300);
 
   const [selectedStudyType, setSelectedStudyType] = useState<string | null>(null);
+
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filterTargetNode, setFilterTargetNode] = useState<HTMLDivElement | null>(null);
+  const [filterDropdownNode, setFilterDropdownNode] = useState<HTMLDivElement | null>(null);
+  const filtersPopoverRef = useClickOutside<HTMLDivElement>(
+    () => setFiltersOpen(false),
+    ['mousedown', 'touchstart'],
+    [filterTargetNode, filterDropdownNode].filter(Boolean) as HTMLElement[]
+  );
+  const toggleFilters = useCallback(() => setFiltersOpen(prev => !prev), []);
+
   const [rangeFilter, setRangeFilter] = useState<DateRangeFilterState>({
     mode: 'in_last',
     lastAmount: 6,
@@ -304,6 +349,7 @@ export default function StudiesIndex() {
                 maxDropdownHeight={300}
                 w={200}
                 variant="filled"
+                clearable
               />
               <DateRangePopover
                 value={rangeFilter}
@@ -323,42 +369,64 @@ export default function StudiesIndex() {
         </Group>
       </Portal>
 
-      {!isDesktop && (
-        <Group gap="xs" px="sm" py="xs" wrap="nowrap" style={{ overflowX: 'auto' }}>
-          <Select
-            data={studyTypeOptions}
-            value={selectedStudyType}
-            onChange={handleSelectStudyType}
-            placeholder={t('studies.filter_study_type', { defaultValue: 'Study type' })}
-            clearable
-            comboboxProps={{ withinPortal: true }}
-            size="xs"
-            w={140}
-            styles={{ input: { minHeight: 32 } }}
-          />
-          <Autocomplete
-            data={insurerAutocompleteData}
-            value={insurerSearch}
-            onChange={handleInsurerChange}
-            onOptionSubmit={handleInsurerOptionSubmit}
-            placeholder={t('studies.filter_insurer', { defaultValue: 'Insurer' })}
-            comboboxProps={{ withinPortal: true }}
-            maxDropdownHeight={300}
-            size="xs"
-            w={180}
-            styles={{ input: { minHeight: 32 } }}
-          />
-          <DateRangePopover
-            value={rangeFilter}
-            onApply={handleApplyRange}
-            minRangeStart={MIN_RANGE_START}
-            maxDate={dayjs().format('YYYY-MM-DD')}
-            precision="day"
-          />
-        </Group>
-      )}
-
       {!isDesktop && isVerified && <Fab to="/studies/new" />}
+
+      <HeaderContainer>
+        <Title>{t('studies.title')}</Title>
+
+        {!isDesktop && (
+          <div ref={filtersPopoverRef}>
+            <Popover
+              opened={filtersOpen}
+              onChange={setFiltersOpen}
+              position="bottom-end"
+              withArrow
+              closeOnClickOutside={false}
+            >
+              <Popover.Target>
+                <div ref={setFilterTargetNode}>
+                  <Button variant="default" leftSection={<Filter size={16} />} onClick={toggleFilters}>
+                    {t('common.filters')}
+                  </Button>
+                </div>
+              </Popover.Target>
+              <Popover.Dropdown ref={setFilterDropdownNode}>
+                <Stack gap="xs">
+                  <Select
+                    data={studyTypeOptions}
+                    value={selectedStudyType}
+                    onChange={handleSelectStudyType}
+                    placeholder={t('studies.filter_study_type', { defaultValue: 'Study type' })}
+                    clearable
+                    comboboxProps={{ withinPortal: false }}
+                    styles={{ input: { minHeight: 32 } }}
+                  />
+                  <Autocomplete
+                    data={insurerAutocompleteData}
+                    value={insurerSearch}
+                    onChange={handleInsurerChange}
+                    onOptionSubmit={handleInsurerOptionSubmit}
+                    placeholder={t('studies.filter_insurer', { defaultValue: 'Insurer' })}
+                    comboboxProps={{ withinPortal: false }}
+                    maxDropdownHeight={300}
+                    styles={{ input: { minHeight: 32 } }}
+                    clearable
+                  />
+                  <DateRangePopover
+                    value={rangeFilter}
+                    onApply={handleApplyRange}
+                    minRangeStart={MIN_RANGE_START}
+                    maxDate={dayjs().format('YYYY-MM-DD')}
+                    precision="day"
+                    withinPortal={false}
+                    fullWidth
+                  />
+                </Stack>
+              </Popover.Dropdown>
+            </Popover>
+          </div>
+        )}
+      </HeaderContainer>
 
       <StudiesTable
         items={studyItems}

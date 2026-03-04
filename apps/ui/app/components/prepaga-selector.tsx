@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   TextInput,
   Popover,
@@ -71,6 +71,8 @@ interface PrepagaSelectorProps {
   label?: string;
   error?: string;
   readOnly?: boolean;
+  autoFocus?: boolean;
+  onEscape?: () => void;
 }
 
 export function PrepagaSelector({
@@ -81,8 +83,11 @@ export function PrepagaSelector({
   label,
   error,
   readOnly,
+  autoFocus,
+  onEscape,
 }: PrepagaSelectorProps) {
   const { t } = useTranslation();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [opened, setOpened] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -97,6 +102,12 @@ export function PrepagaSelector({
     if (!p.shortName && !p.denomination) return '';
     return `${p.shortName || ''} / ${p.denomination || ''}`;
   }, [selectedPrepaga]);
+
+  useEffect(() => {
+    if (autoFocus) {
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [autoFocus]);
 
   useEffect(() => {
     if (opened) {
@@ -117,7 +128,7 @@ export function PrepagaSelector({
       $search: debouncedSearch,
       $limit: 20,
     },
-    { enabled: opened && !!debouncedSearch },
+    { enabled: opened && !!debouncedSearch }
   );
 
   const results = (response as any)?.data || [];
@@ -128,7 +139,7 @@ export function PrepagaSelector({
       onSelectPrepaga?.(prepaga);
       setOpened(false);
     },
-    [onChange, onSelectPrepaga],
+    [onChange, onSelectPrepaga]
   );
 
   const handleClear = useCallback(
@@ -137,7 +148,7 @@ export function PrepagaSelector({
       onChange('');
       setSearchValue('');
     },
-    [onChange],
+    [onChange]
   );
 
   const handleSearchChange = useCallback(
@@ -146,7 +157,7 @@ export function PrepagaSelector({
       setSearchValue(e.currentTarget.value);
       if (!opened) setOpened(true);
     },
-    [readOnly, opened],
+    [readOnly, opened]
   );
 
   const handleFocus = useCallback(() => {
@@ -212,12 +223,7 @@ export function PrepagaSelector({
               loading ? (
                 <Loader size="xs" />
               ) : value ? (
-                <ActionIcon
-                  variant="subtle"
-                  color="gray"
-                  onClick={handleClear}
-                  style={{ pointerEvents: 'all' }}
-                >
+                <ActionIcon variant="subtle" color="gray" onClick={handleClear} style={{ pointerEvents: 'all' }}>
                   <X size={16} />
                 </ActionIcon>
               ) : (
@@ -234,14 +240,17 @@ export function PrepagaSelector({
               )}
               {(opened || !value) && (
                 <StyledInput
+                  ref={inputRef}
                   value={searchValue}
                   onChange={handleSearchChange}
                   onFocus={handleFocus}
-                  placeholder={
-                    !value || opened
-                      ? placeholder || t('forms.type_to_search_prepagas')
-                      : ''
-                  }
+                  onKeyDown={e => {
+                    if (e.key === 'Escape') {
+                      setOpened(false);
+                      onEscape?.();
+                    }
+                  }}
+                  placeholder={!value || opened ? placeholder || t('forms.type_to_search_prepagas') : ''}
                 />
               )}
             </Group>
@@ -252,9 +261,7 @@ export function PrepagaSelector({
             <Box p="xs">
               {results.length === 0 && !loading && (
                 <MantineText size="sm" c="dimmed" ta="center" py="xl">
-                  {searchValue
-                    ? t('common.no_results')
-                    : t('forms.type_to_search_prepagas')}
+                  {searchValue ? t('common.no_results') : t('forms.type_to_search_prepagas')}
                 </MantineText>
               )}
               {results.length > 0 && (
@@ -282,17 +289,10 @@ export function PrepagaSelector({
                           </MantineText>
                         </Table.Td>
                         <Table.Td>
-                          <MantineText size="sm">
-                            {prepaga.denomination}
-                          </MantineText>
+                          <MantineText size="sm">{prepaga.denomination}</MantineText>
                         </Table.Td>
                         <Table.Td>
-                          {value === prepaga.id && (
-                            <Check
-                              size={14}
-                              color="var(--mantine-color-blue-6)"
-                            />
-                          )}
+                          {value === prepaga.id && <Check size={14} color="var(--mantine-color-blue-6)" />}
                         </Table.Td>
                       </TableRow>
                     ))}

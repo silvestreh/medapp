@@ -36,6 +36,7 @@ const handleSignupOrganization = () => async (context: HookContext) => {
     name: orgName,
     slug,
     settings: {},
+    isActive: false,
   });
 
   await organization_users.create({

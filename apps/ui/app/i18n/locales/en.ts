@@ -43,6 +43,7 @@ export const en: typeof es = {
     loading: 'Loading...',
     undo: 'Undo',
     undone: 'Undone',
+    filters: 'Filters',
   },
   page_titles: {
     home: 'Home',
@@ -127,6 +128,7 @@ export const en: typeof es = {
     backfill_selected_count: '{{count}} selected for backfill',
     backfill_selected: 'Backfill selected',
     untracked: 'untracked',
+    settings_show_hidden_insurers: 'Show hidden',
   },
   appointments: {
     today_schedule: "Today's appointments",
@@ -682,12 +684,19 @@ export const en: typeof es = {
     otp_prompt: 'Please enter your one-time password',
     otp_label: 'Verification code',
     otp_invalid: 'Invalid verification code',
+    no_account: "Don't have an account?",
+    sign_up_link: 'Sign up here',
+  },
+  organization: {
+    inactive_banner: 'Your organization is not yet activated. Please contact sales to get started.',
   },
   studies: {
     // Index page
     emergency: 'Emergency',
     title: 'Studies Book',
     search_placeholder: 'Search by protocol or patient...',
+    filter_study_type: 'Study type',
+    filter_insurer: 'Insurer',
     new_study: 'New Study',
     col_protocol: 'Protocol',
     col_patient: 'Patient',

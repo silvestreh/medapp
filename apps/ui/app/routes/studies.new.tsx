@@ -3,6 +3,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json, redirect } from '@remix-run/node';
 import { useFetcher, useNavigate } from '@remix-run/react';
 import { Group, Button } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Save } from 'lucide-react';
 
@@ -20,6 +21,8 @@ import { styled } from '~/styled-system/jsx';
 import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
+import { Fab } from '~/components/fab';
+import { media } from '~/media';
 
 export const meta: MetaFunction = ({ matches }) => {
   return [{ title: getPageTitle(matches, 'new_study') }];
@@ -96,6 +99,7 @@ export default function NewStudy() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const fetcher = useFetcher();
+  const isDesktop = useMediaQuery(media.md);
 
   const [patientId, setPatientId] = useState<string | null>(null);
   const [date, setDate] = useState<Date | null>(new Date());
@@ -154,13 +158,17 @@ export default function NewStudy() {
         <ToolbarTitle title={t('studies.new_study')} onBack={handleBack} />
       </Portal>
 
-      <Portal id="form-actions">
-        <Group>
-          <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<Save size={16} />}>
-            {t('studies.save')}
-          </Button>
-        </Group>
-      </Portal>
+      {isDesktop && (
+        <Portal id="form-actions">
+          <Group>
+            <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<Save size={16} />}>
+              {t('studies.save')}
+            </Button>
+          </Group>
+        </Portal>
+      )}
+
+      {!isDesktop && <Fab icon={<Save size={22} />} onClick={handleSave} disabled={!canSave} />}
 
       <StudyMetadataForm
         mode="create"

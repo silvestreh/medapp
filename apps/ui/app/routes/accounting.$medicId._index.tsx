@@ -226,7 +226,9 @@ export default function AccountingDashboardPage() {
         }
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [feathersClient, resolvedRange, medicId, selectedInsurerId]);
 
   const records = data?.records ?? [];
@@ -427,7 +429,12 @@ export default function AccountingDashboardPage() {
             <Text fw={600} mb="sm">
               {t('accounting.revenue_by_insurer', { defaultValue: 'Revenue by insurer' })}
             </Text>
-            <BarChart h={260} data={revenueByInsurer} dataKey="insurer" series={[{ name: 'revenue', color: 'blue.6' }]} />
+            <BarChart
+              h={260}
+              data={revenueByInsurer}
+              dataKey="insurer"
+              series={[{ name: 'revenue', color: 'blue.6' }]}
+            />
           </Paper>
         )}
 
@@ -435,27 +442,6 @@ export default function AccountingDashboardPage() {
           <Text c="dimmed" ta="center" py="xl">
             {t('common.loading', { defaultValue: 'Loading...' })}
           </Text>
-        )}
-
-        {hasUncosted && selectedForBackfill.size > 0 && (
-          <Paper withBorder p="sm" style={{ position: 'sticky', top: 'calc(5rem + 2.5rem)', zIndex: 2 }}>
-            <Group justify="space-between">
-              <Text size="sm">
-                {t('accounting.backfill_selected_count', {
-                  defaultValue: '{{count}} selected for backfill',
-                  count: selectedForBackfill.size,
-                })}
-              </Text>
-              <Button
-                size="sm"
-                color="orange"
-                onClick={handleBackfillSelected}
-                loading={backfillLoading}
-              >
-                {t('accounting.backfill_selected', { defaultValue: 'Backfill selected' })}
-              </Button>
-            </Group>
-          </Paper>
         )}
 
         <Table
@@ -553,8 +539,7 @@ export default function AccountingDashboardPage() {
                   <CellText>
                     {practice.practiceType === 'studies'
                       ? (practice.studies || []).map(s => translateType(s)).join(', ')
-                      : translateType('encounter')}
-                    {' '}
+                      : translateType('encounter')}{' '}
                     <Badge size="xs" color="orange" variant="light">
                       {t('accounting.untracked', { defaultValue: 'untracked' })}
                     </Badge>
@@ -573,6 +558,22 @@ export default function AccountingDashboardPage() {
             ))}
           </Table.Tbody>
         </Table>
+
+        {hasUncosted && selectedForBackfill.size > 0 && (
+          <Paper withBorder p="sm" style={{ position: 'sticky', bottom: 0, zIndex: 2 }}>
+            <Group justify="space-between">
+              <Text size="sm">
+                {t('accounting.backfill_selected_count', {
+                  defaultValue: '{{count}} selected for backfill',
+                  count: selectedForBackfill.size,
+                })}
+              </Text>
+              <Button size="sm" onClick={handleBackfillSelected} loading={backfillLoading}>
+                {t('accounting.backfill_selected', { defaultValue: 'Backfill selected' })}
+              </Button>
+            </Group>
+          </Paper>
+        )}
       </Stack>
     </ContentWrapper>
   );

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { json, redirect, type ActionFunction, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
-import { TextInput, PasswordInput, Button, Paper, Title, Text, Container, Divider } from '@mantine/core';
+import { Form, Link, useActionData } from '@remix-run/react';
+import { TextInput, PasswordInput, Button, Paper, Title, Text, Container, Divider, Anchor } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { startAuthentication, browserSupportsWebAuthn } from '@simplewebauthn/browser';
 import { KeyRound } from 'lucide-react';
@@ -261,6 +261,13 @@ export default function Login() {
           </>
         )}
       </Paper>
+
+      <Text c="dimmed" size="sm" ta="center" mt="md">
+        {t('auth.no_account', "Don't have an account?")}{' '}
+        <Anchor component={Link} to="/signup" fw={600}>
+          {t('auth.sign_up_link', 'Sign up here')}
+        </Anchor>
+      </Text>
     </Container>
   );
 }

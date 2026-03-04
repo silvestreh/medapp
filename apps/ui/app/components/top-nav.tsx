@@ -26,10 +26,6 @@ const Toolbar = styled(Group, {
   base: {
     alignItems: 'center',
     flex: 1,
-
-    '&:empty': {
-      display: 'none',
-    },
   },
 });
 

@@ -3,6 +3,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useLoaderData, useParams } from '@remix-run/react';
 import {
+  ActionIcon,
   Button,
   Group,
   NumberInput,
@@ -17,10 +18,11 @@ import {
   Switch,
   Divider,
   Flex,
+  Popover,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { Search, Plus, History } from 'lucide-react';
+import { Search, Plus, History, ChevronDown, ArrowLeft } from 'lucide-react';
 
 import { showNotification } from '@mantine/notifications';
 import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';
@@ -85,6 +87,7 @@ const SidebarList = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
+    mt: '-2',
   },
 });
 
@@ -799,52 +802,92 @@ export default function AccountingSettingsPage() {
       </Portal>
 
       <Sidebar>
-        <Input
-          placeholder={t('accounting.settings_search_insurers')}
-          variant="unstyled"
-          size="lg"
-          leftSection={<Search size={16} />}
-          onChange={event => handleSearchChange(event.currentTarget.value)}
-          styles={{
-            wrapper: {
-              borderBottom: '1px solid var(--mantine-color-gray-2)',
-            },
-            input: {
-              fontSize: '1rem',
-            },
+        <Stack
+          bg="white"
+          pb="sm"
+          gap="xs"
+          px="sm"
+          style={{
+            borderBottom: '1px solid var(--mantine-color-gray-2)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 2,
+            backgroundColor: 'white',
           }}
-        />
-        <Stack gap="xs" px="sm">
-          {showAddInsurer ? (
-            <PrepagaSelector
-              value={undefined}
-              onChange={() => {}}
-              onSelectPrepaga={handleAddInsurer}
-              placeholder={t('accounting.settings_search_add_insurer', { defaultValue: 'Search insurer...' })}
+        >
+          {!showAddInsurer && (
+            <Input
+              placeholder={t('accounting.settings_search_insurers')}
+              variant="unstyled"
+              size="lg"
+              leftSection={<Search size={16} />}
+              onChange={event => handleSearchChange(event.currentTarget.value)}
+              styles={{
+                wrapper: {
+                  marginLeft: '-0.75rem',
+                  borderBottom: '1px solid var(--mantine-color-gray-2)',
+                  width: 'calc(100% + (var(--mantine-spacing-sm) * 2))',
+                },
+                input: {
+                  fontSize: '1rem',
+                },
+              }}
             />
+          )}
+          {showAddInsurer ? (
+            <Flex gap={0} pt="sm">
+              <ActionIcon variant="transparent" size="input-xs" onClick={() => setShowAddInsurer(false)}>
+                <ArrowLeft size={14} />
+              </ActionIcon>
+              <PrepagaSelector
+                autoFocus={true}
+                value={undefined}
+                onChange={() => {}}
+                onSelectPrepaga={handleAddInsurer}
+                onEscape={() => setShowAddInsurer(false)}
+                placeholder={t('accounting.settings_search_add_insurer', { defaultValue: 'Search insurer...' })}
+              />
+            </Flex>
           ) : (
-            <Group gap="xs">
+            <Group gap={0}>
               <Button
                 variant="light"
                 size="xs"
                 leftSection={<Plus size={14} />}
                 onClick={() => setShowAddInsurer(true)}
+                style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                 flex={1}
               >
                 {t('accounting.settings_add_insurer', { defaultValue: 'Add insurer' })}
               </Button>
               {(data.allHistoricalInsurerIds?.length ?? 0) > 0 && (
-                <Button
-                  variant="light"
-                  color="gray"
-                  size="xs"
-                  leftSection={<History size={14} />}
-                  onClick={handleAddAllHistorical}
-                  loading={loadingHistorical}
-                  flex={1}
-                >
-                  {t('accounting.settings_add_all_past', { defaultValue: 'Add past' })}
-                </Button>
+                <Popover position="bottom-end" withArrow>
+                  <Popover.Target>
+                    <ActionIcon
+                      variant="light"
+                      size="input-xs"
+                      style={{
+                        borderLeft: '1px solid var(--mantine-color-blue-1)',
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 0,
+                      }}
+                    >
+                      <ChevronDown size={14} />
+                    </ActionIcon>
+                  </Popover.Target>
+                  <Popover.Dropdown p={0}>
+                    <Button
+                      variant="transparent"
+                      size="xs"
+                      leftSection={<History size={14} />}
+                      onClick={handleAddAllHistorical}
+                      loading={loadingHistorical}
+                      flex={1}
+                    >
+                      {t('accounting.settings_add_all_past', { defaultValue: 'Add past' })}
+                    </Button>
+                  </Popover.Dropdown>
+                </Popover>
               )}
             </Group>
           )}
@@ -868,7 +911,7 @@ export default function AccountingSettingsPage() {
         <InsurerFilter>
           <Stack gap="sm">
             <Switch
-              label="Show hidden insurers"
+              label={t('accounting.settings_show_hidden_insurers', { defaultValue: 'Show hidden insurers' })}
               checked={showHiddenInsurers}
               onChange={handleShowHiddenInsurersChange}
             />
