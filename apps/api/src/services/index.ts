@@ -41,6 +41,7 @@ import accountingSettings from './accounting-settings/accounting-settings.servic
 import practiceCosts from './practice-costs/practice-costs.service';
 import prescriptions from './prescriptions/prescriptions.service';
 import recetario from './recetario/recetario.service';
+import whatsapp from './whatsapp/whatsapp.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -86,4 +87,5 @@ export default function (app: Application): void {
   app.configure(practiceCosts);
   app.configure(prescriptions);
   app.configure(recetario);
+  app.configure(whatsapp);
 }

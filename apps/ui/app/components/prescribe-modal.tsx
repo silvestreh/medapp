@@ -28,9 +28,33 @@ import { showNotification } from '@mantine/notifications';
 import { useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash, Search } from 'lucide-react';
+import { AsYouType, type CountryCode } from 'libphonenumber-js';
 
 import { Icd10Selector } from '~/components/icd10-selector';
 import { PrepagaSelector } from '~/components/prepaga-selector';
+
+const COUNTRY_PHONE_OPTIONS = [
+  { value: '54', label: '🇦🇷 +54', country: 'AR' as CountryCode },
+  { value: '55', label: '🇧🇷 +55', country: 'BR' as CountryCode },
+  { value: '56', label: '🇨🇱 +56', country: 'CL' as CountryCode },
+  { value: '57', label: '🇨🇴 +57', country: 'CO' as CountryCode },
+  { value: '52', label: '🇲🇽 +52', country: 'MX' as CountryCode },
+  { value: '598', label: '🇺🇾 +598', country: 'UY' as CountryCode },
+  { value: '595', label: '🇵🇾 +595', country: 'PY' as CountryCode },
+  { value: '51', label: '🇵🇪 +51', country: 'PE' as CountryCode },
+  { value: '1', label: '🇺🇸 +1', country: 'US' as CountryCode },
+  { value: '34', label: '🇪🇸 +34', country: 'ES' as CountryCode },
+];
+
+function formatPhoneForDisplay(digits: string, callingCode: string): string {
+  const country = COUNTRY_PHONE_OPTIONS.find(o => o.value === callingCode)?.country || 'AR';
+  const formatter = new AsYouType(country);
+  // Feed the full international number so the formatter knows the format
+  const formatted = formatter.input(`+${callingCode}${digits}`);
+  // Strip the country code prefix from the display (e.g. "+54 " → "")
+  const prefix = `+${callingCode} `;
+  return formatted.startsWith(prefix) ? formatted.slice(prefix.length) : formatted.replace(`+${callingCode}`, '').trim();
+}
 
 interface MedicineRow {
   medication: RecetarioSelectedMedication | null;
@@ -209,7 +233,7 @@ const formatDate = (d: string | Date | null | undefined) => {
   return date.toISOString().split('T')[0];
 };
 
-interface PrescriptionResult {
+export interface PrescriptionResult {
   prescriptionId: string | null;
   recetarioDocumentId: number | null;
   url: string | null;
@@ -222,9 +246,10 @@ interface PrescribeModalProps {
   onClose: () => void;
   onSuccess: () => void;
   patient?: any;
+  initialPrescriptionResult?: PrescriptionResult;
 }
 
-export function PrescribeModal({ opened, onClose, onSuccess, patient }: PrescribeModalProps) {
+export function PrescribeModal({ opened, onClose, onSuccess, patient, initialPrescriptionResult }: PrescribeModalProps) {
   const { t } = useTranslation();
   const fetcher = useFetcher<any>();
   const patientFetcher = useFetcher<any>();
@@ -234,6 +259,8 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient }: Prescrib
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [prescriptionResult, setPrescriptionResult] = useState<PrescriptionResult | null>(null);
   const [shareEmail, setShareEmail] = useState('');
+  const [sharePhoneCountry, setSharePhoneCountry] = useState('54');
+  const [sharePhone, setSharePhone] = useState('');
 
   const [rxDiagnosisId, setRxDiagnosisId] = useState('');
   const [rxDiagnosis, setRxDiagnosis] = useState('');
@@ -288,6 +315,10 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient }: Prescrib
   // Pre-fill from props synchronously (if available); fire Recetario fetch for gap-fill
   useEffect(() => {
     if (opened) {
+      if (initialPrescriptionResult) {
+        setPrescriptionResult(initialPrescriptionResult);
+        setStep(2);
+      }
       if (patient) {
         const pd = patient.personalData || {};
         const cd = patient.contactData || {};
@@ -306,6 +337,7 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient }: Prescrib
           insuranceNumber: patient.medicareNumber || '',
         });
         setShareEmail(email);
+        setSharePhone((cd.phoneNumber || '').replace(/^tel:/i, ''));
       }
       patientFetcher.submit({ intent: 'get-patient-data' }, { method: 'post' });
     }
@@ -323,6 +355,7 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient }: Prescrib
         healthInsuranceName: '',
       });
       setShareEmail(prev => prev || email);
+      setSharePhone(prev => prev || mhsPatientData.phone || '');
     }
     if (!recetarioData) return;
     patientForm.setValues((prev: any) => ({
@@ -337,6 +370,7 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient }: Prescrib
         prev.medicareId || matchedPrepagaId ? prev.healthInsuranceName : recetarioData.healthInsuranceName,
     }));
     setShareEmail(prev => prev || recetarioData.email || '');
+    setSharePhone(prev => prev || recetarioData.phone || '');
   }, [patientFetcher.state, patientFetcher.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset all state when modal closes
@@ -345,6 +379,8 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient }: Prescrib
       setStep(0);
       setPrescriptionResult(null);
       setShareEmail('');
+      setSharePhoneCountry('54');
+      setSharePhone('');
       rxForm.reset();
       orderForm.reset();
       patientForm.reset();
@@ -448,7 +484,7 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient }: Prescrib
     );
   };
 
-  const handleShare = () => {
+  const handleShareEmail = () => {
     if (!prescriptionResult || !shareEmail.trim()) return;
     shareFetcher.submit(
       {
@@ -458,6 +494,24 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient }: Prescrib
           documentIds: prescriptionResult.recetarioDocumentId ? [prescriptionResult.recetarioDocumentId] : [],
           shareChannel: 'email',
           shareRecipient: shareEmail,
+        }),
+      },
+      { method: 'post' }
+    );
+  };
+
+  const handleShareWhatsApp = () => {
+    if (!prescriptionResult || !sharePhone.trim()) return;
+    const digits = sharePhone.replace(/[^0-9]/g, '');
+    const fullPhone = sharePhoneCountry === '54' ? `549${digits}` : sharePhoneCountry + digits;
+    shareFetcher.submit(
+      {
+        intent: 'share-prescription',
+        data: JSON.stringify({
+          prescriptionId: prescriptionResult.prescriptionId,
+          shareChannel: 'whatsapp',
+          shareRecipient: fullPhone,
+          pdfUrl: prescriptionResult.url,
         }),
       },
       { method: 'post' }
@@ -720,13 +774,34 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient }: Prescrib
               value={shareEmail}
               onChange={e => setShareEmail(e.currentTarget.value)}
             />
-            <Button loading={shareFetcher.state !== 'idle'} disabled={!shareEmail.trim()} onClick={handleShare}>
+            <Button loading={shareFetcher.state !== 'idle'} disabled={!shareEmail.trim()} onClick={handleShareEmail}>
               {t('recetario.share_email')}
             </Button>
           </Group>
 
+          <Group align="flex-end" gap="xs">
+            <Select
+              style={{ width: 100 }}
+              label={t('recetario.phone_recipient')}
+              data={COUNTRY_PHONE_OPTIONS}
+              value={sharePhoneCountry}
+              onChange={v => setSharePhoneCountry(v || '54')}
+              searchable
+              allowDeselect={false}
+            />
+            <TextInput
+              style={{ flex: 1 }}
+              placeholder={formatPhoneForDisplay('1112345678', sharePhoneCountry)}
+              value={formatPhoneForDisplay(sharePhone, sharePhoneCountry)}
+              onChange={e => setSharePhone(e.currentTarget.value.replace(/[^0-9]/g, ''))}
+            />
+            <Button loading={shareFetcher.state !== 'idle'} disabled={!sharePhone.trim()} onClick={handleShareWhatsApp}>
+              {t('recetario.share_whatsapp')}
+            </Button>
+          </Group>
+
           <Group gap="xs">
-            {(['share_whatsapp', 'send_sms', 'send_telegram'] as const).map(key => (
+            {(['send_sms', 'send_telegram'] as const).map(key => (
               <Tooltip key={key} label={t('recetario.coming_soon')}>
                 <Button variant="default" disabled style={{ pointerEvents: 'none' }}>
                   {t(`recetario.${key}`)}

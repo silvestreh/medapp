@@ -18,7 +18,7 @@
       "header": {
         "typ": "access"
       },
-      "audience": "https://yourdomain.com",
+      "audience": "https://athel.as",
       "issuer": "feathers",
       "algorithm": "HS256",
       "expiresIn": "1d"
@@ -31,13 +31,17 @@
   "postgres": "postgres://postgres:@localhost:5432/medapp_api",
   "encryptionKey": "ENCRYPTION_KEY",
   "mailgun": {
-    "apiKey": "",
-    "domain": "",
-    "from": "MedApp <noreply@example.com>"
+    "apiKey": "MAILGUN_API_KEY",
+    "domain": "MAILGUN_DOMAIN",
+    "from": "Athelas <hello@athel.as>"
   },
   "recetario": {
     "apiUrl": "https://external-api.recetario.com.ar",
     "jwt": "RECETARIO_JWT",
     "webhookSecret": "RECETARIO_WEBHOOK_SECRET"
+  },
+  "whapi": {
+    "token": "WHAPI_TOKEN",
+    "apiUrl": "https://gate.whapi.cloud"
   }
 }

@@ -1061,6 +1061,7 @@ export const es = {
     order_success: 'Orden creada correctamente',
     send_via: 'Enviar por',
     send_email_recipient: 'Destinatario',
+    phone_recipient: 'Número de teléfono',
     send_sms: 'SMS',
     send_telegram: 'Telegram',
     coming_soon: 'Próximamente',

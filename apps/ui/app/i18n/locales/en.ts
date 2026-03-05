@@ -1056,6 +1056,7 @@ export const en: typeof es = {
     order_success: 'Order created successfully',
     send_via: 'Send via',
     send_email_recipient: 'Recipient',
+    phone_recipient: 'Phone number',
     send_sms: 'SMS',
     send_telegram: 'Telegram',
     coming_soon: 'Coming soon',

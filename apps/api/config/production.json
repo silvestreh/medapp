@@ -29,5 +29,8 @@
       "usernameField": "username",
       "passwordField": "password"
     }
+  },
+  "whapi": {
+    "token": "WHAPI_TOKEN"
   }
 }

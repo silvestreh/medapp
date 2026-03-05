@@ -45,6 +45,7 @@ export interface RecetarioCreateData {
   shareChannel?: 'whatsapp' | 'email';
   shareRecipient?: string;
   documentIds?: number[];
+  pdfUrl?: string;
   healthCenter?: any;
   search?: string;
 }
@@ -344,16 +345,25 @@ export class Recetario {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async handleShare(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {
-    const { documentIds, shareChannel, shareRecipient, prescriptionId } = data;
-    if (!documentIds || documentIds.length === 0) throw new BadRequest('documentIds required');
+    const { documentIds, shareChannel, shareRecipient, prescriptionId, pdfUrl } = data;
     if (!shareChannel) throw new BadRequest('shareChannel required');
     if (!shareRecipient) throw new BadRequest('shareRecipient required');
 
-    await recetarioClient.shareMedicalDocuments({
-      documentIds,
-      channel: shareChannel,
-      recipient: shareRecipient,
-    });
+    if (shareChannel === 'whatsapp') {
+      if (!pdfUrl) throw new BadRequest('pdfUrl required for WhatsApp sharing');
+      await this.app.service('whatsapp').create({
+        to: shareRecipient,
+        documentUrl: pdfUrl,
+        filename: 'receta.pdf',
+      });
+    } else {
+      if (!documentIds || documentIds.length === 0) throw new BadRequest('documentIds required');
+      await recetarioClient.shareMedicalDocuments({
+        documentIds,
+        channel: shareChannel,
+        recipient: shareRecipient,
+      });
+    }
 
     if (prescriptionId) {
       await this.app.service('prescriptions').patch(

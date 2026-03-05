@@ -126,8 +126,8 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   }
 
   if (intent === 'share-prescription') {
-    const { prescriptionId, documentIds, shareChannel, shareRecipient } = parseFormJson(formData.get('data')) as any;
-    await client.service('recetario' as any).create({ action: 'share', prescriptionId, documentIds, shareChannel, shareRecipient });
+    const { prescriptionId, documentIds, shareChannel, shareRecipient, pdfUrl } = parseFormJson(formData.get('data')) as any;
+    await client.service('recetario' as any).create({ action: 'share', prescriptionId, documentIds, shareChannel, shareRecipient, pdfUrl });
     return json({ intent: 'share-prescription', success: true });
   }
 

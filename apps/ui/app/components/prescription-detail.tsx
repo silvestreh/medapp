@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { Badge, Button, Group, Popover, Text } from '@mantine/core';
 import { useFetcher } from '@remix-run/react';
 import { showNotification } from '@mantine/notifications';
+import { Send } from 'lucide-react';
 import { FormContainer, FormCard, FieldRow, StyledTitle, ItemHeader } from '~/components/forms/styles';
+import { PrescribeModal, type PrescriptionResult } from '~/components/prescribe-modal';
 
 interface Medicine {
   text: string;
@@ -40,6 +42,7 @@ export function PrescriptionDetail({ prescription: rx, onCancelled }: Prescripti
   const { t } = useTranslation();
   const cancelFetcher = useFetcher<any>();
   const [confirming, setConfirming] = useState(false);
+  const [shareOpened, setShareOpened] = useState(false);
   const cancelling = cancelFetcher.state !== 'idle';
 
   const handleCancelConfirm = () => {
@@ -63,6 +66,14 @@ export function PrescriptionDetail({ prescription: rx, onCancelled }: Prescripti
 
   const canCancel = rx.status !== 'cancelled' && rx.status !== 'expired';
 
+  const sharePrescriptionResult: PrescriptionResult = {
+    prescriptionId: rx.id,
+    recetarioDocumentId: rx.recetarioDocumentIds?.[0]?.id ?? null,
+    url: rx.recetarioDocumentIds?.[0]?.url ?? null,
+    type: rx.type,
+    diagnosis: rx.content?.diagnosis || '',
+  };
+
   return (
     <FormContainer>
       <ItemHeader>
@@ -73,31 +84,26 @@ export function PrescriptionDetail({ prescription: rx, onCancelled }: Prescripti
           </Badge>
           <Group gap="xs" style={{ marginLeft: 'auto', marginRight: '2.5rem' }}>
             {rx.recetarioDocumentIds?.[0]?.url && (
-              <Button
-                component="a"
-                href={rx.recetarioDocumentIds[0].url}
-                target="_blank"
-                variant="light"
-                size="xs"
-              >
+              <Button component="a" href={rx.recetarioDocumentIds[0].url} target="_blank" variant="light" size="xs">
                 {t('recetario.view_pdf')}
               </Button>
             )}
+            {rx.status === 'completed' && (
+              <Button variant="light" size="xs" leftSection={<Send size={14} />} onClick={() => setShareOpened(true)}>
+                {t('recetario.send_via')}
+              </Button>
+            )}
             {canCancel && (
-              <Popover
-                opened={confirming}
-                onChange={setConfirming}
-                withArrow
-                shadow="md"
-                position="bottom-end"
-              >
+              <Popover opened={confirming} onChange={setConfirming} withArrow shadow="md" position="bottom-end">
                 <Popover.Target>
                   <Button variant="light" color="red" size="xs" onClick={() => setConfirming(true)}>
                     {t('recetario.cancel')}
                   </Button>
                 </Popover.Target>
                 <Popover.Dropdown>
-                  <Text size="sm" mb="sm">{t('recetario.cancel_confirm')}</Text>
+                  <Text size="sm" mb="sm">
+                    {t('recetario.cancel_confirm')}
+                  </Text>
                   <Group gap="xs" justify="flex-end">
                     <Button size="xs" variant="default" onClick={() => setConfirming(false)}>
                       {t('common.no')}
@@ -144,6 +150,12 @@ export function PrescriptionDetail({ prescription: rx, onCancelled }: Prescripti
           </FieldRow>
         )}
       </FormCard>
+      <PrescribeModal
+        opened={shareOpened}
+        onClose={() => setShareOpened(false)}
+        onSuccess={() => {}}
+        initialPrescriptionResult={sharePrescriptionResult}
+      />
     </FormContainer>
   );
 }
