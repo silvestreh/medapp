@@ -20,4 +20,4 @@ export type {
   EncounterSchema,
   EncounterFormValues,
   EncounterFormAdapter,
-} from '@medapp/encounter-schemas';
+} from '@athelas/encounter-schemas';

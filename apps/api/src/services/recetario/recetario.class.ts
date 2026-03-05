@@ -174,7 +174,7 @@ export class Recetario {
     const patient = await this.getPatientData(patientId);
     const orgSettings = this.getOrgRecetarioSettings(params);
 
-    const reference = `medapp-${randomUUID()}`;
+    const reference = `athelas-${randomUUID()}`;
 
     const payload: recetarioClient.QuickLinkPayload = {
       professional: mapDoctorData(doctor),
@@ -218,10 +218,10 @@ export class Recetario {
     if (stagingEmail) doctor.contactData = { ...doctor.contactData, email: stagingEmail };
     const { resolved: patient, mhsPatient } = await this.resolvePatientWithOverride(patientId, patientOverride);
     await this.upsertRecetarioPatient(patient);
-    await this.patchMedAppPatientIfChanged(patientId, mhsPatient, patientOverride);
+    await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
     const orgSettings = this.getOrgRecetarioSettings(params);
 
-    const reference = `medapp-${randomUUID()}`;
+    const reference = `athelas-${randomUUID()}`;
     const recetarioUserId = doctor.mdSettings.recetarioUserId as number | null | undefined;
 
     const doctorPayload = mapDoctorForAPI(doctor);
@@ -286,10 +286,10 @@ export class Recetario {
     if (stagingEmail) doctor.contactData = { ...doctor.contactData, email: stagingEmail };
     const { resolved: patient, mhsPatient } = await this.resolvePatientWithOverride(patientId, patientOverride);
     await this.upsertRecetarioPatient(patient);
-    await this.patchMedAppPatientIfChanged(patientId, mhsPatient, patientOverride);
+    await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
     const orgSettings = this.getOrgRecetarioSettings(params);
 
-    const reference = `medapp-${randomUUID()}`;
+    const reference = `athelas-${randomUUID()}`;
     const recetarioUserId = doctor.mdSettings.recetarioUserId as number | null | undefined;
 
     const doctorPayload = mapDoctorForAPI(doctor);
@@ -498,7 +498,7 @@ export class Recetario {
     }
   }
 
-  private async patchMedAppPatientIfChanged(
+  private async patchAthelasPatientIfChanged(
     patientId: string,
     mhsPatient: any,
     override: RecetarioCreateData['patientData']

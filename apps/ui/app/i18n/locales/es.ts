@@ -49,7 +49,7 @@ export const es = {
   page_titles: {
     home: 'Inicio',
     login: 'Ingresar',
-    login_description: 'Ingresar a MedApp',
+    login_description: 'Ingresar a Athelas',
     appointments: 'Turnos',
     patients: 'Pacientes',
     new_patient: 'Nuevo Paciente',
@@ -871,7 +871,7 @@ export const es = {
     encryption_pin_placeholder: 'Ingrese el PIN de su certificado',
     certificate_password_label: 'Clave del certificado digital',
     certificate_password_description:
-      'La clave establecida cuando fue emitido su certificado (no es su contraseña de MedApp)',
+      'La clave establecida cuando fue emitido su certificado (no es su contraseña de Athelas)',
     certificate_password_placeholder: 'Ingrese la clave de su certificado',
     no_certificate_notice: 'No tiene un certificado digital cargado. El PDF se exportará sin firma digital.',
     upload_certificate_link: 'Cargar certificado',

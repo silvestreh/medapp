@@ -50,7 +50,7 @@ export const en: typeof es = {
   page_titles: {
     home: 'Home',
     login: 'Sign In',
-    login_description: 'Sign in to MedApp',
+    login_description: 'Sign in to Athelas',
     appointments: 'Appointments',
     patients: 'Patients',
     new_patient: 'New Patient',
@@ -867,7 +867,7 @@ export const en: typeof es = {
     encryption_pin_description: 'The PIN you chose when uploading your certificate',
     encryption_pin_placeholder: 'Enter your certificate PIN',
     certificate_password_label: 'Certificate password',
-    certificate_password_description: 'The password set when your certificate was issued (not your MedApp password)',
+    certificate_password_description: 'The password set when your certificate was issued (not your Athelas password)',
     certificate_password_placeholder: 'Enter your certificate password',
     no_certificate_notice: 'No digital certificate uploaded. The PDF will be exported without a digital signature.',
     upload_certificate_link: 'Upload certificate',

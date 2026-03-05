@@ -1,5 +1,5 @@
 {
-  "name": "medapp-ui",
+  "name": "athelas-ui",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -27,7 +27,8 @@
     "@mantine/nprogress": "^8.0.0",
     "@mantine/spotlight": "^8.0.0",
     "@mantine/tiptap": "^8.0.0",
-    "@medapp/encounter-schemas": "workspace:*",
+    "@athelas/brand": "workspace:*",
+    "@athelas/encounter-schemas": "workspace:*",
     "@remix-run/node": "^2.16.5",
     "@remix-run/react": "^2.16.5",
     "@remix-run/serve": "^2.16.5",

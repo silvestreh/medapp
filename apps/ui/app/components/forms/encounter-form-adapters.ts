@@ -12,4 +12,4 @@ export {
   cardiologyAdapter,
   habitsAdapter,
   occupationalHistoryAdapter,
-} from '@medapp/encounter-schemas';
+} from '@athelas/encounter-schemas';

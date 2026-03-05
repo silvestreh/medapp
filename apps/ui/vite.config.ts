@@ -22,7 +22,7 @@ export default defineConfig({
     }),
     tsconfigPaths(),
     sentryVitePlugin({
-      org: 'medapp-n9',
+      org: 'athelas',
       project: 'javascript-remix',
       telemetry: false,
     }),

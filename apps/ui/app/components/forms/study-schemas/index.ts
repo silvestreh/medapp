@@ -6,4 +6,4 @@ export {
   studyHemostasis as hemostasis,
   studyMyelogram as myelogram,
   studyThrombophilia as thrombophilia,
-} from '@medapp/encounter-schemas';
+} from '@athelas/encounter-schemas';

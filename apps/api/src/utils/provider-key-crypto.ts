@@ -11,7 +11,7 @@ function getSecret(app: any): string {
   if (typeof authSecret === 'string' && authSecret.length > 0) {
     return authSecret;
   }
-  return process.env.ENCRYPTION_KEY || 'medapp-llm-provider-key-fallback';
+  return process.env.ENCRYPTION_KEY || 'athelas-llm-provider-key-fallback';
 }
 
 function deriveKey(secret: string): Buffer {

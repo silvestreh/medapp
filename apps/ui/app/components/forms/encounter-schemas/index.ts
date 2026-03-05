@@ -13,6 +13,6 @@ export {
   cardiology,
   habits,
   occupationalHistory,
-} from '@medapp/encounter-schemas';
+} from '@athelas/encounter-schemas';
 
-export type { EncounterFormDefinition } from '@medapp/encounter-schemas';
+export type { EncounterFormDefinition } from '@athelas/encounter-schemas';

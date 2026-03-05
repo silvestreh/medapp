@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 
 import type { Application } from '../../declarations';
 import { renderMedicalHistoryPdf, PdfRenderOptions, PdfEncounter, PdfStudy } from './pdf-renderer';
-import { getPdfTranslations } from '@medapp/translations';
+import { getPdfTranslations } from '@athelas/translations';
 
 export type ExportContent = 'encounters' | 'studies' | 'both';
 
@@ -106,11 +106,11 @@ export class SignedExports {
     const patientPersonalData = (patient as any).personalData || {};
 
     const orgId = params.organizationId;
-    let organizationName = 'MedApp';
+    let organizationName = 'Athelas';
     if (orgId) {
       try {
         const org = await this.app.service('organizations').get(orgId, internal());
-        organizationName = org.name || 'MedApp';
+        organizationName = org.name || 'Athelas';
       } catch {
         // fall through to default
       }

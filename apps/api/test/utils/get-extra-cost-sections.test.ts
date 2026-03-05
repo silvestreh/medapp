@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { getExtraCostSections, studySchemas, type StudySchema } from '@medapp/encounter-schemas';
+import { getExtraCostSections, studySchemas, type StudySchema } from '@athelas/encounter-schemas';
 
 describe('getExtraCostSections', () => {
   it('returns sections with addsExtraCost from hemostasis schema', () => {

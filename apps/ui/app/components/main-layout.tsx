@@ -118,8 +118,8 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
             radius={0}
           >
             {t('organization.inactive_banner', 'Your organization is not yet activated. Please contact sales to get started.')}{' '}
-            <Anchor href="mailto:sales@medapp.io" fw={600}>
-              sales@medapp.io
+            <Anchor href="mailto:sales@athel.as" fw={600}>
+              sales@athel.as
             </Anchor>
           </Alert>
         )}

@@ -28,7 +28,7 @@
       "passwordField": "password"
     }
   },
-  "postgres": "postgres://postgres:@localhost:5432/medapp_api",
+  "postgres": "postgres://postgres:@localhost:5432/athelas_api",
   "encryptionKey": "ENCRYPTION_KEY",
   "mailgun": {
     "apiKey": "MAILGUN_API_KEY",

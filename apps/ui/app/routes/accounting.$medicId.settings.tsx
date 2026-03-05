@@ -37,7 +37,7 @@ import {
   type PricingType,
   type InsurerPrices,
 } from '~/utils/accounting';
-import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@medapp/encounter-schemas';
+import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@athelas/encounter-schemas';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { styled } from '~/styled-system/jsx';
 import { useFeathers } from '~/components/provider';

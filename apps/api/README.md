@@ -1,4 +1,4 @@
-# MedApp API
+# Athelas API
 
 > A FeathersJS API for managing medical appointments and patient data.
 
@@ -29,7 +29,7 @@ DB_URL=               # PostgreSQL connection string (production only)
 
 # WebAuthn / Passkeys
 WEBAUTHN_RP_ID=       # Domain users visit, e.g. app.example.com (default: localhost)
-WEBAUTHN_RP_NAME=     # Display name shown in passkey prompts (default: MedApp)
+WEBAUTHN_RP_NAME=     # Display name shown in passkey prompts (default: Athelas)
 WEBAUTHN_ORIGIN=      # Full origin of the UI, e.g. https://app.example.com (default: http://localhost:5173)
 
 # Error Reporting
@@ -37,7 +37,7 @@ SENTRY_DSN=           # Sentry DSN for error reporting (omit to disable)
 
 # Optional
 DEBUG=                # Set to "true" for verbose logging on every service method
-TOTP_ISSUER=          # Issuer label for 2FA authenticator apps (default: MedApp)
+TOTP_ISSUER=          # Issuer label for 2FA authenticator apps (default: Athelas)
 ```
 
 > **Important:** `WEBAUTHN_RP_ID` must be the domain the user sees in their browser (the UI domain, not the API domain). `WEBAUTHN_ORIGIN` must include the protocol (`https://`). For local development, the defaults work out of the box.
@@ -47,13 +47,13 @@ TOTP_ISSUER=          # Issuer label for 2FA authenticator apps (default: MedApp
 This creates the database, runs all migrations, and seeds roles, ICD-10 codes, and medications:
 
 ```bash
-pnpm --filter medapp-api db:init
+pnpm --filter athelas-api db:init
 ```
 
 ### 4. Start the dev server
 
 ```bash
-pnpm --filter medapp-api dev
+pnpm --filter athelas-api dev
 ```
 
 The API will be available at `http://localhost:3030`.
@@ -112,12 +112,12 @@ Set these environment variables on your Railway API service:
 | `DB_URL`           | `postgres://user:pass@host:5432/railway` |
 | `ENCRYPTION_KEY`   | *(output of `openssl rand -base64 32`)*  |
 | `WEBAUTHN_RP_ID`   | `app.example.com`                        |
-| `WEBAUTHN_RP_NAME` | `MedApp`                                 |
+| `WEBAUTHN_RP_NAME` | `Athelas`                                 |
 | `WEBAUTHN_ORIGIN`  | `https://app.example.com`                |
 | `NODE_ENV`         | `production`                             |
 | `SENTRY_DSN`       | `https://xxx@xxx.ingest.de.sentry.io/xxx`|
 
-In Railway, you can reference environment variables from other services, like `${{medapp-api.RAILWAY_PRIVATE_DOMAIN}}` or `${{Postgres.DATABASE_URL}}`. Use these and try to favor internal networking to avoid egress costs.
+In Railway, you can reference environment variables from other services, like `${{athelas-api.RAILWAY_PRIVATE_DOMAIN}}` or `${{Postgres.DATABASE_URL}}`. Use these and try to favor internal networking to avoid egress costs.
 
 If the UI and API live on different subdomains (e.g. `app.example.com` and `api.example.com`), set `WEBAUTHN_RP_ID` to the common parent domain (e.g. `example.com`).
 

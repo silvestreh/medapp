@@ -78,7 +78,7 @@ const resolveAndNotify = (): Hook => async (context: HookContext): Promise<HookC
 
   const template = isNewUser ? 'org-invite-new-user' : 'org-invite';
   const subject = isNewUser
-    ? `Welcome to ${org.name} on MedApp`
+    ? `Welcome to ${org.name} on Athelas`
     : `You've been invited to ${org.name}`;
 
   const mailerResult = await app.service('mailer').create({

@@ -62,7 +62,7 @@ export function mapGender(gender: string | null | undefined): string {
   }
 }
 
-// Recetario (m|f|o) → MedApp (male|female|other)
+// Recetario (m|f|o) → Athelas (male|female|other)
 export function reverseMapGender(gender: string | null | undefined): string {
   if (!gender) return '';
   switch (gender.toLowerCase()) {

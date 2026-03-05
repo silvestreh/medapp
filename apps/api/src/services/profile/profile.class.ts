@@ -82,7 +82,7 @@ export class Profile {
       await this.app.service('users').patch(user.id, { twoFactorTempSecret: secret });
 
       const otpauthUri = buildTotpAuthUri({
-        issuer: process.env.TOTP_ISSUER || 'MedApp',
+        issuer: process.env.TOTP_ISSUER || 'Athelas',
         accountName: user.username,
         secret,
       });

@@ -1,5 +1,5 @@
 {
-  "name": "medapp-api",
+  "name": "athelas-api",
   "description": "",
   "version": "0.0.0",
   "homepage": "",
@@ -60,8 +60,9 @@
     "@feathersjs/express": "^4.5.18",
     "@feathersjs/feathers": "^4.5.17",
     "@feathersjs/transport-commons": "^5.0.31",
-    "@medapp/encounter-schemas": "workspace:*",
-    "@medapp/translations": "workspace:*",
+    "@athelas/brand": "workspace:*",
+    "@athelas/encounter-schemas": "workspace:*",
+    "@athelas/translations": "workspace:*",
     "@react-pdf/renderer": "^4.3.2",
     "@sentry/node": "^10.39.0",
     "@signpdf/placeholder-pdf-lib": "^3.3.0",

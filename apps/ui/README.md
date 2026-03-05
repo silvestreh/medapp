@@ -1,4 +1,4 @@
-# MedApp UI
+# Athelas UI
 
 > A Remix application for managing medical appointments, patient records, and clinical encounters.
 
@@ -8,7 +8,7 @@ Built with [Remix](https://remix.run), [Mantine](https://mantine.dev), [PandaCSS
 
 - Node.js >= 20
 - pnpm
-- The [MedApp API](../api/README.md) running locally or accessible via URL
+- The [Athelas API](../api/README.md) running locally or accessible via URL
 
 ## Setup
 
@@ -27,7 +27,7 @@ Create a `.env` file in `apps/ui/`:
 ```bash
 # Required
 SESSION_SECRET=       # Secret for encrypting session cookies (any random string)
-API_URL=              # URL of the MedApp API (default: http://localhost:3030)
+API_URL=              # URL of the Athelas API (default: http://localhost:3030)
 
 # Error Reporting
 VITE_SENTRY_DSN=      # Sentry DSN for error reporting (omit to disable)
@@ -42,13 +42,13 @@ openssl rand -base64 32
 ### 3. Generate PandaCSS tokens
 
 ```bash
-pnpm --filter medapp-ui prepare
+pnpm --filter athelas-ui prepare
 ```
 
 ### 4. Start the dev server
 
 ```bash
-pnpm --filter medapp-ui dev
+pnpm --filter athelas-ui dev
 ```
 
 The app will be available at `http://localhost:5173`.

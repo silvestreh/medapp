@@ -1,6 +1,6 @@
 {
   "port": 3033,
-  "postgres": "postgres://postgres:@localhost:5432/medapp_api_test",
+  "postgres": "postgres://postgres:@localhost:5432/athelas_api_test",
   "recetario": {
     "apiUrl": "https://external-api.recetario.com.ar",
     "jwt": "RECETARIO_JWT_TEST",

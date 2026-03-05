@@ -31,7 +31,7 @@ function normalizeArray<T>(value: unknown): T[] {
 }
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Profile | MedApp' }];
+  return [{ title: 'Profile | Athelas' }];
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

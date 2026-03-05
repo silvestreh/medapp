@@ -5,4 +5,4 @@ export type {
   StudySchema,
   StudySelectValue,
   StudyResultData,
-} from '@medapp/encounter-schemas';
+} from '@athelas/encounter-schemas';

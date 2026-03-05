@@ -1,6 +1,6 @@
-# MedApp Scrapers
+# Athelas Scrapers
 
-CLI scrapers for public healthcare data sources used by MedApp.
+CLI scrapers for public healthcare data sources used by Athelas.
 
 ## Scrapers
 
@@ -13,10 +13,10 @@ CLI scrapers for public healthcare data sources used by MedApp.
 From repository root:
 
 ```bash
-pnpm --filter medapp-scrapers scrape:prepagas
-pnpm --filter medapp-scrapers scrape:medications
-pnpm --filter medapp-scrapers scrape:icd10
-pnpm --filter medapp-scrapers scrape:all
+pnpm --filter athelas-scrapers scrape:prepagas
+pnpm --filter athelas-scrapers scrape:medications
+pnpm --filter athelas-scrapers scrape:icd10
+pnpm --filter athelas-scrapers scrape:all
 ```
 
 Optional runtime flags:

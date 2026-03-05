@@ -35,7 +35,7 @@ export function render(data: MedicalHistoryExportData): string {
     <h1>Historia Clínica</h1>
     <p>Adjunto encontrará la historia clínica de <strong>${patient}</strong>, generada por el Dr. <strong>${doctor}</strong> desde <strong>${orgName}</strong>.</p>
     ${signedNote}
-    <p class="footer">Este email fue generado automáticamente por MedApp.</p>
+    <p class="footer">Este email fue generado automáticamente por Athelas.</p>
   </div>
 </body>
 </html>`;

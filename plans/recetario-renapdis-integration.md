@@ -4,7 +4,7 @@
 
 **ReNaPDiS** (Registro Nacional de Plataformas Digitales Sanitarias) is Argentina's national registry for digital health platforms. Since Jan 1, 2025, electronic prescriptions are the only valid method for medication prescribing (Decreto 345/2024).
 
-Rather than building a fully registered e-prescription platform (CUIR, REFEPS/REFES/RENAPER, HL7 FHIR, simulation environments, etc.), we'll integrate with **Recetario** — an already-approved platform. MedApp will implement both Quick Links (embeddable button) and the full programmatic API.
+Rather than building a fully registered e-prescription platform (CUIR, REFEPS/REFES/RENAPER, HL7 FHIR, simulation environments, etc.), we'll integrate with **Recetario** — an already-approved platform. Athelas will implement both Quick Links (embeddable button) and the full programmatic API.
 
 ---
 
@@ -85,7 +85,7 @@ apps/api/src/services/recetario/
   recetario.hooks.ts
   recetario.service.ts
   recetario-client.ts        # HTTP client wrapper for all Recetario endpoints
-  data-mapper.ts             # MedApp → Recetario data transforms
+  data-mapper.ts             # Athelas → Recetario data transforms
 
 apps/api/src/services/prescriptions/
   prescriptions.class.ts     # Standard Sequelize CRUD
@@ -208,7 +208,7 @@ POST /webhooks/recetario
 
 **Insurance mapping script** — one-time admin task:
 1. Fetch Recetario `/health-insurances`
-2. Fuzzy match against MedApp `prepagas.denomination`
+2. Fuzzy match against Athelas `prepagas.denomination`
 3. Set `recetarioHealthInsuranceName` on matches
 4. Log unmatched for manual review
 
@@ -256,7 +256,7 @@ POST /webhooks/recetario
 | File | Purpose |
 |---|---|
 | `apps/api/src/services/recetario/recetario-client.ts` | HTTP wrapper for Recetario API |
-| `apps/api/src/services/recetario/data-mapper.ts` | MedApp → Recetario data transforms |
+| `apps/api/src/services/recetario/data-mapper.ts` | Athelas → Recetario data transforms |
 | `apps/api/src/services/recetario/recetario.class.ts` | Main service with action dispatcher |
 | `apps/api/src/services/recetario/recetario.hooks.ts` | Auth + org hooks |
 | `apps/api/src/services/recetario/recetario.service.ts` | Service registration |
@@ -304,7 +304,7 @@ POST /webhooks/recetario
 - **Data protection** per Ley 25.326 (Habeas Data) and patient rights per Ley 26.529
 - Private practitioners explicitly included — must make records available to the unified system
 
-### What MedApp already has covered:
+### What Athelas already has covered:
 - Encryption at rest (AES-256)
 - Digital PDF signing with P12 certificates
 - Role-based access control + org scoping

@@ -10,6 +10,15 @@ importers:
 
   apps/api:
     dependencies:
+      '@athelas/brand':
+        specifier: workspace:*
+        version: link:../../packages/brand
+      '@athelas/encounter-schemas':
+        specifier: workspace:*
+        version: link:../../packages/encounter-schemas
+      '@athelas/translations':
+        specifier: workspace:*
+        version: link:../../packages/translations
       '@feathersjs/authentication':
         specifier: ^4.5.18
         version: 4.5.18
@@ -34,12 +43,6 @@ importers:
       '@feathersjs/transport-commons':
         specifier: ^5.0.31
         version: 5.0.34
-      '@medapp/encounter-schemas':
-        specifier: workspace:*
-        version: link:../../packages/encounter-schemas
-      '@medapp/translations':
-        specifier: workspace:*
-        version: link:../../packages/translations
       '@react-pdf/renderer':
         specifier: ^4.3.2
         version: 4.3.2(react@18.3.1)
@@ -258,6 +261,12 @@ importers:
 
   apps/ui:
     dependencies:
+      '@athelas/brand':
+        specifier: workspace:*
+        version: link:../../packages/brand
+      '@athelas/encounter-schemas':
+        specifier: workspace:*
+        version: link:../../packages/encounter-schemas
       '@feathersjs/authentication-client':
         specifier: ^5.0.40
         version: 5.0.40(typescript@5.8.3)
@@ -297,9 +306,6 @@ importers:
       '@mantine/tiptap':
         specifier: ^8.0.0
         version: 8.3.14(@mantine/core@8.3.14(@mantine/hooks@8.3.14(react@18.3.1))(@types/react@19.1.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@mantine/hooks@8.3.14(react@18.3.1))(@tiptap/extension-link@2.14.0(@tiptap/core@2.14.0(@tiptap/pm@2.14.0))(@tiptap/pm@2.14.0))(@tiptap/react@2.14.0(@tiptap/core@2.14.0(@tiptap/pm@2.14.0))(@tiptap/pm@2.14.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@medapp/encounter-schemas':
-        specifier: workspace:*
-        version: link:../../packages/encounter-schemas
       '@remix-run/node':
         specifier: ^2.16.5
         version: 2.16.8(typescript@5.8.3)
@@ -472,6 +478,8 @@ importers:
       vite-tsconfig-paths:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.8.3)(vite@6.3.5(@types/node@25.2.3)(jiti@2.4.2)(less@2.7.1)(lightningcss@1.30.2)(sugarss@4.0.1(postcss@8.5.5))(terser@5.42.0)(tsx@4.21.0)(yaml@2.8.0))
+
+  packages/brand: {}
 
   packages/encounter-schemas:
     dependencies:

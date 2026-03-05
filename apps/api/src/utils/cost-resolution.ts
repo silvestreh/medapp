@@ -1,4 +1,4 @@
-import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@medapp/encounter-schemas';
+import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@athelas/encounter-schemas';
 
 // ---------------------------------------------------------------------------
 // Types

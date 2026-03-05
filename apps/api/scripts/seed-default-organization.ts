@@ -13,7 +13,7 @@ dotenv.config();
 import { Sequelize, QueryTypes } from 'sequelize';
 import { randomUUID as uuid } from 'crypto';
 
-const connectionString = process.env.POSTGRES || 'postgres://localhost:5432/medapp';
+const connectionString = process.env.POSTGRES || 'postgres://localhost:5432/athelas';
 
 async function main() {
   const sequelize = new Sequelize(connectionString, {

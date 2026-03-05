@@ -29,7 +29,7 @@ export function render(data: OrgInviteData): string {
 <body>
   <div class="container">
     <h1>You've been invited to ${orgName}</h1>
-    <p><strong>${inviter}</strong> has invited you to join <strong>${orgName}</strong> on MedApp.</p>
+    <p><strong>${inviter}</strong> has invited you to join <strong>${orgName}</strong> on Athelas.</p>
     <p>Click the button below to accept the invitation:</p>
     <p style="text-align: center; margin: 28px 0;">
       <a href="${url}" class="btn">Accept Invitation</a>

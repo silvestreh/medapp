@@ -5,6 +5,7 @@ import {
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
 import { BadRequest, NotAuthenticated } from '@feathersjs/errors';
+import { APP_NAME } from '@athelas/brand';
 import type { Application, User } from '../../declarations';
 
 type WebAuthnAction =
@@ -15,7 +16,7 @@ type WebAuthnAction =
 
 const getRpConfig = () => {
   const rpID = process.env.WEBAUTHN_RP_ID || 'localhost';
-  const rpName = process.env.WEBAUTHN_RP_NAME || 'MedApp';
+  const rpName = process.env.WEBAUTHN_RP_NAME || APP_NAME;
   const origin = process.env.WEBAUTHN_ORIGIN || 'http://localhost:5173';
   return { rpID, rpName, origin };
 };

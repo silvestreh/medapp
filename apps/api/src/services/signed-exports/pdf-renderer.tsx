@@ -10,8 +10,8 @@ import {
   type StudyField,
   type SelectOption,
   type SelectOptionGroup,
-} from '@medapp/encounter-schemas';
-import { getPdfTranslations, translateLabel } from '@medapp/translations';
+} from '@athelas/encounter-schemas';
+import { getPdfTranslations, translateLabel } from '@athelas/translations';
 
 export interface PdfDoctorInfo {
   fullName: string;

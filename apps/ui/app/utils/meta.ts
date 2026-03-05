@@ -1,4 +1,5 @@
 import type { MetaFunction } from '@remix-run/node';
+import { APP_NAME } from '@athelas/brand';
 import { resources } from '~/i18n/i18n';
 
 type RootLoaderData = { locale?: string };
@@ -14,7 +15,7 @@ function getLocale(matches: Parameters<MetaFunction>[0]['matches']): keyof typeo
 }
 
 /**
- * Returns a translated page title formatted as "MedApp / <title>".
+ * Returns a translated page title formatted as "Athelas / <title>".
  * Use inside `export const meta: MetaFunction` to get locale-aware titles.
  *
  * @example
@@ -28,5 +29,5 @@ export function getPageTitle(
 ): string {
   const locale = getLocale(matches);
   const title = resources[locale].translation.page_titles[key];
-  return `MedApp / ${title}`;
+  return `${APP_NAME} / ${title}`;
 }

@@ -18,7 +18,7 @@ export function render(data: OrgInviteNewUserData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to MedApp</title>
+  <title>Welcome to Athelas</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; margin: 0; padding: 40px 20px; }
     .container { max-width: 480px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 40px; }
@@ -32,7 +32,7 @@ export function render(data: OrgInviteNewUserData): string {
 </head>
 <body>
   <div class="container">
-    <h1>Welcome to MedApp</h1>
+    <h1>Welcome to Athelas</h1>
     <p><strong>${inviter}</strong> has created an account for you at <strong>${orgName}</strong>.</p>
     <div class="info">
       <p style="margin:0"><strong>Username:</strong> ${username}</p>
