@@ -12,6 +12,8 @@ import { encryptFields, decryptFields } from '../../hooks/encryption';
 import { scopePatientsToOrganization } from '../../hooks/scope-patients-to-organization';
 import { linkPatientToOrganization } from '../../hooks/link-patient-to-organization';
 import { populateMedicare } from './hooks/populate-medicare';
+import patchPersonalData from '../../hooks/patch-personal-data';
+import patchContactData from '../../hooks/patch-contact-data';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -63,7 +65,10 @@ export default {
       linkPatientToOrganization()
     ],
     update: [],
-    patch: [],
+    patch: [
+      patchPersonalData('patient'),
+      patchContactData('patient'),
+    ],
     remove: []
   },
 

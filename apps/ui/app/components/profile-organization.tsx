@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
-import { Button, Group, Select, Stack, Text } from '@mantine/core';
+import { Button, Group, Select, Stack, Switch, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useFetcher, useRevalidator } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Building2 } from 'lucide-react';
+import { Building2, ClipboardPen } from 'lucide-react';
 
 import type { action } from '~/routes/profile.organization';
 import Portal from '~/components/portal';
@@ -32,6 +32,10 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
   const [providerApiKey, setProviderApiKey] = useState('');
   const [modelsMessage, setModelsMessage] = useState('');
   const [modelsReloadTick, setModelsReloadTick] = useState(0);
+  const [recetarioEnabled, setRecetarioEnabled] = useState(!!currentOrg.settings?.recetario?.enabled);
+  const [healthCenterId, setHealthCenterId] = useState(
+    currentOrg.settings?.recetario?.healthCenterId ? String(currentOrg.settings.recetario.healthCenterId) : ''
+  );
 
   const lastHandledData = useRef(orgFetcher.data);
   const loadModelsRef = useRef(loadModels);
@@ -61,6 +65,10 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
     }
     if (orgFetcher.data?.ok && orgFetcher.data.intent === 'update-llm-chat-settings') {
       notifications.show({ message: t('llm_settings.defaults_saved'), color: 'green' });
+      revalidator.revalidate();
+    }
+    if (orgFetcher.data?.ok && orgFetcher.data.intent === 'update-recetario-settings') {
+      notifications.show({ message: t('profile.org_saved'), color: 'green' });
       revalidator.revalidate();
     }
     if (orgFetcher.data && !orgFetcher.data.ok && orgFetcher.data.intent === 'update-organization') {
@@ -179,6 +187,18 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
     );
   }, [currentOrg.id, model, orgFetcher, provider]);
 
+  const handleSaveRecetarioSettings = useCallback(() => {
+    orgFetcher.submit(
+      {
+        intent: 'update-recetario-settings',
+        orgId: currentOrg.id,
+        enabled: recetarioEnabled ? 'true' : 'false',
+        healthCenterId: healthCenterId || '',
+      },
+      { method: 'post' }
+    );
+  }, [currentOrg.id, healthCenterId, orgFetcher, recetarioEnabled]);
+
   const activeProviderConfigured = useMemo(() => {
     const providers = Array.isArray((providerKeyStatus as any)?.providers)
       ? (providerKeyStatus as any).providers
@@ -270,6 +290,40 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
           </Stack>
         </FieldRow>
       </FormCard>
+
+      <FormHeader>
+        <SectionTitle icon={<ClipboardPen />}>
+          {t('recetario.enabled')}
+        </SectionTitle>
+      </FormHeader>
+      <FormCard>
+        <FieldRow label={`${t('recetario.enabled_description')}:`} variant="stacked">
+          <Switch
+            checked={recetarioEnabled}
+            onChange={(e) => setRecetarioEnabled(e.currentTarget.checked)}
+          />
+        </FieldRow>
+        {recetarioEnabled && (
+          <FieldRow label={`${t('recetario.health_center_id')}:`} variant="stacked">
+            <StyledTextInput
+              value={healthCenterId}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setHealthCenterId(e.currentTarget.value)}
+              placeholder="123"
+            />
+          </FieldRow>
+        )}
+        <FieldRow label="" variant="stacked">
+          <Button
+            size="sm"
+            variant="light"
+            onClick={handleSaveRecetarioSettings}
+            loading={orgFetcher.state === 'submitting' && orgFetcher.formData?.get('intent') === 'update-recetario-settings'}
+          >
+            {t('common.save')}
+          </Button>
+        </FieldRow>
+      </FormCard>
+
       <Portal id="form-actions">
         {showFormActions && (
           <Group>

@@ -34,5 +34,10 @@
     "apiKey": "",
     "domain": "",
     "from": "MedApp <noreply@example.com>"
+  },
+  "recetario": {
+    "apiUrl": "https://external-api.recetario.com.ar",
+    "jwt": "RECETARIO_JWT",
+    "webhookSecret": "RECETARIO_WEBHOOK_SECRET"
   }
 }

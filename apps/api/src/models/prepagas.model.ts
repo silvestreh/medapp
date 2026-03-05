@@ -26,6 +26,10 @@ export default function (app: Application): typeof Model {
       type: DataTypes.JSONB,
       allowNull: false,
       defaultValue: []
+    },
+    recetarioHealthInsuranceName: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     hooks: {

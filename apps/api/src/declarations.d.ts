@@ -44,6 +44,7 @@ export interface Prepaga {
   denomination: string;
   shortName: string;
   tiers: { name: string; code: number | null }[];
+  recetarioHealthInsuranceName: string | null;
 }
 
 export interface ServiceTypes {}
@@ -195,6 +196,10 @@ export interface MdSettings {
   saturdayEnd: string | null;
   sundayStart: string | null;
   sundayEnd: string | null;
+  recetarioTitle: string | null;
+  recetarioProvince: string | null;
+  signatureImage: string | null;
+  recetarioUserId: number | null;
 }
 
 export interface AccountingSettings {
@@ -287,6 +292,26 @@ export interface SigningCertificate {
   certificate: string;
   fileName: string | null;
   isClientEncrypted: boolean;
+}
+
+export interface Prescription {
+  id: Id;
+  organizationId: Id | null;
+  medicId: Id;
+  patientId: Id;
+  recetarioReference: string;
+  recetarioDocumentIds: { id: number; type: string; url: string }[];
+  type: 'prescription' | 'order';
+  quickLinkUrl: string | null;
+  quickLinkExpiresAt: Date | null;
+  status: 'pending' | 'completed' | 'cancelled' | 'expired';
+  sharedVia: string | null;
+  sharedTo: string | null;
+  content: {
+    diagnosis?: string;
+    medicines?: { text: string; quantity: number; posology?: string; longTerm: boolean; genericOnly?: boolean; medicationId?: string }[];
+    orderText?: string;
+  } | null;
 }
 
 export interface EncounterAiChatMessage {

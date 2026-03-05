@@ -73,6 +73,7 @@ interface PrepagaSelectorProps {
   readOnly?: boolean;
   autoFocus?: boolean;
   onEscape?: () => void;
+  variant?: 'unstyled' | 'default';
 }
 
 export function PrepagaSelector({
@@ -85,6 +86,7 @@ export function PrepagaSelector({
   readOnly,
   autoFocus,
   onEscape,
+  variant = 'unstyled',
 }: PrepagaSelectorProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -202,7 +204,7 @@ export function PrepagaSelector({
             label={label}
             placeholder={!value ? placeholder || t('common.search') : ''}
             component="div"
-            variant="unstyled"
+            variant={variant}
             styles={{
               input: {
                 minHeight: '1.5rem',
@@ -213,7 +215,7 @@ export function PrepagaSelector({
                 flexWrap: 'wrap',
                 gap: '4px',
                 alignItems: 'center',
-                padding: '0',
+                ...(variant === 'unstyled' ? { padding: '0' } : {}),
               },
             }}
             onClick={handleClick}

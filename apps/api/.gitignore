@@ -118,3 +118,4 @@ scripts/seeds/discarded/*.json
 scripts/seeds/import-skipped/*.json
 .env
 .llm-name-cache.json
+config/local.json

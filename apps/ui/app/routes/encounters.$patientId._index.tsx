@@ -1,13 +1,18 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { Link, useLoaderData, useNavigate } from '@remix-run/react';
+import { Link, useLoaderData, useNavigate, useRevalidator } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Group, Stack, Button, ActionIcon, Tooltip, Tabs, Text } from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
-import { X, FileDown, Printer, Plus } from 'lucide-react';
+import { X, FileDown, Printer, Plus, ClipboardPen } from 'lucide-react';
 
-import { getAuthenticatedClient, authenticatedLoader, isMedicVerified, getCurrentOrgRoleIds } from '~/utils/auth.server';
+import {
+  getAuthenticatedClient,
+  authenticatedLoader,
+  isMedicVerified,
+  getCurrentOrgRoleIds,
+} from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
 import EncounterTree from '~/components/encounter-tree';
@@ -25,6 +30,8 @@ import { PrintPdfDialog } from '~/components/print-pdf-dialog';
 import { Fab, FabItem } from '~/components/fab';
 import { ToolbarTitle } from '~/components/toolbar-title';
 import { EncounterAiChatPanel } from '~/components/encounter-ai-chat-panel';
+import { PrescriptionDetail } from '~/components/prescription-detail';
+import { PrescribeModal } from '~/components/prescribe-modal';
 
 const Container = styled('div', {
   base: {
@@ -79,6 +86,51 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   const { client, user } = await getAuthenticatedClient(request);
   const formData = await request.formData();
+  const intent = formData.get('intent');
+
+  if (intent === 'prescribe') {
+    const result = await client.service('recetario' as any).create({
+      action: 'quick-link',
+      patientId,
+    });
+    return json({ intent: 'prescribe', prescriptionsLink: (result as any).prescriptionsLink });
+  }
+
+  if (intent === 'get-patient-data') {
+    const result = await client.service('recetario' as any).create({ action: 'get-patient-data', patientId });
+    return json({ intent: 'get-patient-data', recetarioData: (result as any).recetarioData, matchedPrepagaId: (result as any).matchedPrepagaId, mhsPatientData: (result as any).mhsPatientData });
+  }
+
+  if (intent === 'search-recetario-medications') {
+    const { search } = parseFormJson(formData.get('data'));
+    const result = await client.service('recetario' as any).create({ action: 'search-medications', search });
+    return json({ intent: 'search-recetario-medications', medications: (result as any).medications });
+  }
+
+  if (intent === 'create-prescription') {
+    const { diagnosis, medications, hiv, patientData } = parseFormJson(formData.get('data'));
+    const result = await client.service('recetario' as any).create({ action: 'prescribe', patientId, diagnosis, medications, hiv, patientData });
+    return json({ intent: 'create-prescription', success: true, url: (result as any).url ?? null, prescriptionId: (result as any).prescriptionId ?? null, recetarioDocumentId: (result as any).recetarioDocumentId ?? null });
+  }
+
+  if (intent === 'create-order') {
+    const { diagnosis, content, patientData } = parseFormJson(formData.get('data'));
+    const result = await client.service('recetario' as any).create({ action: 'order', patientId, diagnosis, content, patientData });
+    return json({ intent: 'create-order', success: true, url: (result as any).url ?? null, prescriptionId: (result as any).prescriptionId ?? null, recetarioDocumentId: (result as any).recetarioDocumentId ?? null });
+  }
+
+  if (intent === 'cancel-prescription') {
+    const { prescriptionId, recetarioDocumentId } = parseFormJson(formData.get('data')) as any;
+    await client.service('recetario' as any).create({ action: 'cancel', prescriptionId, recetarioDocumentId });
+    return json({ intent: 'cancel-prescription', success: true });
+  }
+
+  if (intent === 'share-prescription') {
+    const { prescriptionId, documentIds, shareChannel, shareRecipient } = parseFormJson(formData.get('data')) as any;
+    await client.service('recetario' as any).create({ action: 'share', prescriptionId, documentIds, shareChannel, shareRecipient });
+    return json({ intent: 'share-prescription', success: true });
+  }
+
   const data = parseFormJson(formData.get('data'));
 
   await client.service('encounters').create({
@@ -136,6 +188,26 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     }
   }
 
+  let prescriptions: any[] = [];
+  let recetarioReady = false;
+  if (isMedic && isVerified) {
+    try {
+      const prescriptionsResult = await client.service('prescriptions' as any).find({
+        query: { patientId, $sort: { createdAt: -1 }, $limit: 50 },
+      });
+      prescriptions = (prescriptionsResult as any).data || prescriptionsResult;
+    } catch {
+      // prescriptions service may not exist yet
+    }
+
+    try {
+      const readiness = await client.service('recetario' as any).create({ action: 'check-readiness' });
+      recetarioReady = !!(readiness as any).ready;
+    } catch {
+      // recetario service may not be configured
+    }
+  }
+
   return {
     user,
     patient,
@@ -145,6 +217,8 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     isVerified,
     hasCertificate,
     isCertificateEncrypted,
+    prescriptions,
+    recetarioReady,
   };
 });
 
@@ -156,6 +230,8 @@ export default function PatientEncounterDetail() {
   const [exportOpened, { open: openExport, close: closeExport }] = useDisclosure(false);
   const [printOpened, { open: openPrint, close: closePrint }] = useDisclosure(false);
   const [fabOpen, { toggle: toggleFab, close: closeFab }] = useDisclosure(false);
+  const [prescribeOpened, { open: openPrescribe, close: closePrescribe }] = useDisclosure(false);
+  const { revalidate } = useRevalidator();
 
   const handleFabPrint = useCallback(() => {
     closeFab();
@@ -175,6 +251,7 @@ export default function PatientEncounterDetail() {
   const handleGoBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
+
 
   const dateRange = useMemo(() => {
     const encounters = data?.encounters || [];
@@ -197,20 +274,26 @@ export default function PatientEncounterDetail() {
   // Study selection
   const [selectedStudy, setSelectedStudy] = useState<any>(null);
 
+  // Prescription selection
+  const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
+
   const clearSelection = useCallback(() => {
     setSelectedEncounter(null);
     setActiveFormKey(undefined);
     setSelectedStudy(null);
+    setSelectedPrescription(null);
   }, []);
 
   const handleEncounterClick = useCallback((encounter: any) => {
     setSelectedStudy(null);
+    setSelectedPrescription(null);
     setSelectedEncounter(encounter);
     setActiveFormKey(undefined);
   }, []);
 
   const handleFormClick = useCallback((encounter: any, formKey: string) => {
     setSelectedStudy(null);
+    setSelectedPrescription(null);
     setSelectedEncounter(encounter);
     setActiveFormKey(formKey);
   }, []);
@@ -219,9 +302,17 @@ export default function PatientEncounterDetail() {
     setSelectedEncounter(null);
     setActiveFormKey(undefined);
     setSelectedStudy(study);
+    setSelectedPrescription(null);
   }, []);
 
-  const hasSelection = selectedEncounter || selectedStudy;
+  const handlePrescriptionClick = useCallback((prescription: any) => {
+    setSelectedEncounter(null);
+    setActiveFormKey(undefined);
+    setSelectedStudy(null);
+    setSelectedPrescription(prescription);
+  }, []);
+
+  const hasSelection = selectedEncounter || selectedStudy || selectedPrescription;
 
   if (!data) {
     return null;
@@ -237,6 +328,18 @@ export default function PatientEncounterDetail() {
           />
           {isDesktop && (
             <Group gap="sm">
+              {data.isVerified && data.recetarioReady && (
+                <Tooltip label={t('recetario.prescribe_tooltip')}>
+                  <Button
+                    variant="light"
+                    color="green"
+                    leftSection={<ClipboardPen size={16} />}
+                    onClick={openPrescribe}
+                  >
+                    {t('recetario.prescribe')}
+                  </Button>
+                </Tooltip>
+              )}
               {data.isMedic && (
                 <Button variant="light" leftSection={<Printer size={16} />} onClick={openPrint}>
                   {t('print_pdf.button')}
@@ -279,22 +382,37 @@ export default function PatientEncounterDetail() {
         />
       )}
 
+      {data.isVerified && data.recetarioReady && (
+        <PrescribeModal
+          opened={prescribeOpened}
+          onClose={closePrescribe}
+          patient={data.patient}
+          onSuccess={revalidate}
+        />
+      )}
+
       <Sidebar>
         <EncounterTree
           encounters={data.encounters}
           studies={data.studies}
+          prescriptions={data.prescriptions}
           activeEncounterId={selectedEncounter?.id}
           activeFormKey={activeFormKey}
           activeStudyId={selectedStudy?.id}
+          activePrescriptionId={selectedPrescription?.id}
           onEncounterClick={handleEncounterClick}
           onFormClick={handleFormClick}
           onStudyClick={handleStudyClick}
+          onPrescriptionClick={handlePrescriptionClick}
         />
       </Sidebar>
 
       <Content>
         {hasSelection ? (
-          <Stack key={`${selectedEncounter?.id ?? selectedStudy?.id}-${activeFormKey ?? 'study'}`} pos="relative">
+          <Stack
+            key={`${selectedEncounter?.id ?? selectedStudy?.id ?? selectedPrescription?.id}-${activeFormKey ?? 'none'}`}
+            pos="relative"
+          >
             {selectedEncounter && (
               <EncounterForm
                 encounter={selectedEncounter}
@@ -344,6 +462,13 @@ export default function PatientEncounterDetail() {
               </>
             )}
 
+            {selectedPrescription && (
+              <PrescriptionDetail
+                prescription={selectedPrescription}
+                onCancelled={() => { revalidate(); clearSelection(); }}
+              />
+            )}
+
             <Tooltip label={t('common.close')} position="left">
               <ActionIcon variant="filled" color="gray" onClick={clearSelection} pos="absolute" top={0} right={0}>
                 <X size={16} />
@@ -353,16 +478,25 @@ export default function PatientEncounterDetail() {
         ) : (
           <PatientOverview patient={data.patient} encounters={data.encounters} />
         )}
-        <EncounterAiChatPanel
-          patientId={String(data.patient.id)}
-          encounterDraft={selectedEncounter?.data || {}}
-        />
+        <EncounterAiChatPanel patientId={String(data.patient.id)} encounterDraft={selectedEncounter?.data || {}} />
       </Content>
 
       {!isDesktop && (
         <Fab open={fabOpen} onToggle={toggleFab} onClose={closeFab}>
+          {data.isVerified && data.recetarioReady && (
+            <FabItem
+              onClick={() => {
+                closeFab();
+                openPrescribe();
+              }}
+              index={3}
+            >
+              <ClipboardPen size={18} />
+              {t('recetario.prescribe')}
+            </FabItem>
+          )}
           {data.isMedic && (
-            <FabItem onClick={handleFabPrint} index={data.isMedic ? 2 : 0}>
+            <FabItem onClick={handleFabPrint} index={2}>
               <Printer size={18} />
               {t('print_pdf.button')}
             </FabItem>

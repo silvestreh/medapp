@@ -125,6 +125,22 @@ export default function (app: Application): typeof Model {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    recetarioTitle: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    recetarioProvince: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    signatureImage: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    recetarioUserId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   }, {
     hooks: {
       beforeCount(options: any): HookReturn {

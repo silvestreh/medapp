@@ -42,6 +42,7 @@ const Container = styled(Flex, {
       position: 'sticky',
       bottom: 0,
       zIndex: 2,
+      gap: 0,
     },
     md: {
       flexDirection: 'column',
@@ -55,11 +56,10 @@ const Container = styled(Flex, {
 
 const StickyContent = styled(Flex, {
   base: {
-    gap: '1em',
-
     '&:empty': {
       display: 'none',
     },
+
     sm: {
       justifyContent: 'space-around',
       position: 'sticky',
@@ -67,7 +67,9 @@ const StickyContent = styled(Flex, {
       bottom: 0,
       zIndex: 1,
       flexGrow: 1,
+      gap: 0,
     },
+
     md: {
       flexDirection: 'column',
       alignItems: 'center',
@@ -76,6 +78,7 @@ const StickyContent = styled(Flex, {
       bottom: 'unset',
       top: 0,
       flexGrow: 0,
+      gap: '1em',
     },
   },
 });

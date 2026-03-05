@@ -26,20 +26,37 @@ interface Study {
   [key: string]: any;
 }
 
-/** A unified timeline entry that can be either an encounter or a study. */
+interface Prescription {
+  id: string;
+  type: 'prescription' | 'order';
+  status: string;
+  createdAt: string;
+  content: {
+    diagnosis?: string;
+    medicines?: { text: string; quantity: number; posology?: string; longTerm: boolean }[];
+    orderText?: string;
+  } | null;
+  recetarioDocumentIds?: { id: number; type: string; url: string }[];
+}
+
+/** A unified timeline entry that can be either an encounter, study, or prescription. */
 export type TimelineEntry =
   | { kind: 'encounter'; date: string; data: Encounter }
-  | { kind: 'study'; date: string; data: Study };
+  | { kind: 'study'; date: string; data: Study }
+  | { kind: 'prescription'; date: string; data: Prescription };
 
 interface EncounterTreeProps {
   encounters: Encounter[];
   studies?: Study[];
+  prescriptions?: Prescription[];
   onEncounterClick?: (encounter: Encounter) => void;
   onFormClick?: (encounter: Encounter, formKey: string) => void;
   onStudyClick?: (study: Study) => void;
+  onPrescriptionClick?: (prescription: Prescription) => void;
   activeEncounterId?: string;
   activeFormKey?: string;
   activeStudyId?: string;
+  activePrescriptionId?: string;
 }
 
 const StyledAccordion = styled(Accordion, {
@@ -153,11 +170,14 @@ const FormItem = styled('div', {
 const EncounterTree: FC<EncounterTreeProps> = ({
   encounters,
   studies = [],
+  prescriptions = [],
   activeEncounterId,
   activeFormKey,
   activeStudyId,
+  activePrescriptionId,
   onFormClick,
   onStudyClick,
+  onPrescriptionClick,
 }) => {
   const { t } = useTranslation();
 
@@ -177,7 +197,14 @@ const EncounterTree: FC<EncounterTreeProps> = ({
     [onStudyClick]
   );
 
-  // Merge encounters and studies into a unified timeline, filtering out empty studies
+  const handlePrescriptionClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>, prescription: Prescription) => {
+      e.stopPropagation();
+      onPrescriptionClick?.(prescription);
+    },
+    [onPrescriptionClick]
+  );
+
   const timeline: TimelineEntry[] = useMemo(() => {
     const nonEmptyStudies = studies.filter(study => {
       if (!study.results || study.results.length === 0) return false;
@@ -194,14 +221,14 @@ const EncounterTree: FC<EncounterTreeProps> = ({
     const entries: TimelineEntry[] = [
       ...encounters.map((enc): TimelineEntry => ({ kind: 'encounter', date: enc.date, data: enc })),
       ...nonEmptyStudies.map((study): TimelineEntry => ({ kind: 'study', date: study.date, data: study })),
+      ...prescriptions.map((rx): TimelineEntry => ({ kind: 'prescription', date: rx.createdAt, data: rx })),
     ];
     return entries;
-  }, [encounters, studies]);
+  }, [encounters, studies, prescriptions]);
 
   const rootData = useRouteLoaderData('root') as { locale?: string } | undefined;
   const locale = rootData?.locale ?? 'es';
 
-  // Group timeline entries by Year -> Month (labels in current locale)
   const groupedEntries = useMemo(
     () =>
       mapValues(
@@ -262,24 +289,57 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                               );
                             }
 
-                            // Study entry — single clickable item
-                            const study = entry.data;
-                            const studyTypes = study.results
-                              ? study.results.map(r => studySchemas[r.type]?.label ?? r.type)
-                              : Object.keys(study.studies ?? {})
-                                  .filter(k => study.studies[k])
-                                  .map(k => studySchemas[k]?.label ?? k);
+                            if (entry.kind === 'study') {
+                              const study = entry.data;
+                              const studyTypes = study.results
+                                ? study.results.map(r => studySchemas[r.type]?.label ?? r.type)
+                                : Object.keys(study.studies ?? {})
+                                    .filter(k => study.studies[k])
+                                    .map(k => studySchemas[k]?.label ?? k);
 
+                              return (
+                                <EncounterBox key={`study-${study.id}`}>
+                                  <EncounterDateText>
+                                    {formatInLocale(study.date, 'dddd D, HH:mm', locale)}
+                                  </EncounterDateText>
+                                  <FormItem
+                                    onClick={e => handleStudyClick(e, study)}
+                                    active={activeStudyId === study.id}
+                                  >
+                                    Protocolo #{study.protocol}
+                                    <Text size="xs" c={activeStudyId === study.id ? 'white' : 'gray.5'} mt={2}>
+                                      {studyTypes.join(', ')}
+                                    </Text>
+                                  </FormItem>
+                                </EncounterBox>
+                              );
+                            }
+
+                            // Prescription / Order
+                            const rx = entry.data;
+                            const isActive = activePrescriptionId === rx.id;
                             return (
-                              <EncounterBox key={`study-${study.id}`}>
+                              <EncounterBox key={`rx-${rx.id}`}>
                                 <EncounterDateText>
-                                  {formatInLocale(study.date, 'dddd D, HH:mm', locale)}
+                                  {formatInLocale(rx.createdAt, 'dddd D, HH:mm', locale)}
                                 </EncounterDateText>
-                                <FormItem onClick={e => handleStudyClick(e, study)} active={activeStudyId === study.id}>
-                                  Protocolo #{study.protocol}
-                                  <Text size="xs" c={activeStudyId === study.id ? 'white' : 'gray.5'} mt={2}>
-                                    {studyTypes.join(', ')}
-                                  </Text>
+                                <FormItem onClick={e => handlePrescriptionClick(e, rx)} active={isActive}>
+                                  {t(`recetario.type_${rx.type}` as any)}
+                                  {rx.content?.diagnosis && (
+                                    <Text
+                                      size="xs"
+                                      c={isActive ? 'white' : 'gray.5'}
+                                      mt={2}
+                                      style={{
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        maxWidth: '250px',
+                                      }}
+                                    >
+                                      {rx.content.diagnosis}
+                                    </Text>
+                                  )}
                                 </FormItem>
                               </EncounterBox>
                             );

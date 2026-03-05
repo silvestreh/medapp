@@ -102,21 +102,25 @@ interface Icd10Node {
 interface Icd10SelectorProps {
   value?: string | string[];
   onChange: (value: string | string[]) => void;
+  onSelectNode?: (node: { id: string; name: string }) => void;
   placeholder?: string;
   label?: string;
   error?: string;
   readOnly?: boolean;
   multiSelect?: boolean;
+  variant?: 'unstyled' | 'default';
 }
 
 export function Icd10Selector({
   value,
   onChange,
+  onSelectNode,
   placeholder,
   label,
   error,
   readOnly,
   multiSelect,
+  variant = 'unstyled',
 }: Icd10SelectorProps) {
   const { t } = useTranslation();
   const client = useFeathers();
@@ -146,7 +150,9 @@ export function Icd10Selector({
   useEffect(() => {
     const fetchData = async () => {
       if (!client || !opened || readOnly) return;
+
       setLoading(true);
+
       try {
         if (debouncedSearch) {
           const result = await client.service('icd-10').find({
@@ -277,6 +283,7 @@ export function Icd10Selector({
       }
     } else {
       onChange(node.id);
+      onSelectNode?.({ id: node.id, name: node.name });
       setOpened(false);
     }
   };
@@ -459,20 +466,24 @@ export function Icd10Selector({
             label={label}
             placeholder={values.length === 0 ? placeholder || t('common.search') : ''}
             component="div"
-            variant="unstyled"
-            styles={{
-              input: {
-                minHeight: '1.5rem',
-                height: 'auto',
-                lineHeight: 1.75,
-                cursor: readOnly ? 'default' : 'text',
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '4px',
-                alignItems: 'center',
-                padding: '0',
-              },
-            }}
+            variant={variant}
+            styles={
+              variant === 'unstyled'
+                ? {
+                    input: {
+                      minHeight: '1.5rem',
+                      height: 'auto',
+                      lineHeight: 1.75,
+                      cursor: readOnly ? 'default' : 'text',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '4px',
+                      alignItems: 'center',
+                      padding: '0',
+                    },
+                  }
+                : {}
+            }
             onClick={() => !readOnly && setOpened(true)}
             readOnly={readOnly}
             tabIndex={readOnly ? -1 : 0}
@@ -499,14 +510,14 @@ export function Icd10Selector({
             }
             rightSectionPointerEvents={loading || (values.length > 0 && !readOnly && !multiSelect) ? 'all' : 'none'}
           >
-            <Group gap={4} style={{ flex: 1 }}>
+            <Group gap={4} style={{ flex: 1 }} align="center">
               {selectedBadges}
               {!multiSelect && !opened && values.length > 0 ? (
-                <Text size="sm" style={{ flex: 1 }}>
+                <Text size="sm" style={{ flex: 1, lineHeight: variant === 'default' ? 2.4 : 1.75 }}>
                   {selectedSingleValue}
                 </Text>
               ) : null}
-              {!readOnly && (multiSelect || opened || values.length === 0) ? (
+              {!readOnly && (multiSelect || opened || values.length === 0) && (
                 <StyledInput
                   value={displayValue}
                   onChange={e => {
@@ -531,7 +542,7 @@ export function Icd10Selector({
                   }
                   readOnly={readOnly}
                 />
-              ) : null}
+              )}
             </Group>
           </TextInput>
         </Popover.Target>

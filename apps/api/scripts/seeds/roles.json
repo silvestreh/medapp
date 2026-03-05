@@ -106,7 +106,10 @@
       "study-results:remove:all",
       "practice-costs:find",
       "practice-costs:get",
-      "prepagas:find"
+      "prepagas:find",
+      "recetario:create",
+      "prescriptions:find",
+      "prescriptions:get"
     ]
   },
   {

@@ -14,8 +14,6 @@ export function MedicareDisplay({ patient, size = 'sm', fallback }: MedicareDisp
   const { t } = useTranslation();
   const { medicareId, medicare, insurer } = patient;
 
-  console.log('insurer', patient);
-
   if (medicareId && insurer) {
     return <Text size={size}>{insurer.shortName}</Text>;
   }

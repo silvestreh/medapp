@@ -4,6 +4,7 @@ import { expressOauth } from '@feathersjs/authentication-oauth';
 
 import { Application } from './declarations';
 import { TwoFactorLocalStrategy } from './two-factor-local-strategy';
+import syncRecetarioUserId from './hooks/sync-recetario-user-id';
 
 declare module './declarations' {
   interface ServiceTypes {
@@ -19,4 +20,10 @@ export default function(app: Application): void {
 
   app.use('/authentication', authentication);
   app.configure(expressOauth());
+
+  app.service('authentication').hooks({
+    after: {
+      create: [syncRecetarioUserId()],
+    },
+  });
 }

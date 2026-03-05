@@ -296,6 +296,9 @@ export class Profile {
           nationalLicenseNumber: mdSettingsPayload.nationalLicenseNumber ?? undefined,
           stateLicense: mdSettingsPayload.stateLicense ?? undefined,
           stateLicenseNumber: mdSettingsPayload.stateLicenseNumber ?? undefined,
+          recetarioTitle: mdSettingsPayload.recetarioTitle ?? undefined,
+          recetarioProvince: mdSettingsPayload.recetarioProvince ?? undefined,
+          signatureImage: mdSettingsPayload.signatureImage ?? undefined,
         };
         if (record?.id) {
           await this.app.service('md-settings').patch(record.id, patchPayload, internalParams as any);

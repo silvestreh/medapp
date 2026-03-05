@@ -55,6 +55,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ ok: true, intent });
     }
 
+    if (intent === 'update-recetario-settings') {
+      const orgId = String(formData.get('orgId') || '');
+      const enabled = formData.get('enabled') === 'true';
+      const healthCenterId = formData.get('healthCenterId');
+      const org = await client.service('organizations').get(orgId);
+      const settings = { ...((org as any)?.settings || {}) };
+      settings.recetario = {
+        enabled,
+        healthCenterId: healthCenterId ? Number(healthCenterId) : null,
+      };
+      await client.service('organizations').patch(orgId, { settings });
+      return json({ ok: true, intent });
+    }
+
     return json({ ok: false, intent, error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
     return json({ ok: false, intent, error: error?.message || 'Operation failed' }, { status: 400 });
