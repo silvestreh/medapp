@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionIcon, Badge, Box, Button, Group, Loader, Paper, Stack, Text, Textarea, Title } from '@mantine/core';
 import { useClickOutside, useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from '@remix-run/react';
-import { Bot, ChevronDown, Copy, ExternalLink, Minimize2, X } from 'lucide-react';
+import { Bot, ChevronDown, Copy, ExternalLink, X, ArrowDownRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -659,7 +659,7 @@ export function EncounterChatPanel({
         </Group>
         <Group gap={4}>
           <ActionIcon variant="subtle" color="white" onClick={onMinimize} aria-label={t('ai_chat.minimize_assistant')}>
-            <Minimize2 size={16} />
+            <ArrowDownRight size={16} />
           </ActionIcon>
           <ActionIcon variant="subtle" color="white" onClick={onClose} aria-label={t('ai_chat.close', 'Cerrar')}>
             <X size={16} />
