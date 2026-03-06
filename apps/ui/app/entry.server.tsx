@@ -9,10 +9,14 @@ import { createInstance } from 'i18next';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
 import i18n, { resources } from '~/i18n/i18n';
 import i18next, { resolveLocale } from '~/i18n/i18next.server';
+import { getUser } from '~/utils/auth.server';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const handleError = Sentry.wrapHandleErrorWithSentry((error, { request }) => {
-  // Custom handleError implementation
+export const handleError = Sentry.wrapHandleErrorWithSentry(async (error, { request }) => {
+  const user = await getUser(request);
+  if (user) {
+    Sentry.setUser({ id: user.id, email: user.email });
+  }
 });
 
 const ABORT_DELAY = 5_000;

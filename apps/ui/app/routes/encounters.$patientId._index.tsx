@@ -32,6 +32,7 @@ import { ToolbarTitle } from '~/components/toolbar-title';
 import { EncounterAiChatPanel } from '~/components/encounter-ai-chat-panel';
 import { PrescriptionDetail } from '~/components/prescription-detail';
 import { PrescribeModal } from '~/components/prescribe-modal';
+import { AttachmentViewer } from '~/components/encounter-attachments';
 
 const Container = styled('div', {
   base: {
@@ -277,11 +278,15 @@ export default function PatientEncounterDetail() {
   // Prescription selection
   const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
 
+  // Attachment selection
+  const [activeAttachmentIndex, setActiveAttachmentIndex] = useState<number | null>(null);
+
   const clearSelection = useCallback(() => {
     setSelectedEncounter(null);
     setActiveFormKey(undefined);
     setSelectedStudy(null);
     setSelectedPrescription(null);
+    setActiveAttachmentIndex(null);
   }, []);
 
   const handleEncounterClick = useCallback((encounter: any) => {
@@ -289,6 +294,7 @@ export default function PatientEncounterDetail() {
     setSelectedPrescription(null);
     setSelectedEncounter(encounter);
     setActiveFormKey(undefined);
+    setActiveAttachmentIndex(null);
   }, []);
 
   const handleFormClick = useCallback((encounter: any, formKey: string) => {
@@ -296,6 +302,7 @@ export default function PatientEncounterDetail() {
     setSelectedPrescription(null);
     setSelectedEncounter(encounter);
     setActiveFormKey(formKey);
+    setActiveAttachmentIndex(null);
   }, []);
 
   const handleStudyClick = useCallback((study: any) => {
@@ -303,6 +310,7 @@ export default function PatientEncounterDetail() {
     setActiveFormKey(undefined);
     setSelectedStudy(study);
     setSelectedPrescription(null);
+    setActiveAttachmentIndex(null);
   }, []);
 
   const handlePrescriptionClick = useCallback((prescription: any) => {
@@ -310,9 +318,21 @@ export default function PatientEncounterDetail() {
     setActiveFormKey(undefined);
     setSelectedStudy(null);
     setSelectedPrescription(prescription);
+    setActiveAttachmentIndex(null);
+  }, []);
+
+  const handleAttachmentClick = useCallback((encounter: any, index: number) => {
+    setSelectedStudy(null);
+    setSelectedPrescription(null);
+    setSelectedEncounter(encounter);
+    setActiveFormKey(undefined);
+    setActiveAttachmentIndex(index);
   }, []);
 
   const hasSelection = selectedEncounter || selectedStudy || selectedPrescription;
+  const selectedAttachment = selectedEncounter && activeAttachmentIndex !== null
+    ? selectedEncounter.data?.attachments?.[activeAttachmentIndex]
+    : null;
 
   if (!data) {
     return null;
@@ -404,16 +424,22 @@ export default function PatientEncounterDetail() {
           onFormClick={handleFormClick}
           onStudyClick={handleStudyClick}
           onPrescriptionClick={handlePrescriptionClick}
+          onAttachmentClick={handleAttachmentClick}
+          activeAttachmentIndex={activeAttachmentIndex}
         />
       </Sidebar>
 
       <Content>
         {hasSelection ? (
           <Stack
-            key={`${selectedEncounter?.id ?? selectedStudy?.id ?? selectedPrescription?.id}-${activeFormKey ?? 'none'}`}
+            key={`${selectedEncounter?.id ?? selectedStudy?.id ?? selectedPrescription?.id}-${activeFormKey ?? 'none'}-${activeAttachmentIndex ?? 'none'}`}
             pos="relative"
           >
-            {selectedEncounter && (
+            {selectedAttachment && (
+              <AttachmentViewer attachment={selectedAttachment} />
+            )}
+
+            {selectedEncounter && !selectedAttachment && (
               <EncounterForm
                 encounter={selectedEncounter}
                 readOnly={!!selectedEncounter.id}

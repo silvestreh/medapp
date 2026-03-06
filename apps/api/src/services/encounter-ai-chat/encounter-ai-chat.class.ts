@@ -161,7 +161,7 @@ export class EncounterAiChat {
   }
 
   private async fetchAnonymizedHistory(patientId: string, params?: Params): Promise<AnonymizedEncounterHistory> {
-    const patient = await this.app.service('patients').get(patientId, params as any);
+    const patient = await this.app.service('patients').get(patientId, { ...params, query: {} } as any);
     const [encountersResult, studiesResult] = await Promise.all([
       this.app.service('encounters').find({
         ...(params as any),
@@ -367,7 +367,7 @@ export class EncounterAiChat {
     }
 
     try {
-      const org = await this.app.service('organizations').get(organizationId, params as any);
+      const org = await this.app.service('organizations').get(organizationId, { ...params, query: {} } as any);
       const llmChat = (org as any)?.settings?.llmChat || {};
       const preferredProvider = llmChat?.preferredProvider;
       const model = llmChat?.model;

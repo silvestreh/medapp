@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { useNavigate } from '@remix-run/react';
+import * as Sentry from '@sentry/remix';
 import type { Application, Params, ServiceMethods } from '@feathersjs/feathers';
 import omit from 'lodash/omit';
 import useSWR, { SWRConfig, type SWRConfiguration, mutate } from 'swr';
@@ -56,6 +57,14 @@ export const FeathersProvider: React.FC<FeathersProviderProps> = ({
     const client = createFeathersClient(undefined, initialToken, currentOrganizationId);
     setFeathersClient(client);
   }, [initialToken, currentOrganizationId]);
+
+  useEffect(() => {
+    if (initialUser) {
+      Sentry.setUser({ id: initialUser.id, email: initialUser.email });
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [initialUser]);
 
   const setCurrentOrganizationId = useCallback((id: string) => {
     setCurrentOrgId(id);

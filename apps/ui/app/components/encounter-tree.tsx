@@ -45,6 +45,19 @@ export type TimelineEntry =
   | { kind: 'study'; date: string; data: Study }
   | { kind: 'prescription'; date: string; data: Prescription };
 
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getFileTypeLabel(mimeType: string, t: any): string {
+  if (mimeType.startsWith('image/')) return t('encounters.file_type_image');
+  if (mimeType === 'application/pdf') return t('encounters.file_type_pdf');
+  if (mimeType === 'application/dicom') return t('encounters.file_type_dicom');
+  return t('encounters.file_type_file');
+}
+
 interface EncounterTreeProps {
   encounters: Encounter[];
   studies?: Study[];
@@ -53,10 +66,12 @@ interface EncounterTreeProps {
   onFormClick?: (encounter: Encounter, formKey: string) => void;
   onStudyClick?: (study: Study) => void;
   onPrescriptionClick?: (prescription: Prescription) => void;
+  onAttachmentClick?: (encounter: Encounter, attachmentIndex: number) => void;
   activeEncounterId?: string;
   activeFormKey?: string;
   activeStudyId?: string;
   activePrescriptionId?: string;
+  activeAttachmentIndex?: number | null;
 }
 
 const StyledAccordion = styled(Accordion, {
@@ -175,9 +190,11 @@ const EncounterTree: FC<EncounterTreeProps> = ({
   activeFormKey,
   activeStudyId,
   activePrescriptionId,
+  activeAttachmentIndex,
   onFormClick,
   onStudyClick,
   onPrescriptionClick,
+  onAttachmentClick,
 }) => {
   const { t } = useTranslation();
 
@@ -203,6 +220,14 @@ const EncounterTree: FC<EncounterTreeProps> = ({
       onPrescriptionClick?.(prescription);
     },
     [onPrescriptionClick]
+  );
+
+  const handleAttachmentItemClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>, encounter: Encounter, index: number) => {
+      e.stopPropagation();
+      onAttachmentClick?.(encounter, index);
+    },
+    [onAttachmentClick]
   );
 
   const timeline: TimelineEntry[] = useMemo(() => {
@@ -276,7 +301,7 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                     {formatInLocale(encounter.date, 'dddd D, HH:mm', locale)}
                                   </EncounterDateText>
                                   {encounter.data &&
-                                    Object.keys(encounter.data).map(key => (
+                                    Object.keys(encounter.data).filter(key => key !== 'attachments').map(key => (
                                       <FormItem
                                         key={key}
                                         onClick={e => handleFormItemClick(e, encounter, key)}
@@ -285,6 +310,23 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                         {t(`forms.${encounter.data[key].type}` as any)}
                                       </FormItem>
                                     ))}
+                                  {encounter.data?.attachments?.map((att: any, i: number) => (
+                                    <FormItem
+                                      key={`att-${i}`}
+                                      onClick={e => handleAttachmentItemClick(e, encounter, i)}
+                                      active={activeEncounterId === encounter.id && activeAttachmentIndex === i}
+                                    >
+                                      {getFileTypeLabel(att.mimeType, t)}
+                                      <Text
+                                        size="xs"
+                                        c={activeEncounterId === encounter.id && activeAttachmentIndex === i ? 'white' : 'gray.5'}
+                                        mt={2}
+                                        style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '250px' }}
+                                      >
+                                        {att.fileName} · {formatFileSize(att.fileSize)}
+                                      </Text>
+                                    </FormItem>
+                                  ))}
                                 </EncounterBox>
                               );
                             }

@@ -61,6 +61,9 @@ export default {
           const isExpectedError = ctx.error.code === 401;
 
           if (!isExpectedError) {
+            if (ctx.params.user) {
+              Sentry.setUser({ id: ctx.params.user.id, email: ctx.params.user.email });
+            }
             Sentry.captureException(ctx.error);
           }
         }

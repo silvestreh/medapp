@@ -13,7 +13,7 @@ export default {
     create: [authenticate('jwt'), handleFileUpload()],
     update: [disallow('external')],
     patch: [disallow('external')],
-    remove: [disallow('external')],
+    remove: [authenticate('jwt')],
   },
   after: { all: [], find: [], get: [], create: [], update: [], patch: [], remove: [] },
   error: { all: [], find: [], get: [], create: [], update: [], patch: [], remove: [] },

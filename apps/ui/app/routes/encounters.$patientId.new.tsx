@@ -3,7 +3,8 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { redirect } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Stack, Center, Text } from '@mantine/core';
+import { Stack, Center, Text, ActionIcon, Tooltip, Group, Box, Button } from '@mantine/core';
+import { Paperclip } from 'lucide-react';
 
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -14,6 +15,8 @@ import NewEncounterSidebar from '~/components/new-encounter-sidebar';
 import { EncounterAiChatPanel } from '~/components/encounter-ai-chat-panel';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
+import { useAttachmentUpload, FloatingAttachmentsList, type AttachmentData } from '~/components/encounter-attachments';
+import { useFeathers } from '~/components/provider';
 import {
   getAuthenticatedClient,
   authenticatedLoader,
@@ -148,8 +151,42 @@ export default function NewEncounter() {
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const { patient } = data;
+  const client = useFeathers();
   const [formValues, setFormValues] = useState<any>({});
   const [activeFormKey, setActiveFormKey] = useState<string | undefined>(undefined);
+
+  const handleAttached = useCallback((attachment: AttachmentData) => {
+    setFormValues((prev: any) => ({
+      ...prev,
+      attachments: [...(prev.attachments || []), attachment],
+    }));
+  }, []);
+
+  const handleRemoveAttachment = useCallback(async (index: number) => {
+    const att = formValues.attachments?.[index];
+    if (att?.url) {
+      const filename = att.url.split('/').pop();
+      if (filename?.endsWith('.enc')) {
+        try {
+          const token = await (client as any).authentication?.getAccessToken?.();
+          const orgId = (client as any).organizationId;
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+          if (token) headers['Authorization'] = `Bearer ${token}`;
+          if (orgId) headers['organization-id'] = orgId;
+          await fetch(`/api/file-uploads/${filename}`, { method: 'DELETE', headers });
+        } catch {
+          // best-effort deletion
+        }
+      }
+    }
+    setFormValues((prev: any) => {
+      const attachments = [...(prev.attachments || [])];
+      attachments.splice(index, 1);
+      return { ...prev, attachments };
+    });
+  }, [formValues.attachments, client]);
+
+  const { openFilePicker, uploading, FileInputElement } = useAttachmentUpload(handleAttached);
 
   const activeForms = useMemo(() => {
     const filtered = ALL_FORMS.filter(key => key === null || formValues[key] !== undefined);
@@ -194,12 +231,27 @@ export default function NewEncounter() {
   return (
     <Container className="encounters-container">
       <Portal id="toolbar">
-        <ToolbarTitle
-          title={t('encounters.new')}
-          subTitle={`${patient.personalData.firstName} ${patient.personalData.lastName}`}
-          onBack={handleGoBack}
-        />
+        <Group justify="space-between" align="center" style={{ width: '100%' }}>
+          <ToolbarTitle
+            title={t('encounters.new')}
+            subTitle={`${patient.personalData.firstName} ${patient.personalData.lastName}`}
+            onBack={handleGoBack}
+          />
+          <Box visibleFrom="lg">
+            <Button variant="light" onClick={openFilePicker} loading={uploading} leftSection={<Paperclip size={16} />}>
+              {t('encounters.attach_file')}
+            </Button>
+          </Box>
+          <Box hiddenFrom="lg">
+            <Tooltip label={t('encounters.attach_file')}>
+              <ActionIcon variant="light" onClick={openFilePicker} loading={uploading}>
+                <Paperclip size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Box>
+        </Group>
       </Portal>
+      {FileInputElement}
 
       <Sidebar>
         <NewEncounterSidebar
@@ -213,11 +265,11 @@ export default function NewEncounter() {
 
       <Content>
         <Stack key={activeFormKey ?? 'no-active-form'}>
-          {activeFormKey && (
+          {(activeFormKey || formValues.attachments?.length > 0) && (
             <EncounterForm
               encounter={{ patientId: patient.id, data: formValues }}
               readOnly={false}
-              activeFormKey={activeFormKey}
+              activeFormKey={activeFormKey || '__none__'}
               onValuesChange={handleValuesChange}
               insurerId={data.insurerId}
             />
@@ -230,6 +282,11 @@ export default function NewEncounter() {
         </Stack>
         <EncounterAiChatPanel patientId={String(patient.id)} encounterDraft={formValues} />
       </Content>
+
+      <FloatingAttachmentsList
+        attachments={formValues.attachments || []}
+        onRemove={handleRemoveAttachment}
+      />
     </Container>
   );
 }

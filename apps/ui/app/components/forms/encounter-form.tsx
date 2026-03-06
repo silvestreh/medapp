@@ -37,7 +37,12 @@ const FORM_KEY_ORDER = [
 const isDataEmpty = (data: any): boolean => {
   if (!data || typeof data !== 'object' || Object.keys(data).length === 0) return true;
 
-  return Object.values(data).every((form: any) => {
+  if (Array.isArray(data.attachments) && data.attachments.length > 0) return false;
+
+  const formEntries = Object.entries(data).filter(([k]) => k !== 'attachments');
+  if (formEntries.length === 0) return true;
+
+  return formEntries.every(([, form]: [string, any]) => {
     if (!form || !form.values || typeof form.values !== 'object') return true;
 
     return Object.values(form.values).every((val: any) => {

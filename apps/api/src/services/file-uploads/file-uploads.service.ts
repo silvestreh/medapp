@@ -12,7 +12,7 @@ declare module '../../declarations' {
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
 });
 
 export default function (app: Application): void {
