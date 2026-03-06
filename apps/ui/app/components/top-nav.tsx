@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { Avatar, Group, Image, Menu, UnstyledButton, Text } from '@mantine/core';
-import { Link } from '@remix-run/react';
+import { Link, useLocation } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Building2, ChevronDown, Check, LogOut, User } from 'lucide-react';
 
@@ -115,7 +115,10 @@ export default function TopNav() {
     logout();
   }, [logout]);
 
-  if (!user) return <Container />;
+  const { pathname } = useLocation();
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup');
+
+  if (!user || isAuthRoute) return <Container />;
 
   return (
     <Container>

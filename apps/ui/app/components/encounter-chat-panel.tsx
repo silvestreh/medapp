@@ -1,20 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
-import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Group,
-  Loader,
-  Paper,
-  Select,
-  Stack,
-  Text,
-  Textarea,
-  Title,
-} from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
-import { Copy, Minimize2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActionIcon, Badge, Box, Button, Group, Loader, Paper, Stack, Text, Textarea, Title } from '@mantine/core';
+import { useClickOutside, useMediaQuery } from '@mantine/hooks';
+import { useNavigate } from '@remix-run/react';
+import { Bot, ChevronDown, Copy, ExternalLink, Minimize2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -52,6 +40,7 @@ interface ChatMessage {
 
 interface PersistedChatMessage {
   id: string;
+  patientId: string;
   role: Role;
   content: string;
   model?: string | null;
@@ -61,61 +50,171 @@ interface PersistedChatMessage {
 
 interface EncounterChatPanelProps {
   patientId: string;
+  patientName: string;
+  accentColor: string;
   encounterDraft: Record<string, any>;
   isActive: boolean;
   onMinimize: () => void;
 }
 
-function SuggestionGroup({ title, items }: { title: string; items: Suggestion[] }) {
+const CARD_WIDTH = 280;
+
+function SuggestionCard({ item }: { item: Suggestion }) {
   const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const cardRef = useClickOutside(() => setExpanded(false));
   const handleCopy = useCallback(async (text: string) => {
     if (!navigator?.clipboard) return;
     await navigator.clipboard.writeText(text);
   }, []);
 
-  if (!items.length) return null;
-
   return (
-    <Stack gap="xs">
-      <Text fw={600} size="sm">
-        {title}
-      </Text>
-      {items.map((item, index) => (
-        <Paper key={`${item.title}-${index}`} withBorder p="sm" radius="md">
-          <Group justify="space-between" align="start" wrap="nowrap">
-            <Stack gap={4} style={{ flex: 1 }}>
-              <Text fw={500} size="sm">
-                {item.title}
-              </Text>
-              <Text size="sm" c="dimmed">
-                {item.detail}
-              </Text>
-              {typeof item.confidence === 'number' && (
-                <Badge variant="light" color="blue" w="fit-content">
-                  {t('ai_chat.confidence')}: {Math.round(item.confidence * 100)}%
-                </Badge>
-              )}
-            </Stack>
-            <Button
-              size="xs"
-              variant="subtle"
-              leftSection={<Copy size={12} />}
-              onClick={() => handleCopy(`${item.title}: ${item.detail}`)}
-            >
-              {t('ai_chat.copy')}
-            </Button>
-          </Group>
-        </Paper>
-      ))}
-    </Stack>
+    <Box
+      ref={cardRef}
+      style={{
+        width: CARD_WIDTH,
+        minWidth: CARD_WIDTH,
+        flexShrink: 0,
+        scrollSnapAlign: 'start',
+        position: 'relative',
+        alignSelf: 'flex-end',
+      }}
+    >
+      <Paper
+        withBorder
+        p={8}
+        radius="md"
+        bg="white"
+        onClick={expanded ? () => setExpanded(false) : undefined}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          width: CARD_WIDTH,
+          zIndex: expanded ? 10 : 0,
+          cursor: expanded ? 'pointer' : undefined,
+          transform: expanded ? 'scale(1.1)' : 'scale(1)',
+          transformOrigin: 'bottom left',
+          transition: expanded
+            ? 'transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms ease'
+            : 'transform 250ms ease, box-shadow 200ms ease',
+        }}
+      >
+        <Group justify="space-between" align="start" wrap="nowrap" gap={2}>
+          <Text fw={500} size="xs" lineClamp={expanded ? undefined : 1} style={{ flex: 1, minWidth: 0 }}>
+            {item.title}
+          </Text>
+          <ActionIcon
+            size={16}
+            variant="subtle"
+            color="gray"
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              handleCopy(`${item.title}: ${item.detail}`);
+            }}
+            style={{ flexShrink: 0 }}
+          >
+            <Copy size={10} />
+          </ActionIcon>
+        </Group>
+        {typeof item.confidence === 'number' && (
+          <Badge variant="light" color="blue" size="xs" mt={2}>
+            {Math.round(item.confidence * 100)}%
+          </Badge>
+        )}
+        {item.detail && (
+          <Box
+            mt={4}
+            style={{
+              overflow: 'hidden',
+              transition: 'max-height 250ms ease',
+              maxHeight: expanded ? 500 : 36,
+            }}
+          >
+            <Text size="xs" c="dimmed">
+              {item.detail}
+            </Text>
+          </Box>
+        )}
+        {!expanded && item.detail && (
+          <Text size="xs" c="blue" mt={2} style={{ cursor: 'pointer' }} onClick={() => setExpanded(true)}>
+            {t('ai_chat.read_more', 'Ver más')} <ChevronDown size={10} style={{ verticalAlign: 'middle' }} />
+          </Text>
+        )}
+      </Paper>
+    </Box>
   );
 }
 
-export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMinimize }: EncounterChatPanelProps) {
+function SuggestionsCarousel({ tabs }: { tabs: { label: string; items: Suggestion[] }[] }) {
+  const activeTabs = tabs.filter(t => t.items.length > 0);
+  if (!activeTabs.length) return null;
+
+  return (
+    <Box
+      style={{
+        display: 'flex',
+        gap: 6,
+        overflowX: 'auto',
+        overflowY: 'visible',
+        scrollSnapType: 'x mandatory',
+        scrollPaddingInlineStart: '1rem',
+        scrollbarWidth: 'none',
+        WebkitOverflowScrolling: 'touch',
+        paddingTop: 200,
+        marginTop: -60,
+        paddingBottom: 4,
+        paddingInline: '1rem',
+        alignItems: 'flex-end',
+        marginLeft: '-1rem',
+        width: 'calc(100% + 2rem)',
+      }}
+    >
+      {activeTabs.map(tab => (
+        <Box
+          key={tab.label}
+          style={{
+            flexShrink: 0,
+            scrollSnapAlign: 'start',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+          }}
+        >
+          <Text
+            size="10px"
+            fw={700}
+            c="dimmed"
+            tt="uppercase"
+            px={2}
+            style={{ letterSpacing: '0.05em', position: 'relative', top: -120 }}
+          >
+            {tab.label}
+          </Text>
+          <Box style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+            {tab.items.map((item, i) => (
+              <SuggestionCard key={`${tab.label}-${item.title}-${i}`} item={item} />
+            ))}
+          </Box>
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
+export function EncounterChatPanel({
+  patientId,
+  patientName,
+  accentColor,
+  encounterDraft,
+  isActive,
+  onMinimize,
+}: EncounterChatPanelProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const client = useFeathers();
   const { create, isLoading, error } = useMutation('encounter-ai-chat');
-  const { create: loadModels, isLoading: isLoadingModels } = useMutation('llm-models');
+  const { create: loadModels } = useMutation('llm-models');
   const { currentOrganizationId } = useOrganization();
   const loadModelsRef = useRef(loadModels);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -126,7 +225,6 @@ export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMini
   const isDesktop = useMediaQuery(media.md);
   const [draftMessage, setDraftMessage] = useState('');
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [modelsProvider, setModelsProvider] = useState<string | null>(null);
   const [streamingMessage, setStreamingMessage] = useState<{ id: string; fullContent: string } | null>(null);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
@@ -214,18 +312,29 @@ export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMini
     try {
       const { rows, nextOldest, hasMore } = await fetchHistory();
       const ordered = rows.slice().reverse().map(toChatMessage);
-      setMessages(
-        ordered.length
-          ? ordered
-          : [
-              {
-                id: 'msg-0',
-                role: 'assistant',
-                content: t('ai_chat.initial_message'),
-                isLocalOnly: true,
-              },
-            ]
-      );
+
+      if (ordered.length) {
+        // If the last message is from the user, the server may still be
+        // processing the LLM response. Show a thinking indicator — the
+        // real-time listener below will replace it when the response arrives.
+        if (ordered[ordered.length - 1].role === 'user') {
+          setMessages([
+            ...ordered,
+            { id: 'msg-pending', role: 'assistant' as Role, content: t('ai_chat.thinking'), isThinking: true },
+          ]);
+        } else {
+          setMessages(ordered);
+        }
+      } else {
+        setMessages([
+          {
+            id: 'msg-0',
+            role: 'assistant',
+            content: t('ai_chat.initial_message'),
+            isLocalOnly: true,
+          },
+        ]);
+      }
       setOldestCursor(nextOldest);
       setHasMoreHistory(hasMore);
     } catch (_error) {
@@ -306,9 +415,9 @@ export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMini
         messages: [...requestMessages, { role: 'user', content }],
       });
 
-      const assistantMessageId = thinkingId;
       const assistantMessage = String(result?.message || t('ai_chat.no_response'));
       const assistantModel = String((result as any)?.meta?.model || '');
+      const persistedAssistantId = String((result as any)?.meta?.persistedMessageId || thinkingId);
       const assistantSuggestions = {
         differentials: Array.isArray(result?.differentials) ? result.differentials : [],
         suggestedNextSteps: Array.isArray(result?.suggestedNextSteps) ? result.suggestedNextSteps : [],
@@ -319,23 +428,9 @@ export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMini
         citations: Array.isArray(result?.citations) ? result.citations : [],
       };
 
-      let persistedAssistantId = assistantMessageId;
-      try {
-        const savedAssistant = await client.service('encounter-ai-chat-messages').create({
-          patientId,
-          role: 'assistant',
-          content: assistantMessage,
-          model: assistantModel || null,
-          suggestions: assistantSuggestions,
-        });
-        persistedAssistantId = String((savedAssistant as PersistedChatMessage).id || assistantMessageId);
-      } catch (_error) {
-        // keep temporary message id when persistence fails
-      }
-
       setMessages(previous =>
         previous.map(message =>
-          message.id === assistantMessageId
+          message.id === thinkingId
             ? {
                 id: persistedAssistantId,
                 role: 'assistant',
@@ -380,12 +475,8 @@ export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMini
     toChatMessage,
   ]);
 
-  const handleDraftChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleDraftChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDraftMessage(event.currentTarget.value);
-  }, []);
-
-  const handleModelChange = useCallback((value: string | null) => {
-    setSelectedModel(value);
   }, []);
 
   const handleTextareaKeyDown = useCallback(
@@ -422,7 +513,6 @@ export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMini
           : [];
         const defaultModel = (result as any)?.defaultModel ? String((result as any).defaultModel) : null;
         const provider = (result as any)?.provider ? String((result as any).provider) : null;
-        setAvailableModels(models);
         setModelsProvider(provider);
         if (!models.length) {
           setSelectedModel(null);
@@ -445,7 +535,6 @@ export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMini
       } catch (_error) {
         if (cancelled) return;
         hasLoadedModelsRef.current = false;
-        setAvailableModels([]);
         setSelectedModel(null);
         setModelsProvider(null);
       }
@@ -545,7 +634,7 @@ export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMini
       style={{
         width: 'min(420px, calc(100vw - 6rem))',
         height: 'min(72vh, 720px)',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.075), 0 8px 32px rgba(0,0,0,0.075), 0 24px 48px rgba(0,0,0,0.075)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -557,43 +646,32 @@ export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMini
         align="center"
         px="md"
         py="sm"
-        bg="violet.5"
+        bg={`${accentColor}.5`}
         style={{ borderBottom: '1px solid var(--mantine-color-gray-2)' }}
       >
-        <Group gap="xs" align="center">
-          <Title size="h4" c="white">
-            {t('ai_chat.title')}
+        <Group gap="xs" align="center" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+          <Bot size={20} color="white" style={{ flexShrink: 0 }} />
+          <Title size="h4" c="white" lineClamp={1}>
+            {patientName}
           </Title>
         </Group>
-        <ActionIcon
-          variant="subtle"
-          color="white"
-          onClick={onMinimize}
-          aria-label={t('ai_chat.minimize_assistant')}
-        >
+        <ActionIcon variant="subtle" color="white" onClick={onMinimize} aria-label={t('ai_chat.minimize_assistant')}>
           <Minimize2 size={16} />
         </ActionIcon>
       </Group>
 
       <Stack gap={0} style={{ flex: 1, minHeight: 0 }}>
-        <Group align="end" px="md">
-          <Select
-            value={selectedModel}
-            onChange={handleModelChange}
-            data={availableModels.map(model => ({ value: model, label: model }))}
-            placeholder={isLoadingModels ? t('ai_chat.loading_models') : t('ai_chat.no_models')}
-            searchable
-            clearable
-            disabled={isLoadingModels || availableModels.length === 0}
-            variant="unstyled"
-            style={{
-              borderBottom: '1px solid var(--mantine-color-gray-2)',
-              marginLeft: '-1rem',
-              marginRight: '-1rem',
-              padding: '.5rem 1rem',
-              flex: 1,
-            }}
-          />
+        <Group px="md" py={6} style={{ borderBottom: '1px solid var(--mantine-color-gray-2)' }}>
+          <Button
+            variant="subtle"
+            color="gray"
+            size="compact-xs"
+            rightSection={<ExternalLink size={12} />}
+            onClick={() => navigate(`/encounters/${patientId}`)}
+            style={{ flex: 1 }}
+          >
+            {t('ai_chat.view_encounters', 'Ver encuentros')}
+          </Button>
         </Group>
         <Stack
           ref={messagesContainerRef}
@@ -657,14 +735,13 @@ export function EncounterChatPanel({ patientId, encounterDraft, isActive, onMini
               </Paper>
 
               {message.suggestions && !message.isStreaming && !message.isThinking && (
-                <Stack mt="xs" gap="xs">
-                  <SuggestionGroup title={t('ai_chat.differentials')} items={message.suggestions.differentials} />
-                  <SuggestionGroup
-                    title={t('ai_chat.suggested_next_steps')}
-                    items={message.suggestions.suggestedNextSteps}
-                  />
-                  <SuggestionGroup title={t('ai_chat.treatment_ideas')} items={message.suggestions.treatmentIdeas} />
-                </Stack>
+                <SuggestionsCarousel
+                  tabs={[
+                    { label: t('ai_chat.differentials'), items: message.suggestions.differentials },
+                    { label: t('ai_chat.suggested_next_steps'), items: message.suggestions.suggestedNextSteps },
+                    { label: t('ai_chat.treatment_ideas'), items: message.suggestions.treatmentIdeas },
+                  ]}
+                />
               )}
             </Box>
           ))}

@@ -1,4 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PropsWithChildren,
+} from 'react';
 
 import { useFeathers, useAccount } from '~/components/provider';
 
@@ -6,6 +15,7 @@ export interface ChatInstance {
   patientId: string;
   patientName: string;
   patientInitials: string;
+  color: string;
   encounterDraft: Record<string, any>;
   isActive: boolean;
 }
@@ -24,19 +34,28 @@ interface ChatManagerContextType {
 const COLORS = ['blue', 'teal', 'violet', 'pink', 'orange', 'cyan', 'green', 'grape', 'indigo'];
 const PERSIST_DEBOUNCE_MS = 1000;
 
-export function deterministicColor(id: string): string {
+export function deterministicColor(id: string, usedColors: string[] = []): string {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 5) - hash) + id.charCodeAt(i);
+    hash = (hash << 5) - hash + id.charCodeAt(i);
     hash |= 0;
   }
-  return COLORS[Math.abs(hash) % COLORS.length];
+  const preferred = COLORS[Math.abs(hash) % COLORS.length];
+  if (!usedColors.includes(preferred)) return preferred;
+
+  // Find the first unused color
+  const available = COLORS.find(c => !usedColors.includes(c));
+  if (available) return available;
+
+  // All colors taken, fall back to hash
+  return preferred;
 }
 
 interface PersistedHead {
   patientId: string;
   patientName: string;
   patientInitials: string;
+  color: string;
 }
 
 function toPersistedHeads(chats: ChatInstance[]): PersistedHead[] {
@@ -44,11 +63,17 @@ function toPersistedHeads(chats: ChatInstance[]): PersistedHead[] {
     patientId: c.patientId,
     patientName: c.patientName,
     patientInitials: c.patientInitials,
+    color: c.color,
   }));
 }
 
 function fromPersistedHeads(heads: PersistedHead[]): ChatInstance[] {
-  return heads.map(h => ({ ...h, encounterDraft: {}, isActive: false }));
+  const usedColors: string[] = [];
+  return heads.map(h => {
+    const color = h.color || deterministicColor(h.patientId, usedColors);
+    usedColors.push(color);
+    return { ...h, color, encounterDraft: {}, isActive: false };
+  });
 }
 
 const ChatManagerContext = createContext<ChatManagerContextType | undefined>(undefined);
@@ -83,7 +108,9 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [client, user?.id, loaded]);
 
   // Debounced persist to server
@@ -112,12 +139,10 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
     return () => {
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chats, loaded, client, user?.id]);
 
-  const activeChatPatientId = useMemo(
-    () => chats.find(c => c.isActive)?.patientId ?? null,
-    [chats],
-  );
+  const activeChatPatientId = useMemo(() => chats.find(c => c.isActive)?.patientId ?? null, [chats]);
 
   const openChat = useCallback((patient: { id: string; firstName: string; lastName: string }) => {
     setChats(prev => {
@@ -127,9 +152,18 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
       }
       const initials = `${patient.firstName?.[0] ?? ''}${patient.lastName?.[0] ?? ''}`.toUpperCase() || '?';
       const name = `${patient.firstName} ${patient.lastName}`.trim();
+      const usedColors = prev.map(c => c.color);
+      const color = deterministicColor(patient.id, usedColors);
       return [
         ...prev.map(c => ({ ...c, isActive: false })),
-        { patientId: patient.id, patientName: name, patientInitials: initials, encounterDraft: {}, isActive: true },
+        {
+          patientId: patient.id,
+          patientName: name,
+          patientInitials: initials,
+          color,
+          encounterDraft: {},
+          isActive: true,
+        },
       ];
     });
   }, []);
@@ -162,8 +196,26 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
   }, []);
 
   const value = useMemo<ChatManagerContextType>(
-    () => ({ chats, activeChatPatientId, openChat, closeChat, activateChat, minimizeActiveChat, updateEncounterDraft, reorderChat }),
-    [chats, activeChatPatientId, openChat, closeChat, activateChat, minimizeActiveChat, updateEncounterDraft, reorderChat],
+    () => ({
+      chats,
+      activeChatPatientId,
+      openChat,
+      closeChat,
+      activateChat,
+      minimizeActiveChat,
+      updateEncounterDraft,
+      reorderChat,
+    }),
+    [
+      chats,
+      activeChatPatientId,
+      openChat,
+      closeChat,
+      activateChat,
+      minimizeActiveChat,
+      updateEncounterDraft,
+      reorderChat,
+    ]
   );
 
   return <ChatManagerContext.Provider value={value}>{children}</ChatManagerContext.Provider>;

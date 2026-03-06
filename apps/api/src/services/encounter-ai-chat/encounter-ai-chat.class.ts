@@ -42,6 +42,7 @@ export interface EncounterAiChatResult {
     model: string;
     onDemand: true;
     encounterCount: number;
+    persistedMessageId?: string;
   };
 }
 
@@ -130,8 +131,34 @@ export class EncounterAiChat {
     }
     const parsed = this.parseAssistantPayload(completion.text);
 
+    const assistantMessage = parsed.message || `Context reviewed (${history.encounters.length} encounters). "${userMessage}"`;
+    const suggestions = {
+      differentials: parsed.differentials,
+      suggestedNextSteps: parsed.suggestedNextSteps,
+      treatmentIdeas: parsed.treatmentIdeas,
+      warnings: parsed.warnings,
+      rationale: parsed.rationale,
+      confidence: parsed.confidence,
+      citations: parsed.citations,
+    };
+
+    // Persist the assistant response server-side so it survives client refresh
+    let persistedMessageId: string | undefined;
+    try {
+      const saved = await this.app.service('encounter-ai-chat-messages').create({
+        patientId,
+        role: 'assistant',
+        content: assistantMessage,
+        model: completion.model || null,
+        suggestions,
+      }, params);
+      persistedMessageId = String((saved as any).id || '');
+    } catch (persistError: any) {
+      console.error('[encounter-ai-chat] Failed to persist assistant message:', persistError?.message || persistError);
+    }
+
     const result: EncounterAiChatResult = {
-      message: parsed.message || `Context reviewed (${history.encounters.length} encounters). "${userMessage}"`,
+      message: assistantMessage,
       differentials: parsed.differentials,
       suggestedNextSteps: parsed.suggestedNextSteps,
       treatmentIdeas: parsed.treatmentIdeas,
@@ -144,6 +171,7 @@ export class EncounterAiChat {
         model: completion.model,
         onDemand: true,
         encounterCount: history.encounters.length,
+        persistedMessageId,
       },
     };
 

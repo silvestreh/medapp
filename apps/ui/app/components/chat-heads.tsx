@@ -1,13 +1,17 @@
-import { useCallback, useRef } from 'react';
-import { ActionIcon, Avatar, Tooltip } from '@mantine/core';
+import { useCallback, useEffect, useRef } from 'react';
+import { ActionIcon, Avatar, Box, Tooltip } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { animated, useSpring, useSprings } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
-import { X } from 'lucide-react';
+import { Bot, X } from 'lucide-react';
 
-import { useChatManager, deterministicColor } from '~/components/chat-manager';
+import { useLocation } from '@remix-run/react';
+
+import { useChatManager } from '~/components/chat-manager';
 import { EncounterChatPanel } from '~/components/encounter-chat-panel';
 import { media } from '~/media';
+
+const AUTH_ROUTES = ['/login', '/signup'];
 
 const SPRING_CONFIG = { tension: 300, friction: 20 };
 const HEAD_SIZE = 48;
@@ -21,7 +25,7 @@ function AnimatedChatPanel({
   isActive,
   onMinimize,
 }: {
-  chat: { patientId: string; encounterDraft: Record<string, any> };
+  chat: { patientId: string; patientName: string; color: string; encounterDraft: Record<string, any> };
   isActive: boolean;
   onMinimize: () => void;
 }) {
@@ -48,6 +52,8 @@ function AnimatedChatPanel({
     >
       <EncounterChatPanel
         patientId={chat.patientId}
+        patientName={chat.patientName}
+        accentColor={chat.color}
         encounterDraft={chat.encounterDraft}
         isActive={isActive}
         onMinimize={onMinimize}
@@ -65,11 +71,24 @@ function dragSlot(count: number, dragY: number): number {
 export function ChatHeadsContainer() {
   const { chats, activeChatPatientId, activateChat, minimizeActiveChat, closeChat, reorderChat } = useChatManager();
   const isDesktop = useMediaQuery(media.md);
+  const { pathname } = useLocation();
+  const isAuthRoute = AUTH_ROUTES.some(r => pathname.startsWith(r));
 
   const dragDistRef = useRef(0);
   const settlingRef = useRef(false);
 
   const chatKey = chats.map(c => c.patientId).join(',');
+
+  // Clear settling flag after React has rendered with the new order.
+  // This runs synchronously after useSprings reinit, so the flag is
+  // guaranteed to be true during reinit and false afterwards.
+  useEffect(() => {
+    if (settlingRef.current) {
+      settlingRef.current = false;
+    }
+  }, [chatKey]);
+
+  const closingRef = useRef<string | null>(null);
 
   const [springs, api] = useSprings(
     chats.length,
@@ -77,6 +96,7 @@ export function ChatHeadsContainer() {
       x: 0,
       y: -(i * HEAD_OFFSET),
       scale: 1,
+      opacity: 1,
       zIndex: 0,
       immediate: settlingRef.current,
       config: SPRING_CONFIG,
@@ -119,7 +139,12 @@ export function ChatHeadsContainer() {
       });
     } else {
       // Release: bounce the dragged item to its target slot.
-      // Others are already in position from the drag phase.
+      // Once the spring finishes, commit the reorder to state.
+      // settlingRef + useEffect ensure the useSprings reinit
+      // doesn't animate (immediate: true during that render).
+      const shouldReorder = targetSlot !== index;
+      const patientId = chats[index]?.patientId;
+
       api.start(i => {
         if (i === index) {
           return {
@@ -128,26 +153,48 @@ export function ChatHeadsContainer() {
             scale: 1,
             zIndex: 0,
             immediate: false,
+            onRest: shouldReorder
+              ? () => {
+                  settlingRef.current = true;
+                  reorderChat(patientId, targetSlot);
+                }
+              : undefined,
           };
         }
-        // Keep others where they are
         return {};
       });
-
-      // Commit the reorder after the bounce animation finishes
-      if (targetSlot !== index) {
-        settlingRef.current = true;
-        setTimeout(() => {
-          reorderChat(chats[index].patientId, targetSlot);
-          // Clear settling flag after React has re-rendered
-          requestAnimationFrame(() => {
-            settlingRef.current = false;
-          });
-        }, 300);
-      }
     }
     return memo;
   });
+
+  const handleClose = useCallback(
+    (patientId: string) => {
+      const index = chats.findIndex(c => c.patientId === patientId);
+      if (index === -1) return;
+      closingRef.current = patientId;
+
+      api.start(i => {
+        if (i === index) {
+          return {
+            scale: 0,
+            opacity: 0,
+            immediate: false,
+            onRest: () => {
+              closingRef.current = null;
+              settlingRef.current = true;
+              closeChat(patientId);
+            },
+          };
+        }
+        // Shift heads above the closed one down by one slot
+        if (i > index) {
+          return { y: -((i - 1) * HEAD_OFFSET), immediate: false };
+        }
+        return {};
+      });
+    },
+    [chats, api, closeChat]
+  );
 
   const handleClick = useCallback(
     (patientId: string) => {
@@ -161,7 +208,7 @@ export function ChatHeadsContainer() {
     [activeChatPatientId, activateChat, minimizeActiveChat]
   );
 
-  if (!isDesktop) return null;
+  if (!isDesktop || isAuthRoute) return null;
   if (chats.length === 0) return null;
 
   return (
@@ -179,7 +226,7 @@ export function ChatHeadsContainer() {
         const chat = chats[i];
         if (!chat) return null;
         const isActive = chat.patientId === activeChatPatientId;
-        const color = deterministicColor(chat.patientId);
+        const color = chat.color;
 
         return (
           <animated.div
@@ -190,7 +237,8 @@ export function ChatHeadsContainer() {
               x: style.x,
               y: style.y,
               scale: style.scale,
-              zIndex: style.zIndex,
+              opacity: style.opacity,
+              zIndex: style.zIndex.to(z => (z ? 1400 : 1200)),
               position: 'fixed',
               right: `${HEADS_RIGHT}px`,
               bottom: `${HEADS_RIGHT}px`,
@@ -198,15 +246,15 @@ export function ChatHeadsContainer() {
               cursor: 'grab',
             }}
           >
-            <Tooltip label={chat.patientName} position="left" withArrow>
+            <Tooltip label={chat.patientName} position="left" withArrow zIndex={1400}>
               <Avatar
                 size={HEAD_SIZE}
                 radius="xl"
                 color={color}
                 style={{
                   boxShadow: isActive
-                    ? `0 0 0 3px var(--mantine-color-${color}-filled), 0 4px 12px rgba(0,0,0,0.2)`
-                    : '0 4px 12px rgba(0,0,0,0.15)',
+                    ? `0 0 0 3px var(--mantine-color-${color}-filled), 0 2px 4px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.075)`
+                    : '0 2px 4px rgba(0,0,0,0.1)',
                   transition: 'box-shadow 200ms ease',
                 }}
               >
@@ -220,7 +268,7 @@ export function ChatHeadsContainer() {
               color="dark"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
-                closeChat(chat.patientId);
+                handleClose(chat.patientId);
               }}
               style={{
                 position: 'absolute',
@@ -235,6 +283,23 @@ export function ChatHeadsContainer() {
             >
               <X size={10} />
             </ActionIcon>
+            <Box
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                zIndex: 1,
+                width: 16,
+                height: 16,
+                borderRadius: '50%',
+                backgroundColor: 'var(--mantine-color-violet-filled)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Bot size={12} color="white" />
+            </Box>
           </animated.div>
         );
       })}

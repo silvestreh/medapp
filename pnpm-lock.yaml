@@ -40,9 +40,6 @@ importers:
       '@feathersjs/feathers':
         specifier: ^4.5.17
         version: 4.5.17
-      '@feathersjs/transport-commons':
-        specifier: ^5.0.31
-        version: 5.0.34
       '@react-pdf/renderer':
         specifier: ^4.3.2
         version: 4.3.2(react@18.3.1)
@@ -1410,12 +1407,16 @@ packages:
     resolution: {integrity: sha512-FXKAcGApcd9w3M42gjLi8+oaPijabS8qbD4ynQK3PM8J7BqpbSdCzURsI7EpReoQxFxdhrR4jix8cQIC/iAeuw==}
     engines: {node: '>= 10'}
 
-  '@feathersjs/commons@5.0.34':
-    resolution: {integrity: sha512-UfHzq7taVJx++TXxX5pmDSR72xRp+h5nler4xcUlcJWLLykCOYo8YCeW03S7T1p1NuFdy0qBmU+B+G89bjyGmg==}
-    engines: {node: '>= 12'}
+  '@feathersjs/commons@4.5.19':
+    resolution: {integrity: sha512-ZbwJ74jqGHOzKTPvp88ACDgR6xHxyvpToc8dnf8/EDIjM5hUA4QiSg6SA5tZMRMyjp5x8sfKmpn9xNqPuN2r1A==}
+    engines: {node: '>= 10'}
 
   '@feathersjs/commons@5.0.40':
     resolution: {integrity: sha512-2kZ4dGcKr2qB/vhXotQR/0I90X/izeyoK36ww3mQKGy4jz572Lm92mOlpJN7FAMH8u6zziy9yDGBJEqa82lkkA==}
+    engines: {node: '>= 12'}
+
+  '@feathersjs/commons@5.0.42':
+    resolution: {integrity: sha512-UbnQmeCAb4LMRyOz4wMklE/ZyJuZO/SN/RQQyGvzCfsslr6uaXxtzq87+XH2cjB0v4v3Js+g/Sv0l1HOEraW4g==}
     engines: {node: '>= 12'}
 
   '@feathersjs/configuration@4.5.17':
@@ -1426,12 +1427,16 @@ packages:
     resolution: {integrity: sha512-HY1YJV/9d5wKd3RPNaWggOhAX4NmOulr5EvBMMm6jaMizJ7UMRUgZmqyRtuHL4h+u2LoLmWv9+wO3V+uCFoULg==}
     engines: {node: '>= 10'}
 
-  '@feathersjs/errors@5.0.34':
-    resolution: {integrity: sha512-C0t+pONnMvwlDW6iczcYmxaHzGvaGn3+BLhwlySEVYRciWOURIO8Eo5JVdN7cSM3Z7AxS3Dpk4DEhyFU/D2w6w==}
-    engines: {node: '>= 12'}
+  '@feathersjs/errors@4.5.19':
+    resolution: {integrity: sha512-9a2oMr+8ed8CHCjDuPrbfck373h1qUUppbzy9wV3HW2xq3RWhEYNwhbnsX7V4CZ1PxooWsRteq9bsIc/7f8fSg==}
+    engines: {node: '>= 10'}
 
   '@feathersjs/errors@5.0.40':
     resolution: {integrity: sha512-1ZZBjAj/5w65SkpDuH6GnWeadRbeaTdc21v+s3vtSUkCHJedOO2BMeHvjz6kC0Y/lRhZkeLUhuFzYqL+Z2GdRA==}
+    engines: {node: '>= 12'}
+
+  '@feathersjs/errors@5.0.42':
+    resolution: {integrity: sha512-PRZNYuLqFwtSZB3h/gVnYM0C3D7vAkOF7bEjPpAHl7j3QWbZbx6wdNWv0KX1fd+hm+6yF2JxR0Fzjbvo4w51TA==}
     engines: {node: '>= 12'}
 
   '@feathersjs/express@4.5.18':
@@ -1444,6 +1449,10 @@ packages:
 
   '@feathersjs/feathers@5.0.40':
     resolution: {integrity: sha512-CFxdVMgNCiLOV58lfNJyxUQ1PaxqNtFRW1TBSnz2jJnvPQJnADNamvDE3gCvoiUDqjQleT+rB8WCC8NELmt3hA==}
+    engines: {node: '>= 12'}
+
+  '@feathersjs/feathers@5.0.42':
+    resolution: {integrity: sha512-XNPZ45Gd5cBGmZiJcc5FBlS2J+EX/jZCCY44hbi8EvfI0uL3nkYcCwyg9Wh8xheb+gjB+Zb57zedZXg9MZaxqA==}
     engines: {node: '>= 12'}
 
   '@feathersjs/hooks@0.9.0':
@@ -1464,16 +1473,12 @@ packages:
     peerDependencies:
       typescript: '>=5.9'
 
-  '@feathersjs/transport-commons@4.5.18':
-    resolution: {integrity: sha512-dTcU56x5qP2KVZRacL/QVBIKEXHxHDXmKAyd0XXI9hXOmC2drZxvQWVKVZC4YdUBp18tSAYBc42fRO1qr8T3Bw==}
+  '@feathersjs/transport-commons@4.5.19':
+    resolution: {integrity: sha512-b3WrEdz2rdzGgG5a8nCOWmluttEZlXDjzh3bwIgLy4vosHGF3sHhAFs0wFmg+k437tj0+BWVeGvU9zqBC8xj0A==}
     engines: {node: '>= 10'}
 
-  '@feathersjs/transport-commons@5.0.34':
-    resolution: {integrity: sha512-l+oQm1oIvfrxNUlidcqCtKfdWdKn1zHXGhEa13xIKiU5m2LFz1EYeMuq5vh/1pU0iECq3Oi+KdW53YnGl446cw==}
-    engines: {node: '>= 12'}
-
-  '@feathersjs/transport-commons@5.0.40':
-    resolution: {integrity: sha512-RldvlQ5yBAtYtUVf2GyxUP89PAGGRmDh8V6ckTryRA46bbQTtkMxMd7W2PW0Sc4Ymzbd+2oM+dnQlVpxhdqcIg==}
+  '@feathersjs/transport-commons@5.0.42':
+    resolution: {integrity: sha512-ZliACrbX81b9C7D8egW/Lw8J70tm11ghqdB82gWvlGqyCl2sr6pij2kdiz51ifLLNIj4bQGU8ZFMXEN6zcYpww==}
     engines: {node: '>= 12'}
 
   '@floating-ui/core@1.7.4':
@@ -9326,9 +9331,9 @@ snapshots:
 
   '@feathersjs/adapter-commons@5.0.40':
     dependencies:
-      '@feathersjs/commons': 5.0.40
-      '@feathersjs/errors': 5.0.40
-      '@feathersjs/feathers': 5.0.40
+      '@feathersjs/commons': 5.0.42
+      '@feathersjs/errors': 5.0.42
+      '@feathersjs/feathers': 5.0.42
 
   '@feathersjs/authentication-client@4.5.18':
     dependencies:
@@ -9378,7 +9383,7 @@ snapshots:
     dependencies:
       '@feathersjs/errors': 4.5.17
       '@feathersjs/feathers': 4.5.17
-      '@feathersjs/transport-commons': 4.5.18
+      '@feathersjs/transport-commons': 4.5.19
       '@types/jsonwebtoken': 9.0.9
       debug: 4.4.1(supports-color@8.1.1)
       jsonwebtoken: 9.0.2
@@ -9390,12 +9395,12 @@ snapshots:
 
   '@feathersjs/authentication@5.0.40(typescript@5.8.3)':
     dependencies:
-      '@feathersjs/commons': 5.0.40
-      '@feathersjs/errors': 5.0.40
-      '@feathersjs/feathers': 5.0.40
+      '@feathersjs/commons': 5.0.42
+      '@feathersjs/errors': 5.0.42
+      '@feathersjs/feathers': 5.0.42
       '@feathersjs/hooks': 0.9.0
       '@feathersjs/schema': 5.0.40(typescript@5.8.3)
-      '@feathersjs/transport-commons': 5.0.40
+      '@feathersjs/transport-commons': 5.0.42
       '@types/jsonwebtoken': 9.0.10
       jsonwebtoken: 9.0.3
       lodash: 4.17.23
@@ -9408,9 +9413,11 @@ snapshots:
 
   '@feathersjs/commons@4.5.16': {}
 
-  '@feathersjs/commons@5.0.34': {}
+  '@feathersjs/commons@4.5.19': {}
 
   '@feathersjs/commons@5.0.40': {}
+
+  '@feathersjs/commons@5.0.42': {}
 
   '@feathersjs/configuration@4.5.17':
     dependencies:
@@ -9426,9 +9433,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@feathersjs/errors@5.0.34': {}
+  '@feathersjs/errors@4.5.19':
+    dependencies:
+      debug: 4.4.3
+    transitivePeerDependencies:
+      - supports-color
 
   '@feathersjs/errors@5.0.40': {}
+
+  '@feathersjs/errors@5.0.42': {}
 
   '@feathersjs/express@4.5.18':
     dependencies:
@@ -9457,6 +9470,12 @@ snapshots:
       '@feathersjs/hooks': 0.9.0
       events: 3.3.0
 
+  '@feathersjs/feathers@5.0.42':
+    dependencies:
+      '@feathersjs/commons': 5.0.42
+      '@feathersjs/hooks': 0.9.0
+      events: 3.3.0
+
   '@feathersjs/hooks@0.9.0': {}
 
   '@feathersjs/rest-client@4.5.18':
@@ -9478,9 +9497,9 @@ snapshots:
   '@feathersjs/schema@5.0.40(typescript@5.8.3)':
     dependencies:
       '@feathersjs/adapter-commons': 5.0.40
-      '@feathersjs/commons': 5.0.40
-      '@feathersjs/errors': 5.0.40
-      '@feathersjs/feathers': 5.0.40
+      '@feathersjs/commons': 5.0.42
+      '@feathersjs/errors': 5.0.42
+      '@feathersjs/feathers': 5.0.42
       '@feathersjs/hooks': 0.9.0
       '@types/json-schema': 7.0.15
       ajv: 8.17.1
@@ -9488,29 +9507,21 @@ snapshots:
       json-schema-to-ts: 3.1.1
       typescript: 5.8.3
 
-  '@feathersjs/transport-commons@4.5.18':
+  '@feathersjs/transport-commons@4.5.19':
     dependencies:
-      '@feathersjs/commons': 4.5.16
-      '@feathersjs/errors': 4.5.17
-      debug: 4.4.1(supports-color@8.1.1)
+      '@feathersjs/commons': 4.5.19
+      '@feathersjs/errors': 4.5.19
+      debug: 4.4.3
       lodash: 4.17.23
       radix-router: 3.0.1
     transitivePeerDependencies:
       - supports-color
 
-  '@feathersjs/transport-commons@5.0.34':
+  '@feathersjs/transport-commons@5.0.42':
     dependencies:
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.40
-      encodeurl: 2.0.0
-      lodash: 4.17.21
-
-  '@feathersjs/transport-commons@5.0.40':
-    dependencies:
-      '@feathersjs/commons': 5.0.40
-      '@feathersjs/errors': 5.0.40
-      '@feathersjs/feathers': 5.0.40
+      '@feathersjs/commons': 5.0.42
+      '@feathersjs/errors': 5.0.42
+      '@feathersjs/feathers': 5.0.42
       encodeurl: 2.0.0
       lodash: 4.17.23
 
@@ -11881,7 +11892,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.8.3)
       '@typescript-eslint/utils': 6.21.0(eslint@8.57.1)(typescript@5.8.3)
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       eslint: 8.57.1
       ts-api-utils: 1.4.3(typescript@5.8.3)
     optionalDependencies:
@@ -11893,7 +11904,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 8.34.0(typescript@5.8.3)
       '@typescript-eslint/utils': 8.34.0(eslint@8.57.1)(typescript@5.8.3)
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       eslint: 8.57.1
       ts-api-utils: 2.1.0(typescript@5.8.3)
       typescript: 5.8.3
@@ -11908,7 +11919,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/visitor-keys': 6.21.0
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.3
@@ -11925,7 +11936,7 @@ snapshots:
       '@typescript-eslint/tsconfig-utils': 8.34.0(typescript@5.8.3)
       '@typescript-eslint/types': 8.34.0
       '@typescript-eslint/visitor-keys': 8.34.0
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
@@ -14564,7 +14575,7 @@ snapshots:
 
   istanbul-lib-source-maps@4.0.1:
     dependencies:
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       istanbul-lib-coverage: 3.2.2
       source-map: 0.6.1
     transitivePeerDependencies:

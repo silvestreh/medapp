@@ -3,6 +3,7 @@ import { Flex, Box, LoadingOverlay, Alert, CloseButton, Anchor } from '@mantine/
 import { Link } from '@remix-run/react';
 import { ShieldAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { SALES_EMAIL } from '@athelas/brand';
 
 import { styled } from '~/styled-system/jsx';
 import SideNav from '~/components/side-nav';
@@ -102,7 +103,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
   }
 
   const showWeakPasswordBanner = !!user?.hasWeakPassword && !bannerDismissed;
-  const currentOrg = organizations.find((o) => o.id === currentOrganizationId);
+  const currentOrg = organizations.find(o => o.id === currentOrganizationId);
   const isOrgActive = currentOrg?.isActive !== false;
 
   return (
@@ -113,16 +114,13 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
           <VerificationBanner isVerified={isVerified} />
           <TopNav />
           {!isOrgActive && (
-            <Alert
-              color="orange"
-              icon={<ShieldAlert size={18} />}
-              py="sm"
-              px="md"
-              radius={0}
-            >
-              {t('organization.inactive_banner', 'Your organization is not yet activated. Please contact sales to get started.')}{' '}
-              <Anchor href="mailto:sales@athel.as" fw={600}>
-                sales@athel.as
+            <Alert color="orange" icon={<ShieldAlert size={18} />} py="sm" px="md" radius={0}>
+              {t(
+                'organization.inactive_banner',
+                'Your organization is not yet activated. Please contact sales to get started.'
+              )}{' '}
+              <Anchor href={`mailto:${SALES_EMAIL}`} fw={600}>
+                {SALES_EMAIL}
               </Anchor>
             </Alert>
           )}
@@ -145,7 +143,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
           <ContentContainer>{children}</ContentContainer>
         </Box>
       </MainLayoutContainer>
-      <ChatHeadsContainer />
+      {user && <ChatHeadsContainer />}
     </ChatManagerProvider>
   );
 };
