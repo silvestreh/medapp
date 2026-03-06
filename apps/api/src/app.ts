@@ -9,6 +9,7 @@ import Sentry from './sentry';
 import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 import feathers from '@feathersjs/feathers';
 import configuration from '@feathersjs/configuration';
 import express from '@feathersjs/express';
@@ -39,7 +40,7 @@ app.use(helmet({
       defaultSrc: ['\'self\''],
       scriptSrc: ['\'self\'', '\'unsafe-inline\''],
       styleSrc: ['\'self\'', '\'unsafe-inline\''],
-      imgSrc: ['\'self\'', 'data:', 'blob:'],
+      imgSrc: ['\'self\'', 'data:', 'blob:', 'https://res.cloudinary.com'],
       connectSrc: ['\'self\''],
       fontSrc: ['\'self\''],
       objectSrc: ['\'none\''],
@@ -63,6 +64,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/', express.static(app.get('public')));
+
+// Serve uploaded files from the configured uploads directory
+const uploadsDir = path.resolve(app.get('uploads')?.dir || './public/uploads');
+app.use('/uploads', express.static(uploadsDir));
+
 app.configure(express.rest());
 app.configure(sequelize);
 

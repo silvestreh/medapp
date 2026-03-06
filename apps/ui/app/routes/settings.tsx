@@ -1,13 +1,13 @@
 import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { NavLink, Outlet, useLoaderData, useRouteLoaderData } from '@remix-run/react';
+import { NavLink as RemixNavLink, Outlet, useLoaderData, useRouteLoaderData } from '@remix-run/react';
+import { Flex, NavLink } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
 import { FormContainer } from '~/components/forms/styles';
-import Portal from '~/components/portal';
 import RouteErrorFallback from '~/components/route-error-fallback';
-import { css } from '~/styled-system/css';
+import { styled } from '~/styled-system/jsx';
 
 type MdSettingsProfile = {
   id: string;
@@ -21,6 +21,17 @@ type MdSettingsProfile = {
   signatureImage: string | null;
 };
 
+const NavContainer = styled('div', {
+  base: {
+    padding: 'var(--mantine-spacing-md)',
+
+    lg: {
+      padding: 'var(--mantine-spacing-xl)',
+      minW: '20rem',
+    },
+  },
+});
+
 function normalizeArray<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[];
   if (value && typeof value === 'object' && 'data' in value) {
@@ -31,7 +42,7 @@ function normalizeArray<T>(value: unknown): T[] {
 }
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Profile | Athelas' }];
+  return [{ title: 'Settings | Athelas' }];
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -111,7 +122,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       // passkey-credentials table may not exist yet
     }
 
-    let signingCertificate: { id: string; fileName: string | null; isClientEncrypted?: boolean; createdAt: string } | null = null;
+    let signingCertificate: {
+      id: string;
+      fileName: string | null;
+      isClientEncrypted?: boolean;
+      createdAt: string;
+    } | null = null;
     if (isMedic) {
       try {
         const certResponse = await client.service('signing-certificates' as any).find({
@@ -132,7 +148,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
 
     let isOrgOwner = false;
-    let currentOrg: { id: string; name: string; slug: string; settings?: Record<string, any> } | null = null;
+    let currentOrg: {
+      id: string;
+      name: string;
+      slug: string;
+      settings?: Record<string, any>;
+      address?: string | null;
+      phone?: string | null;
+      email?: string | null;
+      logoUrl?: string | null;
+    } | null = null;
     if (currentMembership?.roleIds?.includes('owner')) {
       isOrgOwner = true;
       try {
@@ -142,9 +167,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           name: org.name,
           slug: org.slug,
           settings: (org as any)?.settings || {},
+          address: (org as any)?.settings?.healthCenter?.address || null,
+          phone: (org as any)?.settings?.healthCenter?.phone || null,
+          email: (org as any)?.settings?.healthCenter?.email || null,
+          logoUrl: (org as any)?.settings?.healthCenter?.logoUrl || null,
         };
       } catch {
-        currentOrg = { id: currentMembership.id, name: currentMembership.name, slug: currentMembership.slug, settings: {} };
+        currentOrg = {
+          id: currentMembership.id,
+          name: currentMembership.name,
+          slug: currentMembership.slug,
+          settings: {},
+        };
       }
     }
 
@@ -164,105 +198,87 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 };
 
-const tabListClass = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--mantine-spacing-xl)',
-});
-
-const tabLinkClass = css({
-  padding: '0.5em 0',
-  border: 'none',
-  background: 'transparent',
-  color: 'var(--mantine-color-gray-6)',
-  cursor: 'pointer',
-  fontSize: 'inherit',
-  fontWeight: 500,
-  transition: 'color 0.15s ease, border-color 0.15s ease',
-  textDecoration: 'none',
-  position: 'relative',
-
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: '-1.5em',
-    bottom: 0,
-    left: 0,
-    width: '100%',
-    height: 'calc(100% + 3em)',
-    backgroundColor: 'transparent',
-  },
-
-  '&:hover': {
-    color: 'var(--mantine-color-gray-8)',
-  },
-});
-
-const activeIndicatorClass = css({
-  position: 'absolute',
-  top: 'calc(100% + 1.125em)',
-  left: 0,
-  width: '100%',
-  height: '2px',
-  backgroundColor: 'var(--mantine-color-blue-6)',
-  pointerEvents: 'none',
-});
-
-function TabLink({ to, end, children }: { to: string; end?: boolean; children: React.ReactNode }) {
-  return (
-    <NavLink
-      to={to}
-      end={end}
-      className={tabLinkClass}
-      style={({ isActive }) => (isActive ? { color: 'var(--mantine-color-blue-6)' } : {})}
-    >
-      {({ isActive }) => (
-        <>
-          {children}
-          {isActive && <span className={activeIndicatorClass} />}
-        </>
-      )}
-    </NavLink>
-  );
-}
-
-function ProfileTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: boolean }) {
+function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: boolean }) {
   const { t } = useTranslation();
 
   return (
-    <Portal id="toolbar">
-      <nav className={tabListClass}>
-        <TabLink to="/profile" end>
-          {t('profile.tab_profile')}
-        </TabLink>
-        <TabLink to="/profile/security">{t('profile.tab_security')}</TabLink>
-        {isMedic && <TabLink to="/profile/signature">{t('profile.tab_signature')}</TabLink>}
-        {isOrgOwner && <TabLink to="/profile/organization">{t('profile.tab_organization')}</TabLink>}
-      </nav>
-    </Portal>
+    <NavContainer>
+      <NavLink
+        component={RemixNavLink}
+        to="/settings"
+        end
+        label={t('profile.tab_profile')}
+        variant="light"
+        style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+      />
+      <NavLink
+        component={RemixNavLink}
+        to="/settings/security"
+        label={t('profile.tab_security')}
+        variant="light"
+        style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+      />
+      {isMedic && (
+        <NavLink
+          component={RemixNavLink}
+          to="/settings/signature"
+          label={t('profile.tab_signature')}
+          variant="light"
+          style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+        />
+      )}
+      {isOrgOwner && (
+        <NavLink
+          component={RemixNavLink}
+          to="/settings/organization"
+          label={t('profile.tab_organization')}
+          variant="light"
+          style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+        />
+      )}
+      {isOrgOwner && (
+        <NavLink
+          component={RemixNavLink}
+          to="/settings/prescriptions"
+          label={t('profile.tab_prescriptions')}
+          variant="light"
+          style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+        />
+      )}
+      {isOrgOwner && (
+        <NavLink
+          component={RemixNavLink}
+          to="/settings/assistant"
+          label={t('profile.tab_assistant')}
+          variant="light"
+          style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+        />
+      )}
+    </NavContainer>
   );
 }
 
-export default function ProfileLayout() {
+export default function SettingsLayout() {
   const { isMedic, isOrgOwner } = useLoaderData<typeof loader>();
 
   return (
-    <FormContainer style={{ padding: '2rem', maxWidth: 720, margin: '0 auto' }}>
-      <ProfileTabs isMedic={isMedic} isOrgOwner={isOrgOwner} />
-
-      <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>
-        <Outlet />
-      </div>
-    </FormContainer>
+    <Flex>
+      <SettingsTabs isMedic={isMedic} isOrgOwner={isOrgOwner} />
+      <FormContainer style={{ padding: '2rem', maxWidth: 720, margin: '0 auto' }}>
+        <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>
+          <Outlet />
+        </div>
+      </FormContainer>
+    </Flex>
   );
 }
 
 export function ErrorBoundary() {
-  const data = useRouteLoaderData<typeof loader>('routes/profile');
+  const data = useRouteLoaderData<typeof loader>('routes/settings');
 
   return (
     <FormContainer style={{ padding: '2rem', maxWidth: 720, margin: '0 auto' }}>
-      {data && <ProfileTabs isMedic={data.isMedic} isOrgOwner={data.isOrgOwner} />}
+      {data && <SettingsTabs isMedic={data.isMedic} isOrgOwner={data.isOrgOwner} />}
 
       <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>
         <RouteErrorFallback />

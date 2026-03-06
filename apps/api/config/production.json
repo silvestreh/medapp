@@ -32,5 +32,8 @@
   },
   "whapi": {
     "token": "WHAPI_TOKEN"
+  },
+  "uploads": {
+    "dir": "/data/uploads"
   }
 }

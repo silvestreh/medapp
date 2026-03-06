@@ -11,8 +11,9 @@ interface LlmModelsCreateData {
 }
 
 export interface LlmModelsResult {
-  provider: LlmProvider | 'local-lm-studio';
+  provider: LlmProvider;
   models: string[];
+  defaultModel?: string;
 }
 
 export class LlmModels {
@@ -23,46 +24,58 @@ export class LlmModels {
   }
 
   async create(data: LlmModelsCreateData, params?: Params): Promise<LlmModelsResult> {
-    let provider = data?.provider;
-    if (!provider) {
-      provider = await this.getOrganizationPreferredProvider(params);
-    }
-    if (provider && provider !== 'openai' && provider !== 'anthropic') {
-      throw new BadRequest('provider must be "openai" or "anthropic"');
+    const orgConfig = await this.getOrganizationLlmConfig(params);
+    let provider = data?.provider || orgConfig.preferredProvider;
+    if (provider && !['openai', 'anthropic', 'lmstudio'].includes(provider)) {
+      throw new BadRequest('provider must be "openai", "anthropic", or "lmstudio"');
     }
 
     const providerApiKeys = await this.getProviderApiKeys(params);
-    return listLlmModels({
+    const result = await listLlmModels({
       preferredProvider: provider,
       providerApiKey: data?.providerApiKey,
       providerApiKeys,
+      lmStudioBaseUrl: orgConfig.lmStudioBaseUrl,
     });
+    return {
+      ...result,
+      defaultModel: orgConfig.defaultModel,
+    };
   }
 
   private async getProviderApiKeys(params?: Params): Promise<Partial<Record<LlmProvider, string>>> {
     try {
-      const keyService = this.app.service('llm-provider-keys') as any;
+      const keyService = this.app.service('llm-api-keys') as any;
       if (!keyService?.getDecryptedProviderKeys) return {};
-      return await keyService.getDecryptedProviderKeys(params);
+      const organizationId = String(params?.organizationId || '');
+      return await keyService.getDecryptedProviderKeys(organizationId);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
       return {};
     }
   }
 
-  private async getOrganizationPreferredProvider(params?: Params): Promise<LlmProvider | undefined> {
+  private async getOrganizationLlmConfig(params?: Params): Promise<{
+    preferredProvider?: LlmProvider;
+    defaultModel?: string;
+    lmStudioBaseUrl?: string;
+  }> {
     const organizationId = String(params?.organizationId || '');
-    if (!organizationId) return undefined;
+    if (!organizationId) return {};
     try {
       const org = await this.app.service('organizations').get(organizationId, params as any);
-      const preferred = (org as any)?.settings?.llmChat?.preferredProvider;
-      if (preferred === 'openai' || preferred === 'anthropic') {
-        return preferred;
-      }
-      return undefined;
+      const llmChat = (org as any)?.settings?.llmChat || {};
+      const preferred = llmChat.preferredProvider;
+      return {
+        preferredProvider: ['openai', 'anthropic', 'lmstudio'].includes(preferred) ? preferred : undefined,
+        defaultModel: typeof llmChat.model === 'string' && llmChat.model.trim() ? llmChat.model.trim() : undefined,
+        lmStudioBaseUrl: typeof llmChat.lmStudioBaseUrl === 'string' && llmChat.lmStudioBaseUrl.trim()
+          ? llmChat.lmStudioBaseUrl.trim()
+          : undefined,
+      };
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {
-      return undefined;
+      return {};
     }
   }
 }

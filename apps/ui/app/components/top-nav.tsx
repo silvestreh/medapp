@@ -163,7 +163,7 @@ export default function TopNav() {
             </>
           )}
 
-          <Menu.Item leftSection={<User size={14} />} component={Link} to="/profile">
+          <Menu.Item leftSection={<User size={14} />} component={Link} to="/settings">
             {t('navigation.profile')}
           </Menu.Item>
 

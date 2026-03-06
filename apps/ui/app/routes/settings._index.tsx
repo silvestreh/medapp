@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { ProfileForm } from '~/components/profile-form';
-import type { loader as profileLoader } from '~/routes/profile';
+import type { loader as profileLoader } from '~/routes/settings';
 
 function buildSelectOptions(obj: Record<string, string>) {
   return Object.entries(obj).map(([value, label]) => ({ value, label }));
@@ -67,13 +67,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function ProfileIndex() {
-  const parentData = useRouteLoaderData<typeof profileLoader>('routes/profile');
+  const parentData = useRouteLoaderData<typeof profileLoader>('routes/settings');
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const { t } = useTranslation();
 
   const isSavingProfile = navigation.state === 'submitting' && navigation.formData?.get('intent') === 'update-profile';
-  const isVerifyingLicense = navigation.state === 'submitting' && navigation.formData?.get('intent') === 'verify-license';
+  const isVerifyingLicense =
+    navigation.state === 'submitting' && navigation.formData?.get('intent') === 'verify-license';
 
   const countryOptions = useMemo(
     () => buildSelectOptions(t('countries', { returnObjects: true }) as Record<string, string>),

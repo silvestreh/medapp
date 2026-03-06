@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Tooltip, Image, FileButton, Group } from '@mantine/core';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { Button, Tooltip } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { Form } from '@remix-run/react';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
-import { User, Mail, Stethoscope, ClipboardPen, Pencil } from 'lucide-react';
+import { User, Mail, Stethoscope } from 'lucide-react';
 
 import Portal from '~/components/portal';
-import { SignatureCanvas } from '~/components/signature-canvas';
 import { FormCard, FieldRow, StyledSelect, StyledTextInput, SectionTitle } from '~/components/forms/styles';
 
 type PersonalDataLike =
@@ -59,8 +58,6 @@ function getInitialProfileValues(
     nationalLicenseNumber: mdSettings?.nationalLicenseNumber ?? '',
     stateLicense: mdSettings?.stateLicense ?? '',
     stateLicenseNumber: mdSettings?.stateLicenseNumber ?? '',
-    recetarioTitle: mdSettings?.recetarioTitle ?? '',
-    recetarioProvince: mdSettings?.recetarioProvince ?? '',
   };
 }
 
@@ -109,24 +106,10 @@ export function ProfileForm({
   });
 
   const formRef = useRef<HTMLFormElement>(null);
-  const [signatureBase64, setSignatureBase64] = useState<string>(mdSettings?.signatureImage ?? '');
-  const [showCanvas, setShowCanvas] = useState(false);
-
-  const handleSignatureUpload = useCallback((file: File | null) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(',')[1] || result;
-      setSignatureBase64(base64);
-    };
-    reader.readAsDataURL(file);
-  }, []);
 
   useEffect(() => {
     profileForm.setValues(initialProfile);
     profileForm.clearErrors();
-    setSignatureBase64(mdSettings?.signatureImage ?? '');
   }, [user, mdSettings]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = useCallback(
@@ -198,17 +181,20 @@ export function ProfileForm({
               nationalLicenseNumber: values.nationalLicenseNumber || undefined,
               stateLicense: values.stateLicense || undefined,
               stateLicenseNumber: values.stateLicenseNumber || undefined,
-              recetarioTitle: values.recetarioTitle || undefined,
-              recetarioProvince: values.recetarioProvince || undefined,
-              signatureImage: signatureBase64 || undefined,
             },
           }
         : {}),
     };
-  }, [profileForm.values, isMedic, signatureBase64]);
+  }, [profileForm.values, isMedic]);
 
   return (
-    <Form id="profile-update-form" method="post" ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <Form
+      id="profile-update-form"
+      method="post"
+      ref={formRef}
+      onSubmit={handleSubmit}
+      style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+    >
       <input type="hidden" name="intent" value="update-profile" />
       <input type="hidden" name="payload" value={JSON.stringify(payload)} />
       <SectionTitle icon={<User />}>{t('profile.personal_data')}</SectionTitle>
@@ -310,64 +296,6 @@ export function ProfileForm({
                 </Tooltip>
               </FieldRow>
             )}
-          </FormCard>
-
-          <SectionTitle icon={<ClipboardPen />}>{t('recetario.enabled')}</SectionTitle>
-          <FormCard>
-            <FieldRow label={`${t('recetario.title_label')}:`} variant="stacked">
-              <StyledSelect
-                data={[
-                  { value: 'Dr', label: t('recetario.title_dr') },
-                  { value: 'Dra', label: t('recetario.title_dra') },
-                ]}
-                {...profileForm.getInputProps('recetarioTitle')}
-              />
-            </FieldRow>
-            <FieldRow label={`${t('recetario.province_label')}:`} variant="stacked">
-              <StyledSelect data={provinceOptions} searchable {...profileForm.getInputProps('recetarioProvince')} />
-            </FieldRow>
-            <FieldRow label={`${t('recetario.signature_label')}:`} variant="stacked">
-              <Group gap="sm">
-                <FileButton onChange={handleSignatureUpload} accept="image/png,image/jpeg">
-                  {(props) => (
-                    <Button variant="light" size="xs" {...props}>
-                      {t('recetario.signature_upload')}
-                    </Button>
-                  )}
-                </FileButton>
-                <Button
-                  variant="light"
-                  size="xs"
-                  leftSection={<Pencil size={14} />}
-                  onClick={() => setShowCanvas((v) => !v)}
-                >
-                  {t('recetario.signature_draw')}
-                </Button>
-                {signatureBase64 && (
-                  <>
-                    <Image
-                      src={`data:image/png;base64,${signatureBase64}`}
-                      alt="Signature"
-                      h={40}
-                      w="auto"
-                      fit="contain"
-                    />
-                    <Button variant="subtle" color="red" size="xs" onClick={() => setSignatureBase64('')}>
-                      {t('recetario.signature_remove')}
-                    </Button>
-                  </>
-                )}
-              </Group>
-              {showCanvas && (
-                <SignatureCanvas
-                  onSave={(base64) => {
-                    setSignatureBase64(base64);
-                    setShowCanvas(false);
-                  }}
-                  onCancel={() => setShowCanvas(false)}
-                />
-              )}
-            </FieldRow>
           </FormCard>
         </>
       )}

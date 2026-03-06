@@ -9,10 +9,11 @@ export interface LlmAdapterInput {
   providerApiKey?: string;
   providerApiKeys?: Partial<Record<LlmProvider, string>>;
   model?: string;
+  lmStudioBaseUrl?: string;
 }
 
 export interface LlmAdapterOutput {
-  provider: LlmProvider | 'local-lm-studio';
+  provider: LlmProvider;
   model: string;
   text: string;
 }
@@ -24,6 +25,7 @@ function isProduction(): boolean {
 }
 
 function toProviderOrder(preferredProvider?: LlmProvider): LlmProvider[] {
+  if (preferredProvider === 'lmstudio') return ['lmstudio'];
   if (!preferredProvider) return ['openai', 'anthropic'];
   return preferredProvider === 'openai'
     ? ['openai', 'anthropic']
@@ -31,6 +33,7 @@ function toProviderOrder(preferredProvider?: LlmProvider): LlmProvider[] {
 }
 
 function getProviderApiKey(provider: LlmProvider, input: LlmAdapterInput): string | null {
+  if (provider === 'lmstudio') return 'not-needed';
   if (input.preferredProvider === provider && input.providerApiKey) {
     return input.providerApiKey;
   }
@@ -43,8 +46,12 @@ function getProviderApiKey(provider: LlmProvider, input: LlmAdapterInput): strin
   return process.env.ANTHROPIC_API_KEY || null;
 }
 
+function getLmStudioBaseUrl(input: LlmAdapterInput): string {
+  return input.lmStudioBaseUrl || process.env.LM_STUDIO_BASE_URL || 'http://127.0.0.1:1234/v1';
+}
+
 async function callLocalLmStudio(input: LlmAdapterInput): Promise<LlmAdapterOutput> {
-  const baseUrl = process.env.LM_STUDIO_BASE_URL || 'http://127.0.0.1:1234/v1';
+  const baseUrl = getLmStudioBaseUrl(input);
   const model = input.model || process.env.LM_STUDIO_MODEL || 'local-model';
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
@@ -72,34 +79,48 @@ async function callLocalLmStudio(input: LlmAdapterInput): Promise<LlmAdapterOutp
     throw new BadRequest('LM Studio returned an empty response');
   }
   return {
-    provider: 'local-lm-studio',
+    provider: 'lmstudio',
     model,
     text,
   };
 }
 
-async function callOpenAi(input: LlmAdapterInput, apiKey: string): Promise<LlmAdapterOutput> {
-  const baseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
-  const model = input.model || process.env.OPENAI_MODEL || 'gpt-4.1';
-  const response = await fetch(`${baseUrl}/chat/completions`, {
+function fetchOpenAi(baseUrl: string, apiKey: string, body: Record<string, any>): Promise<Response> {
+  return fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      temperature: 0.2,
-      messages: [
-        { role: 'system', content: input.systemPrompt },
-        ...input.messages.map(message => ({ role: message.role, content: message.content })),
-      ],
-    }),
+    body: JSON.stringify(body),
   });
+}
 
+async function callOpenAi(input: LlmAdapterInput, apiKey: string): Promise<LlmAdapterOutput> {
+  const baseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+  const model = input.model || process.env.OPENAI_MODEL || 'gpt-4.1';
+  const body: Record<string, any> = {
+    model,
+    messages: [
+      { role: 'system', content: input.systemPrompt },
+      ...input.messages.map(message => ({ role: message.role, content: message.content })),
+    ],
+  };
+
+  // Some OpenAI models (e.g. gpt-5-mini) reject custom temperature values.
+  // Try with temperature first; if unsupported, retry without it.
+  let response = await fetchOpenAi(baseUrl, apiKey, { ...body, temperature: 0.2 });
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || response.statusText);
+    if (text.includes('temperature') && text.includes('unsupported_value')) {
+      response = await fetchOpenAi(baseUrl, apiKey, body);
+      if (!response.ok) {
+        const retryText = await response.text();
+        throw new Error(retryText || response.statusText);
+      }
+    } else {
+      throw new Error(text || response.statusText);
+    }
   }
 
   const payload = await response.json() as any;
@@ -161,6 +182,9 @@ async function callWithRetry(provider: LlmProvider, input: LlmAdapterInput, apiK
   let lastError: Error | null = null;
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
     try {
+      if (provider === 'lmstudio') {
+        return await callLocalLmStudio(input);
+      }
       if (provider === 'openai') {
         return await callOpenAi(input, apiKey);
       }
@@ -173,11 +197,8 @@ async function callWithRetry(provider: LlmProvider, input: LlmAdapterInput, apiK
 }
 
 export async function requestLlmCompletion(input: LlmAdapterInput): Promise<LlmAdapterOutput> {
-  if (!isProduction()) {
-    return callLocalLmStudio(input);
-  }
-
-  const providerOrder = toProviderOrder(input.preferredProvider);
+  const preferred = input.preferredProvider || (isProduction() ? undefined : 'lmstudio');
+  const providerOrder = toProviderOrder(preferred);
   const providerErrors: string[] = [];
 
   for (const provider of providerOrder) {
@@ -201,10 +222,11 @@ export interface LlmModelListInput {
   preferredProvider?: LlmProvider;
   providerApiKey?: string;
   providerApiKeys?: Partial<Record<LlmProvider, string>>;
+  lmStudioBaseUrl?: string;
 }
 
 export interface LlmModelListOutput {
-  provider: LlmProvider | 'local-lm-studio';
+  provider: LlmProvider;
   models: string[];
 }
 
@@ -216,34 +238,20 @@ function normalizeModelIds(payload: any): string[] {
   return Array.from(new Set<string>(ids)).sort((a, b) => a.localeCompare(b));
 }
 
-export async function listLlmModels(input: LlmModelListInput): Promise<LlmModelListOutput> {
-  if (!isProduction()) {
-    const baseUrl = process.env.LM_STUDIO_BASE_URL || 'http://127.0.0.1:1234/v1';
-    const response = await fetch(`${baseUrl}/models`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    if (!response.ok) {
-      const text = await response.text();
-      throw new BadRequest(`LM Studio models request failed: ${text || response.statusText}`);
-    }
-    const payload = await response.json();
-    return {
-      provider: 'local-lm-studio',
-      models: normalizeModelIds(payload),
-    };
+async function listLmStudioModels(baseUrl: string): Promise<LlmModelListOutput> {
+  const response = await fetch(`${baseUrl}/models`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new BadRequest(`LM Studio models request failed: ${text || response.statusText}`);
   }
+  const payload = await response.json();
+  return { provider: 'lmstudio', models: normalizeModelIds(payload) };
+}
 
-  const provider = input.preferredProvider || 'openai';
-  if (provider !== 'openai') {
-    return {
-      provider,
-      models: [],
-    };
-  }
-
+async function listOpenAiModels(input: LlmModelListInput): Promise<LlmModelListOutput> {
   const apiKey = getProviderApiKey('openai', {
     systemPrompt: '',
     messages: [],
@@ -252,9 +260,8 @@ export async function listLlmModels(input: LlmModelListInput): Promise<LlmModelL
     providerApiKeys: input.providerApiKeys,
   });
   if (!apiKey) {
-    throw new BadRequest('Missing API key for model listing');
+    throw new BadRequest('Missing OpenAI API key for model listing');
   }
-
   const baseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
   const response = await fetch(`${baseUrl}/models`, {
     method: 'GET',
@@ -268,8 +275,21 @@ export async function listLlmModels(input: LlmModelListInput): Promise<LlmModelL
     throw new BadRequest(`OpenAI models request failed: ${text || response.statusText}`);
   }
   const payload = await response.json();
-  return {
-    provider: 'openai',
-    models: normalizeModelIds(payload),
-  };
+  return { provider: 'openai', models: normalizeModelIds(payload) };
+}
+
+export async function listLlmModels(input: LlmModelListInput): Promise<LlmModelListOutput> {
+  const provider = input.preferredProvider || (isProduction() ? 'openai' : 'lmstudio');
+
+  if (provider === 'lmstudio') {
+    const baseUrl = input.lmStudioBaseUrl || process.env.LM_STUDIO_BASE_URL || 'http://127.0.0.1:1234/v1';
+    return listLmStudioModels(baseUrl);
+  }
+
+  if (provider === 'openai') {
+    return listOpenAiModels(input);
+  }
+
+  // Anthropic doesn't expose a model listing endpoint
+  return { provider, models: [] };
 }

@@ -35,6 +35,9 @@ apps/ui/app/styled-system
 apps/studies-book*
 apps/colmed-*
 
+# Uploads (dev)
+public/uploads
+
 # Misc
 .DS_Store
 *.pem

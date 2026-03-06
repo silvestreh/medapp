@@ -6,7 +6,7 @@ import { anonymizeEncounterHistory, type AnonymizedEncounterHistory } from '../.
 import { requestLlmCompletion } from './llm-adapter';
 
 export type EncounterAiChatRole = 'system' | 'user' | 'assistant';
-export type LlmProvider = 'openai' | 'anthropic';
+export type LlmProvider = 'openai' | 'anthropic' | 'lmstudio';
 
 export interface EncounterAiChatMessage {
   role: EncounterAiChatRole;
@@ -38,7 +38,7 @@ export interface EncounterAiChatResult {
   confidence: number;
   citations: string[];
   meta: {
-    provider: LlmProvider | 'local-lm-studio';
+    provider: LlmProvider;
     model: string;
     onDemand: true;
     encounterCount: number;
@@ -112,6 +112,7 @@ export class EncounterAiChat {
         providerApiKey: data.providerApiKey,
         providerApiKeys,
         model: data.model || organizationLlmConfig.model,
+        lmStudioBaseUrl: organizationLlmConfig.lmStudioBaseUrl,
       });
     } catch (error: any) {
       if (!this.isContextLengthError(error)) throw error;
@@ -124,6 +125,7 @@ export class EncounterAiChat {
         providerApiKey: data.providerApiKey,
         providerApiKeys,
         model: data.model || organizationLlmConfig.model,
+        lmStudioBaseUrl: organizationLlmConfig.lmStudioBaseUrl,
       });
     }
     const parsed = this.parseAssistantPayload(completion.text);
@@ -341,11 +343,15 @@ export class EncounterAiChat {
 
   private async getProviderApiKeys(params?: Params): Promise<Partial<Record<LlmProvider, string>>> {
     try {
-      const keyService = this.app.service('llm-provider-keys') as any;
-      if (!keyService?.getDecryptedProviderKeys) return {};
-      return await keyService.getDecryptedProviderKeys(params);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_error) {
+      const keyService = this.app.service('llm-api-keys') as any;
+      if (!keyService?.getDecryptedProviderKeys) {
+        console.warn('[encounter-ai-chat] llm-api-keys service missing getDecryptedProviderKeys');
+        return {};
+      }
+      const organizationId = String(params?.organizationId || '');
+      return await keyService.getDecryptedProviderKeys(organizationId);
+    } catch (error: any) {
+      console.error('[encounter-ai-chat] Failed to get provider API keys:', error?.message || error);
       return {};
     }
   }
@@ -353,6 +359,7 @@ export class EncounterAiChat {
   private async getOrganizationLlmConfig(params?: Params): Promise<{
     preferredProvider?: LlmProvider;
     model?: string;
+    lmStudioBaseUrl?: string;
   }> {
     const organizationId = String(params?.organizationId || '');
     if (!organizationId) {
@@ -365,10 +372,13 @@ export class EncounterAiChat {
       const preferredProvider = llmChat?.preferredProvider;
       const model = llmChat?.model;
       return {
-        preferredProvider: preferredProvider === 'openai' || preferredProvider === 'anthropic'
+        preferredProvider: ['openai', 'anthropic', 'lmstudio'].includes(preferredProvider)
           ? preferredProvider
           : undefined,
         model: typeof model === 'string' && model.trim() ? model.trim() : undefined,
+        lmStudioBaseUrl: typeof llmChat?.lmStudioBaseUrl === 'string' && llmChat.lmStudioBaseUrl.trim()
+          ? llmChat.lmStudioBaseUrl.trim()
+          : undefined,
       };
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_error) {

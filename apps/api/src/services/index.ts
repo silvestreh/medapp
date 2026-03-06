@@ -34,7 +34,7 @@ import stats from './stats/stats.service';
 import practitionerVerification from './practitioner-verification/practitioner-verification.service';
 import encounterAiChat from './encounter-ai-chat/encounter-ai-chat.service';
 import encounterAiChatMessages from './encounter-ai-chat-messages/encounter-ai-chat-messages.service';
-import llmProviderKeys from './llm-provider-keys/llm-provider-keys.service';
+import llmApiKeys from './llm-api-keys/llm-api-keys.service';
 import llmModels from './llm-models/llm-models.service';
 import accounting from './accounting/accounting.service';
 import accountingSettings from './accounting-settings/accounting-settings.service';
@@ -42,6 +42,7 @@ import practiceCosts from './practice-costs/practice-costs.service';
 import prescriptions from './prescriptions/prescriptions.service';
 import recetario from './recetario/recetario.service';
 import whatsapp from './whatsapp/whatsapp.service';
+import fileUploads from './file-uploads/file-uploads.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -80,7 +81,7 @@ export default function (app: Application): void {
   app.configure(practitionerVerification);
   app.configure(encounterAiChat);
   app.configure(encounterAiChatMessages);
-  app.configure(llmProviderKeys);
+  app.configure(llmApiKeys);
   app.configure(llmModels);
   app.configure(accounting);
   app.configure(accountingSettings);
@@ -88,4 +89,5 @@ export default function (app: Application): void {
   app.configure(prescriptions);
   app.configure(recetario);
   app.configure(whatsapp);
+  app.configure(fileUploads);
 }

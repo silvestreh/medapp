@@ -3,6 +3,7 @@ import * as authentication from '@feathersjs/authentication';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import restrictToOrgOwner from './hooks/restrict-to-org-owner';
 import { protectIsActive } from './hooks/protect-is-active';
+import registerHealthCenter from './hooks/register-health-center';
 
 const { authenticate } = authentication.hooks;
 
@@ -30,7 +31,7 @@ export default {
     get: [],
     create: [],
     update: [],
-    patch: [],
+    patch: [registerHealthCenter()],
     remove: []
   },
 

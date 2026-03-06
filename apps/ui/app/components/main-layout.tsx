@@ -133,7 +133,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
             styles={{ root: { position: 'relative' } }}
           >
             {t('common.weak_password_warning', "Your password doesn't meet the current security policy.")}{' '}
-            <Anchor component={Link} to="/profile/security" fw={600}>
+            <Anchor component={Link} to="/settings/security" fw={600}>
               {t('common.update_password', 'Update it now')}
             </Anchor>
             <CloseButton onClick={handleDismissBanner} size="sm" style={{ position: 'absolute', top: 8, right: 8 }} />

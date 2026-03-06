@@ -25,7 +25,7 @@ export function VerificationBanner({ isVerified }: VerificationBannerProps) {
         'verification.unverified_message',
         'Your medical license has not been verified. Please go to your Profile to verify your license.'
       )}{' '}
-      <Anchor component={Link} to="/profile" fw={600}>
+      <Anchor component={Link} to="/settings" fw={600}>
         {t('common.view', 'View')}
       </Anchor>
     </Alert>

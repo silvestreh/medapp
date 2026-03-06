@@ -43,5 +43,8 @@
   "whapi": {
     "token": "WHAPI_TOKEN",
     "apiUrl": "https://gate.whapi.cloud"
+  },
+  "uploads": {
+    "dir": "./public/uploads"
   }
 }

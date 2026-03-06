@@ -249,7 +249,7 @@ export function ExportSignedPdfDialog({
           <Alert variant="light" color="gray" icon={<Info size={16} />}>
             <Text size="sm">
               {t('export_pdf.no_certificate_notice')}{' '}
-              <Text component="a" href="/profile" size="sm" c="blue" td="underline">
+              <Text component="a" href="/settings" size="sm" c="blue" td="underline">
                 {t('export_pdf.upload_certificate_link')}
               </Text>
             </Text>

@@ -16,7 +16,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const orgs = user.organizations ?? [];
   if (orgs.length === 0) {
-    throw redirect('/profile');
+    throw redirect('/settings');
   }
 
   let currentOrgId = await getCurrentOrganizationId(request);

@@ -125,10 +125,9 @@ export interface SharePayload {
 export interface HealthCenterPayload {
   name: string;
   address: string;
-  city: string;
-  province: string;
-  phone?: string;
-  email?: string;
+  phone: string;
+  email: string;
+  logoUrl?: string;
 }
 
 export interface RecetarioUserPayload {

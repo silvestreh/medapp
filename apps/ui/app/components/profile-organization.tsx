@@ -1,16 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
-import { Button, Group, Select, Stack, Switch, Text } from '@mantine/core';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { Button, Flex, FileInput, Image, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useFetcher, useRevalidator } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Building2, ClipboardPen } from 'lucide-react';
+import { Building2, Upload } from 'lucide-react';
 
-import type { action } from '~/routes/profile.organization';
+import { useFeathers } from '~/components/provider';
+import type { action } from '~/routes/settings.organization';
 import Portal from '~/components/portal';
 import { FormCard, FieldRow, StyledTextInput, SectionTitle, FormHeader } from '~/components/forms/styles';
-import { useGet, useMutation } from '~/components/provider';
-
-type Provider = 'openai' | 'anthropic';
 
 interface ProfileOrganizationProps {
   currentOrg: { id: string; name: string; slug: string; settings?: Record<string, any> };
@@ -19,30 +17,17 @@ interface ProfileOrganizationProps {
 
 export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrganizationProps) {
   const { t } = useTranslation();
+  const client = useFeathers();
   const revalidator = useRevalidator();
   const orgFetcher = useFetcher<typeof action>();
-  const { data: providerKeyStatus } = useGet('llm-provider-keys', 'current');
-  const { create: loadModels, isLoading: isLoadingModels } = useMutation('llm-models');
   const [orgName, setOrgName] = useState(currentOrg.name);
-  const [provider, setProvider] = useState<Provider>(
-    currentOrg.settings?.llmChat?.preferredProvider === 'anthropic' ? 'anthropic' : 'openai'
-  );
-  const [model, setModel] = useState<string | null>(currentOrg.settings?.llmChat?.model || null);
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [providerApiKey, setProviderApiKey] = useState('');
-  const [modelsMessage, setModelsMessage] = useState('');
-  const [modelsReloadTick, setModelsReloadTick] = useState(0);
-  const [recetarioEnabled, setRecetarioEnabled] = useState(!!currentOrg.settings?.recetario?.enabled);
-  const [healthCenterId, setHealthCenterId] = useState(
-    currentOrg.settings?.recetario?.healthCenterId ? String(currentOrg.settings.recetario.healthCenterId) : ''
-  );
+  const [isUploading, setIsUploading] = useState(false);
+  const [orgAddress, setOrgAddress] = useState(currentOrg.settings?.healthCenter?.address || '');
+  const [orgPhone, setOrgPhone] = useState(currentOrg.settings?.healthCenter?.phone || '');
+  const [orgEmail, setOrgEmail] = useState(currentOrg.settings?.healthCenter?.email || '');
+  const [orgLogoUrl, setOrgLogoUrl] = useState(currentOrg.settings?.healthCenter?.logoUrl || '');
 
   const lastHandledData = useRef(orgFetcher.data);
-  const loadModelsRef = useRef(loadModels);
-
-  useEffect(() => {
-    loadModelsRef.current = loadModels;
-  }, [loadModels]);
 
   useEffect(() => {
     if (orgFetcher.data === lastHandledData.current) return;
@@ -52,36 +37,8 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
       notifications.show({ message: t('profile.org_saved'), color: 'green' });
       revalidator.revalidate();
     }
-    if (orgFetcher.data?.ok && orgFetcher.data.intent === 'save-llm-provider-key') {
-      notifications.show({ message: t('llm_settings.provider_key_saved'), color: 'green' });
-      revalidator.revalidate();
-      setProviderApiKey('');
-      setModelsReloadTick(prev => prev + 1);
-    }
-    if (orgFetcher.data?.ok && orgFetcher.data.intent === 'remove-llm-provider-key') {
-      notifications.show({ message: t('llm_settings.provider_key_removed'), color: 'green' });
-      revalidator.revalidate();
-      setModelsReloadTick(prev => prev + 1);
-    }
-    if (orgFetcher.data?.ok && orgFetcher.data.intent === 'update-llm-chat-settings') {
-      notifications.show({ message: t('llm_settings.defaults_saved'), color: 'green' });
-      revalidator.revalidate();
-    }
-    if (orgFetcher.data?.ok && orgFetcher.data.intent === 'update-recetario-settings') {
-      notifications.show({ message: t('profile.org_saved'), color: 'green' });
-      revalidator.revalidate();
-    }
     if (orgFetcher.data && !orgFetcher.data.ok && orgFetcher.data.intent === 'update-organization') {
       notifications.show({ message: t('profile.org_save_error'), color: 'red' });
-    }
-    if (
-      orgFetcher.data &&
-      !orgFetcher.data.ok &&
-      ['save-llm-provider-key', 'remove-llm-provider-key', 'update-llm-chat-settings'].includes(
-        String(orgFetcher.data.intent)
-      )
-    ) {
-      notifications.show({ message: t('llm_settings.save_error'), color: 'red' });
     }
   }, [orgFetcher.data, revalidator, t]);
 
@@ -90,237 +47,102 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
   }, []);
 
   const handleSaveOrg = useCallback(() => {
-    orgFetcher.submit({ intent: 'update-organization', orgId: currentOrg.id, name: orgName }, { method: 'post' });
-  }, [currentOrg.id, orgName, orgFetcher]);
-
-  const handleProviderChange = useCallback((value: string | null) => {
-    if (value === 'openai' || value === 'anthropic') {
-      setProvider(value);
-      setModel(null);
-      setAvailableModels([]);
-    }
-  }, []);
-
-  const handleModelChange = useCallback((value: string | null) => {
-    setModel(value);
-  }, []);
-
-  const handleProviderApiKeyChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setProviderApiKey(e.currentTarget.value);
-  }, []);
-
-  const handleSaveProviderKey = useCallback(() => {
-    orgFetcher.submit(
-      { intent: 'save-llm-provider-key', provider, apiKey: providerApiKey },
-      { method: 'post' }
-    );
-  }, [orgFetcher, provider, providerApiKey]);
-
-  const handleRemoveProviderKey = useCallback(() => {
-    orgFetcher.submit({ intent: 'remove-llm-provider-key', provider }, { method: 'post' });
-  }, [orgFetcher, provider]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadModelsForProvider = async () => {
-      try {
-        const result = await loadModelsRef.current({
-          provider,
-        });
-        if (cancelled) return;
-        const models = Array.isArray((result as any)?.models)
-          ? (result as any).models.map((item: any) => String(item))
-          : [];
-        setAvailableModels(models);
-        const storageKey = `llm-chat-model:${currentOrg.id}:${provider}`;
-        const storedModel =
-          typeof window !== 'undefined' ? window.localStorage.getItem(storageKey) : null;
-        const defaultOrgModel = currentOrg.settings?.llmChat?.model
-          ? String(currentOrg.settings.llmChat.model)
-          : null;
-
-        let nextModel: string | null = null;
-        if (storedModel && models.includes(storedModel)) {
-          nextModel = storedModel;
-        } else if (defaultOrgModel && models.includes(defaultOrgModel)) {
-          nextModel = defaultOrgModel;
-        } else if (models.length > 0) {
-          nextModel = models[0];
-        }
-
-        setModel(nextModel);
-        setModelsMessage(
-          models.length > 0 ? t('llm_settings.models_available', { count: models.length }) : t('llm_settings.no_models_returned')
-        );
-      } catch (_error) {
-        if (cancelled) return;
-        setAvailableModels([]);
-        setModel(null);
-        setModelsMessage(t('llm_settings.could_not_load_models'));
-      }
-    };
-
-    loadModelsForProvider();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [currentOrg.id, currentOrg.settings?.llmChat?.model, modelsReloadTick, provider, t]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const storageKey = `llm-chat-model:${currentOrg.id}:${provider}`;
-    if (!model) return;
-    window.localStorage.setItem(storageKey, model);
-  }, [currentOrg.id, model, provider]);
-
-  const handleSaveLlmDefaults = useCallback(() => {
     orgFetcher.submit(
       {
-        intent: 'update-llm-chat-settings',
+        intent: 'update-organization',
         orgId: currentOrg.id,
-        provider,
-        model: model || '',
+        name: orgName,
+        address: orgAddress,
+        phone: orgPhone,
+        email: orgEmail,
+        logoUrl: orgLogoUrl,
       },
       { method: 'post' }
     );
-  }, [currentOrg.id, model, orgFetcher, provider]);
-
-  const handleSaveRecetarioSettings = useCallback(() => {
-    orgFetcher.submit(
-      {
-        intent: 'update-recetario-settings',
-        orgId: currentOrg.id,
-        enabled: recetarioEnabled ? 'true' : 'false',
-        healthCenterId: healthCenterId || '',
-      },
-      { method: 'post' }
-    );
-  }, [currentOrg.id, healthCenterId, orgFetcher, recetarioEnabled]);
-
-  const activeProviderConfigured = useMemo(() => {
-    const providers = Array.isArray((providerKeyStatus as any)?.providers)
-      ? (providerKeyStatus as any).providers
-      : [];
-    const active = providers.find((item: any) => item.provider === provider);
-    return Boolean(active?.configured);
-  }, [providerKeyStatus, provider]);
-
-  const hasOrgSettingsChanges = useMemo(() => {
-    const initialProvider =
-      currentOrg.settings?.llmChat?.preferredProvider === 'anthropic' ? 'anthropic' : 'openai';
-    const initialModel = currentOrg.settings?.llmChat?.model || null;
-    return provider !== initialProvider || model !== initialModel;
-  }, [currentOrg.settings, model, provider]);
+  }, [currentOrg.id, orgName, orgAddress, orgPhone, orgEmail, orgLogoUrl, orgFetcher]);
 
   return (
     <>
       <FormHeader>
-        <SectionTitle icon={<Building2 />}>
-          {t('profile.tab_organization')}
-        </SectionTitle>
+        <SectionTitle icon={<Building2 />}>{t('profile.tab_organization')}</SectionTitle>
       </FormHeader>
       <FormCard>
         <FieldRow label={`${t('profile.org_name')}:`} variant="stacked">
           <StyledTextInput value={orgName} onChange={handleOrgNameChange} />
         </FieldRow>
-        <FieldRow label={`${t('llm_settings.ai_provider')}:`} variant="stacked">
-          <Select
-            value={provider}
-            onChange={handleProviderChange}
-            data={[
-              { value: 'openai', label: 'OpenAI' },
-              { value: 'anthropic', label: 'Anthropic' },
-            ]}
+        <FieldRow label={`${t('profile.org_address')}:`} variant="stacked">
+          <StyledTextInput
+            value={orgAddress}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgAddress(e.currentTarget.value)}
           />
         </FieldRow>
-        <FieldRow label={`${t('llm_settings.provider_api_key')}:`} variant="stacked">
-          <Stack gap="xs">
-            <StyledTextInput
-              value={providerApiKey}
-              onChange={handleProviderApiKeyChange}
-              placeholder={t('llm_settings.provider_key_placeholder')}
-              type="password"
-            />
-            <Group gap="xs">
-              <Button
-                size="xs"
-                variant="light"
-                onClick={handleSaveProviderKey}
-                loading={orgFetcher.state === 'submitting' && orgFetcher.formData?.get('intent') === 'save-llm-provider-key'}
-                disabled={!providerApiKey.trim()}
-              >
-                {t('llm_settings.save_key')}
-              </Button>
-              <Button
-                size="xs"
-                variant="subtle"
-                color="red"
-                onClick={handleRemoveProviderKey}
-                loading={orgFetcher.state === 'submitting' && orgFetcher.formData?.get('intent') === 'remove-llm-provider-key'}
-              >
-                {t('llm_settings.remove_key')}
-              </Button>
-            </Group>
-            <Text size="xs" c="dimmed">
-              {t('llm_settings.key_configured_status', {
-                provider,
-                status: activeProviderConfigured ? t('common.yes') : t('common.no'),
-              })}
-            </Text>
-          </Stack>
+        <FieldRow label={`${t('profile.org_phone')}:`} variant="stacked">
+          <StyledTextInput
+            value={orgPhone}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgPhone(e.currentTarget.value)}
+          />
         </FieldRow>
-        <FieldRow label={`${t('llm_settings.ai_model')}:`} variant="stacked">
-          <Stack gap="xs">
-            <Select
-              value={model}
-              onChange={handleModelChange}
-              data={availableModels.map(item => ({ value: item, label: item }))}
-              placeholder={isLoadingModels ? t('llm_settings.loading_models') : t('llm_settings.no_models_available')}
-              searchable
-              clearable
-              disabled={isLoadingModels}
-            />
-            {modelsMessage && (
-              <Text size="xs" c="dimmed">
-                {modelsMessage}
-              </Text>
-            )}
-          </Stack>
+        <FieldRow label={`${t('profile.org_email')}:`} variant="stacked">
+          <StyledTextInput
+            value={orgEmail}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgEmail(e.currentTarget.value)}
+          />
         </FieldRow>
-      </FormCard>
+        <FieldRow label={`${t('profile.org_logo')}:`} variant="stacked">
+          <Flex align="center" gap="sm">
+            {orgLogoUrl && <Image src={orgLogoUrl} alt="Logo" h={32} w="auto" fit="contain" />}
+            <FileInput
+              accept="image/*"
+              placeholder={orgLogoUrl ? t('profile.org_logo_change') : t('profile.org_logo_upload')}
+              description={orgLogoUrl || undefined}
+              leftSection={<Upload size={16} />}
+              style={{ flex: 1 }}
+              disabled={isUploading}
+              onChange={async file => {
+                if (!file) return;
+                setIsUploading(true);
+                try {
+                  const formData = new FormData();
+                  formData.append('file', file);
 
-      <FormHeader>
-        <SectionTitle icon={<ClipboardPen />}>
-          {t('recetario.enabled')}
-        </SectionTitle>
-      </FormHeader>
-      <FormCard>
-        <FieldRow label={`${t('recetario.enabled_description')}:`} variant="stacked">
-          <Switch
-            checked={recetarioEnabled}
-            onChange={(e) => setRecetarioEnabled(e.currentTarget.checked)}
-          />
-        </FieldRow>
-        {recetarioEnabled && (
-          <FieldRow label={`${t('recetario.health_center_id')}:`} variant="stacked">
-            <StyledTextInput
-              value={healthCenterId}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setHealthCenterId(e.currentTarget.value)}
-              placeholder="123"
+                  const token = await (client as any).authentication?.getAccessToken?.();
+                  const orgId = (client as any).organizationId;
+                  const headers: Record<string, string> = {};
+                  if (token) headers['Authorization'] = `Bearer ${token}`;
+                  if (orgId) headers['organization-id'] = orgId;
+
+                  const response = await fetch('/api/file-uploads', {
+                    method: 'POST',
+                    headers,
+                    body: formData,
+                  });
+
+                  if (response.ok) {
+                    const { url } = await response.json();
+                    setOrgLogoUrl(url);
+                    orgFetcher.submit(
+                      {
+                        intent: 'update-organization',
+                        orgId: currentOrg.id,
+                        name: orgName,
+                        address: orgAddress,
+                        phone: orgPhone,
+                        email: orgEmail,
+                        logoUrl: url,
+                      },
+                      { method: 'post' }
+                    );
+                  } else {
+                    notifications.show({ message: t('profile.org_save_error'), color: 'red' });
+                  }
+                } catch {
+                  notifications.show({ message: t('profile.org_save_error'), color: 'red' });
+                } finally {
+                  setIsUploading(false);
+                }
+              }}
             />
-          </FieldRow>
-        )}
-        <FieldRow label="" variant="stacked">
-          <Button
-            size="sm"
-            variant="light"
-            onClick={handleSaveRecetarioSettings}
-            loading={orgFetcher.state === 'submitting' && orgFetcher.formData?.get('intent') === 'update-recetario-settings'}
-          >
-            {t('common.save')}
-          </Button>
+          </Flex>
         </FieldRow>
       </FormCard>
 
@@ -330,19 +152,19 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
             <Button
               size="sm"
               onClick={handleSaveOrg}
-              loading={orgFetcher.state === 'submitting' && orgFetcher.formData?.get('intent') === 'update-organization'}
-              disabled={orgName === currentOrg.name || !orgName.trim()}
+              loading={
+                orgFetcher.state === 'submitting' && orgFetcher.formData?.get('intent') === 'update-organization'
+              }
+              disabled={
+                !orgName.trim() ||
+                (orgName === currentOrg.name &&
+                  orgAddress === (currentOrg.settings?.healthCenter?.address || '') &&
+                  orgPhone === (currentOrg.settings?.healthCenter?.phone || '') &&
+                  orgEmail === (currentOrg.settings?.healthCenter?.email || '') &&
+                  orgLogoUrl === (currentOrg.settings?.healthCenter?.logoUrl || ''))
+              }
             >
               {t('profile.save_organization')}
-            </Button>
-            <Button
-              size="sm"
-              variant="light"
-              onClick={handleSaveLlmDefaults}
-              loading={orgFetcher.state === 'submitting' && orgFetcher.formData?.get('intent') === 'update-llm-chat-settings'}
-              disabled={!hasOrgSettingsChanges}
-            >
-              {t('llm_settings.save_ai_defaults')}
             </Button>
           </Group>
         )}

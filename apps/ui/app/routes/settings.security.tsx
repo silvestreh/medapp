@@ -5,7 +5,7 @@ import QRCode from 'qrcode';
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { ProfileSecurity } from '~/components/profile-security';
-import type { loader as profileLoader } from '~/routes/profile';
+import type { loader as profileLoader } from '~/routes/settings';
 
 const buildTwoFactorSetupPayload = async (result: { secret: string; otpauthUri: string }) => {
   const qrCodeDataUrl = await QRCode.toDataURL(result.otpauthUri, {
@@ -92,7 +92,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function ProfileSecurityRoute() {
-  const parentData = useRouteLoaderData<typeof profileLoader>('routes/profile');
+  const parentData = useRouteLoaderData<typeof profileLoader>('routes/settings');
   const actionData = useActionData<typeof action>();
 
   if (!parentData) return null;

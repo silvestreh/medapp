@@ -124,6 +124,7 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
   const [draftMessage, setDraftMessage] = useState('');
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [modelsProvider, setModelsProvider] = useState<string | null>(null);
   const [streamingMessage, setStreamingMessage] = useState<{ id: string; fullContent: string } | null>(null);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
@@ -296,6 +297,7 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
         patientId,
         encounterDraft,
         model: selectedModel || undefined,
+        preferredProvider: modelsProvider || undefined,
         messages: [...requestMessages, { role: 'user', content }],
       });
 
@@ -364,6 +366,7 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
     draftMessage,
     encounterDraft,
     isLoading,
+    modelsProvider,
     nextMessageId,
     patientId,
     requestMessages,
@@ -419,7 +422,10 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
         const models = Array.isArray((result as any)?.models)
           ? (result as any).models.map((item: any) => String(item))
           : [];
+        const defaultModel = (result as any)?.defaultModel ? String((result as any).defaultModel) : null;
+        const provider = (result as any)?.provider ? String((result as any).provider) : null;
         setAvailableModels(models);
+        setModelsProvider(provider);
         if (!models.length) {
           setSelectedModel(null);
           return;
@@ -432,11 +438,17 @@ export function EncounterAiChatPanel({ patientId, encounterDraft }: EncounterAiC
           return;
         }
 
+        if (defaultModel && models.includes(defaultModel)) {
+          setSelectedModel(defaultModel);
+          return;
+        }
+
         setSelectedModel(prev => (prev && models.includes(prev) ? prev : models[0]));
       } catch (_error) {
         if (cancelled) return;
         setAvailableModels([]);
         setSelectedModel(null);
+        setModelsProvider(null);
       }
     };
 

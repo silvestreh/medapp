@@ -1,6 +1,7 @@
 import { BadRequest, Forbidden } from '@feathersjs/errors';
 import { randomUUID } from 'crypto';
 import dayjs from 'dayjs';
+import { APP_SLUG } from '@athelas/brand';
 
 import type { Application } from '../../declarations';
 import { mapDoctorData, mapPatientData, mapDoctorForAPI, mapPatientForAPI, checkDoctorReadiness, sanitizeDocumentNumber, mapGender, reverseMapGender, formatBirthDate } from './data-mapper';
@@ -289,7 +290,7 @@ export class Recetario {
     await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
     const orgSettings = this.getOrgRecetarioSettings(params);
 
-    const reference = `athelas-${randomUUID()}`;
+    const reference = `${APP_SLUG}-${randomUUID()}`;
     const recetarioUserId = doctor.mdSettings.recetarioUserId as number | null | undefined;
 
     const doctorPayload = mapDoctorForAPI(doctor);

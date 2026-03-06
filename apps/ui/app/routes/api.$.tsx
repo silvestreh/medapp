@@ -43,7 +43,7 @@ const ALLOWED_PATHS = new Set([
   'practitioner-verification',
   'encounter-ai-chat',
   'encounter-ai-chat-messages',
-  'llm-provider-keys',
+  'llm-api-keys',
   'llm-models',
   'accounting',
   'accounting-settings',
@@ -52,6 +52,8 @@ const ALLOWED_PATHS = new Set([
   'recetario',
   'whatsapp',
   'webhooks',
+  'file-uploads',
+  'uploads',
 ]);
 
 function getFirstSegment(request: Request): string {

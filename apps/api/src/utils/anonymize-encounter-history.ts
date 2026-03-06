@@ -30,7 +30,7 @@ export interface AnonymizedEncounterHistory {
   patient: {
     id: string;
     label: string;
-    ageYears?: number;
+    ageRange?: string;
     gender?: string;
   };
   timelineStartDate: string | null;
@@ -54,7 +54,7 @@ function toUtcDayIndex(isoDate: string): number {
   return Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / MS_PER_DAY);
 }
 
-function calculateAgeYears(birthDate?: string | null): number | undefined {
+function approximateAge(birthDate?: string | null): string | undefined {
   const iso = toIsoDate(birthDate);
   if (!iso) return undefined;
   const now = new Date();
@@ -64,7 +64,15 @@ function calculateAgeYears(birthDate?: string | null): number | undefined {
   if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) {
     age -= 1;
   }
-  return age >= 0 ? age : undefined;
+  if (age < 0) return undefined;
+  if (age < 1) return 'infant';
+  if (age < 3) return 'toddler';
+  if (age < 13) return `child (~${age})`;
+  if (age < 18) return 'teenager';
+  const decade = Math.floor(age / 10) * 10;
+  const position = age - decade;
+  const qualifier = position < 4 ? 'early' : position < 7 ? 'mid' : 'late';
+  return `${qualifier} ${decade}s`;
 }
 
 function buildTokenMap(patient: any): Record<string, string> {
@@ -199,9 +207,9 @@ export function anonymizeEncounterHistory(input: AnonymizeInput): AnonymizedEnco
 
   return {
     patient: {
-      id: String(patient?.id || ''),
+      id: 'anonymous',
       label: 'Patient_A',
-      ageYears: calculateAgeYears(patient?.personalData?.birthDate),
+      ageRange: approximateAge(patient?.personalData?.birthDate),
       gender: patient?.personalData?.gender || undefined,
     },
     timelineStartDate,

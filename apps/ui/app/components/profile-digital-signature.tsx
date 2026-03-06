@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Alert, Button, Checkbox, FileInput, Group, PasswordInput, Stack, Text } from '@mantine/core';
+import { Alert, Button, Checkbox, FileInput, Group, PasswordInput, Text } from '@mantine/core';
 import { FileSignature, Trash2, Upload, Info, ShieldCheck, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFeathers } from '~/components/provider';
 import { encryptWithPin } from '~/lib/client-crypto';
-import { SectionTitle } from '~/components/forms/styles';
+import { FormCard, FieldRow, SectionTitle, FormHeader } from '~/components/forms/styles';
 
 interface CertificateInfo {
   id: string;
@@ -113,30 +113,27 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
   }, [certificate, client, onCertificateChange]);
 
   return (
-    <Stack gap="md">
-      <SectionTitle icon={<FileSignature />}>{t('digital_signature.title')}</SectionTitle>
-
-      <Alert variant="light" color="blue" icon={<Info size={16} />}>
+    <>
+      <FormHeader>
+        <SectionTitle icon={<FileSignature />}>{t('digital_signature.title')}</SectionTitle>
+      </FormHeader>
+      <Alert variant="light" color="blue" icon={<Info size={16} />} style={{ flex: 1, marginBottom: '1rem' }}>
         {t('digital_signature.info_notice')}
       </Alert>
+      <FormCard>
+        {error && (
+          <FieldRow label="" variant="stacked">
+            <Alert color="red" variant="light" onClose={() => setError(null)} withCloseButton style={{ flex: 1 }}>
+              {error}
+            </Alert>
+          </FieldRow>
+        )}
 
-      {error && (
-        <Alert color="red" variant="light" onClose={() => setError(null)} withCloseButton>
-          {error}
-        </Alert>
-      )}
-
-      {certificate && (
-        <Alert variant="light" color="green" icon={<FileSignature size={16} />}>
-          <Group justify="space-between" align="center">
-            <div>
-              <Text size="sm" fw={500}>
-                {t('digital_signature.certificate_loaded')}
-              </Text>
+        {certificate && (
+          <FieldRow label={`${t('digital_signature.certificate_loaded')}:`} variant="stacked">
+            <Group justify="space-between" align="center">
               <Group gap="xs">
-                <Text size="xs" c="dimmed">
-                  {certificate.fileName || 'certificado.pfx'}
-                </Text>
+                <Text size="sm">{certificate.fileName || 'certificado.pfx'}</Text>
                 {certificate.isClientEncrypted && (
                   <Group gap={4}>
                     <Lock size={12} color="var(--mantine-color-blue-6)" />
@@ -146,75 +143,92 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
                   </Group>
                 )}
               </Group>
-            </div>
-            <Button
-              variant="subtle"
-              color="red"
-              size="xs"
-              leftSection={<Trash2 size={14} />}
-              loading={isRemoving}
-              onClick={handleRemove}
-            >
-              {t('digital_signature.remove')}
-            </Button>
-          </Group>
-        </Alert>
-      )}
+              <Button
+                variant="subtle"
+                color="red"
+                size="xs"
+                leftSection={<Trash2 size={14} />}
+                loading={isRemoving}
+                onClick={handleRemove}
+              >
+                {t('digital_signature.remove')}
+              </Button>
+            </Group>
+          </FieldRow>
+        )}
 
-      {!certificate && (
-        <Stack gap="sm">
-          <FileInput
-            ref={fileInputRef}
-            label={t('digital_signature.file_label')}
-            placeholder={t('digital_signature.file_placeholder')}
-            accept=".pfx,.p12"
-            value={selectedFile}
-            onChange={setSelectedFile}
-          />
-
-          {selectedFile && (
-            <Stack gap="xs">
-              <Checkbox
-                label={t('digital_signature.pin_protect_label')}
-                description={t('digital_signature.pin_protect_description')}
-                checked={pinProtect}
-                onChange={event => setPinProtect(event.currentTarget.checked)}
+        {!certificate && (
+          <>
+            <FieldRow label={`${t('digital_signature.file_label')}:`} variant="stacked">
+              <FileInput
+                ref={fileInputRef}
+                placeholder={t('digital_signature.file_placeholder')}
+                accept=".pfx,.p12"
+                value={selectedFile}
+                onChange={setSelectedFile}
               />
+            </FieldRow>
 
-              {pinProtect && (
-                <>
-                  <Group grow>
-                    <PasswordInput
-                      label={t('digital_signature.pin_label')}
-                      placeholder={t('digital_signature.pin_placeholder')}
-                      value={pin}
-                      onChange={event => setPin(event.currentTarget.value)}
-                    />
-                    <PasswordInput
-                      label={t('digital_signature.pin_confirm_label')}
-                      placeholder={t('digital_signature.pin_confirm_placeholder')}
-                      value={pinConfirm}
-                      onChange={event => setPinConfirm(event.currentTarget.value)}
-                      error={pinError}
-                    />
-                  </Group>
-                  <Alert variant="light" color="orange" icon={<Info size={14} />} py="xs">
-                    <Text size="xs">{t('digital_signature.pin_warning')}</Text>
-                  </Alert>
-                </>
-              )}
-            </Stack>
-          )}
+            {selectedFile && (
+              <>
+                <FieldRow label="" variant="stacked">
+                  <Checkbox
+                    label={t('digital_signature.pin_protect_label')}
+                    description={t('digital_signature.pin_protect_description')}
+                    checked={pinProtect}
+                    onChange={event => setPinProtect(event.currentTarget.checked)}
+                  />
+                </FieldRow>
 
-          <Button leftSection={<Upload size={16} />} loading={isUploading} disabled={!canUpload} onClick={handleUpload}>
-            {t('digital_signature.upload')}
-          </Button>
-        </Stack>
-      )}
+                {pinProtect && (
+                  <>
+                    <FieldRow label={`${t('digital_signature.pin_label')}:`} variant="stacked">
+                      <Group grow>
+                        <PasswordInput
+                          placeholder={t('digital_signature.pin_placeholder')}
+                          value={pin}
+                          onChange={event => setPin(event.currentTarget.value)}
+                        />
+                        <PasswordInput
+                          placeholder={t('digital_signature.pin_confirm_placeholder')}
+                          value={pinConfirm}
+                          onChange={event => setPinConfirm(event.currentTarget.value)}
+                          error={pinError}
+                        />
+                      </Group>
+                      <Alert
+                        variant="light"
+                        color="orange"
+                        icon={<Info size={14} />}
+                        py="xs"
+                        style={{ flex: 1, marginTop: '1rem' }}
+                      >
+                        <Text size="xs">{t('digital_signature.pin_warning')}</Text>
+                      </Alert>
+                    </FieldRow>
+                  </>
+                )}
+              </>
+            )}
 
-      <Alert variant="light" color="yellow" icon={<ShieldCheck size={16} />}>
+            <FieldRow label="" variant="stacked">
+              <Button
+                leftSection={<Upload size={16} />}
+                loading={isUploading}
+                disabled={!canUpload}
+                onClick={handleUpload}
+                variant="light"
+                size="sm"
+              >
+                {t('digital_signature.upload')}
+              </Button>
+            </FieldRow>
+          </>
+        )}
+      </FormCard>
+      <Alert variant="light" color="yellow" icon={<ShieldCheck size={16} />} style={{ flex: 1, marginTop: '1rem' }}>
         {t('digital_signature.security_notice')}
       </Alert>
-    </Stack>
+    </>
   );
 }

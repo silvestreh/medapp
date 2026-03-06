@@ -1,6 +1,6 @@
 import { HookContext } from '@feathersjs/feathers';
-import { getUsersByDocumentNumber } from '../services/recetario/recetario-client';
-import { sanitizeDocumentNumber } from '../services/recetario/data-mapper';
+import { getUsersByDocumentNumber, createRecetarioUser, RecetarioUserPayload } from '../services/recetario/recetario-client';
+import { sanitizeDocumentNumber, mapDocumentType } from '../services/recetario/data-mapper';
 
 const syncRecetarioUserId = (): ((ctx: HookContext) => Promise<HookContext>) => {
   return async (ctx: HookContext) => {
@@ -24,12 +24,58 @@ const syncRecetarioUserId = (): ((ctx: HookContext) => Promise<HookContext>) => 
 
       // Get the doctor's document number
       const personalData = (user as any).personalData || {};
+      const contactData = (user as any).contactData || {};
       const docNum = sanitizeDocumentNumber(personalData.documentValue);
       if (!docNum) return ctx;
 
       // Look up Recetario user by documentNumber
       const recetarioUsers = await getUsersByDocumentNumber(docNum);
-      const recetarioUser = Array.isArray(recetarioUsers) ? recetarioUsers[0] : null;
+      let recetarioUser = Array.isArray(recetarioUsers) ? recetarioUsers[0] : null;
+
+      // If no Recetario user found, try to create one if we have all required data
+      if (!recetarioUser?.id) {
+        const email = contactData.email;
+        const firstName = personalData.firstName;
+        const lastName = personalData.lastName;
+        const nationalLicenseNumber = mdSettings.nationalLicenseNumber;
+        const specialty = mdSettings.medicalSpecialty;
+        const province = mdSettings.recetarioProvince;
+        const title = mdSettings.recetarioTitle;
+
+        // All fields are required to create a Recetario user
+        if (!email || !firstName || !lastName || !nationalLicenseNumber || !specialty || !province || !title) {
+          return ctx;
+        }
+
+        // Get the organization's healthCenterId
+        const sequelize = (ctx.app as any).get('sequelizeClient');
+        const orgUser = await sequelize.models.organization_users.findOne({
+          where: { userId: user.id },
+        });
+        if (!orgUser) return ctx;
+
+        const org = await ctx.app.service('organizations').get(orgUser.organizationId, internal);
+        const healthCenterId = org?.settings?.recetario?.healthCenterId;
+        if (!healthCenterId) return ctx;
+
+        const payload: RecetarioUserPayload = {
+          title,
+          firstName,
+          lastName,
+          nationalId: docNum,
+          nationalIdType: mapDocumentType(personalData.documentType),
+          email,
+          nationalLicenseNumber,
+          stateLicenseNumber: mdSettings.stateLicenseNumber || undefined,
+          stateLicenseName: mdSettings.stateLicense || undefined,
+          specialty,
+          province,
+          healthCenterId,
+        };
+
+        recetarioUser = await createRecetarioUser(payload);
+      }
+
       if (!recetarioUser?.id) return ctx;
 
       // Save the Recetario user ID
