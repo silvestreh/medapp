@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionIcon, Badge, Box, Button, Group, Loader, Paper, Stack, Text, Textarea, Title } from '@mantine/core';
 import { useClickOutside, useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from '@remix-run/react';
-import { Bot, ChevronDown, Copy, ExternalLink, Minimize2 } from 'lucide-react';
+import { Bot, ChevronDown, Copy, ExternalLink, Minimize2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -55,6 +55,7 @@ interface EncounterChatPanelProps {
   encounterDraft: Record<string, any>;
   isActive: boolean;
   onMinimize: () => void;
+  onClose: () => void;
 }
 
 const CARD_WIDTH = 280;
@@ -209,6 +210,7 @@ export function EncounterChatPanel({
   encounterDraft,
   isActive,
   onMinimize,
+  onClose,
 }: EncounterChatPanelProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -655,9 +657,14 @@ export function EncounterChatPanel({
             {patientName}
           </Title>
         </Group>
-        <ActionIcon variant="subtle" color="white" onClick={onMinimize} aria-label={t('ai_chat.minimize_assistant')}>
-          <Minimize2 size={16} />
-        </ActionIcon>
+        <Group gap={4}>
+          <ActionIcon variant="subtle" color="white" onClick={onMinimize} aria-label={t('ai_chat.minimize_assistant')}>
+            <Minimize2 size={16} />
+          </ActionIcon>
+          <ActionIcon variant="subtle" color="white" onClick={onClose} aria-label={t('ai_chat.close', 'Cerrar')}>
+            <X size={16} />
+          </ActionIcon>
+        </Group>
       </Group>
 
       <Stack gap={0} style={{ flex: 1, minHeight: 0 }}>

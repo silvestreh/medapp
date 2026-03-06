@@ -24,10 +24,12 @@ function AnimatedChatPanel({
   chat,
   isActive,
   onMinimize,
+  onClose,
 }: {
   chat: { patientId: string; patientName: string; color: string; encounterDraft: Record<string, any> };
   isActive: boolean;
   onMinimize: () => void;
+  onClose: () => void;
 }) {
   const panelSpring = useSpring({
     opacity: isActive ? 1 : 0,
@@ -57,6 +59,7 @@ function AnimatedChatPanel({
         encounterDraft={chat.encounterDraft}
         isActive={isActive}
         onMinimize={onMinimize}
+        onClose={onClose}
       />
     </animated.div>
   );
@@ -167,6 +170,14 @@ export function ChatHeadsContainer() {
     return memo;
   });
 
+  const handleCloseFromPanel = useCallback(
+    (patientId: string) => {
+      minimizeActiveChat();
+      setTimeout(() => handleClose(patientId), 250);
+    },
+    [minimizeActiveChat]
+  );
+
   const handleClose = useCallback(
     (patientId: string) => {
       const index = chats.findIndex(c => c.patientId === patientId);
@@ -219,6 +230,7 @@ export function ChatHeadsContainer() {
           chat={chat}
           isActive={chat.patientId === activeChatPatientId}
           onMinimize={minimizeActiveChat}
+          onClose={() => handleCloseFromPanel(chat.patientId)}
         />
       ))}
 
