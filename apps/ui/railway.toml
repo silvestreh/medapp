@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "pnpm --filter athelas-ui build"
+buildCommand = "pnpm --filter athelas-ui... build"
 watchPatterns = ["apps/ui/**"]
 
 [deploy]
