@@ -94,6 +94,7 @@ export interface User {
   isSuperAdmin: boolean;
   personalData: Partial<PersonalData>;
   contactData: Partial<ContactData>;
+  preferences?: Record<string, any>;
 }
 
 export interface PersonalData {

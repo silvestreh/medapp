@@ -16,6 +16,14 @@ export interface Account {
   organizations?: UserOrganization[];
   personalData?: PersonalData;
   contactData?: ContactData;
+  preferences?: {
+    chatHeads?: Array<{
+      patientId: string;
+      patientName: string;
+      patientInitials: string;
+    }>;
+    [key: string]: any;
+  };
   settings?: {
     medicalSpecialty: string;
     nationalLicenseNumber: string;

@@ -1,11 +1,11 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Link, useLoaderData, useNavigate, useRevalidator } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Group, Stack, Button, ActionIcon, Tooltip, Tabs, Text } from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
-import { X, FileDown, Printer, Plus, ClipboardPen } from 'lucide-react';
+import { X, FileDown, Printer, Plus, ClipboardPen, Bot } from 'lucide-react';
 
 import {
   getAuthenticatedClient,
@@ -29,10 +29,10 @@ import { ExportSignedPdfDialog } from '~/components/export-signed-pdf-dialog';
 import { PrintPdfDialog } from '~/components/print-pdf-dialog';
 import { Fab, FabItem } from '~/components/fab';
 import { ToolbarTitle } from '~/components/toolbar-title';
-import { EncounterAiChatPanel } from '~/components/encounter-ai-chat-panel';
 import { PrescriptionDetail } from '~/components/prescription-detail';
 import { PrescribeModal } from '~/components/prescribe-modal';
 import { AttachmentViewer } from '~/components/encounter-attachments';
+import { useChatManager } from '~/components/chat-manager';
 
 const Container = styled('div', {
   base: {
@@ -233,6 +233,15 @@ export default function PatientEncounterDetail() {
   const [fabOpen, { toggle: toggleFab, close: closeFab }] = useDisclosure(false);
   const [prescribeOpened, { open: openPrescribe, close: closePrescribe }] = useDisclosure(false);
   const { revalidate } = useRevalidator();
+  const { openChat, updateEncounterDraft } = useChatManager();
+
+  const handleOpenChat = useCallback(() => {
+    openChat({
+      id: String(data.patient.id),
+      firstName: data.patient.personalData.firstName,
+      lastName: data.patient.personalData.lastName,
+    });
+  }, [openChat, data.patient]);
 
   const handleFabPrint = useCallback(() => {
     closeFab();
@@ -329,6 +338,11 @@ export default function PatientEncounterDetail() {
     setActiveAttachmentIndex(index);
   }, []);
 
+  useEffect(() => {
+    if (!selectedEncounter?.data) return;
+    updateEncounterDraft(String(data.patient.id), selectedEncounter.data);
+  }, [selectedEncounter?.data, data.patient.id, updateEncounterDraft]);
+
   const hasSelection = selectedEncounter || selectedStudy || selectedPrescription;
   const selectedAttachment = selectedEncounter && activeAttachmentIndex !== null
     ? selectedEncounter.data?.attachments?.[activeAttachmentIndex]
@@ -370,6 +384,9 @@ export default function PatientEncounterDetail() {
                   {t('export_pdf.button')}
                 </Button>
               )}
+              <Button variant="light" color="violet" onClick={handleOpenChat} leftSection={<Bot size={16} />}>
+                {t('ai_chat.title')}
+              </Button>
               {data.isVerified && (
                 <Button component={Link} to={`/encounters/${data.patient.id}/new`} leftSection={<Plus size={16} />}>
                   {t('encounters.new')}
@@ -504,7 +521,6 @@ export default function PatientEncounterDetail() {
         ) : (
           <PatientOverview patient={data.patient} encounters={data.encounters} />
         )}
-        <EncounterAiChatPanel patientId={String(data.patient.id)} encounterDraft={selectedEncounter?.data || {}} />
       </Content>
 
       {!isDesktop && (

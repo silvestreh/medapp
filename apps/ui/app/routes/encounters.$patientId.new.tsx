@@ -1,10 +1,10 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Stack, Center, Text, ActionIcon, Tooltip, Group, Box, Button } from '@mantine/core';
-import { Paperclip } from 'lucide-react';
+import { Paperclip, Bot } from 'lucide-react';
 
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -12,11 +12,11 @@ import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { EncounterForm } from '~/components/forms/encounter-form';
 import NewEncounterSidebar from '~/components/new-encounter-sidebar';
-import { EncounterAiChatPanel } from '~/components/encounter-ai-chat-panel';
 import { getPageTitle } from '~/utils/meta';
 import { ToolbarTitle } from '~/components/toolbar-title';
 import { useAttachmentUpload, FloatingAttachmentsList, type AttachmentData } from '~/components/encounter-attachments';
 import { useFeathers } from '~/components/provider';
+import { useChatManager } from '~/components/chat-manager';
 import {
   getAuthenticatedClient,
   authenticatedLoader,
@@ -152,8 +152,21 @@ export default function NewEncounter() {
   const navigate = useNavigate();
   const { patient } = data;
   const client = useFeathers();
+  const { openChat, updateEncounterDraft } = useChatManager();
   const [formValues, setFormValues] = useState<any>({});
   const [activeFormKey, setActiveFormKey] = useState<string | undefined>(undefined);
+
+  const handleOpenChat = useCallback(() => {
+    openChat({
+      id: String(patient.id),
+      firstName: patient.personalData.firstName,
+      lastName: patient.personalData.lastName,
+    });
+  }, [openChat, patient]);
+
+  useEffect(() => {
+    updateEncounterDraft(String(patient.id), formValues);
+  }, [formValues, patient.id, updateEncounterDraft]);
 
   const handleAttached = useCallback((attachment: AttachmentData) => {
     setFormValues((prev: any) => ({
@@ -237,18 +250,30 @@ export default function NewEncounter() {
             subTitle={`${patient.personalData.firstName} ${patient.personalData.lastName}`}
             onBack={handleGoBack}
           />
-          <Box visibleFrom="lg">
-            <Button variant="light" onClick={openFilePicker} loading={uploading} leftSection={<Paperclip size={16} />}>
-              {t('encounters.attach_file')}
-            </Button>
-          </Box>
-          <Box hiddenFrom="lg">
-            <Tooltip label={t('encounters.attach_file')}>
-              <ActionIcon variant="light" onClick={openFilePicker} loading={uploading}>
-                <Paperclip size={16} />
+          <Group gap="sm">
+            <Box visibleFrom="lg">
+              <Button variant="light" color="violet" onClick={handleOpenChat} leftSection={<Bot size={16} />}>
+                {t('ai_chat.title')}
+              </Button>
+            </Box>
+            <Box hiddenFrom="lg">
+              <ActionIcon variant="light" color="violet" onClick={handleOpenChat} size="lg" radius="xl">
+                <Bot size={20} />
               </ActionIcon>
-            </Tooltip>
-          </Box>
+            </Box>
+            <Box visibleFrom="lg">
+              <Button variant="light" onClick={openFilePicker} loading={uploading} leftSection={<Paperclip size={16} />}>
+                {t('encounters.attach_file')}
+              </Button>
+            </Box>
+            <Box hiddenFrom="lg">
+              <Tooltip label={t('encounters.attach_file')}>
+                <ActionIcon variant="light" onClick={openFilePicker} loading={uploading}>
+                  <Paperclip size={16} />
+                </ActionIcon>
+              </Tooltip>
+            </Box>
+          </Group>
         </Group>
       </Portal>
       {FileInputElement}
@@ -280,7 +305,6 @@ export default function NewEncounter() {
             </Center>
           )}
         </Stack>
-        <EncounterAiChatPanel patientId={String(patient.id)} encounterDraft={formValues} />
       </Content>
 
       <FloatingAttachmentsList

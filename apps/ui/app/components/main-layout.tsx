@@ -9,6 +9,8 @@ import SideNav from '~/components/side-nav';
 import TopNav from '~/components/top-nav';
 import { useAccount, useOrganization } from '~/components/provider';
 import { VerificationBanner } from '~/components/verification-banner';
+import { ChatManagerProvider } from '~/components/chat-manager';
+import { ChatHeadsContainer } from '~/components/chat-heads';
 
 const MainLayoutContainer = styled(Flex, {
   base: {
@@ -104,44 +106,47 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const isOrgActive = currentOrg?.isActive !== false;
 
   return (
-    <MainLayoutContainer>
-      <SideNav />
-      <Box flex={1}>
-        <VerificationBanner isVerified={isVerified} />
-        <TopNav />
-        {!isOrgActive && (
-          <Alert
-            color="orange"
-            icon={<ShieldAlert size={18} />}
-            py="sm"
-            px="md"
-            radius={0}
-          >
-            {t('organization.inactive_banner', 'Your organization is not yet activated. Please contact sales to get started.')}{' '}
-            <Anchor href="mailto:sales@athel.as" fw={600}>
-              sales@athel.as
-            </Anchor>
-          </Alert>
-        )}
-        {showWeakPasswordBanner && (
-          <Alert
-            color="orange"
-            icon={<ShieldAlert size={18} />}
-            py="sm"
-            px="md"
-            radius={0}
-            styles={{ root: { position: 'relative' } }}
-          >
-            {t('common.weak_password_warning', "Your password doesn't meet the current security policy.")}{' '}
-            <Anchor component={Link} to="/settings/security" fw={600}>
-              {t('common.update_password', 'Update it now')}
-            </Anchor>
-            <CloseButton onClick={handleDismissBanner} size="sm" style={{ position: 'absolute', top: 8, right: 8 }} />
-          </Alert>
-        )}
-        <ContentContainer>{children}</ContentContainer>
-      </Box>
-    </MainLayoutContainer>
+    <ChatManagerProvider>
+      <MainLayoutContainer>
+        <SideNav />
+        <Box flex={1}>
+          <VerificationBanner isVerified={isVerified} />
+          <TopNav />
+          {!isOrgActive && (
+            <Alert
+              color="orange"
+              icon={<ShieldAlert size={18} />}
+              py="sm"
+              px="md"
+              radius={0}
+            >
+              {t('organization.inactive_banner', 'Your organization is not yet activated. Please contact sales to get started.')}{' '}
+              <Anchor href="mailto:sales@athel.as" fw={600}>
+                sales@athel.as
+              </Anchor>
+            </Alert>
+          )}
+          {showWeakPasswordBanner && (
+            <Alert
+              color="orange"
+              icon={<ShieldAlert size={18} />}
+              py="sm"
+              px="md"
+              radius={0}
+              styles={{ root: { position: 'relative' } }}
+            >
+              {t('common.weak_password_warning', "Your password doesn't meet the current security policy.")}{' '}
+              <Anchor component={Link} to="/settings/security" fw={600}>
+                {t('common.update_password', 'Update it now')}
+              </Anchor>
+              <CloseButton onClick={handleDismissBanner} size="sm" style={{ position: 'absolute', top: 8, right: 8 }} />
+            </Alert>
+          )}
+          <ContentContainer>{children}</ContentContainer>
+        </Box>
+      </MainLayoutContainer>
+      <ChatHeadsContainer />
+    </ChatManagerProvider>
   );
 };
 

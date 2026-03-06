@@ -42,6 +42,11 @@ export default function (app: Application): typeof Model {
     currentChallenge: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    preferences: {
+      type: DataTypes.JSONB,
+      allowNull: false,
+      defaultValue: {}
     }
   }, {
     hooks: {

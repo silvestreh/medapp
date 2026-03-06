@@ -14,6 +14,8 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@athelas/brand": "workspace:*",
+    "@athelas/encounter-schemas": "workspace:*",
     "@feathersjs/authentication-client": "^5.0.40",
     "@feathersjs/feathers": "^5.0.40",
     "@feathersjs/rest-client": "^5.0.40",
@@ -27,8 +29,7 @@
     "@mantine/nprogress": "^8.0.0",
     "@mantine/spotlight": "^8.0.0",
     "@mantine/tiptap": "^8.0.0",
-    "@athelas/brand": "workspace:*",
-    "@athelas/encounter-schemas": "workspace:*",
+    "@react-spring/web": "^10.0.3",
     "@remix-run/node": "^2.16.5",
     "@remix-run/react": "^2.16.5",
     "@remix-run/serve": "^2.16.5",
@@ -39,6 +40,7 @@
     "@tiptap/pm": "^2.11.7",
     "@tiptap/react": "^2.11.7",
     "@tiptap/starter-kit": "^2.11.7",
+    "@use-gesture/react": "^10.3.1",
     "axios": "^1.9.0",
     "dayjs": "^1.11.13",
     "dompurify": "^3.3.1",
