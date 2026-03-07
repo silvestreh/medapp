@@ -5,6 +5,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 export default function (app: Application): void {
   const connectionString = app.get('postgres');
+  const dbName = connectionString.split('/').pop();
   const sequelize = new Sequelize(connectionString, {
     dialect: 'postgres',
     logging: false,
@@ -18,6 +19,24 @@ export default function (app: Application): void {
       },
     }),
   });
+
+  const ensureDatabase = isProduction
+    ? Promise.resolve()
+    : (async () => {
+        const defaultConnection = new Sequelize(
+          connectionString.replace(/\/[^/]+$/, '/postgres'),
+          { dialect: 'postgres', logging: false }
+        );
+        try {
+          await defaultConnection.query(`CREATE DATABASE ${dbName}`);
+        } catch (error: any) {
+          if (error.parent?.code !== '42P04') {
+            throw error;
+          }
+        } finally {
+          await defaultConnection.close();
+        }
+      })();
 
   const oldSetup = app.setup;
 
@@ -33,7 +52,10 @@ export default function (app: Application): void {
       }
     });
 
-    app.set('sequelizeSync', sequelize.sync({ alter: !isProduction }));
+    app.set(
+      'sequelizeSync',
+      ensureDatabase.then(() => sequelize.sync({ alter: !isProduction }))
+    );
 
     return result;
   };
