@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "./apps/ui" },
-    { "path": "./apps/api" }
+    { "path": "./apps/api" },
+    { "path": "./apps/chat" }
   ]
 }
