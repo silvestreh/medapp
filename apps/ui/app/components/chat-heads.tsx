@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { ActionIcon, Avatar, Box, Tooltip } from '@mantine/core';
+import { ActionIcon, Avatar, Box, Text, Tooltip } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { animated, useSpring, useSprings } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
@@ -7,9 +7,19 @@ import { Bot, X } from 'lucide-react';
 
 import { useLocation } from '@remix-run/react';
 
-import { useChatManager } from '~/components/chat-manager';
+import { useChatManager, type ChatInstance } from '~/components/chat-manager';
 import { EncounterChatPanel } from '~/components/encounter-chat-panel';
+import { MessagingChatPanel } from '~/components/chat/messaging-chat-panel';
+import { useChat } from '~/components/chat/chat-provider';
+import { useAccount } from '~/components/provider';
 import { media } from '~/media';
+
+const STATUS_COLORS: Record<string, string> = {
+  online: 'var(--mantine-color-green-6)',
+  away: 'var(--mantine-color-yellow-5)',
+  dnd: 'var(--mantine-color-red-6)',
+  offline: 'var(--mantine-color-gray-5)',
+};
 
 const AUTH_ROUTES = ['/login', '/signup'];
 
@@ -26,7 +36,7 @@ function AnimatedChatPanel({
   onMinimize,
   onClose,
 }: {
-  chat: { patientId: string; patientName: string; color: string; encounterDraft: Record<string, any> };
+  chat: ChatInstance;
   isActive: boolean;
   onMinimize: () => void;
   onClose: () => void;
@@ -52,15 +62,26 @@ function AnimatedChatPanel({
         transformOrigin: 'bottom right',
       }}
     >
-      <EncounterChatPanel
-        patientId={chat.patientId}
-        patientName={chat.patientName}
-        accentColor={chat.color}
-        encounterDraft={chat.encounterDraft}
-        isActive={isActive}
-        onMinimize={onMinimize}
-        onClose={onClose}
-      />
+      {chat.type === 'messaging' && chat.conversationId ? (
+        <MessagingChatPanel
+          conversationId={chat.conversationId}
+          recipientName={chat.patientName}
+          accentColor={chat.color}
+          isActive={isActive}
+          onMinimize={onMinimize}
+          onClose={onClose}
+        />
+      ) : (
+        <EncounterChatPanel
+          patientId={chat.patientId}
+          patientName={chat.patientName}
+          accentColor={chat.color}
+          encounterDraft={chat.encounterDraft}
+          isActive={isActive}
+          onMinimize={onMinimize}
+          onClose={onClose}
+        />
+      )}
     </animated.div>
   );
 }
@@ -71,8 +92,95 @@ function dragSlot(count: number, dragY: number): number {
   return Math.max(0, Math.min(count - 1, raw));
 }
 
+function ChatHeadStatusDot({ chat, currentUserId }: { chat: ChatInstance; currentUserId: string }) {
+  const { getStatus } = useChat();
+  const otherParticipant = chat.participants?.find(p => p.userId !== currentUserId);
+  const status = otherParticipant ? getStatus(otherParticipant.userId) : 'offline';
+
+  return (
+    <Box
+      style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        zIndex: 1,
+        width: 14,
+        height: 14,
+        borderRadius: '50%',
+        backgroundColor: STATUS_COLORS[status] || STATUS_COLORS.offline,
+        border: '2px solid white',
+      }}
+    />
+  );
+}
+
+function GroupAvatars({
+  participants,
+  color,
+  isActive,
+}: {
+  participants: ChatInstance['participants'];
+  color: string;
+  isActive: boolean;
+}) {
+  const visible = (participants || []).slice(0, 3);
+  const extra = (participants || []).length - 3;
+  const size = 36;
+  const overlap = 12;
+
+  return (
+    <Box
+      style={{
+        display: 'flex',
+        position: 'relative',
+        width: size + (visible.length - 1) * (size - overlap) + (extra > 0 ? size - overlap : 0),
+        height: HEAD_SIZE,
+        alignItems: 'center',
+        boxShadow: isActive
+          ? `0 0 0 3px var(--mantine-color-${color}-filled), 0 2px 4px rgba(0,0,0,0.1)`
+          : '0 2px 4px rgba(0,0,0,0.1)',
+        borderRadius: HEAD_SIZE,
+        transition: 'box-shadow 200ms ease',
+      }}
+    >
+      {visible.map((p, idx) => (
+        <Avatar
+          key={p.userId}
+          size={size}
+          radius="xl"
+          color={color}
+          style={{
+            position: 'absolute',
+            left: idx * (size - overlap),
+            zIndex: visible.length - idx,
+            border: '2px solid white',
+          }}
+        >
+          {p.initials}
+        </Avatar>
+      ))}
+      {extra > 0 && (
+        <Avatar
+          size={size}
+          radius="xl"
+          color="gray"
+          style={{
+            position: 'absolute',
+            left: visible.length * (size - overlap),
+            zIndex: 0,
+            border: '2px solid white',
+          }}
+        >
+          <Text size="xs">+{extra}</Text>
+        </Avatar>
+      )}
+    </Box>
+  );
+}
+
 export function ChatHeadsContainer() {
   const { chats, activeChatPatientId, activateChat, minimizeActiveChat, closeChat, reorderChat } = useChatManager();
+  const { user } = useAccount();
   const isDesktop = useMediaQuery(media.md);
   const { pathname } = useLocation();
   const isAuthRoute = AUTH_ROUTES.some(r => pathname.startsWith(r));
@@ -239,6 +347,8 @@ export function ChatHeadsContainer() {
         if (!chat) return null;
         const isActive = chat.patientId === activeChatPatientId;
         const color = chat.color;
+        const isMessaging = chat.type === 'messaging';
+        const isGroup = isMessaging && chat.participants && chat.participants.length > 2;
 
         return (
           <animated.div
@@ -259,19 +369,25 @@ export function ChatHeadsContainer() {
             }}
           >
             <Tooltip label={chat.patientName} position="left" withArrow zIndex={1400}>
-              <Avatar
-                size={HEAD_SIZE}
-                radius="xl"
-                color={color}
-                style={{
-                  boxShadow: isActive
-                    ? `0 0 0 3px var(--mantine-color-${color}-filled), 0 2px 4px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.075)`
-                    : '0 2px 4px rgba(0,0,0,0.1)',
-                  transition: 'box-shadow 200ms ease',
-                }}
-              >
-                {chat.patientInitials}
-              </Avatar>
+              <Box style={{ position: 'relative', display: 'inline-flex' }}>
+                {isGroup && chat.participants ? (
+                  <GroupAvatars participants={chat.participants} color={color} isActive={isActive} />
+                ) : (
+                  <Avatar
+                    size={HEAD_SIZE}
+                    radius="xl"
+                    color={color}
+                    style={{
+                      boxShadow: isActive
+                        ? `0 0 0 3px var(--mantine-color-${color}-filled), 0 2px 4px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.075)`
+                        : '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'box-shadow 200ms ease',
+                    }}
+                  >
+                    {chat.patientInitials}
+                  </Avatar>
+                )}
+              </Box>
             </Tooltip>
             <ActionIcon
               size={18}
@@ -295,23 +411,27 @@ export function ChatHeadsContainer() {
             >
               <X size={10} />
             </ActionIcon>
-            <Box
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                zIndex: 1,
-                width: 16,
-                height: 16,
-                borderRadius: '50%',
-                backgroundColor: 'var(--mantine-color-violet-filled)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Bot size={12} color="white" />
-            </Box>
+            {isMessaging ? (
+              <ChatHeadStatusDot chat={chat} currentUserId={user?.id ?? ''} />
+            ) : (
+              <Box
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  zIndex: 1,
+                  width: 16,
+                  height: 16,
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--mantine-color-violet-filled)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Bot size={12} color="white" />
+              </Box>
+            )}
           </animated.div>
         );
       })}

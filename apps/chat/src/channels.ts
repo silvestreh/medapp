@@ -9,11 +9,13 @@ export default function (app: Application): void {
   }
 
   (app as any).on('connection', (connection: any): void => {
+    logger.info('[channels] new connection');
     (app as any).channel('anonymous').join(connection);
   });
 
   (app as any).on('login', async (authResult: any, { connection }: any): Promise<void> => {
     if (!connection) return;
+    logger.info('[channels] login — userId:', authResult?.user?.id);
 
     (app as any).channel('anonymous').leave(connection);
     (app as any).channel('authenticated').join(connection);

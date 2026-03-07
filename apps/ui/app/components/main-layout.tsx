@@ -12,6 +12,7 @@ import { useAccount, useOrganization } from '~/components/provider';
 import { VerificationBanner } from '~/components/verification-banner';
 import { ChatManagerProvider } from '~/components/chat-manager';
 import { ChatHeadsContainer } from '~/components/chat-heads';
+import { ChatProvider } from '~/components/chat/chat-provider';
 
 const MainLayoutContainer = styled(Flex, {
   base: {
@@ -107,6 +108,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const isOrgActive = currentOrg?.isActive !== false;
 
   return (
+    <ChatProvider>
     <ChatManagerProvider>
       <MainLayoutContainer>
         <SideNav />
@@ -145,6 +147,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
       </MainLayoutContainer>
       {user && <ChatHeadsContainer />}
     </ChatManagerProvider>
+    </ChatProvider>
   );
 };
 

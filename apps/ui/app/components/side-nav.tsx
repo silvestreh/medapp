@@ -12,6 +12,7 @@ import {
   Languages,
   BarChart3,
   Calculator,
+  MessageCircle,
   type LucideProps,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +21,7 @@ import { styled } from '~/styled-system/jsx';
 import { media } from '~/media';
 import { useAccount } from '~/components/provider';
 import HasPermission from '~/components/has-permission';
+import { UserListPopover } from '~/components/chat/user-list-popover';
 
 type Section = {
   labelKey: string;
@@ -185,6 +187,7 @@ const LanguageSwitcherContainer = styled(Flex, {
       padding: '0.75em 1em 1em',
       position: 'sticky',
       bottom: 0,
+      flexDirection: 'column',
     },
   },
 });
@@ -298,9 +301,18 @@ const SideNav: React.FC = () => {
           })}
       </StickyContent>
       <LanguageSwitcherContainer>
-        <Menu withArrow position={isMobile ? 'top-end' : 'right-end'} shadow="xs">
+        {user && (
+          <UserListPopover>
+            <Tooltip label={t('navigation.chat', 'Chat')} position="right">
+              <ActionIcon variant="subtle" size="3em">
+                <MessageCircle size={isMobile ? 18 : 22} />
+              </ActionIcon>
+            </Tooltip>
+          </UserListPopover>
+        )}
+        <Menu withArrow position={isMobile ? 'right-end' : 'right-end'} shadow="xs">
           <Menu.Target>
-            <Tooltip label={t('navigation.language')} position={isMobile ? 'top' : 'right'}>
+            <Tooltip label={t('navigation.language')} position="right">
               <ActionIcon variant="subtle" size="3em">
                 <Languages size={isMobile ? 18 : 22} />
               </ActionIcon>

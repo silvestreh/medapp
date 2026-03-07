@@ -36,7 +36,16 @@ app.get('/healthz', (_req: any, res: any) => {
 });
 
 app.configure(express.rest());
-app.configure(socketio());
+app.configure(socketio((io) => {
+  if (corsOrigin === '*') {
+    io.origins('*:*');
+  } else {
+    const allowed = Array.isArray(corsOrigin) ? corsOrigin : [corsOrigin];
+    io.origins((origin: string, cb: (err: string | null, ok: boolean) => void) => {
+      cb(null, allowed.some(a => origin.startsWith(a)));
+    });
+  }
+}));
 
 app.configure(sequelize);
 app.configure(authentication);

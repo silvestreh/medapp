@@ -11,6 +11,14 @@ import {
 
 import { useFeathers, useAccount } from '~/components/provider';
 
+export type ChatType = 'encounter' | 'messaging';
+
+export interface ChatParticipant {
+  userId: string;
+  name: string;
+  initials: string;
+}
+
 export interface ChatInstance {
   patientId: string;
   patientName: string;
@@ -18,12 +26,22 @@ export interface ChatInstance {
   color: string;
   encounterDraft: Record<string, any>;
   isActive: boolean;
+  type: ChatType;
+  conversationId?: string;
+  participants?: ChatParticipant[];
 }
 
 interface ChatManagerContextType {
   chats: ChatInstance[];
   activeChatPatientId: string | null;
   openChat(patient: { id: string; firstName: string; lastName: string }): void;
+  openMessagingChat(opts: {
+    conversationId: string;
+    userId: string;
+    name: string;
+    initials: string;
+    participants?: ChatParticipant[];
+  }): void;
   closeChat(patientId: string): void;
   activateChat(patientId: string): void;
   minimizeActiveChat(): void;
@@ -56,6 +74,9 @@ interface PersistedHead {
   patientName: string;
   patientInitials: string;
   color: string;
+  type?: ChatType;
+  conversationId?: string;
+  participants?: ChatParticipant[];
 }
 
 function toPersistedHeads(chats: ChatInstance[]): PersistedHead[] {
@@ -64,6 +85,11 @@ function toPersistedHeads(chats: ChatInstance[]): PersistedHead[] {
     patientName: c.patientName,
     patientInitials: c.patientInitials,
     color: c.color,
+    ...(c.type === 'messaging' && {
+      type: c.type,
+      conversationId: c.conversationId,
+      participants: c.participants,
+    }),
   }));
 }
 
@@ -72,7 +98,15 @@ function fromPersistedHeads(heads: PersistedHead[]): ChatInstance[] {
   return heads.map(h => {
     const color = h.color || deterministicColor(h.patientId, usedColors);
     usedColors.push(color);
-    return { ...h, color, encounterDraft: {}, isActive: false };
+    return {
+      ...h,
+      color,
+      encounterDraft: {},
+      isActive: false,
+      type: h.type || 'encounter',
+      conversationId: h.conversationId,
+      participants: h.participants,
+    };
   });
 }
 
@@ -163,6 +197,39 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
           color,
           encounterDraft: {},
           isActive: true,
+          type: 'encounter' as ChatType,
+        },
+      ];
+    });
+  }, []);
+
+  const openMessagingChat = useCallback((opts: {
+    conversationId: string;
+    userId: string;
+    name: string;
+    initials: string;
+    participants?: ChatParticipant[];
+  }) => {
+    setChats(prev => {
+      const key = `msg-${opts.conversationId}`;
+      const existing = prev.find(c => c.patientId === key);
+      if (existing) {
+        return prev.map(c => ({ ...c, isActive: c.patientId === key }));
+      }
+      const usedColors = prev.map(c => c.color);
+      const color = deterministicColor(opts.conversationId, usedColors);
+      return [
+        ...prev.map(c => ({ ...c, isActive: false })),
+        {
+          patientId: key,
+          patientName: opts.name,
+          patientInitials: opts.initials,
+          color,
+          encounterDraft: {},
+          isActive: true,
+          type: 'messaging' as ChatType,
+          conversationId: opts.conversationId,
+          participants: opts.participants,
         },
       ];
     });
@@ -200,6 +267,7 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
       chats,
       activeChatPatientId,
       openChat,
+      openMessagingChat,
       closeChat,
       activateChat,
       minimizeActiveChat,
@@ -210,6 +278,7 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
       chats,
       activeChatPatientId,
       openChat,
+      openMessagingChat,
       closeChat,
       activateChat,
       minimizeActiveChat,

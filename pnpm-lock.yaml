@@ -358,6 +358,9 @@ importers:
       '@feathersjs/rest-client':
         specifier: ^5.0.40
         version: 5.0.40
+      '@feathersjs/socketio-client':
+        specifier: ^5.0.42
+        version: 5.0.42
       '@mantine/charts':
         specifier: ^8.0.0
         version: 8.3.14(@mantine/core@8.3.14(@mantine/hooks@8.3.14(react@18.3.1))(@types/react@19.1.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@mantine/hooks@8.3.14(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(recharts@2.15.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -484,6 +487,9 @@ importers:
       signature_pad:
         specifier: ^5.1.3
         version: 5.1.3
+      socket.io-client:
+        specifier: ^2.5.0
+        version: 2.5.0
       swr:
         specifier: ^2.3.3
         version: 2.3.3(react@18.3.1)
@@ -1550,6 +1556,10 @@ packages:
     engines: {node: '>= 12'}
     peerDependencies:
       typescript: '>=5.9'
+
+  '@feathersjs/socketio-client@5.0.42':
+    resolution: {integrity: sha512-AjVfh6TMQTQZUvIp1C+99MbMJxInzhidg29OsHsbkJUYby7JiQGOf2Q9sM9BKCyOagLNCua5/R46OwtiWq2Gaw==}
+    engines: {node: '>= 12'}
 
   '@feathersjs/socketio@4.5.19':
     resolution: {integrity: sha512-67akDh17myGOT09U/UjE98RFrY8l1ILkizRIUDCQAsdl/mWGwsnsaEOog4PpcpL1JVs/r6zeX+aIn4xGYTjIug==}
@@ -9700,6 +9710,11 @@ snapshots:
       ajv-formats: 3.0.1(ajv@8.17.1)
       json-schema-to-ts: 3.1.1
       typescript: 5.8.3
+
+  '@feathersjs/socketio-client@5.0.42':
+    dependencies:
+      '@feathersjs/feathers': 5.0.42
+      '@feathersjs/transport-commons': 5.0.42
 
   '@feathersjs/socketio@4.5.19':
     dependencies:
