@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { APP_SLUG } from '@athelas/brand';
 
 import type { Application } from '../../declarations';
-import { mapDoctorData, mapPatientData, mapDoctorForAPI, mapPatientForAPI, checkDoctorReadiness, sanitizeDocumentNumber, mapGender, reverseMapGender, formatBirthDate } from './data-mapper';
+import { mapDoctorData, mapPatientData, mapDoctorForAPI, mapPatientForAPI, checkDoctorReadiness, sanitizeDocumentNumber, mapGender, reverseMapGender, reverseMapProvince, formatBirthDate } from './data-mapper';
 import * as recetarioClient from './recetario-client';
 
 type RecetarioAction =
@@ -488,7 +488,60 @@ export class Recetario {
       );
     }
 
+    // After registering a health center, sync all org medics in the background
+    if (response.id && params.organizationId) {
+      this.syncOrgMedics(params.organizationId, response.id).catch(() => {});
+    }
+
     return { success: true, ...response };
+  }
+
+  private async syncOrgMedics(organizationId: string, healthCenterId: number): Promise<void> {
+    const internal = this.internal();
+
+    // Find all medics in the org
+    const orgUsers = await this.app.service('organization-users').find({
+      query: { organizationId, $limit: 200 },
+      paginate: false,
+      ...internal,
+    } as any);
+    if (!Array.isArray(orgUsers) || orgUsers.length === 0) return;
+
+    for (const orgUser of orgUsers) {
+      try {
+        const mdSettingsResult = await this.app.service('md-settings').find({
+          query: { userId: String(orgUser.userId), $limit: 1 },
+          paginate: false,
+          ...internal,
+        } as any);
+        const mdSettings = Array.isArray(mdSettingsResult) ? mdSettingsResult[0] : null;
+        if (!mdSettings?.id) continue;
+
+        // Skip if already fully synced
+        const needsBackfill = !mdSettings.recetarioTitle || !mdSettings.recetarioProvince;
+        if (mdSettings.recetarioUserId && !needsBackfill) continue;
+
+        const user = await this.app.service('users').get(orgUser.userId, internal);
+        const personalData = (user as any).personalData || {};
+        const docNum = sanitizeDocumentNumber(personalData.documentValue);
+        if (!docNum) continue;
+
+        const recetarioUsers = await recetarioClient.getUsersByDocumentNumber(docNum, healthCenterId);
+        const recetarioUser = Array.isArray(recetarioUsers) && recetarioUsers[0]?.id ? recetarioUsers[0] : null;
+        if (!recetarioUser) continue;
+
+        const patchData: Record<string, any> = {};
+        if (!mdSettings.recetarioUserId) patchData.recetarioUserId = recetarioUser.id;
+        if (!mdSettings.recetarioTitle && recetarioUser.title) patchData.recetarioTitle = recetarioUser.title;
+        if (!mdSettings.recetarioProvince && recetarioUser.province) patchData.recetarioProvince = reverseMapProvince(recetarioUser.province);
+
+        if (Object.keys(patchData).length > 0) {
+          await this.app.service('md-settings').patch(mdSettings.id, patchData as any, internal);
+        }
+      } catch {
+        // Non-fatal per medic
+      }
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -623,7 +676,7 @@ export class Recetario {
     // Check if doctor already exists in Recetario
     let response: any = null;
     if (docNum) {
-      const existing = await recetarioClient.getUsersByDocumentNumber(docNum);
+      const existing = await recetarioClient.getUsersByDocumentNumber(docNum, orgSettings.healthCenterId);
       if (Array.isArray(existing) && existing.length > 0 && existing[0]?.id) {
         response = existing[0];
       }

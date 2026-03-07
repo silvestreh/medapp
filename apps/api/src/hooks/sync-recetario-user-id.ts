@@ -1,6 +1,6 @@
 import { HookContext } from '@feathersjs/feathers';
 import { getUsersByDocumentNumber, createRecetarioUser, RecetarioUserPayload } from '../services/recetario/recetario-client';
-import { sanitizeDocumentNumber, mapDocumentType, mapProvince } from '../services/recetario/data-mapper';
+import { sanitizeDocumentNumber, mapDocumentType, mapProvince, reverseMapProvince } from '../services/recetario/data-mapper';
 
 const syncRecetarioUserId = (): ((ctx: HookContext) => Promise<HookContext>) => {
   return async (ctx: HookContext) => {
@@ -19,8 +19,9 @@ const syncRecetarioUserId = (): ((ctx: HookContext) => Promise<HookContext>) => 
       const mdSettings = Array.isArray(mdSettingsResult) ? mdSettingsResult[0] : null;
       if (!mdSettings?.id) return ctx;
 
-      // Already synced
-      if (mdSettings.recetarioUserId) return ctx;
+      // Already fully synced
+      const needsBackfill = !mdSettings.recetarioTitle || !mdSettings.recetarioProvince;
+      if (mdSettings.recetarioUserId && !needsBackfill) return ctx;
 
       // Get the doctor's document number
       const personalData = (user as any).personalData || {};
@@ -40,7 +41,7 @@ const syncRecetarioUserId = (): ((ctx: HookContext) => Promise<HookContext>) => 
       if (!healthCenterId) return ctx;
 
       // Look up Recetario user by documentNumber
-      const recetarioUsers = await getUsersByDocumentNumber(docNum);
+      const recetarioUsers = await getUsersByDocumentNumber(docNum, healthCenterId);
       let recetarioUser = Array.isArray(recetarioUsers) ? recetarioUsers[0] : null;
 
       // If no Recetario user found, try to create one if we have all required data
@@ -78,12 +79,15 @@ const syncRecetarioUserId = (): ((ctx: HookContext) => Promise<HookContext>) => 
 
       if (!recetarioUser?.id) return ctx;
 
-      // Save the Recetario user ID
-      await ctx.app.service('md-settings').patch(
-        mdSettings.id,
-        { recetarioUserId: recetarioUser.id } as any,
-        internal
-      );
+      // Save the Recetario user ID and backfill title/province from API response
+      const patchData: Record<string, any> = {};
+      if (!mdSettings.recetarioUserId) patchData.recetarioUserId = recetarioUser.id;
+      if (!mdSettings.recetarioTitle && recetarioUser.title) patchData.recetarioTitle = recetarioUser.title;
+      if (!mdSettings.recetarioProvince && recetarioUser.province) patchData.recetarioProvince = reverseMapProvince(recetarioUser.province);
+
+      if (Object.keys(patchData).length > 0) {
+        await ctx.app.service('md-settings').patch(mdSettings.id, patchData as any, internal);
+      }
     } catch {
       // Non-fatal
     }

@@ -68,9 +68,18 @@ const PROVINCE_ISO_TO_NAME: Record<string, string> = {
   'AR-Z': 'Santa Cruz',
 };
 
+const PROVINCE_NAME_TO_ISO: Record<string, string> = Object.fromEntries(
+  Object.entries(PROVINCE_ISO_TO_NAME).map(([k, v]) => [v, k])
+);
+
 export function mapProvince(province: string | null | undefined): string {
   if (!province) return '';
   return PROVINCE_ISO_TO_NAME[province] || province;
+}
+
+export function reverseMapProvince(name: string | null | undefined): string {
+  if (!name) return '';
+  return PROVINCE_NAME_TO_ISO[name] || name;
 }
 
 export function sanitizeDocumentNumber(value: string | null | undefined): string {
@@ -81,16 +90,16 @@ export function sanitizeDocumentNumber(value: string | null | undefined): string
 export function mapGender(gender: string | null | undefined): string {
   if (!gender) return 'o';
   switch (gender.toLowerCase()) {
-    case 'male':
-    case 'masculino':
-    case 'm':
-      return 'm';
-    case 'female':
-    case 'femenino':
-    case 'f':
-      return 'f';
-    default:
-      return 'o';
+  case 'male':
+  case 'masculino':
+  case 'm':
+    return 'm';
+  case 'female':
+  case 'femenino':
+  case 'f':
+    return 'f';
+  default:
+    return 'o';
   }
 }
 
@@ -98,9 +107,9 @@ export function mapGender(gender: string | null | undefined): string {
 export function reverseMapGender(gender: string | null | undefined): string {
   if (!gender) return '';
   switch (gender.toLowerCase()) {
-    case 'm': return 'male';
-    case 'f': return 'female';
-    default:  return 'other';
+  case 'm': return 'male';
+  case 'f': return 'female';
+  default:  return 'other';
   }
 }
 
@@ -114,19 +123,19 @@ export function formatBirthDate(date: string | Date | null | undefined): string 
 export function mapDocumentType(docType: string | null | undefined): string {
   if (!docType) return 'DNI';
   switch (docType.toUpperCase()) {
-    case 'DNI':
-      return 'DNI';
-    case 'CI':
-      return 'CI';
-    case 'LE':
-      return 'LE';
-    case 'LC':
-      return 'LC';
-    case 'PASSPORT':
-    case 'PASAPORTE':
-      return 'PASSPORT';
-    default:
-      return 'DNI';
+  case 'DNI':
+    return 'DNI';
+  case 'CI':
+    return 'CI';
+  case 'LE':
+    return 'LE';
+  case 'LC':
+    return 'LC';
+  case 'PASSPORT':
+  case 'PASAPORTE':
+    return 'PASSPORT';
+  default:
+    return 'DNI';
   }
 }
 

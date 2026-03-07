@@ -377,9 +377,11 @@ export async function upsertPatient(data: RecetarioPatient): Promise<any> {
 }
 
 // --- Users ---
-export async function getUsersByDocumentNumber(documentNumber: string): Promise<any[]> {
+export async function getUsersByDocumentNumber(documentNumber: string, healthCenterId?: number): Promise<any[]> {
   const client = createClient();
-  return handleRequest(client.get('/users', { params: { documentNumber } }));
+  const params: Record<string, any> = { documentNumber };
+  if (healthCenterId) params.healthCenterId = healthCenterId;
+  return handleRequest(client.get('/users', { params }));
 }
 
 export async function createRecetarioUser(payload: RecetarioUserPayload): Promise<any> {

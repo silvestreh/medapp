@@ -97,8 +97,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     });
   } catch (error: any) {
     const isUniqueViolation =
-      error.code === 409 || error.name === 'Conflict' ||
-      (error.code === 400 && error.message === 'Validation error');
+      error.code === 409 || error.name === 'Conflict' || (error.code === 400 && error.message === 'Validation error');
     if (isUniqueViolation) {
       // Duplicate submission — encounter already created, redirect normally
     } else {
@@ -190,29 +189,34 @@ export default function NewEncounter() {
     }));
   }, []);
 
-  const handleRemoveAttachment = useCallback(async (index: number) => {
-    const att = formValues.attachments?.[index];
-    if (att?.url) {
-      const filename = att.url.split('/').pop();
-      if (filename?.endsWith('.enc')) {
-        try {
-          const token = await (client as any).authentication?.getAccessToken?.();
-          const orgId = (client as any).organizationId;
-          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-          if (token) headers['Authorization'] = `Bearer ${token}`;
-          if (orgId) headers['organization-id'] = orgId;
-          await fetch(`/api/file-uploads/${filename}`, { method: 'DELETE', headers });
-        } catch {
-          // best-effort deletion
+  const handleRemoveAttachment = useCallback(
+    async (index: number) => {
+      const att = formValues.attachments?.[index];
+
+      if (att?.url) {
+        const filename = att.url.split('/').pop();
+
+        if (filename?.endsWith('.enc')) {
+          try {
+            const token = await (client as any).authentication?.getAccessToken?.();
+            const orgId = (client as any).organizationId;
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            if (orgId) headers['organization-id'] = orgId;
+            await fetch(`/api/file-uploads/${filename}`, { method: 'DELETE', headers });
+          } catch {
+            // best-effort deletion
+          }
         }
       }
-    }
-    setFormValues((prev: any) => {
-      const attachments = [...(prev.attachments || [])];
-      attachments.splice(index, 1);
-      return { ...prev, attachments };
-    });
-  }, [formValues.attachments, client]);
+      setFormValues((prev: any) => {
+        const attachments = [...(prev.attachments || [])];
+        attachments.splice(index, 1);
+        return { ...prev, attachments };
+      });
+    },
+    [formValues.attachments, client]
+  );
 
   const { openFilePicker, uploading, FileInputElement } = useAttachmentUpload(handleAttached);
 
@@ -277,7 +281,12 @@ export default function NewEncounter() {
               </ActionIcon>
             </Box>
             <Box visibleFrom="lg">
-              <Button variant="light" onClick={openFilePicker} loading={uploading} leftSection={<Paperclip size={16} />}>
+              <Button
+                variant="light"
+                onClick={openFilePicker}
+                loading={uploading}
+                leftSection={<Paperclip size={16} />}
+              >
                 {t('encounters.attach_file')}
               </Button>
             </Box>
@@ -323,10 +332,7 @@ export default function NewEncounter() {
         </Stack>
       </Content>
 
-      <FloatingAttachmentsList
-        attachments={formValues.attachments || []}
-        onRemove={handleRemoveAttachment}
-      />
+      <FloatingAttachmentsList attachments={formValues.attachments || []} onRemove={handleRemoveAttachment} />
     </Container>
   );
 }
