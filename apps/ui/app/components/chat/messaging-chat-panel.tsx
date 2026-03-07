@@ -1,13 +1,26 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActionIcon, Avatar, Box, Group, Loader, Paper, Stack, Text, Textarea } from '@mantine/core';
+import {
+  ActionIcon,
+  Autocomplete,
+  Avatar,
+  Box,
+  Group,
+  Loader,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  Textarea,
+} from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { ArrowDownRight, X } from 'lucide-react';
+import { ArrowDownRight, UserPlus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { useChat } from '~/components/chat/chat-provider';
+import { useChat, type OrgUser } from '~/components/chat/chat-provider';
 import { useAccount } from '~/components/provider';
 import { media } from '~/media';
-import { deterministicColor } from '~/components/chat-manager';
+import { deterministicColor, type ChatParticipant } from '~/components/chat-manager';
+import { useChatManager } from '~/components/chat-manager';
 
 interface Message {
   id: string;
@@ -18,9 +31,10 @@ interface Message {
   createdAt: string;
 }
 
-interface MessagingChatPanelProps {
+export interface MessagingChatPanelProps {
+  chatKey: string;
   conversationId: string;
-  recipientName: string;
+  participants?: ChatParticipant[];
   accentColor: string;
   isActive: boolean;
   onMinimize: () => void;
@@ -38,17 +52,73 @@ function formatTime(dateStr: string): string {
   }
 }
 
+function ParticipantAvatars({
+  participants,
+  currentUserId,
+}: {
+  participants: ChatParticipant[];
+  currentUserId: string;
+}) {
+  const others = participants.filter(p => p.userId !== currentUserId);
+  const size = 24;
+  const overlap = 8;
+
+  return (
+    <ScrollArea
+      scrollbarSize={0}
+      style={{ flexShrink: 1, minWidth: 0 }}
+      type="scroll"
+    >
+      <Group gap={0} wrap="nowrap" style={{ flexShrink: 0 }}>
+        <Text size="sm" fw={600} c="white" style={{ whiteSpace: 'nowrap', marginRight: 8 }}>
+          Group:
+        </Text>
+        <Box
+          style={{
+            display: 'flex',
+            position: 'relative',
+            height: size,
+            width: size + (others.length - 1) * (size - overlap),
+            flexShrink: 0,
+          }}
+        >
+          {others.map((p, idx) => (
+            <Avatar
+              key={p.userId}
+              size={size}
+              radius="xl"
+              color="white"
+              variant="filled"
+              style={{
+                position: 'absolute',
+                left: idx * (size - overlap),
+                zIndex: others.length - idx,
+                border: '2px solid rgba(255,255,255,0.4)',
+                fontSize: 10,
+              }}
+            >
+              {p.initials}
+            </Avatar>
+          ))}
+        </Box>
+      </Group>
+    </ScrollArea>
+  );
+}
+
 export function MessagingChatPanel({
+  chatKey,
   conversationId,
-  recipientName,
+  participants,
   accentColor,
   isActive,
   onMinimize,
   onClose,
 }: MessagingChatPanelProps) {
   const { t } = useTranslation();
-  const { chatClient } = useChat();
+  const { chatClient, orgUsers } = useChat();
   const { user } = useAccount();
+  const { updateChatParticipants } = useChatManager();
   const isDesktop = useMediaQuery(media.md);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const isPrependingRef = useRef(false);
@@ -59,7 +129,18 @@ export function MessagingChatPanel({
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [addUserQuery, setAddUserQuery] = useState('');
   const loadedRef = useRef(false);
+  const addUserInputRef = useRef<HTMLInputElement | null>(null);
+
+  const isGroup = (participants?.length ?? 0) > 2;
+  const recipientName = useMemo(() => {
+    if (!participants || participants.length === 0) return '';
+    if (isGroup) return '';
+    const other = participants.find(p => p.userId !== user?.id);
+    return other?.name ?? '';
+  }, [participants, isGroup, user?.id]);
 
   // Load initial messages
   useEffect(() => {
@@ -91,7 +172,9 @@ export function MessagingChatPanel({
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [chatClient, conversationId, isActive]);
 
   // Real-time message listener
@@ -108,7 +191,9 @@ export function MessagingChatPanel({
 
     const service = chatClient.service('messages');
     service.on('created', handleCreated);
-    return () => { service.removeListener('created', handleCreated); };
+    return () => {
+      service.removeListener('created', handleCreated);
+    };
   }, [chatClient, conversationId]);
 
   // Auto-scroll on new messages
@@ -208,7 +293,64 @@ export function MessagingChatPanel({
     [handleSend]
   );
 
-  const { orgUsers } = useChat();
+  // Add user autocomplete data
+  const addUserOptions = useMemo(() => {
+    const currentIds = new Set(participants?.map(p => p.userId) ?? []);
+    return orgUsers
+      .filter(u => !currentIds.has(u.userId))
+      .filter(u => {
+        if (!addUserQuery) return true;
+        const q = addUserQuery.toLowerCase();
+        return u.fullName.toLowerCase().includes(q) || u.username.toLowerCase().includes(q);
+      })
+      .map(u => ({ value: u.fullName, userId: u.userId, user: u }));
+  }, [orgUsers, participants, addUserQuery]);
+
+  const handleToggleAddUser = useCallback(() => {
+    setShowAddUser(prev => !prev);
+    setAddUserQuery('');
+  }, []);
+
+  // Focus input when add user opens
+  useEffect(() => {
+    if (showAddUser) {
+      setTimeout(() => addUserInputRef.current?.focus(), 50);
+    }
+  }, [showAddUser]);
+
+  const handleAddUser = useCallback(
+    async (fullName: string) => {
+      const match = orgUsers.find(u => u.fullName === fullName);
+      if (!match || !chatClient || !user?.id) return;
+
+      try {
+        await chatClient.service('conversation-participants').create({
+          conversationId,
+          userId: match.userId,
+        });
+
+        const newParticipant: ChatParticipant = {
+          userId: match.userId,
+          name: match.fullName,
+          initials: match.initials,
+        };
+        const updated = [...(participants ?? []), newParticipant];
+        const groupName =
+          'Group: ' +
+          updated
+            .filter(p => p.userId !== user.id)
+            .map(p => p.initials)
+            .join(', ');
+        updateChatParticipants(chatKey, updated, groupName);
+
+        setShowAddUser(false);
+        setAddUserQuery('');
+      } catch (err) {
+        console.warn('[Chat] Failed to add participant:', err);
+      }
+    },
+    [chatClient, conversationId, orgUsers, participants, user?.id, chatKey, updateChatParticipants]
+  );
 
   const senderNames = useMemo(() => {
     const map = new Map<string, { name: string; initials: string; color: string }>();
@@ -222,7 +364,9 @@ export function MessagingChatPanel({
     if (user) {
       map.set(user.id, {
         name: t('ai_chat.you'),
-        initials: `${(user.personalData as any)?.firstName?.[0] ?? ''}${(user.personalData as any)?.lastName?.[0] ?? ''}`.toUpperCase() || '?',
+        initials:
+          `${(user.personalData as Record<string, string>)?.firstName?.[0] ?? ''}${(user.personalData as Record<string, string>)?.lastName?.[0] ?? ''}`.toUpperCase() ||
+          '?',
         color: 'blue',
       });
     }
@@ -238,7 +382,8 @@ export function MessagingChatPanel({
       style={{
         width: 'min(380px, calc(100vw - 6rem))',
         height: 'min(60vh, 560px)',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.075), 0 8px 32px rgba(0,0,0,0.075), 0 24px 48px rgba(0,0,0,0.075)',
+        boxShadow:
+          '0 1px 2px rgba(0,0,0,0.075), 0 8px 32px rgba(0,0,0,0.075), 0 24px 48px rgba(0,0,0,0.075)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -252,12 +397,19 @@ export function MessagingChatPanel({
         px="md"
         py="sm"
         bg={`${accentColor}.5`}
-        style={{ borderBottom: '1px solid var(--mantine-color-gray-2)' }}
+        style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}
       >
-        <Text fw={600} c="white" lineClamp={1} style={{ flex: 1, minWidth: 0 }}>
-          {recipientName}
-        </Text>
-        <Group gap={4}>
+        {isGroup && participants ? (
+          <ParticipantAvatars participants={participants} currentUserId={user?.id ?? ''} />
+        ) : (
+          <Text fw={600} c="white" lineClamp={1} style={{ flex: 1, minWidth: 0 }}>
+            {recipientName}
+          </Text>
+        )}
+        <Group gap={4} style={{ flexShrink: 0 }}>
+          <ActionIcon variant="subtle" color="white" onClick={handleToggleAddUser}>
+            <UserPlus size={16} />
+          </ActionIcon>
           <ActionIcon variant="subtle" color="white" onClick={onMinimize}>
             <ArrowDownRight size={16} />
           </ActionIcon>
@@ -266,6 +418,22 @@ export function MessagingChatPanel({
           </ActionIcon>
         </Group>
       </Group>
+
+      {/* Add user autocomplete */}
+      {showAddUser && (
+        <Box px="md" py="xs" style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}>
+          <Autocomplete
+            ref={addUserInputRef}
+            placeholder="Add user..."
+            value={addUserQuery}
+            onChange={setAddUserQuery}
+            onOptionSubmit={handleAddUser}
+            data={addUserOptions.map(o => o.value)}
+            size="xs"
+            comboboxProps={{ withinPortal: true, zIndex: 1400 }}
+          />
+        </Box>
+      )}
 
       {/* Messages */}
       <Stack
@@ -304,9 +472,18 @@ export function MessagingChatPanel({
                 alignItems: isMe ? 'flex-end' : 'flex-start',
               }}
             >
-              <Group gap={6} align="flex-end" style={{ maxWidth: '85%', flexDirection: isMe ? 'row-reverse' : 'row' }}>
+              <Group
+                gap={6}
+                align="flex-end"
+                style={{ maxWidth: '85%', flexDirection: isMe ? 'row-reverse' : 'row' }}
+              >
                 {!isMe && (
-                  <Avatar size={28} radius="xl" color={sender?.color || 'gray'} style={{ flexShrink: 0 }}>
+                  <Avatar
+                    size={28}
+                    radius="xl"
+                    color={sender?.color || 'gray'}
+                    style={{ flexShrink: 0 }}
+                  >
                     <Text size="xs">{sender?.initials || '?'}</Text>
                   </Avatar>
                 )}

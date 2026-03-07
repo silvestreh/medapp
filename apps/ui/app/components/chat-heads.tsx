@@ -4,10 +4,11 @@ import { useMediaQuery } from '@mantine/hooks';
 import { animated, useSpring, useSprings } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 import { Bot, X } from 'lucide-react';
+import { lighten } from 'polished';
 
 import { useLocation } from '@remix-run/react';
 
-import { useChatManager, type ChatInstance } from '~/components/chat-manager';
+import { useChatManager, deterministicColor, type ChatInstance } from '~/components/chat-manager';
 import { EncounterChatPanel } from '~/components/encounter-chat-panel';
 import { MessagingChatPanel } from '~/components/chat/messaging-chat-panel';
 import { useChat } from '~/components/chat/chat-provider';
@@ -20,6 +21,25 @@ const STATUS_COLORS: Record<string, string> = {
   dnd: 'var(--mantine-color-red-6)',
   offline: 'var(--mantine-color-gray-5)',
 };
+
+// Mantine default shade-6 hex values for deterministicColor palette
+const COLOR_HEX: Record<string, string> = {
+  blue: '#228be6',
+  teal: '#12b886',
+  violet: '#7950f2',
+  pink: '#e64980',
+  orange: '#fd7e14',
+  cyan: '#15aabf',
+  green: '#40c057',
+  grape: '#be4bdb',
+  indigo: '#4c6ef5',
+  gray: '#868e96',
+};
+
+function lightColor(name: string): string {
+  const hex = COLOR_HEX[name] ?? COLOR_HEX.gray;
+  return lighten(0.65, hex);
+}
 
 const AUTH_ROUTES = ['/login', '/signup'];
 
@@ -64,8 +84,9 @@ function AnimatedChatPanel({
     >
       {chat.type === 'messaging' && chat.conversationId ? (
         <MessagingChatPanel
+          chatKey={chat.patientId}
           conversationId={chat.conversationId}
-          recipientName={chat.patientName}
+          participants={chat.participants}
           accentColor={chat.color}
           isActive={isActive}
           onMinimize={onMinimize}
@@ -114,19 +135,11 @@ function ChatHeadStatusDot({ chat, currentUserId }: { chat: ChatInstance; curren
   );
 }
 
-function GroupAvatars({
-  participants,
-  color,
-  isActive,
-}: {
-  participants: ChatInstance['participants'];
-  color: string;
-  isActive: boolean;
-}) {
+function GroupAvatars({ participants, isActive }: { participants: ChatInstance['participants']; isActive: boolean }) {
   const visible = (participants || []).slice(0, 3);
   const extra = (participants || []).length - 3;
-  const size = 36;
-  const overlap = 12;
+  const size = HEAD_SIZE;
+  const overlap = 24;
 
   return (
     <Box
@@ -136,29 +149,44 @@ function GroupAvatars({
         width: size + (visible.length - 1) * (size - overlap) + (extra > 0 ? size - overlap : 0),
         height: HEAD_SIZE,
         alignItems: 'center',
-        boxShadow: isActive
-          ? `0 0 0 3px var(--mantine-color-${color}-filled), 0 2px 4px rgba(0,0,0,0.1)`
-          : '0 2px 4px rgba(0,0,0,0.1)',
         borderRadius: HEAD_SIZE,
         transition: 'box-shadow 200ms ease',
       }}
     >
-      {visible.map((p, idx) => (
-        <Avatar
-          key={p.userId}
-          size={size}
-          radius="xl"
-          color={color}
-          style={{
-            position: 'absolute',
-            left: idx * (size - overlap),
-            zIndex: visible.length - idx,
-            border: '2px solid white',
-          }}
-        >
-          {p.initials}
-        </Avatar>
-      ))}
+      {visible.map((p, idx) => {
+        const pColor = deterministicColor(p.userId);
+        const hColor = COLOR_HEX[pColor];
+        const lColor = lightColor(pColor);
+        // Print color info with CSS colorized output in the console for easier inspection
+        console.log(
+          `%cpColor: %s\n%chColor: %s\n%clColor: %s`,
+          `color: ${hColor}; font-weight: bold;`,
+          pColor,
+          `color: ${hColor}; font-weight: bold;`,
+          hColor,
+          `color: ${lColor}; font-weight: bold;`,
+          lColor
+        );
+        return (
+          <Avatar
+            key={p.userId}
+            size={size}
+            radius="xl"
+            color={hColor}
+            style={{
+              position: 'absolute',
+              left: idx * (size - overlap),
+              zIndex: visible.length - idx,
+              border: '2px solid white',
+              backgroundColor: lightColor(pColor),
+              color: COLOR_HEX[pColor] ?? COLOR_HEX.gray,
+              boxShadow: isActive ? `0 4px 8px rgba(0,0,0,0.1)` : '0 2px 4px rgba(0,0,0,0.1)',
+            }}
+          >
+            {p.initials}
+          </Avatar>
+        );
+      })}
       {extra > 0 && (
         <Avatar
           size={size}
@@ -169,6 +197,8 @@ function GroupAvatars({
             left: visible.length * (size - overlap),
             zIndex: 0,
             border: '2px solid white',
+            backgroundColor: lightColor('gray'),
+            color: COLOR_HEX.gray,
           }}
         >
           <Text size="xs">+{extra}</Text>
@@ -179,7 +209,8 @@ function GroupAvatars({
 }
 
 export function ChatHeadsContainer() {
-  const { chats, activeChatPatientId, activateChat, minimizeActiveChat, closeChat, reorderChat } = useChatManager();
+  const { chats, activeChatPatientId, unreadCounts, activateChat, minimizeActiveChat, closeChat, reorderChat } =
+    useChatManager();
   const { user } = useAccount();
   const isDesktop = useMediaQuery(media.md);
   const { pathname } = useLocation();
@@ -207,7 +238,6 @@ export function ChatHeadsContainer() {
       x: 0,
       y: -(i * HEAD_OFFSET),
       scale: 1,
-      opacity: 1,
       zIndex: 0,
       immediate: settlingRef.current,
       config: SPRING_CONFIG,
@@ -283,6 +313,7 @@ export function ChatHeadsContainer() {
       minimizeActiveChat();
       setTimeout(() => handleClose(patientId), 250);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [minimizeActiveChat]
   );
 
@@ -296,7 +327,6 @@ export function ChatHeadsContainer() {
         if (i === index) {
           return {
             scale: 0,
-            opacity: 0,
             immediate: false,
             onRest: () => {
               closingRef.current = null;
@@ -359,7 +389,7 @@ export function ChatHeadsContainer() {
               x: style.x,
               y: style.y,
               scale: style.scale,
-              opacity: style.opacity,
+
               zIndex: style.zIndex.to(z => (z ? 1400 : 1200)),
               position: 'fixed',
               right: `${HEADS_RIGHT}px`,
@@ -371,15 +401,17 @@ export function ChatHeadsContainer() {
             <Tooltip label={chat.patientName} position="left" withArrow zIndex={1400}>
               <Box style={{ position: 'relative', display: 'inline-flex' }}>
                 {isGroup && chat.participants ? (
-                  <GroupAvatars participants={chat.participants} color={color} isActive={isActive} />
+                  <GroupAvatars participants={chat.participants} isActive={isActive} />
                 ) : (
                   <Avatar
                     size={HEAD_SIZE}
                     radius="xl"
-                    color={color}
+                    color={COLOR_HEX[color]}
                     style={{
+                      backgroundColor: lightColor(color),
+                      color: COLOR_HEX[color] ?? COLOR_HEX.gray,
                       boxShadow: isActive
-                        ? `0 0 0 3px var(--mantine-color-${color}-filled), 0 2px 4px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.075)`
+                        ? `0 0 0 3px ${COLOR_HEX[color] ?? COLOR_HEX.gray}, 0 2px 4px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.075)`
                         : '0 2px 4px rgba(0,0,0,0.1)',
                       transition: 'box-shadow 200ms ease',
                     }}
@@ -411,9 +443,35 @@ export function ChatHeadsContainer() {
             >
               <X size={10} />
             </ActionIcon>
-            {isMessaging ? (
-              <ChatHeadStatusDot chat={chat} currentUserId={user?.id ?? ''} />
-            ) : (
+            {(() => {
+              const unread = unreadCounts.get(chat.patientId) ?? 0;
+              if (unread === 0) return null;
+              return (
+                <Box
+                  style={{
+                    position: 'absolute',
+                    top: -4,
+                    left: -4,
+                    zIndex: 2,
+                    minWidth: 20,
+                    height: 20,
+                    borderRadius: 10,
+                    backgroundColor: 'var(--mantine-color-red-6)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 5px',
+                    border: '2px solid white',
+                  }}
+                >
+                  <Text size="10px" c="white" fw={700} lh={1}>
+                    {unread > 99 ? '99+' : unread}
+                  </Text>
+                </Box>
+              );
+            })()}
+            {isMessaging && !isGroup && <ChatHeadStatusDot chat={chat} currentUserId={user?.id ?? ''} />}
+            {!isMessaging && (
               <Box
                 style={{
                   position: 'absolute',

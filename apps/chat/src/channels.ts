@@ -41,7 +41,7 @@ export default function (app: Application): void {
       logger.error('Error joining conversation channels on login:', err);
     }
 
-    // Set user status to online (upsert)
+    // Set user status on login — restore previous status if it exists, default to online
     try {
       const userStatusService = app.service('user-status') as any;
       const existing = await userStatusService.find({
@@ -51,9 +51,11 @@ export default function (app: Application): void {
       });
 
       if (existing.length > 0) {
+        // Restore previous status (away/dnd stay as-is), only change offline → online
+        const restoredStatus = existing[0].status === 'offline' ? 'online' : existing[0].status;
         await userStatusService.patch(
           existing[0].id,
-          { status: 'online', lastSeenAt: new Date() },
+          { status: restoredStatus, lastSeenAt: new Date() },
           { provider: undefined },
         );
       } else {

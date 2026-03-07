@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import { useFeathers, useAccount } from '~/components/provider';
+import { useChat } from '~/components/chat/chat-provider';
 
 export type ChatType = 'encounter' | 'messaging';
 
@@ -34,6 +35,7 @@ export interface ChatInstance {
 interface ChatManagerContextType {
   chats: ChatInstance[];
   activeChatPatientId: string | null;
+  unreadCounts: Map<string, number>;
   openChat(patient: { id: string; firstName: string; lastName: string }): void;
   openMessagingChat(opts: {
     conversationId: string;
@@ -42,6 +44,7 @@ interface ChatManagerContextType {
     initials: string;
     participants?: ChatParticipant[];
   }): void;
+  updateChatParticipants(patientId: string, participants: ChatParticipant[], name: string): void;
   closeChat(patientId: string): void;
   activateChat(patientId: string): void;
   minimizeActiveChat(): void;
@@ -115,8 +118,10 @@ const ChatManagerContext = createContext<ChatManagerContextType | undefined>(und
 export function ChatManagerProvider({ children }: PropsWithChildren) {
   const client = useFeathers();
   const { user } = useAccount();
+  const { chatClient, orgUsers } = useChat();
   const [chats, setChats] = useState<ChatInstance[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastPersistedRef = useRef<string>('');
 
@@ -176,6 +181,94 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chats, loaded, client, user?.id]);
 
+  // Listen for incoming messages globally — create minimized heads for new conversations, track unread
+  const chatsRef = useRef(chats);
+  chatsRef.current = chats;
+
+  useEffect(() => {
+    if (!chatClient || !user?.id) return;
+
+    const handleMessage = (message: { conversationId: string; senderId: string }) => {
+      if (message.senderId === user!.id) return;
+
+      const key = `msg-${message.conversationId}`;
+      const current = chatsRef.current;
+      const existing = current.find(c => c.patientId === key);
+
+      if (existing) {
+        // Chat head exists — increment unread if not active
+        if (!existing.isActive) {
+          setUnreadCounts(prev => {
+            const next = new Map(prev);
+            next.set(key, (prev.get(key) ?? 0) + 1);
+            return next;
+          });
+        }
+      } else {
+        // No chat head — fetch conversation details and create a minimized head
+        chatClient
+          .service('conversations')
+          .get(message.conversationId)
+          .then((conversation: any) => {
+            const participants: ChatParticipant[] = (conversation.participants || []).map((p: any) => {
+              const orgUser = orgUsers.find(u => u.userId === p.userId);
+              if (orgUser) {
+                return { userId: p.userId, name: orgUser.fullName, initials: orgUser.initials };
+              }
+              if (p.userId === user!.id) {
+                const pd = user!.personalData as Record<string, string>;
+                const initials = `${pd?.firstName?.[0] ?? ''}${pd?.lastName?.[0] ?? ''}`.toUpperCase() || '?';
+                return { userId: p.userId, name: 'You', initials };
+              }
+              return { userId: p.userId, name: p.userId, initials: '?' };
+            });
+
+            const others = participants.filter(p => p.userId !== user!.id);
+            const isGroup = participants.length > 2;
+            const name = isGroup ? `Group: ${others.map(p => p.initials).join(', ')}` : (others[0]?.name ?? '');
+            const initials = isGroup ? 'G' : (others[0]?.initials ?? '?');
+
+            const usedColors = chatsRef.current.map(c => c.color);
+            const color = deterministicColor(message.conversationId, usedColors);
+
+            setChats(prev => {
+              // Double-check it hasn't been added in the meantime
+              if (prev.some(c => c.patientId === key)) return prev;
+              return [
+                ...prev,
+                {
+                  patientId: key,
+                  patientName: name,
+                  patientInitials: initials,
+                  color,
+                  encounterDraft: {},
+                  isActive: false,
+                  type: 'messaging' as ChatType,
+                  conversationId: message.conversationId,
+                  participants,
+                },
+              ];
+            });
+
+            setUnreadCounts(prev => {
+              const next = new Map(prev);
+              next.set(key, 1);
+              return next;
+            });
+          })
+          .catch(() => {
+            /* best-effort */
+          });
+      }
+    };
+
+    const service = chatClient.service('messages');
+    service.on('created', handleMessage);
+    return () => {
+      service.removeListener('created', handleMessage);
+    };
+  }, [chatClient, user?.id, orgUsers]);
+
   const activeChatPatientId = useMemo(() => chats.find(c => c.isActive)?.patientId ?? null, [chats]);
 
   const openChat = useCallback((patient: { id: string; firstName: string; lastName: string }) => {
@@ -203,37 +296,46 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
     });
   }, []);
 
-  const openMessagingChat = useCallback((opts: {
-    conversationId: string;
-    userId: string;
-    name: string;
-    initials: string;
-    participants?: ChatParticipant[];
-  }) => {
-    setChats(prev => {
+  const openMessagingChat = useCallback(
+    (opts: {
+      conversationId: string;
+      userId: string;
+      name: string;
+      initials: string;
+      participants?: ChatParticipant[];
+    }) => {
       const key = `msg-${opts.conversationId}`;
-      const existing = prev.find(c => c.patientId === key);
-      if (existing) {
-        return prev.map(c => ({ ...c, isActive: c.patientId === key }));
-      }
-      const usedColors = prev.map(c => c.color);
-      const color = deterministicColor(opts.conversationId, usedColors);
-      return [
-        ...prev.map(c => ({ ...c, isActive: false })),
-        {
-          patientId: key,
-          patientName: opts.name,
-          patientInitials: opts.initials,
-          color,
-          encounterDraft: {},
-          isActive: true,
-          type: 'messaging' as ChatType,
-          conversationId: opts.conversationId,
-          participants: opts.participants,
-        },
-      ];
-    });
-  }, []);
+      setChats(prev => {
+        const existing = prev.find(c => c.patientId === key);
+        if (existing) {
+          return prev.map(c => ({ ...c, isActive: c.patientId === key }));
+        }
+        const usedColors = prev.map(c => c.color);
+        const color = deterministicColor(opts.conversationId, usedColors);
+        return [
+          ...prev.map(c => ({ ...c, isActive: false })),
+          {
+            patientId: key,
+            patientName: opts.name,
+            patientInitials: opts.initials,
+            color,
+            encounterDraft: {},
+            isActive: true,
+            type: 'messaging' as ChatType,
+            conversationId: opts.conversationId,
+            participants: opts.participants,
+          },
+        ];
+      });
+      setUnreadCounts(prev => {
+        if (!prev.has(key)) return prev;
+        const next = new Map(prev);
+        next.delete(key);
+        return next;
+      });
+    },
+    []
+  );
 
   const closeChat = useCallback((patientId: string) => {
     setChats(prev => prev.filter(c => c.patientId !== patientId));
@@ -241,6 +343,12 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
 
   const activateChat = useCallback((patientId: string) => {
     setChats(prev => prev.map(c => ({ ...c, isActive: c.patientId === patientId })));
+    setUnreadCounts(prev => {
+      if (!prev.has(patientId)) return prev;
+      const next = new Map(prev);
+      next.delete(patientId);
+      return next;
+    });
   }, []);
 
   const minimizeActiveChat = useCallback(() => {
@@ -249,6 +357,10 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
 
   const updateEncounterDraft = useCallback((patientId: string, draft: Record<string, any>) => {
     setChats(prev => prev.map(c => (c.patientId === patientId ? { ...c, encounterDraft: draft } : c)));
+  }, []);
+
+  const updateChatParticipants = useCallback((patientId: string, participants: ChatParticipant[], name: string) => {
+    setChats(prev => prev.map(c => (c.patientId === patientId ? { ...c, participants, patientName: name } : c)));
   }, []);
 
   const reorderChat = useCallback((patientId: string, toIndex: number) => {
@@ -266,8 +378,10 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
     () => ({
       chats,
       activeChatPatientId,
+      unreadCounts,
       openChat,
       openMessagingChat,
+      updateChatParticipants,
       closeChat,
       activateChat,
       minimizeActiveChat,
@@ -277,8 +391,10 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
     [
       chats,
       activeChatPatientId,
+      unreadCounts,
       openChat,
       openMessagingChat,
+      updateChatParticipants,
       closeChat,
       activateChat,
       minimizeActiveChat,
