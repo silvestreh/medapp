@@ -22,6 +22,7 @@ interface PatientSearchProps {
   placeholder?: string;
   autoFocus?: boolean;
   createNewPatientSlot?: CreateNewPatientSlot | null;
+  variant?: 'unstyled' | 'filled' | 'default';
 }
 
 const CREATE_NEW_VALUE = '__create_new__';
@@ -32,6 +33,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
   placeholder,
   autoFocus = false,
   createNewPatientSlot,
+  variant = 'unstyled',
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -122,6 +124,34 @@ const PatientSearch: FC<PatientSearchProps> = ({
     if (inputValue === '') onBlur?.();
   }, [inputValue, onBlur]);
 
+  const renderOption = useCallback(
+    ({ option }: { option: { value: string } }) => {
+      if (option.value === CREATE_NEW_VALUE) {
+        return (
+          <Text size="sm" c="blue">
+            {t('patients.new_patient')}
+          </Text>
+        );
+      }
+      const patient = patientByValue.get(option.value);
+      if (!patient) return option.value;
+
+      return (
+        <div>
+          <Text size="sm">
+            {patient.personalData.firstName} {patient.personalData.lastName}
+            {displayDocumentValue(patient.personalData.documentValue) !== '—' &&
+              ` (${patient.personalData.documentValue})`}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {getMedicareLabel(patient) || t('overview.private')} {patient.medicareNumber}
+          </Text>
+        </div>
+      );
+    },
+    [patientByValue, t]
+  );
+
   return (
     <Autocomplete
       value={inputValue}
@@ -134,30 +164,8 @@ const PatientSearch: FC<PatientSearchProps> = ({
       autoFocus={autoFocus}
       leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
       maxDropdownHeight={300}
-      renderOption={({ option }) => {
-        if (option.value === CREATE_NEW_VALUE) {
-          return (
-            <Text size="sm" c="blue">
-              {t('patients.new_patient')}
-            </Text>
-          );
-        }
-        const patient = patientByValue.get(option.value);
-        if (!patient) return option.value;
-        return (
-          <div>
-            <Text size="sm">
-              {patient.personalData.firstName} {patient.personalData.lastName}
-              {displayDocumentValue(patient.personalData.documentValue) !== '—' &&
-                ` (${patient.personalData.documentValue})`}
-            </Text>
-            <Text size="xs" c="dimmed">
-              {getMedicareLabel(patient) || t('overview.private')} {patient.medicareNumber}
-            </Text>
-          </div>
-        );
-      }}
-      variant="unstyled"
+      renderOption={renderOption}
+      variant={variant}
       styles={{ input: { fontSize: '1em' } }}
       autoComplete="off"
       data-1p-ignore

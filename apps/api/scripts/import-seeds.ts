@@ -174,7 +174,22 @@ async function seedStaticData(multibar: cliProgress.MultiBar) {
     const org = await app.service('organizations').create({
       name: 'Hematología Herrera',
       slug: 'hematologia-herrera',
-      settings: {},
+      settings: {
+        llmChat: {
+          model: 'gpt-5-mini',
+          preferredProvider: 'openai'
+        },
+        recetario: {
+          enabled: true,
+          healthCenterId: 7
+        },
+        healthCenter: {
+          email: 'dr.herreraj@gmail.com',
+          phone: '297-4413050',
+          address: 'España 578 (9000) Comodoro Rivadavia',
+          logoUrl: 'https://res.cloudinary.com/dw86qy8xu/image/upload/v1687749768/hematologiaHerrera-logo.png'
+        }
+      },
       isActive: true,
     } as any);
     const organizationId = (org as any).id;

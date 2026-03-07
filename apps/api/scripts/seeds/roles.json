@@ -106,10 +106,7 @@
       "study-results:remove:all",
       "practice-costs:find",
       "practice-costs:get",
-      "prepagas:find",
-      "recetario:create",
-      "prescriptions:find",
-      "prescriptions:get"
+      "prepagas:find"
     ]
   },
   {
@@ -135,6 +132,18 @@
       "practice-costs:find",
       "practice-costs:get:all",
       "prepagas:find"
+    ]
+  },
+  {
+    "id": "prescriber",
+    "permissions": [
+      "recetario:create",
+      "prescriptions:find",
+      "prescriptions:get",
+      "patients:find",
+      "patients:get:all",
+      "users:find",
+      "users:get"
     ]
   },
   {

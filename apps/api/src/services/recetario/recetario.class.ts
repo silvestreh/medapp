@@ -47,6 +47,7 @@ export interface RecetarioCreateData {
   shareRecipient?: string;
   documentIds?: number[];
   pdfUrl?: string;
+  medicId?: string;
   healthCenter?: any;
   search?: string;
 }
@@ -82,7 +83,7 @@ export class Recetario {
     case 'share':
       return this.handleShare(data, params);
     case 'check-readiness':
-      return this.handleCheckReadiness(params);
+      return this.handleCheckReadiness(data, params);
     case 'sync-insurances':
       return this.handleSyncInsurances();
     case 'search-medications':
@@ -90,7 +91,7 @@ export class Recetario {
     case 'register-health-center':
       return this.handleRegisterHealthCenter(data, params);
     case 'register-user':
-      return this.handleRegisterUser(params);
+      return this.handleRegisterUser(data, params);
     case 'get-patient-data':
       return this.handleGetPatientData(data, params);
     default:
@@ -100,6 +101,34 @@ export class Recetario {
 
   private internal() {
     return { provider: undefined } as any;
+  }
+
+  private async resolveEffectiveMedicId(data: RecetarioCreateData, params: any): Promise<string> {
+    const userId = String(params.user.id);
+    if (!data.medicId || data.medicId === userId) return userId;
+
+    // Verify the target medic belongs to the same organization
+    const internal = this.internal();
+    const orgUsers = await this.app.service('organization-users').find({
+      query: { organizationId: params.organizationId, userId: data.medicId, $limit: 1 },
+      paginate: false,
+      ...internal,
+    } as any);
+    if (!Array.isArray(orgUsers) || orgUsers.length === 0) {
+      throw new Forbidden('Target medic does not belong to this organization');
+    }
+
+    // Verify the target user has the medic role
+    const userRoles = await this.app.service('user-roles').find({
+      query: { userId: data.medicId, organizationId: params.organizationId, roleId: 'medic', $limit: 1 },
+      paginate: false,
+      ...internal,
+    } as any);
+    if (!Array.isArray(userRoles) || userRoles.length === 0) {
+      throw new Forbidden('Target user is not a medic');
+    }
+
+    return data.medicId;
   }
 
   private async getDoctorData(userId: string) {
@@ -174,7 +203,8 @@ export class Recetario {
     const { patientId } = data;
     if (!patientId) throw new BadRequest('patientId is required');
 
-    const doctor = await this.getDoctorData(String(params.user.id));
+    const effectiveMedicId = await this.resolveEffectiveMedicId(data, params);
+    const doctor = await this.getDoctorData(effectiveMedicId);
     const patient = await this.getPatientData(patientId);
     const orgSettings = await this.getOrgRecetarioSettings(params);
 
@@ -195,7 +225,7 @@ export class Recetario {
     // Store prescription record
     await this.app.service('prescriptions').create({
       organizationId: params.organizationId || null,
-      medicId: String(params.user.id),
+      medicId: effectiveMedicId,
       patientId,
       recetarioReference: reference,
       type: 'prescription',
@@ -217,7 +247,8 @@ export class Recetario {
     if (!patientId) throw new BadRequest('patientId is required');
     if (!medications || medications.length === 0) throw new BadRequest('At least one medication is required');
 
-    const doctor = await this.getDoctorData(String(params.user.id));
+    const effectiveMedicId = await this.resolveEffectiveMedicId(data, params);
+    const doctor = await this.getDoctorData(effectiveMedicId);
     const stagingEmail = ((this.app.get as any)('recetario') || {}).stagingEmail;
     if (stagingEmail) doctor.contactData = { ...doctor.contactData, email: stagingEmail };
     const { resolved: patient, mhsPatient } = await this.resolvePatientWithOverride(patientId, patientOverride);
@@ -258,7 +289,7 @@ export class Recetario {
 
     const prescriptionRecord = await this.app.service('prescriptions').create({
       organizationId: params.organizationId || null,
-      medicId: String(params.user.id),
+      medicId: effectiveMedicId,
       patientId,
       recetarioReference: reference,
       recetarioDocumentIds: response.id ? [{ id: response.id, type: 'prescription', url: response.url || '' }] : [],
@@ -284,7 +315,8 @@ export class Recetario {
     if (!patientId) throw new BadRequest('patientId is required');
     if (!content) throw new BadRequest('Order content is required');
 
-    const doctor = await this.getDoctorData(String(params.user.id));
+    const effectiveMedicId = await this.resolveEffectiveMedicId(data, params);
+    const doctor = await this.getDoctorData(effectiveMedicId);
     const stagingEmail = ((this.app.get as any)('recetario') || {}).stagingEmail;
     if (stagingEmail) doctor.contactData = { ...doctor.contactData, email: stagingEmail };
     const { resolved: patient, mhsPatient } = await this.resolvePatientWithOverride(patientId, patientOverride);
@@ -313,7 +345,7 @@ export class Recetario {
 
     const prescriptionRecord = await this.app.service('prescriptions').create({
       organizationId: params.organizationId || null,
-      medicId: String(params.user.id),
+      medicId: effectiveMedicId,
       patientId,
       recetarioReference: reference,
       recetarioDocumentIds: response.id ? [{ id: response.id, type: 'order', url: response.url || '' }] : [],
@@ -419,8 +451,9 @@ export class Recetario {
     return { success: true };
   }
 
-  private async handleCheckReadiness(params: any): Promise<RecetarioResult> {
-    const doctor = await this.getDoctorData(String(params.user.id));
+  private async handleCheckReadiness(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {
+    const effectiveMedicId = await this.resolveEffectiveMedicId(data, params);
+    const doctor = await this.getDoctorData(effectiveMedicId);
     const result = checkDoctorReadiness(doctor);
     return { success: true, ...result };
   }
@@ -570,8 +603,9 @@ export class Recetario {
     }
   }
 
-  private async handleRegisterUser(params: any): Promise<RecetarioResult> {
-    const doctor = await this.getDoctorData(String(params.user.id));
+  private async handleRegisterUser(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {
+    const effectiveMedicId = await this.resolveEffectiveMedicId(data, params);
+    const doctor = await this.getDoctorData(effectiveMedicId);
     const readiness = checkDoctorReadiness(doctor);
 
     if (!readiness.ready) {
@@ -615,7 +649,7 @@ export class Recetario {
     // Store Recetario user ID in md_settings
     if (response.id) {
       const mdSettingsResult = await this.app.service('md-settings').find({
-        query: { userId: String(params.user.id), $limit: 1 },
+        query: { userId: effectiveMedicId, $limit: 1 },
         paginate: false,
         ...this.internal(),
       } as any);

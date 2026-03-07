@@ -1,6 +1,6 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from '@remix-run/react';
 import { json, type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
-import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
@@ -15,17 +15,7 @@ import MainLayout from '~/components/main-layout';
 import RouteErrorFallback from '~/components/route-error-fallback';
 import { getToken, getUser } from '~/utils/auth.server';
 import { getCurrentOrganizationId, setCurrentOrganizationId } from '~/session';
-import { breakpoints } from '~/media';
-
-// Override Mantine's default breakpoints to match the ones defined in ~/media.
-// This keeps a single source of truth (media.ts) for PandaCSS, Mantine, and
-// useMediaQuery calls. Mantine expects em values, so we convert from px (÷ 16).
-const theme = createTheme({
-  breakpoints: Object.fromEntries(Object.entries(breakpoints).map(([k, v]) => [k, `${v / 16}em`])) as Record<
-    string,
-    string
-  >,
-});
+import { theme } from '~/theme';
 
 export const links: LinksFunction = () => [];
 

@@ -27,7 +27,7 @@ import { useForm } from '@mantine/form';
 import { showNotification } from '@mantine/notifications';
 import { useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash, Search } from 'lucide-react';
+import { Plus, Trash, Search, Pencil } from 'lucide-react';
 import { AsYouType, type CountryCode } from 'libphonenumber-js';
 
 import { Icd10Selector } from '~/components/icd10-selector';
@@ -241,15 +241,22 @@ export interface PrescriptionResult {
   diagnosis: string;
 }
 
+export interface RepeatData {
+  diagnosis: string;
+  medicines: MedicineRow[];
+}
+
 interface PrescribeModalProps {
   opened: boolean;
   onClose: () => void;
   onSuccess: () => void;
   patient?: any;
+  medicId?: string;
   initialPrescriptionResult?: PrescriptionResult;
+  repeatData?: RepeatData;
 }
 
-export function PrescribeModal({ opened, onClose, onSuccess, patient, initialPrescriptionResult }: PrescribeModalProps) {
+export function PrescribeModal({ opened, onClose, onSuccess, patient, medicId, initialPrescriptionResult, repeatData }: PrescribeModalProps) {
   const { t } = useTranslation();
   const fetcher = useFetcher<any>();
   const patientFetcher = useFetcher<any>();
@@ -264,6 +271,7 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, initialPre
 
   const [rxDiagnosisId, setRxDiagnosisId] = useState('');
   const [rxDiagnosis, setRxDiagnosis] = useState('');
+  const [editingRepeatDiagnosis, setEditingRepeatDiagnosis] = useState(false);
   const [orderDiagnosisId, setOrderDiagnosisId] = useState('');
   const [orderDiagnosis, setOrderDiagnosis] = useState('');
 
@@ -338,6 +346,13 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, initialPre
         });
         setShareEmail(email);
         setSharePhone((cd.phoneNumber || '').replace(/^tel:/i, ''));
+      }
+      if (repeatData) {
+        setRxDiagnosis(repeatData.diagnosis);
+        setEditingRepeatDiagnosis(false);
+        rxForm.setValues({ medicines: repeatData.medicines, hiv: false });
+        setActiveTab('prescription');
+        if (patient) setStep(1);
       }
       patientFetcher.submit({ intent: 'get-patient-data' }, { method: 'post' });
     }
@@ -453,6 +468,8 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, initialPre
           medications,
           hiv: rxForm.values.hiv,
           patientData: { ...patientForm.values, healthInsuranceName },
+          ...(patient?.id && { patientId: patient.id }),
+          ...(medicId && { medicId }),
         }),
       },
       { method: 'post' }
@@ -478,6 +495,8 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, initialPre
           diagnosis: orderDiagnosis,
           content: orderForm.values.content,
           patientData: { ...patientForm.values, healthInsuranceName },
+          ...(patient?.id && { patientId: patient.id }),
+          ...(medicId && { medicId }),
         }),
       },
       { method: 'post' }
@@ -602,16 +621,18 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, initialPre
       {/* Step 1 — Prescription / Order */}
       {step === 1 && (
         <>
-          <SegmentedControl
-            value={activeTab}
-            onChange={setActiveTab}
-            mb="md"
-            w="300px"
-            data={[
-              { label: t('recetario.type_prescription'), value: 'prescription' },
-              { label: t('recetario.type_order'), value: 'order' },
-            ]}
-          />
+          {!repeatData && (
+            <SegmentedControl
+              value={activeTab}
+              onChange={setActiveTab}
+              mb="md"
+              w="300px"
+              data={[
+                { label: t('recetario.type_prescription'), value: 'prescription' },
+                { label: t('recetario.type_order'), value: 'order' },
+              ]}
+            />
+          )}
 
           {activeTab === 'prescription' && (
             <form onSubmit={handlePrescriptionSubmit}>
@@ -620,17 +641,27 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, initialPre
                   <Text size="sm" fw={500} mb={4}>
                     {t('recetario.diagnosis')} <span style={{ color: 'var(--mantine-color-red-6)' }}>*</span>
                   </Text>
-                  <Icd10Selector
-                    value={rxDiagnosisId}
-                    onChange={v => {
-                      const id = Array.isArray(v) ? v[0] || '' : v;
-                      setRxDiagnosisId(id);
-                      if (!id) setRxDiagnosis('');
-                    }}
-                    onSelectNode={node => setRxDiagnosis(`${node.id} - ${node.name}`)}
-                    error={rxDiagnosisError}
-                    variant="default"
-                  />
+                  {repeatData && !editingRepeatDiagnosis ? (
+                    <Group gap="xs">
+                      <TextInput value={rxDiagnosis} readOnly variant="default" style={{ flex: 1 }} />
+                      <ActionIcon variant="subtle" color="gray" onClick={() => setEditingRepeatDiagnosis(true)}>
+                        <Pencil size={16} />
+                      </ActionIcon>
+                    </Group>
+                  ) : (
+                    <Icd10Selector
+                      value={rxDiagnosisId}
+                      onChange={v => {
+                        const id = Array.isArray(v) ? v[0] || '' : v;
+                        setRxDiagnosisId(id);
+                        if (!id) setRxDiagnosis('');
+                      }}
+                      onSelectNode={node => setRxDiagnosis(`${node.id} - ${node.name}`)}
+                      error={rxDiagnosisError}
+                      variant="default"
+                      autoFocus={editingRepeatDiagnosis}
+                    />
+                  )}
                 </Box>
 
                 <Stack gap="xs">
@@ -697,7 +728,7 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, initialPre
                 <Checkbox label={t('recetario.hiv')} {...rxForm.getInputProps('hiv', { type: 'checkbox' })} />
 
                 <Group justify="flex-end" mt="sm">
-                  <Button variant="default" onClick={() => setStep(0)} disabled={submitting}>
+                  <Button variant="default" onClick={repeatData && patient ? onClose : () => setStep(0)} disabled={submitting}>
                     {t('common.cancel')}
                   </Button>
                   <Button type="submit" loading={submitting}>

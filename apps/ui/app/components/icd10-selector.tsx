@@ -109,6 +109,7 @@ interface Icd10SelectorProps {
   readOnly?: boolean;
   multiSelect?: boolean;
   variant?: 'unstyled' | 'default';
+  autoFocus?: boolean;
 }
 
 export function Icd10Selector({
@@ -121,6 +122,7 @@ export function Icd10Selector({
   readOnly,
   multiSelect,
   variant = 'unstyled',
+  autoFocus,
 }: Icd10SelectorProps) {
   const { t } = useTranslation();
   const client = useFeathers();
@@ -541,6 +543,7 @@ export function Icd10Selector({
                         : ''
                   }
                   readOnly={readOnly}
+                  autoFocus={autoFocus}
                 />
               )}
             </Group>

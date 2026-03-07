@@ -56,7 +56,7 @@ export async function resetDatabase() {
     await sequelize.query('CREATE EXTENSION IF NOT EXISTS unaccent;');
     console.log('unaccent extension created successfully.');
 
-    // Create an immutable wrapper for unaccent because generated columns 
+    // Create an immutable wrapper for unaccent because generated columns
     // require immutable functions, and unaccent is not immutable by default.
     await sequelize.query(`
       CREATE OR REPLACE FUNCTION immutable_unaccent(text)
@@ -80,12 +80,12 @@ export async function resetDatabase() {
       ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchFirstName";
       ALTER TABLE "personal_data" DROP COLUMN IF EXISTS "searchLastName";
 
-      ALTER TABLE "personal_data" 
-      ADD COLUMN "searchFirstName" text 
+      ALTER TABLE "personal_data"
+      ADD COLUMN "searchFirstName" text
       GENERATED ALWAYS AS (immutable_unaccent(lower("firstName"))) STORED;
-      
-      ALTER TABLE "personal_data" 
-      ADD COLUMN "searchLastName" text 
+
+      ALTER TABLE "personal_data"
+      ADD COLUMN "searchLastName" text
       GENERATED ALWAYS AS (immutable_unaccent(lower("lastName"))) STORED;
 
       CREATE INDEX IF NOT EXISTS personal_data_search_first_name_idx ON "personal_data" USING gin ("searchFirstName" gin_trgm_ops);

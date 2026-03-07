@@ -7,6 +7,7 @@ import {
   User,
   Stethoscope,
   FlaskConical,
+  ClipboardPen,
   Shield,
   Languages,
   BarChart3,
@@ -216,6 +217,13 @@ const sections: Section[] = [
     permissions: ['patients:create', 'patients:find', 'patients:get'],
     path: '/patients',
     color: 'yellow',
+  },
+  {
+    labelKey: 'prescriptions',
+    icon: <ClipboardPen />,
+    permissions: ['recetario:create', 'prescriptions:find'],
+    path: '/prescriptions',
+    color: 'teal',
   },
   {
     labelKey: 'users_roles',
