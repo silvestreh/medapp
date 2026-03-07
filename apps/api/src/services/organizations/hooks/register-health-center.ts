@@ -7,6 +7,9 @@ const registerHealthCenter = (): Hook => async (context: HookContext): Promise<H
 
   const settings = result.settings || {};
 
+  // Skip for inactive organizations
+  if (result.isActive === false) return context;
+
   // Already has a health center ID — nothing to do
   if (settings.recetario?.healthCenterId) return context;
 

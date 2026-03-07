@@ -7,10 +7,6 @@ export const enforceActiveOrganization = (): Hook => {
       return context;
     }
 
-    if (['find', 'get'].includes(context.method)) {
-      return context;
-    }
-
     if (context.params.isSuperAdmin) {
       return context;
     }

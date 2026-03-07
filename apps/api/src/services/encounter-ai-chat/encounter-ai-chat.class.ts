@@ -245,6 +245,7 @@ export class EncounterAiChat {
       'The input is anonymized and must remain anonymized.',
       'Never provide definitive diagnosis. Suggest options and caution flags only.',
       'Always mention suggestions are assistive and require physician judgement.',
+      'When including JSON, code, or any structured data in the "message" field, always wrap it in triple backtick code blocks (```).',
       'Respond in valid JSON with this shape:',
       '{"message":"string","differentials":[{"title":"string","detail":"string","confidence":0.0}],"suggestedNextSteps":[{"title":"string","detail":"string","confidence":0.0}],"treatmentIdeas":[{"title":"string","detail":"string","confidence":0.0}],"warnings":["string"],"rationale":"string","confidence":0.0,"citations":["string"]}',
       `ANONYMIZED_STUDY_COUNT: ${compactPayload.history.studiesCount || 0}`,

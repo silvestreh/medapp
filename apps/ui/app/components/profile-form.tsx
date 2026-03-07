@@ -197,7 +197,7 @@ export function ProfileForm({
     >
       <input type="hidden" name="intent" value="update-profile" />
       <input type="hidden" name="payload" value={JSON.stringify(payload)} />
-      <SectionTitle icon={<User />}>{t('profile.personal_data')}</SectionTitle>
+      <SectionTitle id="personal-data" icon={<User />}>{t('profile.personal_data')}</SectionTitle>
       <FormCard style={{ marginBottom: '1rem' }}>
         <FieldRow label={`${t('profile.first_name')}:`} variant="stacked">
           <StyledTextInput {...profileForm.getInputProps('firstName')} />
@@ -222,7 +222,7 @@ export function ProfileForm({
         </FieldRow>
       </FormCard>
 
-      <SectionTitle icon={<Mail />}>{t('profile.contact_data')}</SectionTitle>
+      <SectionTitle id="contact-data" icon={<Mail />}>{t('profile.contact_data')}</SectionTitle>
       <FormCard style={{ marginBottom: '1rem' }}>
         <FieldRow label={`${t('profile.email')}:`} variant="stacked">
           <StyledTextInput type="email" {...profileForm.getInputProps('email')} />
@@ -246,7 +246,7 @@ export function ProfileForm({
 
       {isMedic && (
         <>
-          <SectionTitle icon={<Stethoscope />}>{t('profile.professional_info')}</SectionTitle>
+          <SectionTitle id="professional-data" icon={<Stethoscope />}>{t('profile.professional_info')}</SectionTitle>
           <FormCard>
             <FieldRow label={`${t('profile.medical_specialty')}:`} variant="stacked">
               <StyledTextInput {...profileForm.getInputProps('medicalSpecialty')} />

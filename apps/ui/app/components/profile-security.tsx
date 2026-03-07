@@ -386,7 +386,7 @@ export function ProfileSecurity({
   return (
     <>
       <FormHeader>
-        <SectionTitle icon={<ShieldCheck />}>
+        <SectionTitle id="two-factor" icon={<ShieldCheck />}>
           {t('profile.setup_2fa_title')}
         </SectionTitle>
       </FormHeader>
@@ -463,7 +463,7 @@ export function ProfileSecurity({
       </Modal>
 
       <FormHeader>
-        <SectionTitle icon={<KeyRound />} style={{ marginTop: '2rem' }}>
+        <SectionTitle id="passkeys" icon={<KeyRound />} style={{ marginTop: '2rem' }}>
           {t('profile.passkeys_title')}
         </SectionTitle>
       </FormHeader>
@@ -497,7 +497,7 @@ export function ProfileSecurity({
       </FormActions>
 
       <FormHeader>
-        <SectionTitle icon={<Lock />} style={{ marginTop: '2rem' }}>
+        <SectionTitle id="change-password" icon={<Lock />} style={{ marginTop: '2rem' }}>
           {t('profile.change_password')}
         </SectionTitle>
       </FormHeader>

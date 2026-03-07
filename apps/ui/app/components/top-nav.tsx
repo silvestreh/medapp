@@ -167,7 +167,7 @@ export default function TopNav() {
           )}
 
           <Menu.Item leftSection={<User size={14} />} component={Link} to="/settings">
-            {t('navigation.profile')}
+            {t('navigation.settings')}
           </Menu.Item>
 
           <Menu.Divider />

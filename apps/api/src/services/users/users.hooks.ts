@@ -5,7 +5,6 @@ import createPersonalData from '../../hooks/create-personal-data';
 import createContactData from '../../hooks/create-contact-data';
 import includeData from '../../hooks/include-data';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
-import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { lowerCase } from '../../hooks/lowerCase';
 import populateUser from './hooks/populate-user';
 import { prepareSignupOrganization, handleSignupOrganization } from './hooks/handle-signup-organization';
@@ -61,7 +60,6 @@ export default {
     patch: [
       authenticate('jwt'),
       stripSuperAdmin(),
-      enforceActiveOrganization(),
       lowerCase('username'),
       hashPassword('password'),
     ],

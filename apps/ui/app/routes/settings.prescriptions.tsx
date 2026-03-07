@@ -11,10 +11,6 @@ import type { loader as settingsLoader } from '~/routes/settings';
 import { SignatureCanvas } from '~/components/signature-canvas';
 import { FormCard, FieldRow, StyledSelect, SectionTitle, FormHeader } from '~/components/forms/styles';
 
-function buildSelectOptions(obj: Record<string, string>) {
-  return Object.entries(obj).map(([value, label]) => ({ value, label }));
-}
-
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const intent = String(formData.get('intent') || '');
@@ -76,17 +72,14 @@ export default function SettingsPrescriptionsRoute() {
     ? String(currentOrg.settings.recetario.healthCenterId)
     : '';
 
-  const [recetarioTitle, setRecetarioTitle] = useState(mdSettings?.recetarioTitle ?? '');
-  const [recetarioProvince, setRecetarioProvince] = useState(
-    mdSettings?.recetarioProvince || mdSettings?.stateLicense || ''
-  );
+  const gender = (parentData?.user as any)?.personalData?.gender as string | null | undefined;
+  const canInferTitle = gender === 'male' || gender === 'female';
+  const inferredTitle = gender === 'male' ? 'Dr' : gender === 'female' ? 'Dra' : null;
+  const [recetarioTitle, setRecetarioTitle] = useState(mdSettings?.recetarioTitle ?? inferredTitle ?? '');
+  const effectiveTitle = canInferTitle ? (inferredTitle as string) : recetarioTitle;
+  const recetarioProvince = mdSettings?.stateLicense || '';
   const [signatureBase64, setSignatureBase64] = useState<string>(mdSettings?.signatureImage ?? '');
   const [showCanvas, setShowCanvas] = useState(false);
-
-  const provinceOptions = useMemo(
-    () => buildSelectOptions(t('provinces', { returnObjects: true }) as Record<string, string>),
-    [t]
-  );
 
   const missingOrgFields = useMemo(() => {
     const missing: string[] = [];
@@ -127,13 +120,13 @@ export default function SettingsPrescriptionsRoute() {
     fetcher.submit(
       {
         intent: 'update-recetario-profile',
-        recetarioTitle,
+        recetarioTitle: effectiveTitle,
         recetarioProvince,
         signatureImage: signatureBase64,
       },
       { method: 'post' }
     );
-  }, [fetcher, recetarioTitle, recetarioProvince, signatureBase64]);
+  }, [fetcher, effectiveTitle, recetarioProvince, signatureBase64]);
 
   const handleSignatureUpload = useCallback((file: File | null) => {
     if (!file) return;
@@ -151,7 +144,9 @@ export default function SettingsPrescriptionsRoute() {
   return (
     <>
       <FormHeader>
-        <SectionTitle icon={<ClipboardPen />}>{t('recetario.enabled')}</SectionTitle>
+        <SectionTitle id="prescriptions-toggle" icon={<ClipboardPen />}>
+          {t('recetario.enabled')}
+        </SectionTitle>
       </FormHeader>
       <FormCard>
         {!canEnable && (
@@ -186,28 +181,24 @@ export default function SettingsPrescriptionsRoute() {
       {parentData.isMedic && (
         <>
           <FormHeader style={{ marginTop: '2rem' }}>
-            <SectionTitle icon={<ClipboardPen />}>{t('recetario.prescriber_settings')}</SectionTitle>
+            <SectionTitle id="prescriptions-signature" icon={<ClipboardPen />}>
+              {t('recetario.prescriber_settings')}
+            </SectionTitle>
           </FormHeader>
           <FormCard>
-            <FieldRow label={`${t('recetario.title_label')}:`} variant="stacked">
-              <StyledSelect
-                data={[
-                  { value: 'Dr', label: t('recetario.title_dr') },
-                  { value: 'Dra', label: t('recetario.title_dra') },
-                ]}
-                value={recetarioTitle}
-                onChange={val => setRecetarioTitle(val ?? '')}
-              />
-            </FieldRow>
-            <FieldRow label={`${t('recetario.province_label')}:`} variant="stacked">
-              <StyledSelect
-                data={provinceOptions}
-                searchable
-                value={recetarioProvince}
-                onChange={val => setRecetarioProvince(val ?? '')}
-              />
-            </FieldRow>
-            <FieldRow label={`${t('recetario.signature_label')}:`} variant="stacked">
+            {!canInferTitle && (
+              <FieldRow label={`${t('recetario.title_label')}:`} variant="stacked">
+                <StyledSelect
+                  data={[
+                    { value: 'Dr', label: t('recetario.title_dr') },
+                    { value: 'Dra', label: t('recetario.title_dra') },
+                  ]}
+                  value={recetarioTitle}
+                  onChange={val => setRecetarioTitle(val ?? '')}
+                />
+              </FieldRow>
+            )}
+<FieldRow label={`${t('recetario.signature_label')}:`} variant="stacked">
               <Group gap="sm">
                 <FileButton onChange={handleSignatureUpload} accept="image/png,image/jpeg">
                   {props => (

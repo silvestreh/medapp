@@ -2,6 +2,7 @@ import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from '@rem
 import { NavLink as RemixNavLink, Outlet, useLoaderData, useRouteLoaderData } from '@remix-run/react';
 import { Flex, NavLink } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import { User, Shield, PenTool, Building2, FileText, Bot } from 'lucide-react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
@@ -198,6 +199,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 };
 
+const navLinkStyle = { borderRadius: 'var(--mantine-radius-md)', flex: 'none' } as const;
+
 function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: boolean }) {
   const { t } = useTranslation();
 
@@ -208,23 +211,26 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
         to="/settings"
         end
         label={t('profile.tab_profile')}
+        leftSection={<User size={16} />}
         variant="light"
-        style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+        style={navLinkStyle}
       />
       <NavLink
         component={RemixNavLink}
         to="/settings/security"
         label={t('profile.tab_security')}
+        leftSection={<Shield size={16} />}
         variant="light"
-        style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+        style={navLinkStyle}
       />
       {isMedic && (
         <NavLink
           component={RemixNavLink}
           to="/settings/signature"
           label={t('profile.tab_signature')}
+          leftSection={<PenTool size={16} />}
           variant="light"
-          style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+          style={navLinkStyle}
         />
       )}
       {isOrgOwner && (
@@ -232,8 +238,9 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
           component={RemixNavLink}
           to="/settings/organization"
           label={t('profile.tab_organization')}
+          leftSection={<Building2 size={16} />}
           variant="light"
-          style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+          style={navLinkStyle}
         />
       )}
       {isOrgOwner && (
@@ -241,8 +248,9 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
           component={RemixNavLink}
           to="/settings/prescriptions"
           label={t('profile.tab_prescriptions')}
+          leftSection={<FileText size={16} />}
           variant="light"
-          style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+          style={navLinkStyle}
         />
       )}
       {isOrgOwner && (
@@ -250,8 +258,9 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
           component={RemixNavLink}
           to="/settings/assistant"
           label={t('profile.tab_assistant')}
+          leftSection={<Bot size={16} />}
           variant="light"
-          style={{ borderRadius: 'var(--mantine-radius-md)', flex: 'none' }}
+          style={navLinkStyle}
         />
       )}
     </NavContainer>

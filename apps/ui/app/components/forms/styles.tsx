@@ -371,9 +371,9 @@ type SectionTitleProps = React.ComponentPropsWithoutRef<typeof StyledTitle> & {
   icon?: ReactNode;
 };
 
-export function SectionTitle({ icon, children }: SectionTitleProps) {
+export function SectionTitle({ icon, id, children, ...rest }: SectionTitleProps) {
   if (!icon) {
-    return <StyledTitle>{children}</StyledTitle>;
+    return <StyledTitle id={id} {...rest}>{children}</StyledTitle>;
   }
 
   const styledIcon = isValidElement(icon)
@@ -384,7 +384,7 @@ export function SectionTitle({ icon, children }: SectionTitleProps) {
     : icon;
 
   return (
-    <Group gap="xs" align="center">
+    <Group gap="xs" align="center" id={id} {...rest}>
       {styledIcon}
       <StyledTitle>{children}</StyledTitle>
     </Group>

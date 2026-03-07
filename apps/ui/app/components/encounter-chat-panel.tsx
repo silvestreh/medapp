@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { useFeathers, useMutation, useOrganization } from '~/components/provider';
+import { useFeathers, useMutation } from '~/components/provider';
 import { media } from '~/media';
 
 type Role = 'assistant' | 'user';
@@ -216,18 +216,12 @@ export function EncounterChatPanel({
   const navigate = useNavigate();
   const client = useFeathers();
   const { create, isLoading, error } = useMutation('encounter-ai-chat');
-  const { create: loadModels } = useMutation('llm-models');
-  const { currentOrganizationId } = useOrganization();
-  const loadModelsRef = useRef(loadModels);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const messageIdRef = useRef(0);
   const isPrependingHistoryRef = useRef(false);
   const hasLoadedHistoryRef = useRef(false);
-  const hasLoadedModelsRef = useRef(false);
   const isDesktop = useMediaQuery(media.md);
   const [draftMessage, setDraftMessage] = useState('');
-  const [selectedModel, setSelectedModel] = useState<string | null>(null);
-  const [modelsProvider, setModelsProvider] = useState<string | null>(null);
   const [streamingMessage, setStreamingMessage] = useState<{ id: string; fullContent: string } | null>(null);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
@@ -412,8 +406,6 @@ export function EncounterChatPanel({
       const result = await create({
         patientId,
         encounterDraft,
-        model: selectedModel || undefined,
-        preferredProvider: modelsProvider || undefined,
         messages: [...requestMessages, { role: 'user', content }],
       });
 
@@ -468,11 +460,9 @@ export function EncounterChatPanel({
     draftMessage,
     encounterDraft,
     isLoading,
-    modelsProvider,
     nextMessageId,
     patientId,
     requestMessages,
-    selectedModel,
     t,
     toChatMessage,
   ]);
@@ -491,69 +481,6 @@ export function EncounterChatPanel({
     },
     [handleSend]
   );
-
-  const storageKey = useMemo(() => {
-    const orgPart = currentOrganizationId || 'no-org';
-    return `encounter-ai-chat-model:${orgPart}`;
-  }, [currentOrganizationId]);
-
-  useEffect(() => {
-    loadModelsRef.current = loadModels;
-  }, [loadModels]);
-
-  useEffect(() => {
-    if (!isDesktop || !isActive || hasLoadedModelsRef.current) return;
-    hasLoadedModelsRef.current = true;
-    let cancelled = false;
-
-    const run = async () => {
-      try {
-        const result = await loadModelsRef.current({});
-        if (cancelled) return;
-        const models = Array.isArray((result as any)?.models)
-          ? (result as any).models.map((item: any) => String(item))
-          : [];
-        const defaultModel = (result as any)?.defaultModel ? String((result as any).defaultModel) : null;
-        const provider = (result as any)?.provider ? String((result as any).provider) : null;
-        setModelsProvider(provider);
-        if (!models.length) {
-          setSelectedModel(null);
-          return;
-        }
-
-        const storedModel = typeof window !== 'undefined' ? window.localStorage.getItem(storageKey) : null;
-
-        if (storedModel && models.includes(storedModel)) {
-          setSelectedModel(storedModel);
-          return;
-        }
-
-        if (defaultModel && models.includes(defaultModel)) {
-          setSelectedModel(defaultModel);
-          return;
-        }
-
-        setSelectedModel(prev => (prev && models.includes(prev) ? prev : models[0]));
-      } catch (_error) {
-        if (cancelled) return;
-        hasLoadedModelsRef.current = false;
-        setSelectedModel(null);
-        setModelsProvider(null);
-      }
-    };
-
-    run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isDesktop, isActive, storageKey]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!selectedModel) return;
-    window.localStorage.setItem(storageKey, selectedModel);
-  }, [selectedModel, storageKey]);
 
   useEffect(() => {
     loadInitialHistory();
@@ -706,52 +633,63 @@ export function EncounterChatPanel({
               <Loader size="sm" />
             </Group>
           )}
-          {messages.map(message => (
-            <Box key={message.id}>
-              <Paper withBorder p="sm" radius="md" bg={message.role === 'assistant' ? 'gray.0' : 'blue.0'}>
-                <Group justify="space-between" align="center" mb={4}>
-                  <Text size="sm" fw={600}>
-                    {message.role === 'assistant' ? t('ai_chat.assistant') : t('ai_chat.you')}
-                  </Text>
-                  {message.role === 'assistant' && !!message.model && (
-                    <Badge variant="light" color="grape" size="sm">
-                      {t('ai_chat.model_badge', { model: message.model })}
-                    </Badge>
-                  )}
-                </Group>
-                {message.role === 'assistant' && message.isThinking && (
-                  <Group gap="xs">
-                    <Loader size="xs" />
-                    <Text size="sm" c="dimmed">
-                      {t('ai_chat.thinking')}
+          {messages.map(message => {
+            const isUser = message.role === 'user';
+            return (
+              <Box
+                key={message.id}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: isUser ? 'flex-end' : 'flex-start',
+                }}
+              >
+                <Paper withBorder p="sm" radius="md" bg={isUser ? 'blue.0' : 'gray.0'} style={{ maxWidth: '85%' }}>
+                  <Group justify="space-between" align="center" mb={4}>
+                    <Text size="sm" fw={600}>
+                      {isUser ? t('ai_chat.you') : t('ai_chat.assistant')}
                     </Text>
+                    {!isUser && !!message.model && (
+                      <Badge variant="light" color="grape" size="sm">
+                        {t('ai_chat.model_badge', { model: message.model })}
+                      </Badge>
+                    )}
                   </Group>
-                )}
-                {message.role === 'assistant' && (
-                  <Box
-                    style={{
-                      display: message.isThinking ? 'none' : 'block',
-                      fontSize: '0.875rem',
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-                  </Box>
-                )}
-                {message.role === 'user' && <Text size="sm">{message.content}</Text>}
-              </Paper>
+                  {!isUser && message.isThinking && (
+                    <Group gap="xs">
+                      <Loader size="xs" />
+                      <Text size="sm" c="dimmed">
+                        {t('ai_chat.thinking')}
+                      </Text>
+                    </Group>
+                  )}
+                  {!isUser && (
+                    <Box
+                      style={{
+                        display: message.isThinking ? 'none' : 'block',
+                        fontSize: '0.875rem',
+                        lineHeight: 1.5,
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                    </Box>
+                  )}
+                  {isUser && <Text size="sm">{message.content}</Text>}
+                </Paper>
 
-              {message.suggestions && !message.isStreaming && !message.isThinking && (
-                <SuggestionsCarousel
-                  tabs={[
-                    { label: t('ai_chat.differentials'), items: message.suggestions.differentials },
-                    { label: t('ai_chat.suggested_next_steps'), items: message.suggestions.suggestedNextSteps },
-                    { label: t('ai_chat.treatment_ideas'), items: message.suggestions.treatmentIdeas },
-                  ]}
-                />
-              )}
-            </Box>
-          ))}
+                {message.suggestions && !message.isStreaming && !message.isThinking && (
+                  <SuggestionsCarousel
+                    tabs={[
+                      { label: t('ai_chat.differentials'), items: message.suggestions.differentials },
+                      { label: t('ai_chat.suggested_next_steps'), items: message.suggestions.suggestedNextSteps },
+                      { label: t('ai_chat.treatment_ideas'), items: message.suggestions.treatmentIdeas },
+                    ]}
+                  />
+                )}
+              </Box>
+            );
+          })}
         </Stack>
 
         <Textarea
