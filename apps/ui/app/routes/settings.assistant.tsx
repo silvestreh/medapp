@@ -2,11 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } f
 import { json, redirect, type ActionFunctionArgs } from '@remix-run/node';
 import { useFetcher, useRevalidator, useRouteLoaderData } from '@remix-run/react';
 import { Button, Group, Select, Stack, Text } from '@mantine/core';
+import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { mutate as swrMutate } from 'swr';
 import { Bot } from 'lucide-react';
 
+import Portal from '~/components/portal';
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import type { loader as settingsLoader } from '~/routes/settings';
 import { FormCard, FieldRow, StyledTextInput, SectionTitle, FormHeader } from '~/components/forms/styles';
@@ -228,6 +230,8 @@ export default function SettingsAssistantRoute() {
     return { configured, maskedKey };
   }, [providerKeyStatus, provider]);
 
+  useHotkeys([['mod+S', handleSaveLlmDefaults]], []);
+
   const hasOrgSettingsChanges = useMemo(() => {
     const savedProvider = (['openai', 'anthropic', 'lmstudio'] as Provider[]).includes(
       currentOrg?.settings?.llmChat?.preferredProvider
@@ -333,18 +337,16 @@ export default function SettingsAssistantRoute() {
             )}
           </Stack>
         </FieldRow>
-        <FieldRow label="" variant="stacked">
-          <Button
-            size="sm"
-            variant="light"
-            onClick={handleSaveLlmDefaults}
-            loading={fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'update-llm-chat-settings'}
-            disabled={!hasOrgSettingsChanges}
-          >
-            {t('llm_settings.save_ai_defaults')}
-          </Button>
-        </FieldRow>
       </FormCard>
+      <Portal id="form-actions">
+        <Button
+          onClick={handleSaveLlmDefaults}
+          loading={fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'update-llm-chat-settings'}
+          disabled={!hasOrgSettingsChanges}
+        >
+          {t('llm_settings.save_ai_defaults')}
+        </Button>
+      </Portal>
     </>
   );
 }

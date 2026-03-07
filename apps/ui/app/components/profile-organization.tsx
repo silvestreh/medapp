@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { Button, Flex, FileInput, Image, Group } from '@mantine/core';
+import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useFetcher, useRevalidator } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
@@ -60,6 +61,8 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
       { method: 'post' }
     );
   }, [currentOrg.id, orgName, orgAddress, orgPhone, orgEmail, orgLogoUrl, orgFetcher]);
+
+  useHotkeys([['mod+S', handleSaveOrg]], []);
 
   return (
     <>
@@ -164,7 +167,7 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
                   orgLogoUrl === (currentOrg.settings?.healthCenter?.logoUrl || ''))
               }
             >
-              {t('profile.save_organization')}
+              {t('common.save')}
             </Button>
           </Group>
         )}

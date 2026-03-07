@@ -1,7 +1,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Alert, Button, Checkbox, FileInput, Group, PasswordInput, Text } from '@mantine/core';
+import { Alert, Button, Checkbox, FileInput, Group, PasswordInput, Text, Stack } from '@mantine/core';
+import { useHotkeys } from '@mantine/hooks';
 import { FileSignature, Trash2, Upload, Info, ShieldCheck, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+import Portal from '~/components/portal';
 import { useFeathers } from '~/components/provider';
 import { encryptWithPin } from '~/lib/client-crypto';
 import { FormCard, FieldRow, SectionTitle, FormHeader } from '~/components/forms/styles';
@@ -112,8 +115,20 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [certificate, client, onCertificateChange]);
 
+  useHotkeys(
+    [
+      [
+        'mod+S',
+        () => {
+          if (canUpload) handleUpload();
+        },
+      ],
+    ],
+    []
+  );
+
   return (
-    <>
+    <Stack gap={0}>
       <FormHeader>
         <SectionTitle icon={<FileSignature />}>{t('digital_signature.title')}</SectionTitle>
       </FormHeader>
@@ -210,25 +225,17 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
                 )}
               </>
             )}
-
-            <FieldRow label="" variant="stacked">
-              <Button
-                leftSection={<Upload size={16} />}
-                loading={isUploading}
-                disabled={!canUpload}
-                onClick={handleUpload}
-                variant="light"
-                size="sm"
-              >
-                {t('digital_signature.upload')}
-              </Button>
-            </FieldRow>
           </>
         )}
       </FormCard>
+      <Portal id="form-actions">
+        <Button leftSection={<Upload size={16} />} loading={isUploading} disabled={!canUpload} onClick={handleUpload}>
+          {t('digital_signature.upload')}
+        </Button>
+      </Portal>
       <Alert variant="light" color="yellow" icon={<ShieldCheck size={16} />} style={{ flex: 1, marginTop: '1rem' }}>
         {t('digital_signature.security_notice')}
       </Alert>
-    </>
+    </Stack>
   );
 }

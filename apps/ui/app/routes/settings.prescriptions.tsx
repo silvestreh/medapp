@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { json, redirect, type ActionFunctionArgs } from '@remix-run/node';
 import { useFetcher, useRevalidator, useRouteLoaderData } from '@remix-run/react';
-import { Alert, Button, FileButton, Group, Image, Switch, Text } from '@mantine/core';
+import { Alert, Button, FileButton, Group, Image, Switch, Stack, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { ClipboardPen, Pencil, TriangleAlert } from 'lucide-react';
@@ -142,7 +142,7 @@ export default function SettingsPrescriptionsRoute() {
   if (!parentData?.isOrgOwner || !currentOrg) return null;
 
   return (
-    <>
+    <Stack gap={0}>
       <FormHeader>
         <SectionTitle id="prescriptions-toggle" icon={<ClipboardPen />}>
           {t('recetario.enabled')}
@@ -166,17 +166,16 @@ export default function SettingsPrescriptionsRoute() {
             <Text size="sm">{healthCenterId}</Text>
           </FieldRow>
         )}
-        <FieldRow label="" variant="stacked">
-          <Button
-            size="sm"
-            variant="light"
-            onClick={handleSaveOrg}
-            loading={fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'update-recetario-settings'}
-          >
-            {t('common.save')}
-          </Button>
-        </FieldRow>
       </FormCard>
+      <Button
+        size="sm"
+        onClick={handleSaveOrg}
+        loading={fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'update-recetario-settings'}
+        mt="1rem"
+        ml="auto"
+      >
+        {t('common.save')}
+      </Button>
 
       {parentData.isMedic && (
         <>
@@ -198,7 +197,7 @@ export default function SettingsPrescriptionsRoute() {
                 />
               </FieldRow>
             )}
-<FieldRow label={`${t('recetario.signature_label')}:`} variant="stacked">
+            <FieldRow label={`${t('recetario.signature_label')}:`} variant="stacked">
               <Group gap="sm">
                 <FileButton onChange={handleSignatureUpload} accept="image/png,image/jpeg">
                   {props => (
@@ -240,21 +239,18 @@ export default function SettingsPrescriptionsRoute() {
                 />
               )}
             </FieldRow>
-            <FieldRow label="" variant="stacked">
-              <Button
-                size="sm"
-                variant="light"
-                onClick={handleSaveProfile}
-                loading={
-                  fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'update-recetario-profile'
-                }
-              >
-                {t('common.save')}
-              </Button>
-            </FieldRow>
           </FormCard>
+          <Button
+            size="sm"
+            onClick={handleSaveProfile}
+            loading={fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'update-recetario-profile'}
+            mt="1rem"
+            ml="auto"
+          >
+            {t('common.save')}
+          </Button>
         </>
       )}
-    </>
+    </Stack>
   );
 }

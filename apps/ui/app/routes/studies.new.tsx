@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { useFetcher, useNavigate } from '@remix-run/react';
+import { useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
 import { Group, Button } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +38,7 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     throw redirect('/studies');
   }
 
-  return json({});
+  return json({ studyId: crypto.randomUUID() });
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -53,7 +53,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const payload = parseFormJson<Record<string, any>>(formData.get('data'));
 
-  await client.service('studies').create(payload);
+  try {
+    await client.service('studies').create(payload);
+  } catch (error: any) {
+    const isUniqueViolation =
+      error.code === 409 || error.name === 'Conflict' ||
+      (error.code === 400 && error.message === 'Validation error');
+    if (isUniqueViolation) {
+      // Duplicate submission — study already created, redirect normally
+    } else {
+      throw error;
+    }
+  }
 
   return redirect('/studies');
 };
@@ -99,6 +110,7 @@ export default function NewStudy() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const fetcher = useFetcher();
+  const loaderData = useLoaderData<typeof loader>();
   const isDesktop = useMediaQuery(media.md);
 
   const [patientId, setPatientId] = useState<string | null>(null);
@@ -126,6 +138,7 @@ export default function NewStudy() {
     if (!canSave) return;
 
     const payload = {
+      id: loaderData.studyId,
       patientId,
       date: date.toISOString(),
       studies: selectedStudies,
@@ -140,6 +153,7 @@ export default function NewStudy() {
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
   }, [
     canSave,
+    loaderData.studyId,
     patientId,
     date,
     selectedStudies,

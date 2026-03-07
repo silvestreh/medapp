@@ -133,13 +133,26 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   }
 
   const data = parseFormJson(formData.get('data'));
+  const encounterId = String(formData.get('encounterId') || '').trim();
 
-  await client.service('encounters').create({
-    patientId,
-    medicId: user.id,
-    date: new Date(),
-    data,
-  });
+  try {
+    await client.service('encounters').create({
+      ...(encounterId ? { id: encounterId } : {}),
+      patientId,
+      medicId: user.id,
+      date: new Date(),
+      data,
+    });
+  } catch (error: any) {
+    const isUniqueViolation =
+      error.code === 409 || error.name === 'Conflict' ||
+      (error.code === 400 && error.message === 'Validation error');
+    if (isUniqueViolation) {
+      // Duplicate submission — encounter already created
+    } else {
+      throw error;
+    }
+  }
 
   return json({ success: true });
 };

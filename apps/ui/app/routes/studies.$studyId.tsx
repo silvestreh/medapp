@@ -3,7 +3,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json } from '@remix-run/node';
 import { useFetcher, useLoaderData, useNavigate, useParams } from '@remix-run/react';
 import { Group, Button, Tabs, Text, Loader, Modal } from '@mantine/core';
-import { useMediaQuery, useDisclosure } from '@mantine/hooks';
+import { useMediaQuery, useDisclosure, useHotkeys } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Printer, Save } from 'lucide-react';
 
@@ -200,6 +200,8 @@ export default function StudyDetail() {
     },
     []
   );
+
+  useHotkeys([['mod+S', handleSave]], []);
 
   const isDirty = isVerified && (metaDirty || Object.keys(resultDrafts).length > 0);
   const [fabOpen, { toggle: toggleFab, close: closeFab }] = useDisclosure(false);

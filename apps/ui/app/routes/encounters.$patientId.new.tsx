@@ -84,13 +84,27 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   const patient = await client.service('patients').get(patientId);
   const insurerId = postedInsurerId || (patient as any).medicareId || null;
 
-  await client.service('encounters').create({
-    patientId,
-    medicId: user.id,
-    date: new Date(),
-    data,
-    insurerId,
-  });
+  const encounterId = String(formData.get('encounterId') || '').trim();
+
+  try {
+    await client.service('encounters').create({
+      ...(encounterId ? { id: encounterId } : {}),
+      patientId,
+      medicId: user.id,
+      date: new Date(),
+      data,
+      insurerId,
+    });
+  } catch (error: any) {
+    const isUniqueViolation =
+      error.code === 409 || error.name === 'Conflict' ||
+      (error.code === 400 && error.message === 'Validation error');
+    if (isUniqueViolation) {
+      // Duplicate submission — encounter already created, redirect normally
+    } else {
+      throw error;
+    }
+  }
 
   return redirect(`/encounters/${patientId}`);
 };
@@ -117,6 +131,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
   return {
     patient,
     insurerId,
+    encounterId: crypto.randomUUID(),
   };
 });
 
@@ -297,6 +312,7 @@ export default function NewEncounter() {
               activeFormKey={activeFormKey || '__none__'}
               onValuesChange={handleValuesChange}
               insurerId={data.insurerId}
+              encounterId={data.encounterId}
             />
           )}
           {!activeFormKey && (

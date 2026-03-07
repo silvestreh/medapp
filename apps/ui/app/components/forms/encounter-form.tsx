@@ -1,5 +1,6 @@
 import { Button, Stack, ActionIcon, Group, Box } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useHotkeys } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Form, useSubmit } from '@remix-run/react';
 import { useCallback, useMemo } from 'react';
@@ -16,6 +17,7 @@ interface EncounterFormProps {
   activeFormKey?: string;
   onValuesChange?: (values: any) => void;
   insurerId?: string | null;
+  encounterId?: string;
 }
 
 const FORM_KEY_ORDER = [
@@ -57,7 +59,14 @@ const isDataEmpty = (data: any): boolean => {
   });
 };
 
-export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChange, insurerId }: EncounterFormProps) {
+export function EncounterForm({
+  encounter,
+  readOnly,
+  activeFormKey,
+  onValuesChange,
+  insurerId,
+  encounterId,
+}: EncounterFormProps) {
   const { t } = useTranslation();
   const submit = useSubmit();
 
@@ -88,21 +97,26 @@ export function EncounterForm({ encounter, readOnly, activeFormKey, onValuesChan
   );
 
   const handleSave = useCallback(() => {
-    if (isEmpty) return;
+    if (isEmpty || readOnly) return;
+
     submit(
       {
         data: JSON.stringify(form.values),
         ...(insurerId ? { insurerId } : {}),
+        ...(encounterId ? { encounterId } : {}),
       },
       { method: 'post' }
     );
-  }, [form.values, insurerId, submit, isEmpty]);
+  }, [form.values, insurerId, encounterId, submit, isEmpty, readOnly]);
+
+  useHotkeys([['mod+S', handleSave]], []);
 
   return (
     <Form method="post" id="encounter-form">
       <input type="hidden" name="patientId" value={encounter.patientId} />
       <input type="hidden" name="data" value={JSON.stringify(form.values)} />
       <input type="hidden" name="insurerId" value={insurerId || ''} />
+      {encounterId && <input type="hidden" name="encounterId" value={encounterId} />}
 
       <FormContainer>
         <Stack gap="xl">

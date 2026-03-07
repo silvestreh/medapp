@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Button, Tooltip } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
+import { useHotkeys } from '@mantine/hooks';
 import { Form } from '@remix-run/react';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
@@ -107,6 +108,25 @@ export function ProfileForm({
 
   const formRef = useRef<HTMLFormElement>(null);
 
+  useHotkeys([['mod+S', () => formRef.current?.requestSubmit()]], []);
+
+  const handleVerifyLicense = useCallback(() => {
+    const form = document.getElementById('profile-update-form') as HTMLFormElement;
+
+    if (form) {
+      const intentInput = form.querySelector('input[name="intent"]') as HTMLInputElement;
+
+      if (intentInput) {
+        intentInput.value = 'verify-license';
+        form.requestSubmit();
+
+        setTimeout(() => {
+          intentInput.value = 'update-profile';
+        }, 100);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     profileForm.setValues(initialProfile);
     profileForm.clearErrors();
@@ -197,7 +217,9 @@ export function ProfileForm({
     >
       <input type="hidden" name="intent" value="update-profile" />
       <input type="hidden" name="payload" value={JSON.stringify(payload)} />
-      <SectionTitle id="personal-data" icon={<User />}>{t('profile.personal_data')}</SectionTitle>
+      <SectionTitle id="personal-data" icon={<User />}>
+        {t('profile.personal_data')}
+      </SectionTitle>
       <FormCard style={{ marginBottom: '1rem' }}>
         <FieldRow label={`${t('profile.first_name')}:`} variant="stacked">
           <StyledTextInput {...profileForm.getInputProps('firstName')} />
@@ -222,7 +244,9 @@ export function ProfileForm({
         </FieldRow>
       </FormCard>
 
-      <SectionTitle id="contact-data" icon={<Mail />}>{t('profile.contact_data')}</SectionTitle>
+      <SectionTitle id="contact-data" icon={<Mail />}>
+        {t('profile.contact_data')}
+      </SectionTitle>
       <FormCard style={{ marginBottom: '1rem' }}>
         <FieldRow label={`${t('profile.email')}:`} variant="stacked">
           <StyledTextInput type="email" {...profileForm.getInputProps('email')} />
@@ -246,7 +270,9 @@ export function ProfileForm({
 
       {isMedic && (
         <>
-          <SectionTitle id="professional-data" icon={<Stethoscope />}>{t('profile.professional_info')}</SectionTitle>
+          <SectionTitle id="professional-data" icon={<Stethoscope />}>
+            {t('profile.professional_info')}
+          </SectionTitle>
           <FormCard>
             <FieldRow label={`${t('profile.medical_specialty')}:`} variant="stacked">
               <StyledTextInput {...profileForm.getInputProps('medicalSpecialty')} />
@@ -275,20 +301,7 @@ export function ProfileForm({
                       color="yellow"
                       loading={isVerifyingLicense}
                       disabled={!(payload as any).documentValue || isSavingProfile}
-                      onClick={() => {
-                        const form = document.getElementById('profile-update-form') as HTMLFormElement;
-                        if (form) {
-                          const intentInput = form.querySelector('input[name="intent"]') as HTMLInputElement;
-                          if (intentInput) {
-                            intentInput.value = 'verify-license';
-                            form.requestSubmit();
-                            // Reset intent back to update-profile after submission
-                            setTimeout(() => {
-                              intentInput.value = 'update-profile';
-                            }, 100);
-                          }
-                        }
-                      }}
+                      onClick={handleVerifyLicense}
                     >
                       {t('verification.verify_button', 'Verify License')}
                     </Button>
@@ -303,7 +316,7 @@ export function ProfileForm({
       {showFormActions && (
         <Portal id="form-actions">
           <Button type="submit" form="profile-update-form" loading={isSavingProfile} style={{ marginLeft: 'auto' }}>
-            {t('profile.save_profile')}
+            {t('common.save')}
           </Button>
         </Portal>
       )}
