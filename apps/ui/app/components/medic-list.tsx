@@ -1,6 +1,6 @@
 import { type FC, useEffect, useState, useMemo, memo } from 'react';
 import { Select, Group, Text, type SelectProps } from '@mantine/core';
-import { User } from 'lucide-react';
+import { User, Check } from 'lucide-react';
 import { useParams } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
@@ -41,8 +41,8 @@ const MedicList: FC<MedicListProps> = ({ onChange, medics = [], value }) => {
 
   const handleRenderOption: SelectProps['renderOption'] = ({ option, checked }) => (
     <Option>
-      <User color={checked ? 'var(--mantine-color-indigo-6)' : 'var(--mantine-color-dimmed)'} />
-      <Text c={checked ? 'indigo' : 'dark'} styles={{ root: { whiteSpace: 'nowrap' } }}>
+      {checked ? <Check /> : <User />}
+      <Text ml="xs" styles={{ root: { whiteSpace: 'nowrap' } }}>
         {option.label}
       </Text>
     </Option>
@@ -71,7 +71,7 @@ const MedicList: FC<MedicListProps> = ({ onChange, medics = [], value }) => {
       clearable={false}
       placeholder={t('appointments.search_medic_placeholder')}
       renderOption={handleRenderOption}
-      value={value !== undefined ? value : (selectedMedic || params.medicId)}
+      value={value !== undefined ? value : selectedMedic || params.medicId}
       variant="filled"
       onChange={handleChange}
       key={options.length}

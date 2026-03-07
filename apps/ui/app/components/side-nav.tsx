@@ -90,7 +90,7 @@ const NavItem = styled(ActionIcon, {
     color: 'var(--mantine-color-gray-6)',
 
     '&:not(.active):hover': {
-      backgroundColor: 'var(--mantine-color-blue-0)',
+      backgroundColor: 'var(--mantine-primary-color-0)',
     },
   },
   variants: {

@@ -60,9 +60,9 @@ const WeekdayHeader = styled('div', {
   base: {
     padding: '0.5em',
     fontWeight: 500,
-    backgroundColor: 'var(--mantine-color-blue-0)',
-    borderBottom: '1px solid var(--mantine-color-blue-1)',
-    borderRight: '1px solid var(--mantine-color-blue-1)',
+    backgroundColor: 'var(--mantine-primary-color-0)',
+    borderBottom: '1px solid var(--mantine-primary-color-1)',
+    borderRight: '1px solid var(--mantine-primary-color-1)',
     fontSize: '0.875rem',
 
     lg: {
@@ -87,7 +87,7 @@ const WeekdayHeader = styled('div', {
 
 const WeekdayCol = styled(Grid.Col, {
   base: {
-    backgroundColor: 'var(--mantine-color-blue-0)',
+    backgroundColor: 'var(--mantine-primary-color-0)',
 
     lg: {
       position: 'sticky',
@@ -99,7 +99,7 @@ const WeekdayCol = styled(Grid.Col, {
 
 const GridContainer = styled('div', {
   base: {
-    borderTop: '1px solid var(--mantine-color-blue-1)',
+    borderTop: '1px solid var(--mantine-primary-color-1)',
     borderBottom: '1px solid var(--mantine-color-gray-1)',
   },
 });

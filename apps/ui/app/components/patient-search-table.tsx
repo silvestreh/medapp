@@ -222,7 +222,7 @@ const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounte
           })}
         >
           <Table.Thead>
-            <Table.Tr bg="blue.0">
+            <Table.Tr>
               {columns.map((col, idx) => {
                 const isFirst = idx === 0;
                 const isLast = idx === columns.length - 1;

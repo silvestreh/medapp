@@ -188,7 +188,7 @@ export function StudiesTable({
     position: 'sticky' as const,
     top: '4.8em',
     zIndex: 3,
-    background: 'var(--mantine-color-blue-0)',
+    background: 'var(--mantine-primary-color-0)',
   };
 
   // -------------------------------------------------------------------------
@@ -315,12 +315,12 @@ export function StudiesTable({
           <Table highlightOnHover layout="fixed" bg="white">
             {tableRows.length > 0 && (
               <Table.Thead>
-                <Table.Tr bg="blue.0">
+                <Table.Tr>
                   <Table.Th
                     w={100}
                     style={{
                       ...stickyHeaderStyle,
-                      border: '1px solid var(--mantine-color-blue-1)',
+                      border: '1px solid var(--mantine-primary-color-1)',
                       borderLeft: 'none',
                     }}
                     fw={500}
@@ -330,7 +330,7 @@ export function StudiesTable({
                     {t('studies.col_protocol')}
                   </Table.Th>
                   <Table.Th
-                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)' }}
+                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-primary-color-1)' }}
                     fw={500}
                     fz="md"
                     py="0.5em"
@@ -339,7 +339,7 @@ export function StudiesTable({
                   </Table.Th>
                   <Table.Th
                     w={180}
-                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)' }}
+                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-primary-color-1)' }}
                     fw={500}
                     fz="md"
                     py="0.5em"
@@ -348,7 +348,7 @@ export function StudiesTable({
                   </Table.Th>
                   <Table.Th
                     w={180}
-                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)' }}
+                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-primary-color-1)' }}
                     fw={500}
                     fz="md"
                     py="0.5em"
@@ -357,7 +357,7 @@ export function StudiesTable({
                   </Table.Th>
                   <Table.Th
                     w={150}
-                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-color-blue-1)' }}
+                    style={{ ...stickyHeaderStyle, border: '1px solid var(--mantine-primary-color-1)' }}
                     fw={500}
                     fz="md"
                     py="0.5em"
@@ -368,7 +368,7 @@ export function StudiesTable({
                     w={150}
                     style={{
                       ...stickyHeaderStyle,
-                      border: '1px solid var(--mantine-color-blue-1)',
+                      border: '1px solid var(--mantine-primary-color-1)',
                       borderRight: 'none',
                     }}
                     fw={500}

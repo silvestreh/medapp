@@ -245,7 +245,7 @@ const stickyHeaderStyle = {
   position: 'sticky' as const,
   top: '4.8em',
   zIndex: 3,
-  background: 'var(--mantine-color-blue-0)',
+  background: 'var(--mantine-primary-color-0)',
 };
 
 export default function PrescriptionsPage() {
@@ -396,7 +396,7 @@ export default function PrescriptionsPage() {
 
   const thStyle = (extra?: React.CSSProperties) => ({
     ...stickyHeaderStyle,
-    border: '1px solid var(--mantine-color-blue-1)',
+    border: '1px solid var(--mantine-primary-color-1)',
     ...extra,
   });
 
@@ -455,7 +455,7 @@ export default function PrescriptionsPage() {
       {status === 'success' && prescriptions.length > 0 && isDesktop && (
         <Table highlightOnHover layout="fixed" bg="white">
           <Table.Thead>
-            <Table.Tr bg="blue.0">
+            <Table.Tr>
               <Table.Th w={140} style={thStyle({ borderLeft: 'none' })} fw={500} fz="md" py="0.5em">
                 {t('common.date')}
               </Table.Th>

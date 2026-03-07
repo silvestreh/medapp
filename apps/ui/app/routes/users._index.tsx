@@ -219,7 +219,7 @@ export default function UsersIndex() {
       {members.length > 0 && (
         <Table highlightOnHover layout="fixed" bg="white">
           <Table.Thead>
-            <Table.Tr bg="blue.0">
+            <Table.Tr>
               <Table.Th
                 style={{
                   border: '1px solid var(--mantine-color-blue-1)',

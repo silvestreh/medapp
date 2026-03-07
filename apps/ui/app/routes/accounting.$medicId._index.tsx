@@ -456,7 +456,7 @@ export default function AccountingDashboardPage() {
           })}
         >
           <Table.Thead style={{ position: 'sticky', top: '5rem', zIndex: 1 }}>
-            <Table.Tr bg="blue.0">
+            <Table.Tr>
               {hasUncosted && (
                 <Table.Th
                   style={{ border: '1px solid var(--mantine-color-blue-1)', borderLeft: 'none', width: 40 }}
