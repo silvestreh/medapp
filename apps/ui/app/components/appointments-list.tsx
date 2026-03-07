@@ -65,7 +65,7 @@ const Slot = styled('div', {
     },
     isActiveSlot: {
       true: {
-        background: 'rgb(from var(--mantine-color-blue-0) r g b / 35%)',
+        background: 'rgb(from var(--mantine-primary-color-0) r g b / 35%)',
       },
     },
   },
@@ -74,7 +74,7 @@ const Slot = styled('div', {
 const Time = styled('span', {
   base: {
     padding: 'var(--mantine-spacing-sm) var(--mantine-spacing-md)',
-    background: 'var(--mantine-color-blue-0)',
+    background: 'var(--mantine-primary-color-0)',
     fontFamily: 'monospace',
     color: 'rgba(0, 0, 0, 0.5)',
     flexShrink: 0,

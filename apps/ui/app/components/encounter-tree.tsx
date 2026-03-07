@@ -105,7 +105,7 @@ const StyledAccordion = styled(Accordion, {
       padding: 0,
     },
     '& .mantine-Accordion-chevron': {
-      color: 'var(--mantine-color-blue-6)',
+      color: 'var(--mantine-primary-color)',
     },
   },
 });
@@ -114,7 +114,7 @@ const YearText = styled(Text, {
   base: {
     fontWeight: 600,
     fontSize: '1.125rem',
-    color: 'var(--mantine-color-blue-6)',
+    color: 'var(--mantine-primary-color)',
   },
 });
 
@@ -122,7 +122,7 @@ const MonthText = styled(Text, {
   base: {
     fontWeight: 400,
     fontSize: '1rem',
-    color: 'var(--mantine-color-blue-4)',
+    color: 'var(--mantine-primary-color-3)',
     textTransform: 'capitalize',
   },
 });
@@ -138,7 +138,7 @@ const EncounterBox = styled('div', {
   variants: {
     active: {
       true: {
-        backgroundColor: 'var(--mantine-color-blue-0)',
+        backgroundColor: 'var(--mantine-primary-color-0)',
       },
     },
   },
@@ -157,25 +157,25 @@ const EncounterDateText = styled(Text, {
 const FormItem = styled('div', {
   base: {
     cursor: 'pointer',
-    color: 'var(--mantine-color-blue-6)',
+    color: 'var(--mantine-primary-color)',
     fontSize: 'var(--mantine-font-size-md)',
     padding: '1rem',
     marginLeft: '-1rem',
     width: 'calc(100% + 2rem)',
 
     '&:hover': {
-      backgroundColor: 'var(--mantine-color-blue-0)',
+      backgroundColor: 'var(--mantine-primary-color-0)',
     },
   },
 
   variants: {
     active: {
       true: {
-        backgroundColor: 'var(--mantine-color-blue-4)',
+        backgroundColor: 'var(--mantine-primary-color-3)',
         color: 'white',
 
         '&:hover': {
-          backgroundColor: 'var(--mantine-color-blue-4)',
+          backgroundColor: 'var(--mantine-primary-color-3)',
         },
       },
     },
@@ -301,15 +301,17 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                     {formatInLocale(encounter.date, 'dddd D, HH:mm', locale)}
                                   </EncounterDateText>
                                   {encounter.data &&
-                                    Object.keys(encounter.data).filter(key => key !== 'attachments').map(key => (
-                                      <FormItem
-                                        key={key}
-                                        onClick={e => handleFormItemClick(e, encounter, key)}
-                                        active={activeEncounterId === encounter.id && activeFormKey === key}
-                                      >
-                                        {t(`forms.${encounter.data[key].type}` as any)}
-                                      </FormItem>
-                                    ))}
+                                    Object.keys(encounter.data)
+                                      .filter(key => key !== 'attachments')
+                                      .map(key => (
+                                        <FormItem
+                                          key={key}
+                                          onClick={e => handleFormItemClick(e, encounter, key)}
+                                          active={activeEncounterId === encounter.id && activeFormKey === key}
+                                        >
+                                          {t(`forms.${encounter.data[key].type}` as any)}
+                                        </FormItem>
+                                      ))}
                                   {encounter.data?.attachments?.map((att: any, i: number) => (
                                     <FormItem
                                       key={`att-${i}`}
@@ -319,9 +321,18 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                       {getFileTypeLabel(att.mimeType, t)}
                                       <Text
                                         size="xs"
-                                        c={activeEncounterId === encounter.id && activeAttachmentIndex === i ? 'white' : 'gray.5'}
+                                        c={
+                                          activeEncounterId === encounter.id && activeAttachmentIndex === i
+                                            ? 'white'
+                                            : 'gray.5'
+                                        }
                                         mt={2}
-                                        style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '250px' }}
+                                        style={{
+                                          whiteSpace: 'nowrap',
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          maxWidth: '250px',
+                                        }}
                                       >
                                         {att.fileName} · {formatFileSize(att.fileSize)}
                                       </Text>

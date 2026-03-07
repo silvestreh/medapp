@@ -459,7 +459,7 @@ export default function AccountingDashboardPage() {
             <Table.Tr>
               {hasUncosted && (
                 <Table.Th
-                  style={{ border: '1px solid var(--mantine-color-blue-1)', borderLeft: 'none', width: 40 }}
+                  style={{ border: '1px solid var(--mantine-primary-color-1)', borderLeft: 'none', width: 40 }}
                   fw={500}
                   py="0.5em"
                 >
@@ -482,7 +482,7 @@ export default function AccountingDashboardPage() {
                 <Table.Th
                   key={label}
                   style={{
-                    border: '1px solid var(--mantine-color-blue-1)',
+                    border: '1px solid var(--mantine-primary-color-1)',
                     ...(!hasUncosted && idx === 0 && { borderLeft: 'none' }),
                     ...(idx === 4 && { borderRight: 'none' }),
                   }}

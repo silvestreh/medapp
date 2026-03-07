@@ -867,7 +867,7 @@ export default function AccountingSettingsPage() {
                       variant="light"
                       size="input-xs"
                       style={{
-                        borderLeft: '1px solid var(--mantine-color-blue-1)',
+                        borderLeft: '1px solid var(--mantine-primary-color-1)',
                         borderTopLeftRadius: 0,
                         borderBottomLeftRadius: 0,
                       }}

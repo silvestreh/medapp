@@ -230,7 +230,7 @@ const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounte
                   <Table.Th
                     key={col.key}
                     style={{
-                      border: '1px solid var(--mantine-color-blue-1)',
+                      border: '1px solid var(--mantine-primary-color-1)',
                       ...(isFirst && { borderLeft: 'none' }),
                       ...(isLast && { borderRight: 'none' }),
                     }}

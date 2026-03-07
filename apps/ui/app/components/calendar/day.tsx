@@ -53,7 +53,7 @@ const DayCell = styled(Link, {
     },
 
     '&:hover': {
-      backgroundColor: 'var(--mantine-color-blue-0)',
+      backgroundColor: 'var(--mantine-primary-color-0)',
     },
 
     lg: {
@@ -112,21 +112,21 @@ const DayCell = styled(Link, {
     },
     isSelected: {
       true: {
-        backgroundColor: 'var(--mantine-color-blue-1)',
-        boxShadow: '0 0 0 1px var(--mantine-color-blue-3), inset 0 0 0 1px var(--mantine-color-blue-3)',
-        borderColor: 'var(--mantine-color-blue-3)',
+        backgroundColor: 'var(--mantine-primary-color-1)',
+        boxShadow: '0 0 0 1px var(--mantine-primary-color-3), inset 0 0 0 1px var(--mantine-primary-color-3)',
+        borderColor: 'var(--mantine-primary-color-3)',
         position: 'relative',
         zIndex: 1,
         borderRadius: '0.125em',
 
         '&:hover': {
-          backgroundColor: 'var(--mantine-color-blue-1)',
+          backgroundColor: 'var(--mantine-primary-color-1)',
         },
       },
     },
     isFocused: {
       true: {
-        outline: '2px solid var(--mantine-color-blue-2)',
+        outline: '2px solid var(--mantine-primary-color-2)',
         borderRadius: '0.125em',
         position: 'relative',
         zIndex: 1,

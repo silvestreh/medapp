@@ -321,12 +321,12 @@ export function SettingsTab({ medicId, initialSettings, isSaving, onSave }: Sett
                   }
                 }}
                 style={{
-                  border: `1px solid ${checked ? 'var(--mantine-color-blue-5)' : 'var(--mantine-color-gray-4)'}`,
+                  border: `1px solid ${checked ? 'var(--mantine-primary-color-4)' : 'var(--mantine-color-gray-4)'}`,
                   borderRadius: 8,
                   minHeight: 56,
                   width: '100%',
-                  color: checked ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-6)',
-                  backgroundColor: checked ? 'var(--mantine-color-blue-0)' : 'transparent',
+                  color: checked ? 'var(--mantine-primary-color)' : 'var(--mantine-color-gray-6)',
+                  backgroundColor: checked ? 'var(--mantine-primary-color-0)' : 'transparent',
                   fontWeight: 500,
                   textAlign: 'center',
                 }}
@@ -390,7 +390,7 @@ export function SettingsTab({ medicId, initialSettings, isSaving, onSave }: Sett
                   onClick={() => setActiveDay(day)}
                   style={{
                     textAlign: 'right',
-                    color: isActive ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-6)',
+                    color: isActive ? 'var(--mantine-primary-color)' : 'var(--mantine-color-gray-6)',
                     fontWeight: isActive ? 600 : 400,
                     textDecoration: isActive ? 'underline' : 'none',
                     cursor: 'pointer',

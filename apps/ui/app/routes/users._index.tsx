@@ -222,7 +222,7 @@ export default function UsersIndex() {
             <Table.Tr>
               <Table.Th
                 style={{
-                  border: '1px solid var(--mantine-color-blue-1)',
+                  border: '1px solid var(--mantine-primary-color-1)',
                   borderLeft: 'none',
                 }}
                 fw={500}
@@ -232,22 +232,22 @@ export default function UsersIndex() {
                 {t('users.col_username')}
               </Table.Th>
               {isDesktop && (
-                <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+                <Table.Th style={{ border: '1px solid var(--mantine-primary-color-1)' }} fw={500} fz="md" py="0.5em">
                   {t('users.col_name')}
                 </Table.Th>
               )}
               {isDesktop && (
-                <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+                <Table.Th style={{ border: '1px solid var(--mantine-primary-color-1)' }} fw={500} fz="md" py="0.5em">
                   {t('users.col_email')}
                 </Table.Th>
               )}
-              <Table.Th style={{ border: '1px solid var(--mantine-color-blue-1)' }} fw={500} fz="md" py="0.5em">
+              <Table.Th style={{ border: '1px solid var(--mantine-primary-color-1)' }} fw={500} fz="md" py="0.5em">
                 {t('users.col_role')}
               </Table.Th>
               <Table.Th
                 w={40}
                 style={{
-                  border: '1px solid var(--mantine-color-blue-1)',
+                  border: '1px solid var(--mantine-primary-color-1)',
                   borderRight: 'none',
                 }}
                 fw={500}

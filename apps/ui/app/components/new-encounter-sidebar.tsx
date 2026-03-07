@@ -15,7 +15,7 @@ interface NewEncounterSidebarProps {
 const FormItem = styled('div', {
   base: {
     cursor: 'pointer',
-    color: 'var(--mantine-color-blue-6)',
+    color: 'var(--mantine-primary-color)',
     fontSize: 'var(--mantine-font-size-md)',
     padding: '1rem',
     display: 'flex',
@@ -23,18 +23,18 @@ const FormItem = styled('div', {
     alignItems: 'center',
 
     '&:hover': {
-      backgroundColor: 'var(--mantine-color-blue-0)',
+      backgroundColor: 'var(--mantine-primary-color-0)',
     },
   },
 
   variants: {
     active: {
       true: {
-        backgroundColor: 'var(--mantine-color-blue-4)',
+        backgroundColor: 'var(--mantine-primary-color-3)',
         color: 'white',
 
         '&:hover': {
-          backgroundColor: 'var(--mantine-color-blue-4)',
+          backgroundColor: 'var(--mantine-primary-color-3)',
         },
       },
     },

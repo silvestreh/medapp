@@ -1,6 +1,18 @@
 import { cloneElement, forwardRef, isValidElement, useCallback, useRef, useState, type ReactNode } from 'react';
-import { Group, TextInput, Textarea, PasswordInput, Title, Stack, Select, Checkbox, Text } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
+import {
+  Group,
+  TextInput,
+  Textarea,
+  PasswordInput,
+  Title,
+  Stack,
+  Select,
+  Checkbox,
+  Text,
+  type GroupProps,
+} from '@mantine/core';
+
 import { styled } from '~/styled-system/jsx';
 
 export interface TriStateCheckboxProps {
@@ -241,7 +253,7 @@ const Label = styled('div', {
     },
     focused: {
       true: {
-        color: 'var(--mantine-color-blue-6)',
+        color: 'var(--mantine-primary-color)',
       },
     },
   },
@@ -355,7 +367,7 @@ export function StyledDateInput({ rawValue, ...props }: StyledDateInputProps) {
 
 export const StyledTitle = styled(Title, {
   base: {
-    color: 'var(--mantine-color-blue-4)',
+    color: 'var(--mantine-primary-color-3)',
     fontWeight: 400,
 
     sm: {
@@ -383,12 +395,12 @@ export function SectionTitle({ icon, id, children, ...rest }: SectionTitleProps)
   const styledIcon = isValidElement(icon)
     ? cloneElement(icon as React.ReactElement<{ size?: number; color?: string }>, {
         size: 28,
-        color: 'var(--mantine-color-blue-4)',
+        color: 'var(--mantine-primary-color-3)',
       })
     : icon;
 
   return (
-    <Group gap="xs" align="center" id={id} {...rest}>
+    <Group gap="xs" align="center" id={id} {...(rest as GroupProps)}>
       {styledIcon}
       <StyledTitle>{children}</StyledTitle>
     </Group>

@@ -151,8 +151,8 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
                 <Text size="sm">{certificate.fileName || 'certificado.pfx'}</Text>
                 {certificate.isClientEncrypted && (
                   <Group gap={4}>
-                    <Lock size={12} color="var(--mantine-color-blue-6)" />
-                    <Text size="xs" c="blue.6" fw={500}>
+                    <Lock size={12} color="var(--mantine-primary-color)" />
+                    <Text size="xs" c="var(--mantine-primary-color)" fw={500}>
                       {t('digital_signature.certificate_pin_protected')}
                     </Text>
                   </Group>

@@ -6,6 +6,7 @@ import { Building2, ChevronDown, Check, LogOut, User } from 'lucide-react';
 
 import { styled } from '~/styled-system/jsx';
 import { useAccount, useOrganization } from '~/components/provider';
+import { deterministicColor } from '~/components/chat-manager';
 import { Account } from '~/declarations';
 
 const Logo = styled(Image, {
@@ -101,6 +102,7 @@ export default function TopNav() {
   const hasMultipleOrgs = organizations.length > 1;
 
   const initials = useMemo(() => (user ? getInitials(user) : '?'), [user]);
+  const avatarColor = useMemo(() => (user ? deterministicColor(user.id) : 'var(--mantine-primary-color-0)'), [user]);
 
   const handleSwitch = useCallback(
     (id: string) => () => {
@@ -129,7 +131,7 @@ export default function TopNav() {
       <Menu withArrow position="bottom-end" shadow="md" width={220}>
         <Menu.Target>
           <TriggerButton>
-            <Avatar size={32} radius="xl" color="blue">
+            <Avatar size={32} radius="xl" color={avatarColor}>
               {initials}
             </Avatar>
             <ChevronDown size={14} color="var(--mantine-color-gray-5)" />

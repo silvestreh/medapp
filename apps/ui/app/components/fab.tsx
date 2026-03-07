@@ -34,14 +34,14 @@ const StyledFabItem = styled('button', {
     fontSize: '0.875rem',
     fontWeight: 500,
     whiteSpace: 'nowrap',
-    boxShadow: 'inset 0 0 0 1px var(--mantine-color-blue-1)',
-    background: 'var(--mantine-color-blue-0)',
-    color: 'var(--mantine-color-blue-7)',
+    boxShadow: 'inset 0 0 0 1px var(--mantine-primary-color-1)',
+    background: 'var(--mantine-primary-color-0)',
+    color: 'var(--mantine-primary-color-7)',
     transformOrigin: 'bottom right',
     transition: 'opacity 200ms ease, transform 200ms ease',
 
     '&:active': {
-      background: 'var(--mantine-color-blue-1)',
+      background: 'var(--mantine-primary-color-1)',
     },
   },
 });
@@ -57,7 +57,7 @@ const FabTrigger = styled('button', {
     justifyContent: 'center',
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-    background: 'var(--mantine-color-blue-6)',
+    background: 'var(--mantine-primary-color)',
     color: 'white',
     transition: 'transform 200ms ease',
     zIndex: 40,

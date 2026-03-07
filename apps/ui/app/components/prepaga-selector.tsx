@@ -49,7 +49,7 @@ const TableRow = styled('tr', {
   variants: {
     selected: {
       true: {
-        backgroundColor: 'var(--mantine-color-blue-0)',
+        backgroundColor: 'var(--mantine-primary-color-0)',
       },
     },
   },
@@ -294,7 +294,7 @@ export function PrepagaSelector({
                           <MantineText size="sm">{prepaga.denomination}</MantineText>
                         </Table.Td>
                         <Table.Td>
-                          {value === prepaga.id && <Check size={14} color="var(--mantine-color-blue-6)" />}
+                          {value === prepaga.id && <Check size={14} color="var(--mantine-primary-color)" />}
                         </Table.Td>
                       </TableRow>
                     ))}

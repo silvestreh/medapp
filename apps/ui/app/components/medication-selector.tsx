@@ -49,7 +49,7 @@ const TableRow = styled('tr', {
   variants: {
     selected: {
       true: {
-        backgroundColor: 'var(--mantine-color-blue-0)',
+        backgroundColor: 'var(--mantine-primary-color-0)',
       },
     },
   },
@@ -249,7 +249,7 @@ export function MedicationSelector({ value, onChange, placeholder, label, error,
                               <MantineText size="sm">{med.pharmaceuticalForm}</MantineText>
                             </Table.Td>
                             <Table.Td>
-                              {value === formattedMed && <Check size={14} color="var(--mantine-color-blue-6)" />}
+                              {value === formattedMed && <Check size={14} color="var(--mantine-primary-color)" />}
                             </Table.Td>
                           </TableRow>
                         );
