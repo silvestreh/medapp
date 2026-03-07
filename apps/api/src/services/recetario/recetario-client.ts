@@ -251,7 +251,7 @@ function getRecetarioConfig(): RecetarioConfig {
 function createClient(): AxiosInstance {
   const { apiUrl, jwt } = getRecetarioConfig();
 
-  return axios.create({
+  const instance = axios.create({
     baseURL: apiUrl,
     timeout: 30000,
     headers: {
@@ -259,6 +259,13 @@ function createClient(): AxiosInstance {
       Authorization: `Bearer ${jwt}`,
     },
   });
+
+  instance.interceptors.request.use((config) => {
+    console.log(`[Recetario] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, JSON.stringify(config.data || config.params || {}, null, 2));
+    return config;
+  });
+
+  return instance;
 }
 
 async function handleRequest<T>(request: Promise<{ data: T }>): Promise<T> {

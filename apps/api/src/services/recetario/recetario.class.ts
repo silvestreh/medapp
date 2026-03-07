@@ -158,9 +158,12 @@ export class Recetario {
     };
   }
 
-  private getOrgRecetarioSettings(params: any): { enabled: boolean; healthCenterId: number | null } {
-    const org = params.organization;
-    const settings = org?.settings?.recetario;
+  private async getOrgRecetarioSettings(params: any): Promise<{ enabled: boolean; healthCenterId: number | null }> {
+    if (!params.organizationId) {
+      return { enabled: false, healthCenterId: null };
+    }
+    const org = await this.app.service('organizations').get(params.organizationId, this.internal());
+    const settings = (org as any)?.settings?.recetario;
     return {
       enabled: settings?.enabled || false,
       healthCenterId: settings?.healthCenterId || null,
@@ -173,7 +176,7 @@ export class Recetario {
 
     const doctor = await this.getDoctorData(String(params.user.id));
     const patient = await this.getPatientData(patientId);
-    const orgSettings = this.getOrgRecetarioSettings(params);
+    const orgSettings = await this.getOrgRecetarioSettings(params);
 
     const reference = `athelas-${randomUUID()}`;
 
@@ -220,7 +223,7 @@ export class Recetario {
     const { resolved: patient, mhsPatient } = await this.resolvePatientWithOverride(patientId, patientOverride);
     await this.upsertRecetarioPatient(patient);
     await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
-    const orgSettings = this.getOrgRecetarioSettings(params);
+    const orgSettings = await this.getOrgRecetarioSettings(params);
 
     const reference = `athelas-${randomUUID()}`;
     const recetarioUserId = doctor.mdSettings.recetarioUserId as number | null | undefined;
@@ -251,7 +254,6 @@ export class Recetario {
       })),
     };
 
-    console.log('[Recetario] createPrescription payload:', JSON.stringify(payload, null, 2));
     const response = await recetarioClient.createPrescription(payload);
 
     const prescriptionRecord = await this.app.service('prescriptions').create({
@@ -288,7 +290,7 @@ export class Recetario {
     const { resolved: patient, mhsPatient } = await this.resolvePatientWithOverride(patientId, patientOverride);
     await this.upsertRecetarioPatient(patient);
     await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
-    const orgSettings = this.getOrgRecetarioSettings(params);
+    const orgSettings = await this.getOrgRecetarioSettings(params);
 
     const reference = `${APP_SLUG}-${randomUUID()}`;
     const recetarioUserId = doctor.mdSettings.recetarioUserId as number | null | undefined;
@@ -346,7 +348,7 @@ export class Recetario {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async handleShare(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {
-    const { documentIds, shareChannel, shareRecipient, prescriptionId, pdfUrl } = data;
+    const { shareChannel, shareRecipient, prescriptionId, pdfUrl } = data;
     if (!shareChannel) throw new BadRequest('shareChannel required');
     if (!shareRecipient) throw new BadRequest('shareRecipient required');
 
@@ -358,11 +360,51 @@ export class Recetario {
         filename: 'receta.pdf',
       });
     } else {
-      if (!documentIds || documentIds.length === 0) throw new BadRequest('documentIds required');
-      await recetarioClient.shareMedicalDocuments({
-        documentIds,
-        channel: shareChannel,
-        recipient: shareRecipient,
+      if (!pdfUrl) throw new BadRequest('pdfUrl required for email sharing');
+
+      // Download PDF from Recetario
+      const axios = (await import('axios')).default;
+      const pdfResponse = await axios.get(pdfUrl, { responseType: 'arraybuffer', timeout: 30000 });
+      const pdfBuffer = Buffer.from(pdfResponse.data);
+
+      // Resolve names for the email template
+      let patientName = '';
+      let doctorName = '';
+      let organizationName = '';
+      let documentType: 'prescription' | 'order' = 'prescription';
+
+      if (prescriptionId) {
+        try {
+          const prescription = await this.app.service('prescriptions').get(prescriptionId, this.internal());
+          documentType = (prescription as any).type === 'order' ? 'order' : 'prescription';
+
+          if ((prescription as any).patientId) {
+            const patient = await this.app.service('patients').get((prescription as any).patientId, this.internal());
+            const pd = (patient as any).personalData || {};
+            patientName = [pd.firstName, pd.lastName].filter(Boolean).join(' ');
+          }
+          if ((prescription as any).medicId) {
+            const medic = await this.app.service('users').get((prescription as any).medicId, this.internal());
+            const pd = (medic as any).personalData || {};
+            doctorName = [pd.firstName, pd.lastName].filter(Boolean).join(' ');
+          }
+          if ((prescription as any).organizationId) {
+            const org = await this.app.service('organizations').get((prescription as any).organizationId, this.internal());
+            organizationName = (org as any).name || '';
+          }
+        } catch {
+          // Non-fatal — send email with empty names
+        }
+      }
+
+      const filename = documentType === 'order' ? 'orden.pdf' : 'receta.pdf';
+
+      await this.app.service('mailer').create({
+        template: 'prescription-share',
+        to: shareRecipient,
+        subject: documentType === 'order' ? 'Nueva orden médica' : 'Nueva receta',
+        data: { patientName, doctorName, organizationName, documentType },
+        attachments: [{ filename, data: pdfBuffer, contentType: 'application/pdf' }],
       });
     }
 
@@ -536,27 +578,39 @@ export class Recetario {
       throw new BadRequest(`Profile incomplete. Missing: ${readiness.missingFields.join(', ')}`);
     }
 
-    const orgSettings = this.getOrgRecetarioSettings(params);
+    const orgSettings = await this.getOrgRecetarioSettings(params);
     if (!orgSettings.healthCenterId) {
       throw new BadRequest('Organization must have a registered health center first');
     }
 
     const doctorMapped = mapDoctorData(doctor);
+    const docNum = sanitizeDocumentNumber(doctor.personalData.documentValue);
 
-    const response = await recetarioClient.createRecetarioUser({
-      title: doctorMapped.title,
-      firstName: doctorMapped.firstName,
-      lastName: doctorMapped.lastName,
-      nationalId: doctorMapped.nationalId,
-      nationalIdType: doctorMapped.nationalIdType,
-      email: doctorMapped.email,
-      nationalLicenseNumber: doctorMapped.nationalLicenseNumber,
-      stateLicenseNumber: doctorMapped.stateLicenseNumber,
-      stateLicenseName: doctorMapped.stateLicenseName,
-      specialty: doctorMapped.specialty,
-      province: doctorMapped.province,
-      healthCenterId: orgSettings.healthCenterId,
-    });
+    // Check if doctor already exists in Recetario
+    let response: any = null;
+    if (docNum) {
+      const existing = await recetarioClient.getUsersByDocumentNumber(docNum);
+      if (Array.isArray(existing) && existing.length > 0 && existing[0]?.id) {
+        response = existing[0];
+      }
+    }
+
+    if (!response) {
+      response = await recetarioClient.createRecetarioUser({
+        title: doctorMapped.title,
+        firstName: doctorMapped.firstName,
+        lastName: doctorMapped.lastName,
+        nationalId: doctorMapped.nationalId,
+        nationalIdType: doctorMapped.nationalIdType,
+        email: doctorMapped.email,
+        nationalLicenseNumber: doctorMapped.nationalLicenseNumber,
+        stateLicenseNumber: doctorMapped.stateLicenseNumber,
+        stateLicenseName: doctorMapped.stateLicenseName,
+        specialty: doctorMapped.specialty,
+        province: doctorMapped.province,
+        healthCenterId: orgSettings.healthCenterId,
+      });
+    }
 
     // Store Recetario user ID in md_settings
     if (response.id) {

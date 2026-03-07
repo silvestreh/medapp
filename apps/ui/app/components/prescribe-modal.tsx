@@ -491,9 +491,9 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, initialPre
         intent: 'share-prescription',
         data: JSON.stringify({
           prescriptionId: prescriptionResult.prescriptionId,
-          documentIds: prescriptionResult.recetarioDocumentId ? [prescriptionResult.recetarioDocumentId] : [],
           shareChannel: 'email',
           shareRecipient: shareEmail,
+          pdfUrl: prescriptionResult.url,
         }),
       },
       { method: 'post' }

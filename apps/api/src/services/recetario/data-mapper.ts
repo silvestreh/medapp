@@ -41,6 +41,38 @@ interface PatientInput {
   insurerName?: string | null;
 }
 
+const PROVINCE_ISO_TO_NAME: Record<string, string> = {
+  'AR-A': 'Salta',
+  'AR-B': 'Buenos Aires',
+  'AR-C': 'Ciudad Autónoma de Buenos Aires',
+  'AR-D': 'San Luis',
+  'AR-E': 'Entre Ríos',
+  'AR-F': 'La Rioja',
+  'AR-G': 'Santiago del Estero',
+  'AR-H': 'Chaco',
+  'AR-J': 'San Juan',
+  'AR-K': 'Catamarca',
+  'AR-L': 'La Pampa',
+  'AR-M': 'Mendoza',
+  'AR-N': 'Misiones',
+  'AR-P': 'Formosa',
+  'AR-Q': 'Neuquén',
+  'AR-R': 'Río Negro',
+  'AR-S': 'Santa Fe',
+  'AR-T': 'Tucumán',
+  'AR-U': 'Chubut',
+  'AR-V': 'Tierra del Fuego',
+  'AR-W': 'Corrientes',
+  'AR-X': 'Córdoba',
+  'AR-Y': 'Jujuy',
+  'AR-Z': 'Santa Cruz',
+};
+
+export function mapProvince(province: string | null | undefined): string {
+  if (!province) return '';
+  return PROVINCE_ISO_TO_NAME[province] || province;
+}
+
 export function sanitizeDocumentNumber(value: string | null | undefined): string {
   if (!value) return '';
   return value.replace(/[\.\-\s]/g, '');
@@ -112,7 +144,7 @@ export function mapDoctorData(doctor: DoctorInput): QuickLinkPayload['profession
     stateLicenseNumber: md.stateLicenseNumber || undefined,
     stateLicenseName: md.stateLicense || undefined,
     specialty: md.medicalSpecialty || '',
-    province: md.recetarioProvince || '',
+    province: mapProvince(md.recetarioProvince),
     signatureImage: md.signatureImage || undefined,
   };
 }
@@ -151,7 +183,7 @@ export function mapDoctorForAPI(doctor: DoctorInput): DoctorPayload {
     licenseType,
     licenseNumber,
     documentNumber: sanitizeDocumentNumber(pd.documentValue),
-    province: md.recetarioProvince || '',
+    province: mapProvince(md.recetarioProvince),
     title: md.recetarioTitle || 'Dr',
     specialty: md.medicalSpecialty || '',
     signature: md.signatureImage || undefined,

@@ -1,6 +1,6 @@
 import { HookContext } from '@feathersjs/feathers';
 import { getUsersByDocumentNumber, createRecetarioUser, RecetarioUserPayload } from '../services/recetario/recetario-client';
-import { sanitizeDocumentNumber, mapDocumentType } from '../services/recetario/data-mapper';
+import { sanitizeDocumentNumber, mapDocumentType, mapProvince } from '../services/recetario/data-mapper';
 
 const syncRecetarioUserId = (): ((ctx: HookContext) => Promise<HookContext>) => {
   return async (ctx: HookContext) => {
@@ -69,7 +69,7 @@ const syncRecetarioUserId = (): ((ctx: HookContext) => Promise<HookContext>) => 
           stateLicenseNumber: mdSettings.stateLicenseNumber || undefined,
           stateLicenseName: mdSettings.stateLicense || undefined,
           specialty,
-          province,
+          province: mapProvince(province),
           healthCenterId,
         };
 

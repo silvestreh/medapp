@@ -38,19 +38,22 @@ const registerHealthCenter = (): Hook => async (context: HookContext): Promise<H
   if (!hc?.address || !hc?.phone || !hc?.email) return context;
 
   try {
-    await app.service('recetario').create(
-      {
-        action: 'register-health-center' as const,
-        healthCenter: {
-          name: result.name,
-          address: hc.address,
-          phone: hc.phone,
-          email: hc.email,
-          logoUrl: hc.logoUrl,
-        },
-      },
-      { provider: undefined, organizationId: result.id }
-    );
+    const response = await recetarioClient.createHealthCenter({
+      name: result.name,
+      address: hc.address,
+      phone: hc.phone,
+      email: hc.email,
+      logoUrl: hc.logoUrl,
+    });
+    if (response?.id) {
+      const updatedSettings = { ...settings };
+      updatedSettings.recetario = { ...updatedSettings.recetario, healthCenterId: response.id };
+      await app.service('organizations').patch(
+        result.id,
+        { settings: updatedSettings } as any,
+        { provider: undefined }
+      );
+    }
   } catch (error: any) {
     console.error('Failed to register health center in Recetario:', error?.message);
   }
