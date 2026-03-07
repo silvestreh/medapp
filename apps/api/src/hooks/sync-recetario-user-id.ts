@@ -28,6 +28,17 @@ const syncRecetarioUserId = (): ((ctx: HookContext) => Promise<HookContext>) => 
       const docNum = sanitizeDocumentNumber(personalData.documentValue);
       if (!docNum) return ctx;
 
+      // Get the organization's healthCenterId (required by the Recetario API)
+      const sequelize = (ctx.app as any).get('sequelizeClient');
+      const orgUser = await sequelize.models.organization_users.findOne({
+        where: { userId: user.id },
+      });
+      if (!orgUser) return ctx;
+
+      const org = await ctx.app.service('organizations').get(orgUser.organizationId, internal);
+      const healthCenterId = org?.settings?.recetario?.healthCenterId;
+      if (!healthCenterId) return ctx;
+
       // Look up Recetario user by documentNumber
       const recetarioUsers = await getUsersByDocumentNumber(docNum);
       let recetarioUser = Array.isArray(recetarioUsers) ? recetarioUsers[0] : null;
@@ -46,17 +57,6 @@ const syncRecetarioUserId = (): ((ctx: HookContext) => Promise<HookContext>) => 
         if (!email || !firstName || !lastName || !nationalLicenseNumber || !specialty || !province || !title) {
           return ctx;
         }
-
-        // Get the organization's healthCenterId
-        const sequelize = (ctx.app as any).get('sequelizeClient');
-        const orgUser = await sequelize.models.organization_users.findOne({
-          where: { userId: user.id },
-        });
-        if (!orgUser) return ctx;
-
-        const org = await ctx.app.service('organizations').get(orgUser.organizationId, internal);
-        const healthCenterId = org?.settings?.recetario?.healthCenterId;
-        if (!healthCenterId) return ctx;
 
         const payload: RecetarioUserPayload = {
           title,
