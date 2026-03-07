@@ -128,7 +128,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
     ({ option }: { option: { value: string } }) => {
       if (option.value === CREATE_NEW_VALUE) {
         return (
-          <Text size="sm" c="blue">
+          <Text size="sm" c="var(--mantine-primary-color-4)">
             {t('patients.new_patient')}
           </Text>
         );

@@ -253,7 +253,7 @@ const Label = styled('div', {
     },
     focused: {
       true: {
-        color: 'var(--mantine-primary-color)',
+        color: 'var(--mantine-primary-color-4)',
       },
     },
   },

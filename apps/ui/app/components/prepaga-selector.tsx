@@ -294,7 +294,7 @@ export function PrepagaSelector({
                           <MantineText size="sm">{prepaga.denomination}</MantineText>
                         </Table.Td>
                         <Table.Td>
-                          {value === prepaga.id && <Check size={14} color="var(--mantine-primary-color)" />}
+                          {value === prepaga.id && <Check size={14} color="var(--mantine-primary-color-4)" />}
                         </Table.Td>
                       </TableRow>
                     ))}

@@ -57,7 +57,7 @@ const FabTrigger = styled('button', {
     justifyContent: 'center',
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-    background: 'var(--mantine-primary-color)',
+    background: 'var(--mantine-primary-color-4)',
     color: 'white',
     transition: 'transform 200ms ease',
     zIndex: 40,

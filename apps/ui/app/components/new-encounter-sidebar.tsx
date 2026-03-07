@@ -15,7 +15,7 @@ interface NewEncounterSidebarProps {
 const FormItem = styled('div', {
   base: {
     cursor: 'pointer',
-    color: 'var(--mantine-primary-color)',
+    color: 'var(--mantine-primary-color-4)',
     fontSize: 'var(--mantine-font-size-md)',
     padding: '1rem',
     display: 'flex',

@@ -193,7 +193,6 @@ export function StudyMetadataForm({
             label={t('studies.no_order')}
             checked={noOrder}
             onChange={e => onNoOrderChange(e.currentTarget.checked)}
-            color="blue"
             disabled={readOnly}
           />
         </FieldRow>
@@ -237,7 +236,6 @@ export function StudyMetadataForm({
                 }
                 checked={selectedStudies.includes(key)}
                 onChange={() => onToggleStudy(key)}
-                color="blue"
                 disabled={readOnly}
               />
             ))}

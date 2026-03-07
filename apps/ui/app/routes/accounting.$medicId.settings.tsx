@@ -1006,7 +1006,7 @@ export default function AccountingSettingsPage() {
                   >
                     <Stack gap={0}>
                       <Group justify="space-between" align="center">
-                        <Text c="blue.4" fw={600}>
+                        <Text c="var(--mantine-primary-color-4)" fw={600}>
                           {t(practiceI18nKey[practiceKey])}
                         </Text>
                         <Select

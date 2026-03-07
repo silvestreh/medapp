@@ -119,7 +119,7 @@ function SuggestionCard({ item }: { item: Suggestion }) {
           </ActionIcon>
         </Group>
         {typeof item.confidence === 'number' && (
-          <Badge variant="light" color="blue" size="xs" mt={2}>
+          <Badge variant="light" color="var(--mantine-primary-color-4)" size="xs" mt={2}>
             {Math.round(item.confidence * 100)}%
           </Badge>
         )}
@@ -138,7 +138,13 @@ function SuggestionCard({ item }: { item: Suggestion }) {
           </Box>
         )}
         {!expanded && item.detail && (
-          <Text size="xs" c="blue" mt={2} style={{ cursor: 'pointer' }} onClick={() => setExpanded(true)}>
+          <Text
+            size="xs"
+            c="var(--mantine-primary-color-4)"
+            mt={2}
+            style={{ cursor: 'pointer' }}
+            onClick={() => setExpanded(true)}
+          >
             {t('ai_chat.read_more', 'Ver más')} <ChevronDown size={10} style={{ verticalAlign: 'middle' }} />
           </Text>
         )}

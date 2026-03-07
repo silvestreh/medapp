@@ -113,7 +113,7 @@ function TabsNode({
   const defaultTab = field.tabs[0]?.value;
 
   return (
-    <Tabs defaultValue={defaultTab} variant={field.tabStyle ?? 'pills'} color="blue">
+    <Tabs defaultValue={defaultTab} variant={field.tabStyle ?? 'pills'}>
       <Tabs.List
         grow={field.grow !== false}
         mb="md"

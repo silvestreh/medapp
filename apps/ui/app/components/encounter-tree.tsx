@@ -105,7 +105,7 @@ const StyledAccordion = styled(Accordion, {
       padding: 0,
     },
     '& .mantine-Accordion-chevron': {
-      color: 'var(--mantine-primary-color)',
+      color: 'var(--mantine-primary-color-6)',
     },
   },
 });
@@ -114,15 +114,15 @@ const YearText = styled(Text, {
   base: {
     fontWeight: 600,
     fontSize: '1.125rem',
-    color: 'var(--mantine-primary-color)',
+    color: 'var(--mantine-primary-color-6)',
   },
 });
 
 const MonthText = styled(Text, {
   base: {
-    fontWeight: 400,
+    fontWeight: 500,
     fontSize: '1rem',
-    color: 'var(--mantine-primary-color-3)',
+    color: 'var(--mantine-primary-color-6)',
     textTransform: 'capitalize',
   },
 });
@@ -148,7 +148,7 @@ const EncounterDateText = styled(Text, {
   base: {
     fontWeight: 600,
     fontSize: '1rem',
-    color: 'var(--mantine-color-gray-7)',
+    color: 'var(--mantine-color-gray-6)',
     marginBottom: '1rem',
     cursor: 'default',
   },
@@ -157,7 +157,7 @@ const EncounterDateText = styled(Text, {
 const FormItem = styled('div', {
   base: {
     cursor: 'pointer',
-    color: 'var(--mantine-primary-color)',
+    color: 'var(--mantine-primary-color-6)',
     fontSize: 'var(--mantine-font-size-md)',
     padding: '1rem',
     marginLeft: '-1rem',

@@ -38,7 +38,7 @@ const NodeContainer = styled('div', {
     selected: {
       true: {
         backgroundColor: 'var(--mantine-primary-color-0)',
-        color: 'var(--mantine-primary-color)',
+        color: 'var(--mantine-primary-color-4)',
       },
     },
   },
@@ -386,7 +386,7 @@ export function Icd10Selector({
             {hasChildren ? isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} /> : null}
           </TreeIcon>
           <NodeText>{highlightText(`${node.id} - ${node.name}`, debouncedSearch)}</NodeText>
-          {values.includes(nodeId) && <Check size={14} color="var(--mantine-primary-color)" />}
+          {values.includes(nodeId) && <Check size={14} color="var(--mantine-primary-color-4)" />}
         </NodeContainer>
 
         {isExpanded && node.children && <Box>{node.children.map(childId => renderNode(childId, level + 1))}</Box>}
@@ -400,12 +400,12 @@ export function Icd10Selector({
       <Badge
         key={id}
         variant="light"
-        color="blue"
+        color="var(--mantine-primary-color-4)"
         rightSection={
           !readOnly && (
             <ActionIcon
               size={18}
-              color="blue"
+              color="var(--mantine-primary-color-4)"
               radius="xl"
               variant="subtle"
               onClick={e => {

@@ -265,13 +265,7 @@ export default function NewPatient() {
         >
           <Group justify="space-between" align="center">
             <Text>{t('patients.personal_data_found')}</Text>
-            <Button
-              variant="subtle"
-              color="blue"
-              size="compact-sm"
-              leftSection={<RotateCcw size={14} />}
-              onClick={handleReset}
-            >
+            <Button variant="subtle" size="compact-sm" leftSection={<RotateCcw size={14} />} onClick={handleReset}>
               {t('common.reset')}
             </Button>
           </Group>

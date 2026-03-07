@@ -249,7 +249,7 @@ export function MedicationSelector({ value, onChange, placeholder, label, error,
                               <MantineText size="sm">{med.pharmaceuticalForm}</MantineText>
                             </Table.Td>
                             <Table.Td>
-                              {value === formattedMed && <Check size={14} color="var(--mantine-primary-color)" />}
+                              {value === formattedMed && <Check size={14} color="var(--mantine-primary-color-4)" />}
                             </Table.Td>
                           </TableRow>
                         );
