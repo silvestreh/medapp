@@ -29,6 +29,9 @@ const NavContainer = styled('div', {
     lg: {
       padding: 'var(--mantine-spacing-xl)',
       minW: '20rem',
+      position: 'sticky',
+      top: '5rem',
+      alignSelf: 'flex-start',
     },
   },
 });
