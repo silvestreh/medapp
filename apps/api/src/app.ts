@@ -64,6 +64,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/', express.static(app.get('public')));
 
+// Health check endpoint for Railway
+app.use('/healthz', (_req: any, res: any) => res.status(200).json({ ok: true }));
+
 // Serve uploaded files — decrypt .enc files on-the-fly
 const uploadsDir = path.resolve(app.get('uploads')?.dir || './public/uploads');
 const EXT_TO_MIME: Record<string, string> = {
