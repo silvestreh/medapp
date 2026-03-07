@@ -25,13 +25,41 @@ type MdSettingsProfile = {
 const NavContainer = styled('div', {
   base: {
     padding: 'var(--mantine-spacing-md)',
+    display: 'flex',
+    gap: 'var(--mantine-spacing-xs)',
+    maxWidth: '100vw',
+    overflowY: 'hidden',
+    overflowX: 'auto',
+    borderBottom: '1px solid var(--mantine-color-gray-2)',
+    scrollbarWidth: 'none',
+
+    '& .mantine-NavLink-root': {
+      flex: 'none',
+      width: 'auto',
+
+      lg: {
+        flex: 1,
+      },
+    },
+
+    '& + .settings-container': {
+      padding: 'var(--mantine-spacing-md)',
+
+      lg: {
+        padding: 'var(--mantine-spacing-xl)',
+      },
+    },
 
     lg: {
+      flexDirection: 'column',
       padding: 'var(--mantine-spacing-xl)',
       minW: '20rem',
       position: 'sticky',
       top: '5rem',
       alignSelf: 'flex-start',
+      maxWidth: 'unset',
+      overflow: 'unset',
+      borderBottom: 'none',
     },
   },
 });
@@ -274,9 +302,9 @@ export default function SettingsLayout() {
   const { isMedic, isOrgOwner } = useLoaderData<typeof loader>();
 
   return (
-    <Flex>
+    <Flex direction={{ base: 'column', lg: 'row' }}>
       <SettingsTabs isMedic={isMedic} isOrgOwner={isOrgOwner} />
-      <FormContainer style={{ padding: '2rem', maxWidth: 720, margin: '0 auto' }}>
+      <FormContainer className="settings-container" styles={{ root: { maxWidth: 720, margin: '0 auto' } }}>
         <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>
           <Outlet />
         </div>
@@ -289,7 +317,7 @@ export function ErrorBoundary() {
   const data = useRouteLoaderData<typeof loader>('routes/settings');
 
   return (
-    <FormContainer style={{ padding: '2rem', maxWidth: 720, margin: '0 auto' }}>
+    <FormContainer style={{ maxWidth: 720, margin: '0 auto' }}>
       {data && <SettingsTabs isMedic={data.isMedic} isOrgOwner={data.isOrgOwner} />}
 
       <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>

@@ -373,7 +373,11 @@ type SectionTitleProps = React.ComponentPropsWithoutRef<typeof StyledTitle> & {
 
 export function SectionTitle({ icon, id, children, ...rest }: SectionTitleProps) {
   if (!icon) {
-    return <StyledTitle id={id} {...rest}>{children}</StyledTitle>;
+    return (
+      <StyledTitle id={id} {...rest}>
+        {children}
+      </StyledTitle>
+    );
   }
 
   const styledIcon = isValidElement(icon)
