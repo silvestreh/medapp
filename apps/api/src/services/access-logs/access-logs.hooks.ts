@@ -1,22 +1,24 @@
-import { HooksObject } from '@feathersjs/feathers';
+import { Hook, HookContext, HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { disallow } from 'feathers-hooks-common';
-import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
-import { blockSuperAdmin } from '../../hooks/block-super-admin';
-import { checkPermissions } from '../../hooks/check-permissions';
+import { Forbidden } from '@feathersjs/errors';
 
 const { authenticate } = authentication.hooks;
 
+const requireSuperAdmin = (): Hook => {
+  return async (context: HookContext): Promise<HookContext> => {
+    if (!context.params.isSuperAdmin) {
+      throw new Forbidden('Only super admins can access logs');
+    }
+    return context;
+  };
+};
+
 export default {
   before: {
-    all: [
-      authenticate('jwt'),
-      verifyOrganizationMembership(),
-      blockSuperAdmin(),
-      checkPermissions(),
-    ],
-    find: [],
-    get: [],
+    all: [authenticate('jwt')],
+    find: [requireSuperAdmin()],
+    get: [requireSuperAdmin()],
     create: [disallow('external')],
     update: [disallow('external')],
     patch: [disallow('external')],
