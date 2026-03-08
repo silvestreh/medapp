@@ -4,7 +4,7 @@ buildCommand = "pnpm --filter athelas-api... build"
 watchPatterns = ["apps/api/**"]
 
 [deploy]
-startCommand = "node apps/api/lib/"
+startCommand = "node /app/apps/api/lib/"
 healthcheckPath = "/healthz"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
