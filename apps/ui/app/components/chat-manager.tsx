@@ -267,6 +267,7 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
     return () => {
       service.removeListener('created', handleMessage);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatClient, user?.id, orgUsers]);
 
   const activeChatPatientId = useMemo(() => chats.find(c => c.isActive)?.patientId ?? null, [chats]);
