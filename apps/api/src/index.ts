@@ -17,3 +17,11 @@ server.on('listening', () => {
   scheduleAppointmentCleanup(app);
   scheduleLicenseRevalidation(app);
 });
+
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    logger.info('Server closed');
+    process.exit(0);
+  });
+});
