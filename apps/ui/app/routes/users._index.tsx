@@ -245,7 +245,7 @@ export default function UsersIndex() {
                 {t('users.col_role')}
               </Table.Th>
               <Table.Th
-                w={40}
+                w={60}
                 style={{
                   border: '1px solid var(--mantine-primary-color-1)',
                   borderRight: 'none',
