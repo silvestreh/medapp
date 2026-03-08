@@ -89,6 +89,7 @@ describe('encounters shared access', () => {
     const results = await app.service('encounters').find({
       query: { patientId: patient.id },
       provider: 'rest',
+      authenticated: true,
       user: medicB,
       organizationId: org.id,
       orgPermissions,
@@ -118,6 +119,7 @@ describe('encounters shared access', () => {
     const results = await app.service('encounters').find({
       query: { patientId: patient.id },
       provider: 'rest',
+      authenticated: true,
       user: medicB,
       organizationId: org.id,
       orgPermissions,
@@ -153,6 +155,7 @@ describe('encounters shared access', () => {
     const results = await app.service('encounters').find({
       query: { patientId: patientOther.id },
       provider: 'rest',
+      authenticated: true,
       user: medicB,
       organizationId: org.id,
       orgPermissions,
@@ -184,6 +187,7 @@ describe('encounters shared access', () => {
     const results = await app.service('encounters').find({
       query: { patientId: patient.id },
       provider: 'rest',
+      authenticated: true,
       user: medicB,
       organizationId: org.id,
       orgPermissions,
@@ -218,6 +222,7 @@ describe('encounters shared access', () => {
 
     const encounter = await app.service('encounters').get(encounterA1.id, {
       provider: 'rest',
+      authenticated: true,
       user: medicB,
       organizationId: org.id,
       orgPermissions,
@@ -244,6 +249,7 @@ describe('encounters shared access', () => {
     try {
       await app.service('encounters').get(encounterA1.id, {
         provider: 'rest',
+        authenticated: true,
         user: medicB,
         organizationId: org.id,
         orgPermissions,
@@ -260,6 +266,7 @@ describe('encounters shared access', () => {
     const results = await app.service('encounters').find({
       query: { patientId: patient.id },
       provider: 'rest',
+      authenticated: true,
       user: medicB,
       organizationId: org.id,
       orgPermissions,

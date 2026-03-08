@@ -253,6 +253,18 @@ export interface OrganizationPatient {
   patientId: Id;
 }
 
+export interface AccessLog {
+  id: Id;
+  userId: Id;
+  organizationId: Id | null;
+  resource: 'encounters' | 'studies' | 'prescriptions';
+  patientId: Id;
+  action: 'read' | 'write' | 'export';
+  ip: string | null;
+  metadata: Record<string, any> | null;
+  createdAt?: Date;
+}
+
 export interface SharedEncounterAccess {
   id: Id;
   grantingMedicId: Id;

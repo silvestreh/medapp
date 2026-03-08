@@ -44,10 +44,12 @@ export default function (app: Application): typeof Model {
   }, {
     indexes: [
       {
+        name: 'shared_enc_access_grant_unique',
         unique: true,
         fields: ['grantingMedicId', 'grantedMedicId', 'patientId', 'organizationId']
       },
       {
+        name: 'shared_enc_access_granted_medic',
         fields: ['grantedMedicId']
       }
     ]

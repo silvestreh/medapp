@@ -17,6 +17,7 @@ import { requireVerifiedLicense } from '../../hooks/require-verified-license';
 import populateInsurer from './hooks/populate-insurer';
 import { setCost } from '../practice-costs/hooks/set-cost';
 import { updateCost } from '../practice-costs/hooks/update-cost';
+import { logAccess } from '../../hooks/log-access';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -59,18 +60,21 @@ export default {
       populatePatient(),
       populateInsurer(),
       populateReferringDoctor(),
-      sortByPersonalDataRank({ foreignKey: 'patientId' })
+      sortByPersonalDataRank({ foreignKey: 'patientId' }),
+      logAccess({ resource: 'studies' })
     ],
     get: [
       populateResults(),
       populatePatient(),
       populateInsurer(),
       populateReferringDoctor(),
+      logAccess({ resource: 'studies' })
     ],
     create: [
       upsertStudyResults(),
       setCost('study'),
-      populateReferringDoctor()
+      populateReferringDoctor(),
+      logAccess({ resource: 'studies' })
     ],
     update: [],
     patch: [

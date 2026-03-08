@@ -5,6 +5,7 @@ import { verifyOrganizationMembership } from '../../hooks/verify-organization-me
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { blockSuperAdmin } from '../../hooks/block-super-admin';
 import { checkPermissions } from '../../hooks/check-permissions';
+import { logAccess } from '../../hooks/log-access';
 
 const { authenticate } = authentication.hooks;
 
@@ -61,9 +62,19 @@ export default {
 
   after: {
     all: [],
-    find: [populatePatient()],
-    get: [populatePatient()],
-    create: [],
+    find: [populatePatient(), logAccess({ resource: 'prescriptions' })],
+    get: [populatePatient(), logAccess({ resource: 'prescriptions' })],
+    create: [logAccess({
+      resource: 'prescriptions',
+      getMetadata: (context) => {
+        const userId = String(context.params?.user?.id || '');
+        const medicId = context.result?.medicId;
+        if (medicId && String(medicId) !== userId) {
+          return { onBehalfOfMedicId: String(medicId) };
+        }
+        return undefined;
+      },
+    })],
     update: [],
     patch: [],
     remove: [],

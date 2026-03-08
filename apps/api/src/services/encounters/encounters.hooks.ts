@@ -15,6 +15,7 @@ import { setCost } from '../practice-costs/hooks/set-cost';
 import { checkEncounterPermissions } from './hooks/check-encounter-permissions';
 import { applySharedAccess } from './hooks/apply-shared-access';
 import { markSharedEncounters } from './hooks/mark-shared-encounters';
+import { logAccess } from '../../hooks/log-access';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -28,9 +29,17 @@ export default {
       enforceActiveOrganization(),
       checkEncounterPermissions()
     ],
-    find: [applySharedAccess(), includeDecryptedAttributes()],
+    find: [
+      applySharedAccess(),
+      includeDecryptedAttributes()
+    ],
     get: [includeDecryptedAttributes()],
-    create: [requireVerifiedLicense(), validateEncounterData(), sanitizeEncryptedData('data')],
+    create: [
+      requireVerifiedLicense(),
+      validateEncounterData(),
+      sanitizeEncryptedData('data'),
+      logAccess({ resource: 'encounters' })
+    ],
     update: [disallow('external')],
     patch: [disallow('external')],
     remove: [disallow('external')]
@@ -41,14 +50,19 @@ export default {
     find: [
       parseDecryptedAttributes('data'),
       omitForDeleted({ service: 'patients', fkey: 'patientId' }),
-      markSharedEncounters()
+      markSharedEncounters(),
+      logAccess({ resource: 'encounters' })
     ],
     get: [
       parseDecryptedAttributes('data'),
       omitForDeleted({ service: 'patients', fkey: 'patientId' }),
-      markSharedEncounters()
+      markSharedEncounters(),
+      logAccess({ resource: 'encounters' })
     ],
-    create: [setCost('encounter')],
+    create: [
+      setCost('encounter'),
+      logAccess({ resource: 'encounters'})
+    ],
     update: [],
     patch: [],
     remove: []
