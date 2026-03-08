@@ -26,7 +26,7 @@ export default function (app: Application): void {
     define: {
       freezeTableName: true
     },
-    ...(isProduction && {
+    ...(process.env.DB_SSL === 'true' && {
       dialectOptions: {
         ssl: {
           require: true,

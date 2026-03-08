@@ -123,15 +123,10 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
       close();
 
       try {
-        const response = await chatClient.service('conversations').find({
-          query: { $limit: 50 },
-        });
-        const allConversations = Array.isArray(response) ? response : ((response as any)?.data ?? []);
-
-        let conversation = allConversations.find((c: any) => {
-          const participants: any[] = c.participants || [];
+        let conversation = conversations.find(c => {
+          const participants = c.participants || [];
           if (participants.length !== 2) return false;
-          const ids = participants.map((p: any) => p.userId);
+          const ids = participants.map(p => p.userId);
           return ids.includes(user.id) && ids.includes(orgUser.userId);
         });
 
@@ -160,7 +155,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
         // best-effort
       }
     },
-    [chatClient, user, openMessagingChat, close, refreshConversations, t]
+    [chatClient, user, conversations, openMessagingChat, close, refreshConversations, t]
   );
 
   const handleGroupClick = useCallback(

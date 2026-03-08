@@ -99,7 +99,12 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   if (intent === 'get-patient-data') {
     const result = await client.service('recetario' as any).create({ action: 'get-patient-data', patientId });
-    return json({ intent: 'get-patient-data', recetarioData: (result as any).recetarioData, matchedPrepagaId: (result as any).matchedPrepagaId, mhsPatientData: (result as any).mhsPatientData });
+    return json({
+      intent: 'get-patient-data',
+      recetarioData: (result as any).recetarioData,
+      matchedPrepagaId: (result as any).matchedPrepagaId,
+      mhsPatientData: (result as any).mhsPatientData,
+    });
   }
 
   if (intent === 'search-recetario-medications') {
@@ -110,14 +115,30 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   if (intent === 'create-prescription') {
     const { diagnosis, medications, hiv, patientData } = parseFormJson(formData.get('data'));
-    const result = await client.service('recetario' as any).create({ action: 'prescribe', patientId, diagnosis, medications, hiv, patientData });
-    return json({ intent: 'create-prescription', success: true, url: (result as any).url ?? null, prescriptionId: (result as any).prescriptionId ?? null, recetarioDocumentId: (result as any).recetarioDocumentId ?? null });
+    const result = await client
+      .service('recetario' as any)
+      .create({ action: 'prescribe', patientId, diagnosis, medications, hiv, patientData });
+    return json({
+      intent: 'create-prescription',
+      success: true,
+      url: (result as any).url ?? null,
+      prescriptionId: (result as any).prescriptionId ?? null,
+      recetarioDocumentId: (result as any).recetarioDocumentId ?? null,
+    });
   }
 
   if (intent === 'create-order') {
     const { diagnosis, content, patientData } = parseFormJson(formData.get('data'));
-    const result = await client.service('recetario' as any).create({ action: 'order', patientId, diagnosis, content, patientData });
-    return json({ intent: 'create-order', success: true, url: (result as any).url ?? null, prescriptionId: (result as any).prescriptionId ?? null, recetarioDocumentId: (result as any).recetarioDocumentId ?? null });
+    const result = await client
+      .service('recetario' as any)
+      .create({ action: 'order', patientId, diagnosis, content, patientData });
+    return json({
+      intent: 'create-order',
+      success: true,
+      url: (result as any).url ?? null,
+      prescriptionId: (result as any).prescriptionId ?? null,
+      recetarioDocumentId: (result as any).recetarioDocumentId ?? null,
+    });
   }
 
   if (intent === 'cancel-prescription') {
@@ -127,8 +148,12 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   }
 
   if (intent === 'share-prescription') {
-    const { prescriptionId, documentIds, shareChannel, shareRecipient, pdfUrl } = parseFormJson(formData.get('data')) as any;
-    await client.service('recetario' as any).create({ action: 'share', prescriptionId, documentIds, shareChannel, shareRecipient, pdfUrl });
+    const { prescriptionId, documentIds, shareChannel, shareRecipient, pdfUrl } = parseFormJson(
+      formData.get('data')
+    ) as any;
+    await client
+      .service('recetario' as any)
+      .create({ action: 'share', prescriptionId, documentIds, shareChannel, shareRecipient, pdfUrl });
     return json({ intent: 'share-prescription', success: true });
   }
 
@@ -145,8 +170,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     });
   } catch (error: any) {
     const isUniqueViolation =
-      error.code === 409 || error.name === 'Conflict' ||
-      (error.code === 400 && error.message === 'Validation error');
+      error.code === 409 || error.name === 'Conflict' || (error.code === 400 && error.message === 'Validation error');
     if (isUniqueViolation) {
       // Duplicate submission — encounter already created
     } else {
@@ -275,7 +299,6 @@ export default function PatientEncounterDetail() {
     navigate(-1);
   }, [navigate]);
 
-
   const dateRange = useMemo(() => {
     const encounters = data?.encounters || [];
     const studies = data?.studies || [];
@@ -357,9 +380,10 @@ export default function PatientEncounterDetail() {
   }, [selectedEncounter?.data, data.patient.id, updateEncounterDraft]);
 
   const hasSelection = selectedEncounter || selectedStudy || selectedPrescription;
-  const selectedAttachment = selectedEncounter && activeAttachmentIndex !== null
-    ? selectedEncounter.data?.attachments?.[activeAttachmentIndex]
-    : null;
+  const selectedAttachment =
+    selectedEncounter && activeAttachmentIndex !== null
+      ? selectedEncounter.data?.attachments?.[activeAttachmentIndex]
+      : null;
 
   if (!data) {
     return null;
@@ -465,9 +489,7 @@ export default function PatientEncounterDetail() {
             key={`${selectedEncounter?.id ?? selectedStudy?.id ?? selectedPrescription?.id}-${activeFormKey ?? 'none'}-${activeAttachmentIndex ?? 'none'}`}
             pos="relative"
           >
-            {selectedAttachment && (
-              <AttachmentViewer attachment={selectedAttachment} />
-            )}
+            {selectedAttachment && <AttachmentViewer attachment={selectedAttachment} />}
 
             {selectedEncounter && !selectedAttachment && (
               <EncounterForm
@@ -521,7 +543,10 @@ export default function PatientEncounterDetail() {
             {selectedPrescription && (
               <PrescriptionDetail
                 prescription={selectedPrescription}
-                onCancelled={() => { revalidate(); clearSelection(); }}
+                onCancelled={() => {
+                  revalidate();
+                  clearSelection();
+                }}
               />
             )}
 
