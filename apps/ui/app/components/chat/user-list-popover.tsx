@@ -79,7 +79,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
         items.push({ kind: 'group', conv, updatedAt: conv.updatedAt });
       } else if (conv.participants?.length === 2) {
         const other = conv.participants.find(p => p.userId !== user.id);
-        if (other) {
+        if (other && !usersWithConvos.has(other.userId)) {
           const orgUser = orgUsers.find(u => u.userId === other.userId);
           if (orgUser) {
             usersWithConvos.add(other.userId);
@@ -320,9 +320,9 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                   </UnstyledButton>
                 </Menu.Target>
                 <Menu.Dropdown>
-                  {(['online', 'away', 'dnd', 'offline'] as const).map(s => (
+                  {(['online', 'away', 'dnd', 'offline'] as const).map((s, index) => (
                     <Menu.Item
-                      key={s}
+                      key={`status-${s}-${index}`}
                       leftSection={<Circle size={10} fill={STATUS_COLORS[s]} color={STATUS_COLORS[s]} />}
                       onClick={() => handleStatusChange(s)}
                     >
@@ -358,7 +358,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
           {/* User list + group conversations */}
           <ScrollArea.Autosize mah={340} style={{ flex: 1 }}>
             <Stack gap={0}>
-              {recentItems.map(item => {
+              {recentItems.map((item, index) => {
                 if (item.kind === 'group') {
                   if (groupMode) return null;
                   const participants = resolveParticipants(item.conv.participants);
@@ -367,7 +367,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
 
                   return (
                     <UnstyledButton
-                      key={`group-${item.conv.id}`}
+                      key={`group-${item.conv.id}-${index}`}
                       onClick={() => handleGroupClick(item.conv.id, participants)}
                       px="md"
                       py="sm"
@@ -464,7 +464,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
               {otherUsers.length > 0 && recentItems.length > 0 && (
                 <Box py="2" bg="gray.0" style={{ borderBottom: '1px solid var(--mantine-color-gray-1)' }} />
               )}
-              {otherUsers.map(orgUser => {
+              {otherUsers.map((orgUser, index) => {
                 const status = getStatus(orgUser.userId);
                 const statusText = getStatusText(orgUser.userId);
                 const color = deterministicColor(orgUser.userId);
@@ -472,7 +472,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
 
                 return (
                   <UnstyledButton
-                    key={orgUser.userId}
+                    key={`user-${orgUser.userId}-${index}`}
                     onClick={() => (groupMode ? handleToggleUser(orgUser.userId) : handleUserClick(orgUser))}
                     px="md"
                     py="sm"
