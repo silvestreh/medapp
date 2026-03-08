@@ -92,9 +92,14 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
     // Sort by most recent activity first
     items.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
-    // Remaining users without any conversation history
+    // Remaining users without any conversation history (deduplicated)
+    const seen = new Set<string>(usersWithConvos);
     const others = orgUsers
-      .filter(u => !usersWithConvos.has(u.userId))
+      .filter(u => {
+        if (seen.has(u.userId)) return false;
+        seen.add(u.userId);
+        return true;
+      })
       .sort((a, b) => {
         const sa = STATUS_ORDER[getStatus(a.userId)] ?? 3;
         const sb = STATUS_ORDER[getStatus(b.userId)] ?? 3;
@@ -119,8 +124,13 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
 
   const handleUserClick = useCallback(
     async (orgUser: OrgUser) => {
-      if (!chatClient || !user?.id) return;
+      if (!chatClient || !user?.id) {
+        console.warn('[Chat] handleUserClick early exit — chatClient:', !!chatClient, 'user.id:', user?.id);
+        return;
+      }
       close();
+
+      console.log('[Chat] Opening conversation with', orgUser.fullName, orgUser.userId);
 
       try {
         let conversation = conversations.find(c => {
@@ -142,7 +152,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
           '?';
 
         openMessagingChat({
-          conversationId: conversation.id,
+          conversationId: conversation?.id ?? '',
           userId: orgUser.userId,
           name: orgUser.fullName,
           initials: orgUser.initials,
@@ -152,7 +162,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
           ],
         });
       } catch (err) {
-        // best-effort
+        console.error('[Chat] Failed to open conversation:', err);
       }
     },
     [chatClient, user, conversations, openMessagingChat, close, refreshConversations, t]
@@ -274,7 +284,15 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <Popover opened={opened} onChange={handlePopoverChange} position="right-end" shadow="md" withArrow width={280} closeOnClickOutside={!pinned}>
+    <Popover
+      opened={opened}
+      onChange={handlePopoverChange}
+      position="right-end"
+      shadow="md"
+      withArrow
+      width={280}
+      closeOnClickOutside={!pinned}
+    >
       <Popover.Target>
         <Box onClick={handlePopoverChange} style={{ cursor: 'pointer' }}>
           {children}
@@ -316,7 +334,10 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
               <Group gap={4}>
                 <UnstyledButton onClick={handleToggleGroupMode}>
                   <Group gap={4}>
-                    <Users size={14} color={groupMode ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-6)'} />
+                    <Users
+                      size={14}
+                      color={groupMode ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-6)'}
+                    />
                     <Text size="xs" c={groupMode ? 'blue' : 'dimmed'}>
                       {groupMode ? t('chat.cancel') : t('chat.new_group')}
                     </Text>
