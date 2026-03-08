@@ -81,8 +81,33 @@ export function ChatProvider({ children }: PropsWithChildren) {
 
     (async () => {
       try {
-        console.log('[ChatProvider] calling mainClient.reAuthenticate()...');
-        const authResult = await (mainClient as any).reAuthenticate();
+        // The main feathers client fires authenticate() without awaiting it,
+        // so reAuthenticate() may fail if the JWT hasn't been stored yet.
+        // Try first, and if it fails wait for the 'authenticated' event.
+        let authResult: any;
+        try {
+          authResult = await (mainClient as any).reAuthenticate();
+        } catch {
+          if (cancelled) return;
+          authResult = await new Promise<any>((resolve, reject) => {
+            const onAuth = (result: any) => resolve(result);
+            (mainClient as any).on('authenticated', onAuth);
+            // Clean up if the effect is cancelled
+            const check = setInterval(() => {
+              if (cancelled) {
+                clearInterval(check);
+                (mainClient as any).removeListener('authenticated', onAuth);
+                reject(new Error('cancelled'));
+              }
+            }, 200);
+            // Also set a timeout to avoid hanging forever
+            setTimeout(() => {
+              clearInterval(check);
+              (mainClient as any).removeListener('authenticated', onAuth);
+              reject(new Error('Authentication timeout'));
+            }, 10000);
+          });
+        }
         if (cancelled) return;
         console.log('[ChatProvider] got token, length:', authResult.accessToken?.length);
 
@@ -124,6 +149,7 @@ export function ChatProvider({ children }: PropsWithChildren) {
           });
         }
       } catch (err) {
+        if (err instanceof Error && err.message === 'cancelled') return;
         console.error('[ChatProvider] Connection failed:', err);
       }
     })();

@@ -54,6 +54,7 @@ const ALLOWED_PATHS = new Set([
   'webhooks',
   'file-uploads',
   'uploads',
+  'shared-encounter-access',
 ]);
 
 function getFirstSegment(request: Request): string {

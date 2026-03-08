@@ -37,7 +37,10 @@ export class FileUploads {
   }
 
   async find(): Promise<any> { throw new MethodNotAllowed(); }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async get(_id: Id): Promise<any> { throw new MethodNotAllowed(); }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async update(_id: Id): Promise<any> { throw new MethodNotAllowed(); }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async patch(_id: Id): Promise<any> { throw new MethodNotAllowed(); }
 }

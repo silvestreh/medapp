@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
+  ActionIcon,
   Avatar,
   Box,
   Button,
@@ -13,7 +14,7 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { Circle, LogOut, Users } from 'lucide-react';
+import { Circle, LogOut, Pin, PinOff, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useChat, type OrgUser, type ConversationEntry } from '~/components/chat/chat-provider';
@@ -59,6 +60,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const [groupMode, setGroupMode] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [pinned, setPinned] = useState(false);
 
   // Build a unified list of recent items (1-on-1 users + groups) sorted by updatedAt
   type RecentItem =
@@ -249,8 +251,13 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
     if (opened) {
       setGroupMode(false);
       setSelectedUserIds(new Set());
+      setPinned(false);
     }
   }, [toggle, opened]);
+
+  const handleTogglePin = useCallback(() => {
+    setPinned(prev => !prev);
+  }, []);
 
   // Resolve participant names from orgUsers
   const resolveParticipants = useCallback(
@@ -272,7 +279,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <Popover opened={opened} onChange={handlePopoverChange} position="right-end" shadow="md" withArrow width={280}>
+    <Popover opened={opened} onChange={handlePopoverChange} position="right-end" shadow="md" withArrow width={280} closeOnClickOutside={!pinned}>
       <Popover.Target>
         <Box onClick={handlePopoverChange} style={{ cursor: 'pointer' }}>
           {children}
@@ -288,7 +295,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
             style={{ borderBottom: '1px solid var(--mantine-primary-color-1)', flexShrink: 0 }}
           >
             <Group justify="space-between" align="center">
-              <Menu shadow="md" width={180} position="bottom-start">
+              <Menu shadow="md" width={180} position="bottom-start" withinPortal={false}>
                 <Menu.Target>
                   <UnstyledButton>
                     <Group gap={6}>
@@ -311,14 +318,24 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                   ))}
                 </Menu.Dropdown>
               </Menu>
-              <UnstyledButton onClick={handleToggleGroupMode}>
-                <Group gap={4}>
-                  <Users size={14} color={groupMode ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-6)'} />
-                  <Text size="xs" c={groupMode ? 'blue' : 'dimmed'}>
-                    {groupMode ? t('chat.cancel') : t('chat.new_group')}
-                  </Text>
-                </Group>
-              </UnstyledButton>
+              <Group gap={4}>
+                <UnstyledButton onClick={handleToggleGroupMode}>
+                  <Group gap={4}>
+                    <Users size={14} color={groupMode ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-6)'} />
+                    <Text size="xs" c={groupMode ? 'blue' : 'dimmed'}>
+                      {groupMode ? t('chat.cancel') : t('chat.new_group')}
+                    </Text>
+                  </Group>
+                </UnstyledButton>
+                <ActionIcon
+                  variant={pinned ? 'filled' : 'subtle'}
+                  size="sm"
+                  color={pinned ? 'blue' : 'gray'}
+                  onClick={handleTogglePin}
+                >
+                  {pinned ? <PinOff size={14} /> : <Pin size={14} />}
+                </ActionIcon>
+              </Group>
             </Group>
           </Box>
 

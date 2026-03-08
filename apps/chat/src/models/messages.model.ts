@@ -31,6 +31,10 @@ export default function (app: Application): typeof Model {
       type: DataTypes.UUID,
       allowNull: true,
     },
+    metadata: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+    },
   }, {
     timestamps: true,
     hooks: {

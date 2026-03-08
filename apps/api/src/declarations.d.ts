@@ -161,6 +161,7 @@ export interface TimeOffEvent {
 
 export interface Encounter {
   id: Id;
+  organizationId?: Id | null;
   patientId: Id;
   medicId: Id;
   date: Date;
@@ -250,6 +251,14 @@ export interface OrganizationPatient {
   id: Id;
   organizationId: Id;
   patientId: Id;
+}
+
+export interface SharedEncounterAccess {
+  id: Id;
+  grantingMedicId: Id;
+  grantedMedicId: Id;
+  patientId: Id;
+  organizationId: Id;
 }
 
 export interface Invite {

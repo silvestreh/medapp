@@ -880,6 +880,12 @@ export const en: typeof es = {
     you: 'You',
     entered_conversation: '{{name}} has entered the conversation',
     left_conversation: '{{name}} left the conversation',
+    share_encounters: 'Share encounters',
+    share_encounters_placeholder: 'Search patient to share encounters...',
+    share_encounters_success: 'Encounter access shared for {{patient}} with {{medic}}',
+    share_encounters_error: 'Could not share encounter access',
+    share_encounters_tooltip: 'Share patient encounters with this medic',
+    medical_record: 'Medical record',
   },
   ai_chat: {
     title: 'AI Assistant',

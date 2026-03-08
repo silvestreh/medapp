@@ -43,6 +43,7 @@ import prescriptions from './prescriptions/prescriptions.service';
 import recetario from './recetario/recetario.service';
 import whatsapp from './whatsapp/whatsapp.service';
 import fileUploads from './file-uploads/file-uploads.service';
+import sharedEncounterAccess from './shared-encounter-access/shared-encounter-access.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -90,4 +91,5 @@ export default function (app: Application): void {
   app.configure(recetario);
   app.configure(whatsapp);
   app.configure(fileUploads);
+  app.configure(sharedEncounterAccess);
 }

@@ -883,6 +883,12 @@ export const es = {
     you: 'Vos',
     entered_conversation: '{{name}} se unió a la conversación',
     left_conversation: '{{name}} salió de la conversación',
+    share_encounters: 'Compartir consultas',
+    share_encounters_placeholder: 'Buscar paciente para compartir consultas...',
+    share_encounters_success: 'Acceso a consultas compartido para {{patient}} con {{medic}}',
+    share_encounters_error: 'No se pudo compartir el acceso a consultas',
+    share_encounters_tooltip: 'Compartir consultas del paciente con este médico',
+    medical_record: 'Historia clínica',
   },
   ai_chat: {
     title: 'Asistente IA',

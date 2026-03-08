@@ -25,7 +25,7 @@ export class LlmModels {
 
   async create(data: LlmModelsCreateData, params?: Params): Promise<LlmModelsResult> {
     const orgConfig = await this.getOrganizationLlmConfig(params);
-    let provider = data?.provider || orgConfig.preferredProvider;
+    const provider = data?.provider || orgConfig.preferredProvider;
     if (provider && !['openai', 'anthropic', 'lmstudio'].includes(provider)) {
       throw new BadRequest('provider must be "openai", "anthropic", or "lmstudio"');
     }

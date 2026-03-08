@@ -22,6 +22,7 @@ export interface Prescription {
 }
 
 export class Prescriptions extends Service<Prescription> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(options: Partial<SequelizeServiceOptions>, app: Application) {
     super(options);
   }

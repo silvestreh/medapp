@@ -3,7 +3,6 @@ import * as authentication from '@feathersjs/authentication';
 import { disallow } from 'feathers-hooks-common';
 
 import { omitForDeleted } from '../../hooks/omit-for-deleted';
-import { checkPermissions } from '../../hooks/check-permissions';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { blockSuperAdmin } from '../../hooks/block-super-admin';
@@ -13,6 +12,9 @@ import { sanitizeEncryptedData } from '../../hooks/sanitize-encrypted-data';
 import { validateEncounterData } from '../../hooks/validate-encounter-data';
 import { requireVerifiedLicense } from '../../hooks/require-verified-license';
 import { setCost } from '../practice-costs/hooks/set-cost';
+import { checkEncounterPermissions } from './hooks/check-encounter-permissions';
+import { applySharedAccess } from './hooks/apply-shared-access';
+import { markSharedEncounters } from './hooks/mark-shared-encounters';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -24,9 +26,9 @@ export default {
       verifyOrganizationMembership(),
       blockSuperAdmin(),
       enforceActiveOrganization(),
-      checkPermissions({ foreignKey: 'medicId' })
+      checkEncounterPermissions()
     ],
-    find: [includeDecryptedAttributes()],
+    find: [applySharedAccess(), includeDecryptedAttributes()],
     get: [includeDecryptedAttributes()],
     create: [requireVerifiedLicense(), validateEncounterData(), sanitizeEncryptedData('data')],
     update: [disallow('external')],
@@ -38,11 +40,13 @@ export default {
     all: [],
     find: [
       parseDecryptedAttributes('data'),
-      omitForDeleted({ service: 'patients', fkey: 'patientId' })
+      omitForDeleted({ service: 'patients', fkey: 'patientId' }),
+      markSharedEncounters()
     ],
     get: [
       parseDecryptedAttributes('data'),
-      omitForDeleted({ service: 'patients', fkey: 'patientId' })
+      omitForDeleted({ service: 'patients', fkey: 'patientId' }),
+      markSharedEncounters()
     ],
     create: [setCost('encounter')],
     update: [],

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from '@remix-run/react';
 import {
   ActionIcon,
   Autocomplete,
@@ -12,23 +13,31 @@ import {
   Text,
   Textarea,
 } from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
-import { ArrowDownRight, Reply, UserPlus, X } from 'lucide-react';
+import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
+import { ArrowDownRight, Paperclip, Reply, Stethoscope, UserPlus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import { useChat } from '~/components/chat/chat-provider';
-import { useAccount } from '~/components/provider';
+import { useAccount, useFeathers, useFind } from '~/components/provider';
 import { media } from '~/media';
 import { deterministicColor, type ChatParticipant } from '~/components/chat-manager';
 import { useChatManager } from '~/components/chat-manager';
+import type { Patient } from '~/declarations';
+import { displayDocumentValue } from '~/utils';
 
 interface ReplySnippet {
   id: string;
   senderId: string;
   content: string;
+}
+
+interface SharedEncounterMetadata {
+  type: 'shared-encounter-access';
+  patientId: string;
+  patientName: string;
 }
 
 interface Message {
@@ -41,6 +50,7 @@ interface Message {
   updatedAt: string;
   replyToId?: string | null;
   replyTo?: ReplySnippet | null;
+  metadata?: SharedEncounterMetadata | null;
 }
 
 export interface MessagingChatPanelProps {
@@ -127,6 +137,7 @@ export function MessagingChatPanel({
   onClose,
 }: MessagingChatPanelProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { chatClient, orgUsers, typingUsers, sendTyping } = useChat();
   const { user } = useAccount();
   const { updateChatParticipants } = useChatManager();
@@ -144,11 +155,75 @@ export function MessagingChatPanel({
   const [addUserQuery, setAddUserQuery] = useState('');
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [showShareEncounters, setShowShareEncounters] = useState(false);
+  const [sharePatientQuery, setSharePatientQuery] = useState('');
+  const [debouncedShareQuery] = useDebouncedValue(sharePatientQuery, 500);
+  const [pendingSharePatient, setPendingSharePatient] = useState<Patient | null>(null);
   const loadedRef = useRef(false);
   const addUserInputRef = useRef<HTMLInputElement | null>(null);
+  const shareInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
+
+  const feathersClient = useFeathers();
+
+  const sharePatientSearchQuery = useMemo(
+    () => ({
+      firstName: debouncedShareQuery,
+      lastName: debouncedShareQuery,
+      documentValue: debouncedShareQuery,
+    }),
+    [debouncedShareQuery]
+  );
+
+  const {
+    response: { data: sharePatients = [] },
+    isLoading: isLoadingPatients,
+  } = useFind('patients', sharePatientSearchQuery, { enabled: showShareEncounters });
+
+  const sharePatientOptions = useMemo(() => {
+    const map = new Map<string, Patient>();
+    const data: string[] = [];
+
+    for (const patient of sharePatients as Patient[]) {
+      const name = `${patient.personalData.firstName} ${patient.personalData.lastName}`.trim();
+      const doc = displayDocumentValue(patient.personalData.documentValue);
+      const display = doc !== '—' ? `${name} — ${doc}` : name;
+      map.set(display, patient);
+      data.push(display);
+    }
+
+    return { data, patientByValue: map };
+  }, [sharePatients]);
+
+  const recipientUserId = useMemo(() => {
+    if (!participants || participants.length === 0) return null;
+    const other = participants.find(p => p.userId !== user?.id);
+    return other?.userId ?? null;
+  }, [participants, user?.id]);
+
+  const handleToggleShareEncounters = useCallback(() => {
+    setShowShareEncounters(prev => !prev);
+    setSharePatientQuery('');
+  }, []);
+
+  const handleShareEncounterSelect = useCallback(
+    (value: string) => {
+      const patient = sharePatientOptions.patientByValue.get(value);
+      if (!patient) return;
+
+      setPendingSharePatient(patient);
+      setShowShareEncounters(false);
+      setSharePatientQuery('');
+      requestAnimationFrame(() => textareaRef.current?.focus());
+    },
+    [sharePatientOptions.patientByValue]
+  );
+
+  const handleCancelShareEncounter = useCallback(() => {
+    setPendingSharePatient(null);
+  }, []);
 
   const isGroup = (participants?.length ?? 0) > 2;
   const recipientName = useMemo(() => {
@@ -295,26 +370,46 @@ export function MessagingChatPanel({
     setEditingMessageId(null);
     const replyToId = replyTo?.id ?? undefined;
     setReplyTo(null);
+    const sharePatient = pendingSharePatient;
+    setPendingSharePatient(null);
     try {
       if (currentEditId) {
         await chatClient.service('messages').patch(currentEditId, { content });
         setMessages(prev => prev.map(m => (m.id === currentEditId ? { ...m, content } : m)));
       } else {
+        // Create shared access grant if a patient was attached
+        if (sharePatient && recipientUserId) {
+          await feathersClient.service('shared-encounter-access').create({
+            grantedMedicId: recipientUserId,
+            patientId: sharePatient.id,
+          });
+        }
+
+        const metadata: SharedEncounterMetadata | undefined = sharePatient
+          ? {
+            type: 'shared-encounter-access',
+            patientId: sharePatient.id,
+            patientName: `${sharePatient.personalData.firstName} ${sharePatient.personalData.lastName}`.trim(),
+          }
+          : undefined;
+
         await chatClient.service('messages').create({
           conversationId,
           content,
           ...(replyToId ? { replyToId } : {}),
+          ...(metadata ? { metadata } : {}),
         });
       }
     } catch (err) {
       console.warn('[Chat] Failed to send message:', err);
       setDraftMessage(content);
+      if (sharePatient) setPendingSharePatient(sharePatient);
     } finally {
       setIsSending(false);
       requestAnimationFrame(() => textareaRef.current?.focus());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatClient, conversationId, draftMessage, isSending, replyTo, editingMessageId]);
+  }, [chatClient, conversationId, draftMessage, isSending, replyTo, editingMessageId, pendingSharePatient, recipientUserId, feathersClient]);
 
   const handleDraftChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -656,6 +751,34 @@ export function MessagingChatPanel({
                       </Text>
                     </Box>
                   )}
+                  {/* Shared encounter access */}
+                  {msg.metadata?.type === 'shared-encounter-access' && (
+                    <Box
+                      px="sm"
+                      py={4}
+                      mb={2}
+                      style={{
+                        borderLeft: '3px solid var(--mantine-color-teal-4)',
+                        borderRadius: '0 8px 8px 0',
+                        backgroundColor: 'var(--mantine-color-gray-1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => navigate(`/encounters/${msg.metadata!.patientId}`)}
+                    >
+                      <Stethoscope size={14} color="var(--mantine-color-teal-6)" style={{ flexShrink: 0 }} />
+                      <Box>
+                        <Text size="xs" fw={600} c="teal.6" lineClamp={1}>
+                          {msg.metadata.patientName}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          {t('chat.medical_record')}
+                        </Text>
+                      </Box>
+                    </Box>
+                  )}
                   <Paper
                     px="sm"
                     py={6}
@@ -764,20 +887,95 @@ export function MessagingChatPanel({
         </Group>
       )}
 
+      {/* Share encounters picker */}
+      {showShareEncounters && (
+        <Box px="md" py="xs" style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}>
+          <Autocomplete
+            ref={shareInputRef}
+            placeholder={t('chat.share_encounters_placeholder')}
+            value={sharePatientQuery}
+            onChange={setSharePatientQuery}
+            onOptionSubmit={handleShareEncounterSelect}
+            data={sharePatientOptions.data}
+            filter={({ options }) => options}
+            size="xs"
+            leftSection={isLoadingPatients ? <Loader size={14} /> : undefined}
+            comboboxProps={{ withinPortal: true, zIndex: 1400 }}
+            autoFocus
+          />
+        </Box>
+      )}
+
+      {/* Pending share encounter preview */}
+      {pendingSharePatient && (
+        <Group
+          gap="xs"
+          px="md"
+          py={6}
+          align="center"
+          style={{
+            flexShrink: 0,
+            borderBottom: '1px solid var(--mantine-color-gray-2)',
+            backgroundColor: 'var(--mantine-color-gray-0)',
+          }}
+        >
+          <Box
+            style={{
+              flex: 1,
+              minWidth: 0,
+              borderLeft: '3px solid var(--mantine-color-teal-4)',
+              paddingLeft: 8,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Stethoscope size={16} color="var(--mantine-color-teal-6)" style={{ flexShrink: 0 }} />
+            <Box>
+              <Text size="xs" fw={600} c="teal.6" lineClamp={1}>
+                {pendingSharePatient.personalData.firstName} {pendingSharePatient.personalData.lastName}
+              </Text>
+              <Text size="xs" c="dimmed" lineClamp={1}>
+                {t('chat.medical_record')}
+              </Text>
+            </Box>
+          </Box>
+          <ActionIcon variant="subtle" color="gray" size="xs" onClick={handleCancelShareEncounter}>
+            <X size={14} />
+          </ActionIcon>
+        </Group>
+      )}
+
       {/* Input */}
-      <Textarea
-        ref={textareaRef}
-        value={draftMessage}
-        onChange={handleDraftChange}
-        onKeyDown={handleKeyDown}
-        minRows={1}
-        placeholder={t('chat.type_message')}
-        variant="unstyled"
-        autosize
-        px="md"
-        py={4}
-        disabled={isSending}
-      />
+      <Group gap={0} align="end" style={{ flexShrink: 0 }}>
+        {!isGroup && (
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            ml="xs"
+            mb={8}
+            title={t('chat.share_encounters_tooltip')}
+            onClick={handleToggleShareEncounters}
+          >
+            <Paperclip size={16} />
+          </ActionIcon>
+        )}
+        <Textarea
+          ref={textareaRef}
+          value={draftMessage}
+          onChange={handleDraftChange}
+          onKeyDown={handleKeyDown}
+          minRows={1}
+          placeholder={t('chat.type_message')}
+          variant="unstyled"
+          autosize
+          px="md"
+          py={4}
+          disabled={isSending}
+          style={{ flex: 1 }}
+        />
+      </Group>
     </Paper>
   );
 }
