@@ -51,6 +51,49 @@ const requireConversationId = () => async (context: HookContext) => {
 };
 
 /**
+ * Include the replyTo association when querying messages.
+ */
+const includeReplyTo = () => async (context: HookContext) => {
+  const sequelize = context.app.get('sequelizeClient');
+  const Messages = sequelize.models.messages;
+
+  context.params.sequelize = {
+    ...context.params.sequelize,
+    raw: false,
+    include: [
+      ...(context.params.sequelize?.include ?? []),
+      { model: Messages, as: 'replyTo', attributes: ['id', 'senderId', 'content'] },
+    ],
+  };
+
+  return context;
+};
+
+/**
+ * Populate replyTo on a newly created message (after hook).
+ */
+const populateReplyTo = () => async (context: HookContext) => {
+  if (!context.result.replyToId) return context;
+
+  const sequelize = context.app.get('sequelizeClient');
+  const Messages = sequelize.models.messages;
+
+  const reply = await Messages.findByPk(context.result.replyToId, {
+    attributes: ['id', 'senderId', 'content'],
+    raw: true,
+  });
+
+  if (reply) {
+    context.result = {
+      ...(context.result.toJSON ? context.result.toJSON() : context.result),
+      replyTo: reply,
+    };
+  }
+
+  return context;
+};
+
+/**
  * Update the conversation's updatedAt after a new message.
  */
 const touchConversation = () => async (context: HookContext) => {
@@ -69,8 +112,8 @@ const touchConversation = () => async (context: HookContext) => {
 export default {
   before: {
     all: [authenticate('jwt')],
-    find: [requireConversationId(), verifySenderIsParticipant()],
-    get: [],
+    find: [requireConversationId(), verifySenderIsParticipant(), includeReplyTo()],
+    get: [includeReplyTo()],
     create: [setSenderId(), verifySenderIsParticipant()],
     update: [],
     patch: [],
@@ -81,7 +124,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [touchConversation()],
+    create: [populateReplyTo(), touchConversation()],
     update: [],
     patch: [],
     remove: [],

@@ -104,6 +104,35 @@ export default function (app: Application): void {
     return (app as any).channel(`conversations/${hook.result.id}`);
   });
 
+  // Route conversation-participants events to conversation channels
+  // Also join/leave the affected user to the conversation channel
+  (app as any).service('conversation-participants').publish((_data: any, hook: HookContext) => {
+    const conversationId = hook.result.conversationId;
+    const userId = hook.result.userId;
+
+    if (hook.method === 'create') {
+      // Join the new participant to the conversation channel
+      const connections = (app as any).channel('authenticated').connections.filter(
+        (conn: any) => conn.user?.id === userId
+      );
+      connections.forEach((conn: any) => {
+        (app as any).channel(`conversations/${conversationId}`).join(conn);
+      });
+    }
+
+    if (hook.method === 'remove') {
+      // Remove the participant from the conversation channel
+      const connections = (app as any).channel(`conversations/${conversationId}`).connections.filter(
+        (conn: any) => conn.user?.id === userId
+      );
+      connections.forEach((conn: any) => {
+        (app as any).channel(`conversations/${conversationId}`).leave(conn);
+      });
+    }
+
+    return (app as any).channel(`conversations/${conversationId}`);
+  });
+
   // Route user-status events to all authenticated users
   (app as any).service('user-status').publish(() => {
     return (app as any).channel('authenticated');

@@ -119,4 +119,4 @@ scripts/seeds/import-skipped/*.json
 .env
 .llm-name-cache.json
 config/local.json
-import-recetario-data.json
+import-recetario-*.json

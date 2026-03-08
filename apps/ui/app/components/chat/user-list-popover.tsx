@@ -14,8 +14,9 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Circle, LogOut, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import { useChat, type OrgUser } from '~/components/chat/chat-provider';
+import { useChat, type OrgUser, type ConversationEntry } from '~/components/chat/chat-provider';
 import { useChatManager, deterministicColor, type ChatParticipant } from '~/components/chat-manager';
 import { useAccount } from '~/components/provider';
 
@@ -26,12 +27,12 @@ const STATUS_COLORS: Record<string, string> = {
   offline: 'var(--mantine-color-gray-5)',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  online: 'Online',
-  away: 'Away',
-  dnd: 'Do not disturb',
-  offline: 'Offline',
-};
+const STATUS_LABEL_KEYS = {
+  online: 'chat.status_online',
+  away: 'chat.status_away',
+  dnd: 'chat.status_dnd',
+  offline: 'chat.status_offline',
+} as const;
 
 const STATUS_ORDER: Record<string, number> = {
   online: 0,
@@ -55,23 +56,52 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
   } = useChat();
   const { openMessagingChat, closeChat } = useChatManager();
   const { user } = useAccount();
+  const { t } = useTranslation();
   const [groupMode, setGroupMode] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
 
-  const sortedUsers = useMemo(() => {
-    return [...orgUsers].sort((a, b) => {
-      const sa = STATUS_ORDER[getStatus(a.userId)] ?? 3;
-      const sb = STATUS_ORDER[getStatus(b.userId)] ?? 3;
-      if (sa !== sb) return sa - sb;
-      return a.fullName.localeCompare(b.fullName);
-    });
-  }, [orgUsers, getStatus]);
+  // Build a unified list of recent items (1-on-1 users + groups) sorted by updatedAt
+  type RecentItem =
+    | { kind: 'user'; orgUser: OrgUser; updatedAt: string }
+    | { kind: 'group'; conv: ConversationEntry; updatedAt: string };
 
-  // Group conversations (3+ participants)
-  const groupConversations = useMemo(() => {
-    if (!user?.id) return [];
-    return conversations.filter(c => (c.participants?.length ?? 0) > 2);
-  }, [conversations, user?.id]);
+  const { recentItems, otherUsers } = useMemo(() => {
+    if (!user?.id) return { recentItems: [] as RecentItem[], otherUsers: orgUsers };
+
+    const items: RecentItem[] = [];
+    const usersWithConvos = new Set<string>();
+
+    for (const conv of conversations) {
+      const isGroup = (conv.participants?.length ?? 0) > 2;
+      if (isGroup) {
+        items.push({ kind: 'group', conv, updatedAt: conv.updatedAt });
+      } else if (conv.participants?.length === 2) {
+        const other = conv.participants.find(p => p.userId !== user.id);
+        if (other) {
+          const orgUser = orgUsers.find(u => u.userId === other.userId);
+          if (orgUser) {
+            usersWithConvos.add(other.userId);
+            items.push({ kind: 'user', orgUser, updatedAt: conv.updatedAt });
+          }
+        }
+      }
+    }
+
+    // Sort by most recent activity first
+    items.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
+    // Remaining users without any conversation history
+    const others = orgUsers
+      .filter(u => !usersWithConvos.has(u.userId))
+      .sort((a, b) => {
+        const sa = STATUS_ORDER[getStatus(a.userId)] ?? 3;
+        const sb = STATUS_ORDER[getStatus(b.userId)] ?? 3;
+        if (sa !== sb) return sa - sb;
+        return a.fullName.localeCompare(b.fullName);
+      });
+
+    return { recentItems: items, otherUsers: others };
+  }, [conversations, orgUsers, user?.id, getStatus]);
 
   const handleToggleUser = useCallback((userId: string) => {
     setSelectedUserIds(prev => {
@@ -120,7 +150,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
           name: orgUser.fullName,
           initials: orgUser.initials,
           participants: [
-            { userId: user.id, name: 'You', initials: myInitials },
+            { userId: user.id, name: t('chat.you'), initials: myInitials },
             { userId: orgUser.userId, name: orgUser.fullName, initials: orgUser.initials },
           ],
         });
@@ -128,7 +158,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
         console.warn('[Chat] Failed to open conversation:', err);
       }
     },
-    [chatClient, user, openMessagingChat, close, refreshConversations]
+    [chatClient, user, openMessagingChat, close, refreshConversations, t]
   );
 
   const handleGroupClick = useCallback(
@@ -137,7 +167,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
       close();
 
       const others = participants.filter(p => p.userId !== user.id);
-      const groupName = `Group: ${others.map(p => p.initials).join(', ')}`;
+      const groupName = `${t('chat.group_label')} ${others.map(p => p.initials).join(', ')}`;
 
       openMessagingChat({
         conversationId,
@@ -147,7 +177,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
         participants,
       });
     },
-    [user, openMessagingChat, close]
+    [user, openMessagingChat, close, t]
   );
 
   const handleLeaveGroup = useCallback(
@@ -172,7 +202,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
         '?';
       const myName =
         `${(user.personalData as Record<string, string>)?.firstName ?? ''} ${(user.personalData as Record<string, string>)?.lastName ?? ''}`.trim() ||
-        'You';
+        t('chat.you');
 
       const participants = [
         { userId: user.id, name: myName, initials: myInitials },
@@ -189,7 +219,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
       openMessagingChat({
         conversationId: conversation.id,
         userId: [...selectedUserIds][0],
-        name: `Group: ${groupName}`,
+        name: `${t('chat.group_label')} ${groupName}`,
         initials: 'G',
         participants,
       });
@@ -200,7 +230,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.warn('[Chat] Failed to create group:', err);
     }
-  }, [chatClient, user, selectedUserIds, orgUsers, openMessagingChat, close, refreshConversations]);
+  }, [chatClient, user, selectedUserIds, orgUsers, openMessagingChat, close, refreshConversations, t]);
 
   const handleToggleGroupMode = useCallback(() => {
     setGroupMode(prev => !prev);
@@ -233,12 +263,12 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
         if (p.userId === user?.id) {
           const pd = user?.personalData as Record<string, string>;
           const initials = `${pd?.firstName?.[0] ?? ''}${pd?.lastName?.[0] ?? ''}`.toUpperCase() || '?';
-          return { userId: p.userId, name: 'You', initials };
+          return { userId: p.userId, name: t('chat.you'), initials };
         }
         return { userId: p.userId, name: p.userId, initials: '?' };
       });
     },
-    [orgUsers, user]
+    [orgUsers, user, t]
   );
 
   return (
@@ -251,15 +281,20 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
       <Popover.Dropdown p={0}>
         <Stack gap={0} style={{ maxHeight: 440, display: 'flex', flexDirection: 'column' }}>
           {/* Sticky header */}
-          <Box px="md" py="sm" style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}>
+          <Box
+            bg="var(--mantine-primary-color-0)"
+            px="md"
+            py="sm"
+            style={{ borderBottom: '1px solid var(--mantine-primary-color-1)', flexShrink: 0 }}
+          >
             <Group justify="space-between" align="center">
-              <Menu shadow="md" width={180}>
+              <Menu shadow="md" width={180} position="bottom-start">
                 <Menu.Target>
                   <UnstyledButton>
                     <Group gap={6}>
                       <Circle size={10} fill={STATUS_COLORS[myStatus]} color={STATUS_COLORS[myStatus]} />
                       <Text size="sm" fw={500}>
-                        {STATUS_LABELS[myStatus]}
+                        {t(STATUS_LABEL_KEYS[myStatus])}
                       </Text>
                     </Group>
                   </UnstyledButton>
@@ -271,7 +306,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                       leftSection={<Circle size={10} fill={STATUS_COLORS[s]} color={STATUS_COLORS[s]} />}
                       onClick={() => handleStatusChange(s)}
                     >
-                      {STATUS_LABELS[s]}
+                      {t(STATUS_LABEL_KEYS[s])}
                     </Menu.Item>
                   ))}
                 </Menu.Dropdown>
@@ -280,7 +315,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                 <Group gap={4}>
                   <Users size={14} color={groupMode ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-6)'} />
                   <Text size="xs" c={groupMode ? 'blue' : 'dimmed'}>
-                    {groupMode ? 'Cancel' : 'New group'}
+                    {groupMode ? t('chat.cancel') : t('chat.new_group')}
                   </Text>
                 </Group>
               </UnstyledButton>
@@ -290,7 +325,50 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
           {/* User list + group conversations */}
           <ScrollArea.Autosize mah={340} style={{ flex: 1 }}>
             <Stack gap={0}>
-              {sortedUsers.map(orgUser => {
+              {recentItems.map(item => {
+                if (item.kind === 'group') {
+                  if (groupMode) return null;
+                  const participants = resolveParticipants(item.conv.participants);
+                  const others = participants.filter(p => p.userId !== user?.id);
+                  const color = deterministicColor(item.conv.id);
+
+                  return (
+                    <UnstyledButton
+                      key={`group-${item.conv.id}`}
+                      onClick={() => handleGroupClick(item.conv.id, participants)}
+                      px="md"
+                      py="sm"
+                      style={{ borderBottom: '1px solid var(--mantine-color-gray-1)' }}
+                    >
+                      <Group gap="sm" wrap="nowrap" justify="space-between">
+                        <Group gap="sm" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+                          <Avatar size={36} radius="xl" color={color}>
+                            <Users size={18} />
+                          </Avatar>
+                          <Box style={{ flex: 1, minWidth: 0 }}>
+                            <Text size="sm" fw={500} lineClamp={1}>
+                              {others.map(p => p.name).join(', ')}
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                              {t('chat.members_count', { count: participants.length })}
+                            </Text>
+                          </Box>
+                        </Group>
+                        <UnstyledButton
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            handleLeaveGroup(item.conv.id);
+                          }}
+                          style={{ flexShrink: 0 }}
+                        >
+                          <LogOut size={14} color="var(--mantine-color-red-6)" />
+                        </UnstyledButton>
+                      </Group>
+                    </UnstyledButton>
+                  );
+                }
+
+                const orgUser = item.orgUser;
                 const status = getStatus(orgUser.userId);
                 const statusText = getStatusText(orgUser.userId);
                 const color = deterministicColor(orgUser.userId);
@@ -311,9 +389,9 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                       {groupMode && (
                         <Checkbox
                           checked={isSelected}
-                          onChange={() => handleToggleUser(orgUser.userId)}
+                          readOnly
                           size="sm"
-                          style={{ flexShrink: 0 }}
+                          style={{ flexShrink: 0, pointerEvents: 'none' }}
                           tabIndex={-1}
                         />
                       )}
@@ -349,60 +427,72 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                 );
               })}
 
-              {/* Group conversations section */}
-              {!groupMode && groupConversations.length > 0 && (
-                <>
-                  <Box px="md" py="xs" bg="gray.0">
-                    <Text size="xs" fw={600} c="dimmed" tt="uppercase">
-                      Groups
-                    </Text>
-                  </Box>
-                  {groupConversations.map(conv => {
-                    const participants = resolveParticipants(conv.participants);
-                    const others = participants.filter(p => p.userId !== user?.id);
-                    const color = deterministicColor(conv.id);
-
-                    return (
-                      <UnstyledButton
-                        key={conv.id}
-                        onClick={() => handleGroupClick(conv.id, participants)}
-                        px="md"
-                        py="sm"
-                        style={{ borderBottom: '1px solid var(--mantine-color-gray-1)' }}
-                      >
-                        <Group gap="sm" wrap="nowrap" justify="space-between">
-                          <Group gap="sm" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-                            <Avatar size={36} radius="xl" color={color}>
-                              <Users size={18} />
-                            </Avatar>
-                            <Box style={{ flex: 1, minWidth: 0 }}>
-                              <Text size="sm" fw={500} lineClamp={1}>
-                                {others.map(p => p.name).join(', ')}
-                              </Text>
-                              <Text size="xs" c="dimmed">
-                                {participants.length} members
-                              </Text>
-                            </Box>
-                          </Group>
-                          <UnstyledButton
-                            onClick={(e: React.MouseEvent) => {
-                              e.stopPropagation();
-                              handleLeaveGroup(conv.id);
-                            }}
-                            style={{ flexShrink: 0 }}
-                          >
-                            <LogOut size={14} color="var(--mantine-color-red-6)" />
-                          </UnstyledButton>
-                        </Group>
-                      </UnstyledButton>
-                    );
-                  })}
-                </>
+              {/* Separator */}
+              {otherUsers.length > 0 && recentItems.length > 0 && (
+                <Box py="2" bg="gray.0" style={{ borderBottom: '1px solid var(--mantine-color-gray-1)' }} />
               )}
+              {otherUsers.map(orgUser => {
+                const status = getStatus(orgUser.userId);
+                const statusText = getStatusText(orgUser.userId);
+                const color = deterministicColor(orgUser.userId);
+                const isSelected = selectedUserIds.has(orgUser.userId);
 
-              {sortedUsers.length === 0 && groupConversations.length === 0 && (
+                return (
+                  <UnstyledButton
+                    key={orgUser.userId}
+                    onClick={() => (groupMode ? handleToggleUser(orgUser.userId) : handleUserClick(orgUser))}
+                    px="md"
+                    py="sm"
+                    style={{
+                      borderBottom: '1px solid var(--mantine-color-gray-1)',
+                      backgroundColor: isSelected ? 'var(--mantine-color-blue-0)' : undefined,
+                    }}
+                  >
+                    <Group gap="sm" wrap="nowrap">
+                      {groupMode && (
+                        <Checkbox
+                          checked={isSelected}
+                          readOnly
+                          size="sm"
+                          style={{ flexShrink: 0, pointerEvents: 'none' }}
+                          tabIndex={-1}
+                        />
+                      )}
+                      <Box style={{ position: 'relative', flexShrink: 0 }}>
+                        <Avatar size={36} radius="xl" color={color}>
+                          {orgUser.initials}
+                        </Avatar>
+                        <Box
+                          style={{
+                            position: 'absolute',
+                            bottom: -1,
+                            right: -1,
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            backgroundColor: STATUS_COLORS[status] || STATUS_COLORS.offline,
+                            border: '2px solid white',
+                          }}
+                        />
+                      </Box>
+                      <Box style={{ flex: 1, minWidth: 0 }}>
+                        <Text size="sm" fw={500} lineClamp={1}>
+                          {orgUser.fullName}
+                        </Text>
+                        {statusText && (
+                          <Text size="xs" c="dimmed" lineClamp={1}>
+                            {statusText}
+                          </Text>
+                        )}
+                      </Box>
+                    </Group>
+                  </UnstyledButton>
+                );
+              })}
+
+              {recentItems.length === 0 && otherUsers.length === 0 && (
                 <Text size="sm" c="dimmed" ta="center" py="lg">
-                  No users found
+                  {t('chat.no_users_found')}
                 </Text>
               )}
             </Stack>
@@ -412,7 +502,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
           {groupMode && selectedUserIds.size >= 2 && (
             <Box px="md" py="sm" style={{ borderTop: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}>
               <Button fullWidth onClick={handleCreateGroup}>
-                Create group ({selectedUserIds.size})
+                {t('chat.create_group', { count: selectedUserIds.size })}
               </Button>
             </Box>
           )}

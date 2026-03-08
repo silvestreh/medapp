@@ -13,14 +13,23 @@ import {
   Textarea,
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { ArrowDownRight, UserPlus, X } from 'lucide-react';
+import { ArrowDownRight, Reply, UserPlus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { useChat, type OrgUser } from '~/components/chat/chat-provider';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+import { useChat } from '~/components/chat/chat-provider';
 import { useAccount } from '~/components/provider';
 import { media } from '~/media';
 import { deterministicColor, type ChatParticipant } from '~/components/chat-manager';
 import { useChatManager } from '~/components/chat-manager';
+
+interface ReplySnippet {
+  id: string;
+  senderId: string;
+  content: string;
+}
 
 interface Message {
   id: string;
@@ -29,6 +38,9 @@ interface Message {
   content: string;
   type: 'text' | 'system';
   createdAt: string;
+  updatedAt: string;
+  replyToId?: string | null;
+  replyTo?: ReplySnippet | null;
 }
 
 export interface MessagingChatPanelProps {
@@ -55,24 +67,20 @@ function formatTime(dateStr: string): string {
 function ParticipantAvatars({
   participants,
   currentUserId,
+  accentColor,
 }: {
   participants: ChatParticipant[];
   currentUserId: string;
+  accentColor: string;
+  groupLabel: string;
 }) {
   const others = participants.filter(p => p.userId !== currentUserId);
   const size = 24;
   const overlap = 8;
 
   return (
-    <ScrollArea
-      scrollbarSize={0}
-      style={{ flexShrink: 1, minWidth: 0 }}
-      type="scroll"
-    >
+    <ScrollArea scrollbarSize={0} style={{ flexShrink: 1, minWidth: 0 }} type="scroll">
       <Group gap={0} wrap="nowrap" style={{ flexShrink: 0 }}>
-        <Text size="sm" fw={600} c="white" style={{ whiteSpace: 'nowrap', marginRight: 8 }}>
-          Group:
-        </Text>
         <Box
           style={{
             display: 'flex',
@@ -82,24 +90,27 @@ function ParticipantAvatars({
             flexShrink: 0,
           }}
         >
-          {others.map((p, idx) => (
-            <Avatar
-              key={p.userId}
-              size={size}
-              radius="xl"
-              color="white"
-              variant="filled"
-              style={{
-                position: 'absolute',
-                left: idx * (size - overlap),
-                zIndex: others.length - idx,
-                border: '2px solid rgba(255,255,255,0.4)',
-                fontSize: 10,
-              }}
-            >
-              {p.initials}
-            </Avatar>
-          ))}
+          {others.map((p, idx) => {
+            const pColor = deterministicColor(p.userId);
+            return (
+              <Avatar
+                key={p.userId}
+                size={size}
+                radius="xl"
+                color={pColor}
+                variant="filled"
+                style={{
+                  position: 'absolute',
+                  left: idx * (size - overlap),
+                  zIndex: others.length - idx,
+                  border: `2px solid var(--mantine-color-${accentColor}-5)`,
+                  fontSize: 10,
+                }}
+              >
+                {p.initials}
+              </Avatar>
+            );
+          })}
         </Box>
       </Group>
     </ScrollArea>
@@ -116,7 +127,7 @@ export function MessagingChatPanel({
   onClose,
 }: MessagingChatPanelProps) {
   const { t } = useTranslation();
-  const { chatClient, orgUsers } = useChat();
+  const { chatClient, orgUsers, typingUsers, sendTyping } = useChat();
   const { user } = useAccount();
   const { updateChatParticipants } = useChatManager();
   const isDesktop = useMediaQuery(media.md);
@@ -131,8 +142,13 @@ export function MessagingChatPanel({
   const [isSending, setIsSending] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [addUserQuery, setAddUserQuery] = useState('');
+  const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const loadedRef = useRef(false);
   const addUserInputRef = useRef<HTMLInputElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTypingRef = useRef(false);
 
   const isGroup = (participants?.length ?? 0) > 2;
   const recipientName = useMemo(() => {
@@ -160,9 +176,7 @@ export function MessagingChatPanel({
         });
         if (cancelled) return;
 
-        const items: Message[] = Array.isArray(response)
-          ? response
-          : (response as any)?.data ?? [];
+        const items: Message[] = Array.isArray(response) ? response : ((response as any)?.data ?? []);
         setMessages(items.slice().reverse());
         setHasMore(items.length === PAGE_SIZE);
       } catch {
@@ -174,6 +188,8 @@ export function MessagingChatPanel({
 
     return () => {
       cancelled = true;
+      loadedRef.current = false;
+      setIsLoading(false);
     };
   }, [chatClient, conversationId, isActive]);
 
@@ -189,10 +205,17 @@ export function MessagingChatPanel({
       });
     };
 
+    const handlePatched = (message: Message) => {
+      if (message.conversationId !== conversationId) return;
+      setMessages(prev => prev.map(m => (m.id === message.id ? { ...m, ...message } : m)));
+    };
+
     const service = chatClient.service('messages');
     service.on('created', handleCreated);
+    service.on('patched', handlePatched);
     return () => {
       service.removeListener('created', handleCreated);
+      service.removeListener('patched', handlePatched);
     };
   }, [chatClient, conversationId]);
 
@@ -227,9 +250,7 @@ export function MessagingChatPanel({
         },
       });
 
-      const items: Message[] = Array.isArray(response)
-        ? response
-        : (response as any)?.data ?? [];
+      const items: Message[] = Array.isArray(response) ? response : ((response as any)?.data ?? []);
 
       if (items.length === 0) {
         setHasMore(false);
@@ -242,8 +263,7 @@ export function MessagingChatPanel({
 
       window.requestAnimationFrame(() => {
         if (messagesContainerRef.current) {
-          messagesContainerRef.current.scrollTop =
-            messagesContainerRef.current.scrollHeight - prevHeight + prevTop;
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight - prevHeight + prevTop;
         }
         isPrependingRef.current = false;
       });
@@ -266,31 +286,91 @@ export function MessagingChatPanel({
 
     setIsSending(true);
     setDraftMessage('');
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      sendTyping(conversationId, false);
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    }
+    const currentEditId = editingMessageId;
+    setEditingMessageId(null);
+    const replyToId = replyTo?.id ?? undefined;
+    setReplyTo(null);
     try {
-      await chatClient.service('messages').create({
-        conversationId,
-        content,
-      });
+      if (currentEditId) {
+        await chatClient.service('messages').patch(currentEditId, { content });
+        setMessages(prev => prev.map(m => (m.id === currentEditId ? { ...m, content } : m)));
+      } else {
+        await chatClient.service('messages').create({
+          conversationId,
+          content,
+          ...(replyToId ? { replyToId } : {}),
+        });
+      }
     } catch (err) {
       console.warn('[Chat] Failed to send message:', err);
       setDraftMessage(content);
     } finally {
       setIsSending(false);
+      requestAnimationFrame(() => textareaRef.current?.focus());
     }
-  }, [chatClient, conversationId, draftMessage, isSending]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatClient, conversationId, draftMessage, isSending, replyTo, editingMessageId]);
 
-  const handleDraftChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setDraftMessage(e.currentTarget.value);
-  }, []);
+  const handleDraftChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = e.currentTarget.value;
+      setDraftMessage(value);
+
+      if (value.length > 0 && !isTypingRef.current) {
+        isTypingRef.current = true;
+        sendTyping(conversationId, true);
+      }
+
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = setTimeout(() => {
+        if (isTypingRef.current) {
+          isTypingRef.current = false;
+          sendTyping(conversationId, false);
+        }
+      }, 2000);
+
+      if (value.length === 0 && isTypingRef.current) {
+        isTypingRef.current = false;
+        sendTyping(conversationId, false);
+        if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      }
+    },
+    [conversationId, sendTyping]
+  );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.nativeEvent.isComposing) return;
+
+      // Escape cancels editing
+      if (e.key === 'Escape' && editingMessageId) {
+        e.preventDefault();
+        setEditingMessageId(null);
+        setDraftMessage('');
+        return;
+      }
+
+      // ArrowUp on empty input → edit last own message
+      if (e.key === 'ArrowUp' && !draftMessage && !editingMessageId) {
+        const lastOwn = [...messages].reverse().find(m => m.senderId === user?.id && m.type !== 'system');
+        if (lastOwn) {
+          e.preventDefault();
+          setEditingMessageId(lastOwn.id);
+          setDraftMessage(lastOwn.content);
+        }
+        return;
+      }
+
       if (e.key !== 'Enter' || e.shiftKey) return;
       e.preventDefault();
       handleSend();
     },
-    [handleSend]
+    [handleSend, editingMessageId, draftMessage, messages, user?.id]
   );
 
   // Add user autocomplete data
@@ -305,6 +385,15 @@ export function MessagingChatPanel({
       })
       .map(u => ({ value: u.fullName, userId: u.userId, user: u }));
   }, [orgUsers, participants, addUserQuery]);
+
+  const handleReply = useCallback((msg: Message) => {
+    setReplyTo(msg);
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  }, []);
+
+  const handleCancelReply = useCallback(() => {
+    setReplyTo(null);
+  }, []);
 
   const handleToggleAddUser = useCallback(() => {
     setShowAddUser(prev => !prev);
@@ -329,6 +418,14 @@ export function MessagingChatPanel({
           userId: match.userId,
         });
 
+        // Send system message
+        const shortName = `${match.firstName} ${match.lastName.charAt(0)}.`;
+        await chatClient.service('messages').create({
+          conversationId,
+          content: t('chat.entered_conversation', { name: shortName }),
+          type: 'system',
+        });
+
         const newParticipant: ChatParticipant = {
           userId: match.userId,
           name: match.fullName,
@@ -336,7 +433,7 @@ export function MessagingChatPanel({
         };
         const updated = [...(participants ?? []), newParticipant];
         const groupName =
-          'Group: ' +
+          `${t('chat.group_label')} ` +
           updated
             .filter(p => p.userId !== user.id)
             .map(p => p.initials)
@@ -349,7 +446,7 @@ export function MessagingChatPanel({
         console.warn('[Chat] Failed to add participant:', err);
       }
     },
-    [chatClient, conversationId, orgUsers, participants, user?.id, chatKey, updateChatParticipants]
+    [chatClient, conversationId, orgUsers, participants, user?.id, chatKey, updateChatParticipants, t]
   );
 
   const senderNames = useMemo(() => {
@@ -363,7 +460,7 @@ export function MessagingChatPanel({
     });
     if (user) {
       map.set(user.id, {
-        name: t('ai_chat.you'),
+        name: t('chat.you'),
         initials:
           `${(user.personalData as Record<string, string>)?.firstName?.[0] ?? ''}${(user.personalData as Record<string, string>)?.lastName?.[0] ?? ''}`.toUpperCase() ||
           '?',
@@ -372,6 +469,18 @@ export function MessagingChatPanel({
     }
     return map;
   }, [orgUsers, user, t]);
+
+  const typingLabel = useMemo(() => {
+    const typers = typingUsers.get(conversationId);
+    if (!typers || typers.size === 0) return null;
+
+    const names = [...typers].map(uid => senderNames.get(uid)?.name ?? '').filter(Boolean);
+
+    if (names.length === 0) return null;
+    if (names.length === 1) return t('chat.typing_one', { name: names[0] });
+    if (names.length === 2) return t('chat.typing_two', { name1: names[0], name2: names[1] });
+    return t('chat.typing_many', { names: `${names.slice(0, -1).join(', ')}, ${names[names.length - 1]}` });
+  }, [typingUsers, conversationId, senderNames, t]);
 
   if (!isDesktop) return null;
 
@@ -382,8 +491,7 @@ export function MessagingChatPanel({
       style={{
         width: 'min(380px, calc(100vw - 6rem))',
         height: 'min(60vh, 560px)',
-        boxShadow:
-          '0 1px 2px rgba(0,0,0,0.075), 0 8px 32px rgba(0,0,0,0.075), 0 24px 48px rgba(0,0,0,0.075)',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.075), 0 8px 32px rgba(0,0,0,0.075), 0 24px 48px rgba(0,0,0,0.075)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -400,7 +508,12 @@ export function MessagingChatPanel({
         style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}
       >
         {isGroup && participants ? (
-          <ParticipantAvatars participants={participants} currentUserId={user?.id ?? ''} />
+          <ParticipantAvatars
+            participants={participants}
+            currentUserId={user?.id ?? ''}
+            accentColor={accentColor}
+            groupLabel={t('chat.group_label')}
+          />
         ) : (
           <Text fw={600} c="white" lineClamp={1} style={{ flex: 1, minWidth: 0 }}>
             {recipientName}
@@ -424,7 +537,7 @@ export function MessagingChatPanel({
         <Box px="md" py="xs" style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}>
           <Autocomplete
             ref={addUserInputRef}
-            placeholder="Add user..."
+            placeholder={t('chat.add_user_placeholder')}
             value={addUserQuery}
             onChange={setAddUserQuery}
             onOptionSubmit={handleAddUser}
@@ -434,6 +547,19 @@ export function MessagingChatPanel({
           />
         </Box>
       )}
+
+      {/* Hover-to-reveal reply button + highlight flash */}
+      <style>{`
+        .chat-msg-row:hover .chat-msg-reply-btn { opacity: 1 !important; }
+        .chat-msg-row p { margin: 0; }
+        .chat-msg-row pre { margin: 4px 0; padding: 6px 8px; border-radius: 4px; background: rgba(0,0,0,0.05); overflow-x: auto; }
+        .chat-msg-row code { font-size: 0.8em; padding: 1px 4px; border-radius: 3px; background: rgba(0,0,0,0.06); }
+        .chat-msg-row pre code { padding: 0; background: none; }
+        .chat-msg-row ul, .chat-msg-row ol { margin: 2px 0; padding-left: 1.2em; }
+        .chat-msg-row blockquote { margin: 4px 0; padding-left: 8px; border-left: 3px solid var(--mantine-color-gray-4); color: var(--mantine-color-gray-6); }
+        .chat-msg-highlight { box-shadow: inset 0 0 0 40rem var(--mantine-primary-color-2); transition: box-shadow 300ms; }
+        .chat-msg-highlight-fade { box-shadow: inset 0 0 0 40rem transparent; }
+      `}</style>
 
       {/* Messages */}
       <Stack
@@ -460,65 +586,192 @@ export function MessagingChatPanel({
           </Group>
         )}
         {messages.map(msg => {
+          if (msg.type === 'system') {
+            return (
+              <Text key={msg.id} size="xs" c="dimmed" ta="center" py={4} fs="italic">
+                {msg.content}
+              </Text>
+            );
+          }
+
           const isMe = msg.senderId === user?.id;
           const sender = senderNames.get(msg.senderId);
+          const quotedSender = msg.replyTo ? senderNames.get(msg.replyTo.senderId) : null;
 
           return (
             <Box
               key={msg.id}
+              className="chat-msg-row"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: isMe ? 'flex-end' : 'flex-start',
+                position: 'relative',
               }}
             >
-              <Group
-                gap={6}
-                align="flex-end"
-                style={{ maxWidth: '85%', flexDirection: isMe ? 'row-reverse' : 'row' }}
-              >
+              <Group gap={6} align="flex-end" style={{ maxWidth: '85%', flexDirection: isMe ? 'row-reverse' : 'row' }}>
                 {!isMe && (
-                  <Avatar
-                    size={28}
-                    radius="xl"
-                    color={sender?.color || 'gray'}
-                    style={{ flexShrink: 0 }}
-                  >
+                  <Avatar size={28} radius="xl" color={sender?.color || 'gray'} style={{ flexShrink: 0 }}>
                     <Text size="xs">{sender?.initials || '?'}</Text>
                   </Avatar>
                 )}
-                <Box>
+                <Box style={{ position: 'relative' }}>
                   {!isMe && (
                     <Text size="xs" c="dimmed" mb={2}>
                       {sender?.name || msg.senderId}
                     </Text>
+                  )}
+                  {/* Quoted message */}
+                  {msg.replyTo && (
+                    <Box
+                      px="sm"
+                      py={4}
+                      mb={2}
+                      style={{
+                        borderLeft: `3px solid var(--mantine-color-${quotedSender?.color || 'gray'}-4)`,
+                        borderRadius: '0 8px 8px 0',
+                        backgroundColor: 'var(--mantine-color-gray-1)',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => {
+                        const el = messagesContainerRef.current?.querySelector(`[data-msg-id="${msg.replyTo!.id}"]`);
+                        if (el) {
+                          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          el.classList.add('chat-msg-highlight');
+                          el.classList.remove('chat-msg-highlight-fade');
+                          setTimeout(() => {
+                            el.classList.add('chat-msg-highlight-fade');
+                            setTimeout(() => {
+                              el.classList.remove('chat-msg-highlight', 'chat-msg-highlight-fade');
+                            }, 300);
+                          }, 1200);
+                        }
+                      }}
+                    >
+                      <Text size="xs" fw={600} c={`${quotedSender?.color || 'gray'}.6`}>
+                        {quotedSender?.name || msg.replyTo.senderId}
+                      </Text>
+                      <Text size="xs" c="dimmed" lineClamp={2}>
+                        {msg.replyTo.content}
+                      </Text>
+                    </Box>
                   )}
                   <Paper
                     px="sm"
                     py={6}
                     radius="md"
                     bg={isMe ? `${accentColor}.0` : 'gray.0'}
-                    style={{ wordBreak: 'break-word' }}
+                    style={{ wordBreak: 'break-word', fontSize: '0.875rem', lineHeight: 1.5 }}
+                    data-msg-id={msg.id}
                   >
-                    <Text size="sm">{msg.content}</Text>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                   </Paper>
                   <Text size="10px" c="dimmed" mt={2} ta={isMe ? 'right' : 'left'}>
+                    {msg.updatedAt !== msg.createdAt && `${t('chat.edited')} `}
                     {formatTime(msg.createdAt)}
                   </Text>
+                  {/* Reply button — visible on row hover */}
+                  <ActionIcon
+                    className="chat-msg-reply-btn"
+                    variant="subtle"
+                    color="dark"
+                    size="sm"
+                    onClick={() => handleReply(msg)}
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      [isMe ? 'left' : 'right']: -30,
+                      opacity: 0,
+                      transition: 'opacity 120ms',
+                    }}
+                  >
+                    <Reply size={18} />
+                  </ActionIcon>
                 </Box>
               </Group>
             </Box>
           );
         })}
+        {typingLabel && (
+          <Text size="xs" c="dimmed" fs="italic" px="md" py={2} style={{ flexShrink: 0 }}>
+            {typingLabel}
+          </Text>
+        )}
       </Stack>
+
+      {/* Reply preview */}
+      {replyTo && (
+        <Group
+          gap="xs"
+          px="md"
+          py={6}
+          align="center"
+          style={{
+            flexShrink: 0,
+            borderBottom: '1px solid var(--mantine-color-gray-2)',
+            backgroundColor: 'var(--mantine-color-gray-0)',
+          }}
+        >
+          <Box
+            style={{
+              flex: 1,
+              minWidth: 0,
+              borderLeft: `3px solid var(--mantine-color-${senderNames.get(replyTo.senderId)?.color || 'gray'}-4)`,
+              paddingLeft: 8,
+            }}
+          >
+            <Text size="xs" fw={600} c={`${senderNames.get(replyTo.senderId)?.color || 'gray'}.6`} lineClamp={1}>
+              {senderNames.get(replyTo.senderId)?.name || replyTo.senderId}
+            </Text>
+            <Text size="xs" c="dimmed" lineClamp={1}>
+              {replyTo.content}
+            </Text>
+          </Box>
+          <ActionIcon variant="subtle" color="gray" size="xs" onClick={handleCancelReply}>
+            <X size={14} />
+          </ActionIcon>
+        </Group>
+      )}
+
+      {/* Editing indicator */}
+      {editingMessageId && (
+        <Group
+          gap="xs"
+          px="md"
+          py={4}
+          align="center"
+          style={{
+            flexShrink: 0,
+            backgroundColor: 'var(--mantine-color-yellow-0)',
+            borderBottom: '1px solid var(--mantine-color-yellow-3)',
+          }}
+        >
+          <Text size="xs" c="dimmed" style={{ flex: 1 }}>
+            {t('chat.editing_message')}
+          </Text>
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="xs"
+            onClick={() => {
+              setEditingMessageId(null);
+              setDraftMessage('');
+            }}
+          >
+            <X size={14} />
+          </ActionIcon>
+        </Group>
+      )}
 
       {/* Input */}
       <Textarea
+        ref={textareaRef}
         value={draftMessage}
         onChange={handleDraftChange}
         onKeyDown={handleKeyDown}
         minRows={1}
-        placeholder={t('chat.type_message', 'Escribe un mensaje...')}
+        placeholder={t('chat.type_message')}
         variant="unstyled"
         autosize
         px="md"

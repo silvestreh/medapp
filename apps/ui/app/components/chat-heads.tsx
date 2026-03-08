@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActionIcon, Avatar, Box, Text, Tooltip } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { animated, useSpring, useSprings } from '@react-spring/web';
@@ -135,76 +135,94 @@ function ChatHeadStatusDot({ chat, currentUserId }: { chat: ChatInstance; curren
   );
 }
 
-function GroupAvatars({ participants, isActive }: { participants: ChatInstance['participants']; isActive: boolean }) {
-  const visible = (participants || []).slice(0, 3);
-  const extra = (participants || []).length - 3;
+const GROUP_OVERLAP_COLLAPSED = 34;
+const GROUP_OVERLAP_EXPANDED = 16;
+
+function GroupAvatars({
+  participants,
+  isActive,
+  currentUserId,
+}: {
+  participants: ChatInstance['participants'];
+  isActive: boolean;
+  currentUserId: string;
+}) {
+  const others = (participants || []).filter(p => p.userId !== currentUserId);
+  const visible = others.slice(0, 3);
+  const extra = others.length - 3;
   const size = HEAD_SIZE;
-  const overlap = 24;
+  const totalCount = visible.length + (extra > 0 ? 1 : 0);
+
+  const [hovered, setHovered] = useState(false);
+  const overlap = hovered ? GROUP_OVERLAP_EXPANDED : GROUP_OVERLAP_COLLAPSED;
+
+  const spring = useSpring({
+    overlap,
+    config: SPRING_CONFIG,
+  });
 
   return (
-    <Box
+    <animated.div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         display: 'flex',
-        position: 'relative',
-        width: size + (visible.length - 1) * (size - overlap) + (extra > 0 ? size - overlap : 0),
+        position: 'relative' as const,
+        width: spring.overlap.to(o => size + (totalCount - 1) * (size - o)),
         height: HEAD_SIZE,
         alignItems: 'center',
-        borderRadius: HEAD_SIZE,
-        transition: 'box-shadow 200ms ease',
       }}
     >
       {visible.map((p, idx) => {
         const pColor = deterministicColor(p.userId);
-        const hColor = COLOR_HEX[pColor];
-        const lColor = lightColor(pColor);
-        // Print color info with CSS colorized output in the console for easier inspection
-        console.log(
-          `%cpColor: %s\n%chColor: %s\n%clColor: %s`,
-          `color: ${hColor}; font-weight: bold;`,
-          pColor,
-          `color: ${hColor}; font-weight: bold;`,
-          hColor,
-          `color: ${lColor}; font-weight: bold;`,
-          lColor
-        );
         return (
-          <Avatar
+          <animated.div
             key={p.userId}
-            size={size}
-            radius="xl"
-            color={hColor}
             style={{
-              position: 'absolute',
-              left: idx * (size - overlap),
+              position: 'absolute' as const,
+              left: spring.overlap.to(o => idx * (size - o)),
               zIndex: visible.length - idx,
-              border: '2px solid white',
-              backgroundColor: lightColor(pColor),
-              color: COLOR_HEX[pColor] ?? COLOR_HEX.gray,
-              boxShadow: isActive ? `0 4px 8px rgba(0,0,0,0.1)` : '0 2px 4px rgba(0,0,0,0.1)',
             }}
           >
-            {p.initials}
-          </Avatar>
+            <Avatar
+              size={size}
+              radius="xl"
+              color={COLOR_HEX[pColor]}
+              style={{
+                border: '2px solid white',
+                backgroundColor: lightColor(pColor),
+                color: COLOR_HEX[pColor] ?? COLOR_HEX.gray,
+                boxShadow: isActive ? '0 4px 8px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.1)',
+              }}
+            >
+              {p.initials}
+            </Avatar>
+          </animated.div>
         );
       })}
       {extra > 0 && (
-        <Avatar
-          size={size}
-          radius="xl"
-          color="gray"
+        <animated.div
           style={{
-            position: 'absolute',
-            left: visible.length * (size - overlap),
+            position: 'absolute' as const,
+            left: spring.overlap.to(o => visible.length * (size - o)),
             zIndex: 0,
-            border: '2px solid white',
-            backgroundColor: lightColor('gray'),
-            color: COLOR_HEX.gray,
           }}
         >
-          <Text size="xs">+{extra}</Text>
-        </Avatar>
+          <Avatar
+            size={size}
+            radius="xl"
+            color="gray"
+            style={{
+              border: '2px solid white',
+              backgroundColor: lightColor('gray'),
+              color: COLOR_HEX.gray,
+            }}
+          >
+            <Text size="xs">+{extra}</Text>
+          </Avatar>
+        </animated.div>
       )}
-    </Box>
+    </animated.div>
   );
 }
 
@@ -308,12 +326,13 @@ export function ChatHeadsContainer() {
     return memo;
   });
 
+  const handleCloseRef = useRef<(patientId: string) => void>(undefined);
+
   const handleCloseFromPanel = useCallback(
     (patientId: string) => {
       minimizeActiveChat();
-      setTimeout(() => handleClose(patientId), 250);
+      setTimeout(() => handleCloseRef.current?.(patientId), 250);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [minimizeActiveChat]
   );
 
@@ -323,12 +342,22 @@ export function ChatHeadsContainer() {
       if (index === -1) return;
       closingRef.current = patientId;
 
+      // Safety fallback: if onRest never fires, force-close after 500ms
+      const fallback = setTimeout(() => {
+        if (closingRef.current === patientId) {
+          closingRef.current = null;
+          settlingRef.current = true;
+          closeChat(patientId);
+        }
+      }, 500);
+
       api.start(i => {
         if (i === index) {
           return {
             scale: 0,
             immediate: false,
             onRest: () => {
+              clearTimeout(fallback);
               closingRef.current = null;
               settlingRef.current = true;
               closeChat(patientId);
@@ -344,6 +373,8 @@ export function ChatHeadsContainer() {
     },
     [chats, api, closeChat]
   );
+
+  handleCloseRef.current = handleClose;
 
   const handleClick = useCallback(
     (patientId: string) => {
@@ -394,6 +425,7 @@ export function ChatHeadsContainer() {
               position: 'fixed',
               right: `${HEADS_RIGHT}px`,
               bottom: `${HEADS_RIGHT}px`,
+              height: HEAD_SIZE,
               touchAction: 'none',
               cursor: 'grab',
             }}
@@ -401,7 +433,7 @@ export function ChatHeadsContainer() {
             <Tooltip label={chat.patientName} position="left" withArrow zIndex={1400}>
               <Box style={{ position: 'relative', display: 'inline-flex' }}>
                 {isGroup && chat.participants ? (
-                  <GroupAvatars participants={chat.participants} isActive={isActive} />
+                  <GroupAvatars participants={chat.participants} isActive={isActive} currentUserId={user?.id ?? ''} />
                 ) : (
                   <Avatar
                     size={HEAD_SIZE}
@@ -452,7 +484,7 @@ export function ChatHeadsContainer() {
                     position: 'absolute',
                     top: -4,
                     left: -4,
-                    zIndex: 2,
+                    zIndex: 10,
                     minWidth: 20,
                     height: 20,
                     borderRadius: 10,

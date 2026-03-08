@@ -45,6 +45,14 @@ app.configure(socketio((io) => {
       cb(null, allowed.some(a => origin.startsWith(a)));
     });
   }
+
+  // Typing indicator relay — ephemeral, no persistence
+  io.on('connection', (socket: any) => {
+    socket.on('typing', (data: { conversationId: string; userId: string; isTyping: boolean }) => {
+      if (!data.conversationId || !data.userId) return;
+      socket.broadcast.emit('typing', data);
+    });
+  });
 }));
 
 app.configure(sequelize);

@@ -10,6 +10,8 @@ import {
 } from 'react';
 import type { Application } from '@feathersjs/feathers';
 
+import { useTranslation } from 'react-i18next';
+
 import { useFeathers, useAccount } from '~/components/provider';
 import { createChatClient } from '~/chat-feathers';
 
@@ -35,6 +37,7 @@ export interface OrgUser {
 export interface ConversationEntry {
   id: string;
   participants: Array<{ id: string; userId: string; conversationId: string }>;
+  updatedAt: string;
 }
 
 interface ChatContextType {
@@ -49,6 +52,8 @@ interface ChatContextType {
   setMyStatus: (status: StatusValue) => Promise<void>;
   leaveConversation: (conversationId: string) => Promise<void>;
   refreshConversations: () => void;
+  typingUsers: Map<string, Set<string>>;
+  sendTyping: (conversationId: string, isTyping: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -56,13 +61,16 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 export function ChatProvider({ children }: PropsWithChildren) {
   const mainClient = useFeathers();
   const { user } = useAccount();
+  const { t } = useTranslation();
   const [chatClient, setChatClient] = useState<Application | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [orgUsers, setOrgUsers] = useState<OrgUser[]>([]);
   const [conversations, setConversations] = useState<ConversationEntry[]>([]);
   const [userStatuses, setUserStatuses] = useState<Map<string, UserStatusEntry>>(new Map());
+  const [typingUsers, setTypingUsers] = useState<Map<string, Set<string>>>(new Map());
   const clientRef = useRef<Application | null>(null);
   const preferredStatusRef = useRef<StatusValue>('online');
+  const typingTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   // Create chat client when we have a token
   useEffect(() => {
@@ -182,7 +190,7 @@ export function ChatProvider({ children }: PropsWithChildren) {
     if (!chatClient || !isConnected) return;
     try {
       const response = await chatClient.service('conversations').find({
-        query: { $limit: 200 },
+        query: { $limit: 200, $sort: { updatedAt: -1 } },
       });
       const items = Array.isArray(response) ? response : ((response as any)?.data ?? []);
       setConversations(items);
@@ -194,12 +202,32 @@ export function ChatProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!chatClient || !isConnected) return;
     fetchConversations();
+
+    const participantsService = chatClient.service('conversation-participants');
+    participantsService.on('created', fetchConversations);
+    participantsService.on('removed', fetchConversations);
+
+    return () => {
+      participantsService.removeListener('created', fetchConversations);
+      participantsService.removeListener('removed', fetchConversations);
+    };
   }, [chatClient, isConnected, fetchConversations]);
 
   const leaveConversation = useCallback(
     async (conversationId: string) => {
       if (!chatClient || !user?.id) return;
       try {
+        // Send system message before leaving
+        const pd = user.personalData as Record<string, string> | undefined;
+        const firstName = pd?.firstName ?? '';
+        const lastName = pd?.lastName ?? '';
+        const shortName = lastName ? `${firstName} ${lastName.charAt(0)}.` : firstName || '?';
+        await chatClient.service('messages').create({
+          conversationId,
+          content: t('chat.left_conversation', { name: shortName }),
+          type: 'system',
+        });
+
         // Find our participation record
         const response = await chatClient.service('conversation-participants').find({
           query: { conversationId, userId: user.id, $limit: 1 },
@@ -214,7 +242,7 @@ export function ChatProvider({ children }: PropsWithChildren) {
         // best-effort
       }
     },
-    [chatClient, user?.id]
+    [chatClient, user?.id, t]
   );
 
   // Fetch user statuses from chat API + listen to real-time updates
@@ -295,6 +323,74 @@ export function ChatProvider({ children }: PropsWithChildren) {
     [chatClient, user?.id, userStatuses]
   );
 
+  // Typing indicators via raw socket events
+  useEffect(() => {
+    if (!chatClient || !user?.id) return;
+    const socket = (chatClient as any).io;
+    if (!socket) return;
+
+    const handleTyping = (data: { conversationId: string; userId: string; isTyping: boolean }) => {
+      if (data.userId === user!.id) return;
+
+      setTypingUsers(prev => {
+        const next = new Map(prev);
+        const current = new Set(next.get(data.conversationId) ?? []);
+        if (data.isTyping) {
+          current.add(data.userId);
+        } else {
+          current.delete(data.userId);
+        }
+        if (current.size === 0) {
+          next.delete(data.conversationId);
+        } else {
+          next.set(data.conversationId, current);
+        }
+        return next;
+      });
+
+      // Auto-clear after 3s in case stop event is missed
+      const timerKey = `${data.conversationId}:${data.userId}`;
+      const existing = typingTimersRef.current.get(timerKey);
+      if (existing) clearTimeout(existing);
+      if (data.isTyping) {
+        typingTimersRef.current.set(
+          timerKey,
+          setTimeout(() => {
+            setTypingUsers(prev => {
+              const next = new Map(prev);
+              const current = new Set(next.get(data.conversationId) ?? []);
+              current.delete(data.userId);
+              if (current.size === 0) {
+                next.delete(data.conversationId);
+              } else {
+                next.set(data.conversationId, current);
+              }
+              return next;
+            });
+            typingTimersRef.current.delete(timerKey);
+          }, 3000)
+        );
+      } else {
+        typingTimersRef.current.delete(timerKey);
+      }
+    };
+
+    socket.on('typing', handleTyping);
+    return () => {
+      socket.removeListener('typing', handleTyping);
+    };
+  }, [chatClient, user?.id]);
+
+  const sendTyping = useCallback(
+    (conversationId: string, isTyping: boolean) => {
+      if (!chatClient || !user?.id) return;
+      const socket = (chatClient as any).io;
+      if (!socket) return;
+      socket.emit('typing', { conversationId, userId: user.id, isTyping });
+    },
+    [chatClient, user?.id]
+  );
+
   const value = useMemo<ChatContextType>(
     () => ({
       chatClient,
@@ -308,6 +404,8 @@ export function ChatProvider({ children }: PropsWithChildren) {
       setMyStatus,
       leaveConversation,
       refreshConversations: fetchConversations,
+      typingUsers,
+      sendTyping,
     }),
     [
       chatClient,
@@ -321,6 +419,8 @@ export function ChatProvider({ children }: PropsWithChildren) {
       setMyStatus,
       leaveConversation,
       fetchConversations,
+      typingUsers,
+      sendTyping,
     ]
   );
 

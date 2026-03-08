@@ -27,6 +27,10 @@ export default function (app: Application): typeof Model {
       allowNull: false,
       defaultValue: 'text',
     },
+    replyToId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
   }, {
     timestamps: true,
     hooks: {
@@ -36,6 +40,7 @@ export default function (app: Application): typeof Model {
 
   (messages as any).associate = function (models: any): void {
     messages.belongsTo(models.conversations, { foreignKey: 'conversationId' });
+    messages.belongsTo(models.messages, { as: 'replyTo', foreignKey: 'replyToId' });
   };
 
   return messages;
