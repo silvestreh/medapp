@@ -74,7 +74,6 @@ export function ChatProvider({ children }: PropsWithChildren) {
 
   // Create chat client when we have a token
   useEffect(() => {
-    console.log('[ChatProvider] effect fired — mainClient:', !!mainClient, 'user:', user?.id ?? 'null');
     if (!mainClient || !user?.id) return;
 
     let cancelled = false;
@@ -109,12 +108,8 @@ export function ChatProvider({ children }: PropsWithChildren) {
           });
         }
         if (cancelled) return;
-        console.log('[ChatProvider] got token, length:', authResult.accessToken?.length);
-
-        console.log('[ChatProvider] creating chat client...');
         const client = await createChatClient(authResult.accessToken);
         if (cancelled) return;
-        console.log('[ChatProvider] chat client created and authenticated!');
 
         clientRef.current = client;
         setChatClient(client);
@@ -150,7 +145,7 @@ export function ChatProvider({ children }: PropsWithChildren) {
         }
       } catch (err) {
         if (err instanceof Error && err.message === 'cancelled') return;
-        console.error('[ChatProvider] Connection failed:', err);
+        // Connection failed — non-fatal
       }
     })();
 

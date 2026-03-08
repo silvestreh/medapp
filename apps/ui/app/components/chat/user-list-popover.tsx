@@ -157,7 +157,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
           ],
         });
       } catch (err) {
-        console.warn('[Chat] Failed to open conversation:', err);
+        // best-effort
       }
     },
     [chatClient, user, openMessagingChat, close, refreshConversations, t]
@@ -230,7 +230,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
       setGroupMode(false);
       setSelectedUserIds(new Set());
     } catch (err) {
-      console.warn('[Chat] Failed to create group:', err);
+      // best-effort
     }
   }, [chatClient, user, selectedUserIds, orgUsers, openMessagingChat, close, refreshConversations, t]);
 

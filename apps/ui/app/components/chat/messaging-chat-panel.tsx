@@ -401,7 +401,7 @@ export function MessagingChatPanel({
         });
       }
     } catch (err) {
-      console.warn('[Chat] Failed to send message:', err);
+      // Failed to send — restore draft
       setDraftMessage(content);
       if (sharePatient) setPendingSharePatient(sharePatient);
     } finally {
@@ -538,7 +538,7 @@ export function MessagingChatPanel({
         setShowAddUser(false);
         setAddUserQuery('');
       } catch (err) {
-        console.warn('[Chat] Failed to add participant:', err);
+        // best-effort
       }
     },
     [chatClient, conversationId, orgUsers, participants, user?.id, chatKey, updateChatParticipants, t]
