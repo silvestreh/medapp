@@ -13,6 +13,7 @@ const CHAT_API_URL =
   (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_CHAT_API_URL) || 'http://localhost:3031';
 
 export async function createChatClient(accessToken?: string): Promise<ChatApp> {
+  console.log('[Chat] Connecting to:', CHAT_API_URL);
   const socket = io(CHAT_API_URL, {
     transports: ['websocket'],
     forceNew: true,
