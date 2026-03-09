@@ -36,10 +36,12 @@ app.get('/healthz', (_req: any, res: any) => {
 app.configure(express.rest());
 app.configure(socketio((io) => {
   io.origins((origin, callback) => {
-    // Check if the incoming origin is in our whitelist
-    console.log('origin', origin);
+    const o = origin?.trim()?.toLowerCase();
+
+    console.log('origin', o);
     console.log('corsOrigin', corsOrigin);
-    if (corsOrigin.includes(origin)) {
+
+    if (corsOrigin.includes(o)) {
       return callback(null, true);
     }
 
