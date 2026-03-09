@@ -33,6 +33,19 @@ export function authenticatedLoader(loader?: LoaderFunction): LoaderFunction {
   };
 }
 
+function getForwardHeaders(request: Request): Record<string, string> {
+  const headers: Record<string, string> = {};
+  const ua = request.headers.get('user-agent');
+  if (ua) headers['user-agent'] = ua;
+
+  // Forward client IP: prefer existing x-forwarded-for, fall back to connecting IP
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    headers['x-forwarded-for'] = forwarded;
+  }
+  return headers;
+}
+
 export async function getUser(request: Request) {
   const token = await getToken(request);
 
@@ -42,7 +55,10 @@ export async function getUser(request: Request) {
 
   try {
     const apiUrl = process.env.API_URL ?? 'http://localhost:3030';
-    const client = createFeathersClient(apiUrl);
+    const client = createFeathersClient({
+      baseURL: apiUrl,
+      forwardHeaders: getForwardHeaders(request),
+    });
     const auth = await client.authenticate({
       strategy: 'jwt',
       accessToken: token,
@@ -61,7 +77,11 @@ export async function getAuthenticatedClient(request: Request): Promise<{ client
   }
 
   let organizationId = await getCurrentOrganizationId(request);
-  const client = createFeathersClient(process.env.API_URL ?? 'http://localhost:3030', undefined, organizationId);
+  const client = createFeathersClient({
+    baseURL: process.env.API_URL ?? 'http://localhost:3030',
+    organizationId,
+    forwardHeaders: getForwardHeaders(request),
+  });
 
   try {
     const { user } = await client.authenticate({
