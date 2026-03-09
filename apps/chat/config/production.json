@@ -3,7 +3,10 @@
   "port": "PORT",
   "postgres": "DB_URL",
   "authentication": {
-    "secret": "AUTH_SECRET"
+    "secret": "AUTH_SECRET",
+    "jwtOptions": {
+      "audience": "AUTH_AUDIENCE"
+    }
   },
   "mainApiUrl": "MAIN_API_URL"
 }
