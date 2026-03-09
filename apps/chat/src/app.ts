@@ -37,6 +37,8 @@ app.configure(express.rest());
 app.configure(socketio((io) => {
   io.origins((origin, callback) => {
     // Check if the incoming origin is in our whitelist
+    console.log('origin', origin);
+    console.log('corsOrigin', corsOrigin);
     if (corsOrigin.includes(origin)) {
       return callback(null, true);
     }
