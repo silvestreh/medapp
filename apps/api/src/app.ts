@@ -52,11 +52,7 @@ if (isProductionEnv && !process.env.CORS_ORIGIN) {
   logger.warn('CORS_ORIGIN is not set in production — falling back to app host. Set CORS_ORIGIN explicitly.');
 }
 app.use(cors({
-  origin: process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(',')
-    : isProductionEnv
-      ? [`https://${app.get('host')}`]
-      : '*',
+  origin: '*',
   credentials: true,
 }));
 // app.use(compress());
