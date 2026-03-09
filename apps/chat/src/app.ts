@@ -38,9 +38,6 @@ app.configure(socketio((io) => {
   io.origins((origin, callback) => {
     const o = origin?.trim()?.toLowerCase();
 
-    console.log('origin', o);
-    console.log('corsOrigin', corsOrigin);
-
     if (corsOrigin.includes(o)) {
       return callback(null, true);
     }
