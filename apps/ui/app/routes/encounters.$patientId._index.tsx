@@ -25,6 +25,7 @@ import { PatientOverview } from '~/components/patient-overview';
 import type { StudyResultData } from '~/components/forms/study-form-types';
 import { getPageTitle } from '~/utils/meta';
 import { media } from '~/media';
+import { trackFeature } from '~/utils/breadcrumbs';
 import { ExportSignedPdfDialog } from '~/components/export-signed-pdf-dialog';
 import { PrintPdfDialog } from '~/components/print-pdf-dialog';
 import { Fab, FabItem } from '~/components/fab';
@@ -271,6 +272,10 @@ export default function PatientEncounterDetail() {
   const [prescribeOpened, { open: openPrescribe, close: closePrescribe }] = useDisclosure(false);
   const { revalidate } = useRevalidator();
   const { openChat, updateEncounterDraft } = useChatManager();
+
+  useEffect(() => {
+    trackFeature('Viewed patient encounters', { patientId: String(data.patient.id) });
+  }, [data.patient.id]);
 
   const handleOpenChat = useCallback(() => {
     openChat({

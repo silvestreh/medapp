@@ -17,6 +17,7 @@ import { ToolbarTitle } from '~/components/toolbar-title';
 import { useAttachmentUpload, FloatingAttachmentsList, type AttachmentData } from '~/components/encounter-attachments';
 import { useFeathers } from '~/components/provider';
 import { useChatManager } from '~/components/chat-manager';
+import { trackFeature } from '~/utils/breadcrumbs';
 import {
   getAuthenticatedClient,
   authenticatedLoader,
@@ -177,6 +178,10 @@ export default function NewEncounter() {
       lastName: patient.personalData.lastName,
     });
   }, [openChat, patient]);
+
+  useEffect(() => {
+    trackFeature('Creating new encounter', { patientId: String(patient.id) });
+  }, [patient.id]);
 
   useEffect(() => {
     updateEncounterDraft(String(patient.id), formValues);

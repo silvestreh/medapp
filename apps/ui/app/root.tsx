@@ -1,9 +1,10 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from '@remix-run/react';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, useLocation, useMatches } from '@remix-run/react';
 import { json, type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
+import { useEffect, useRef } from 'react';
 import '~/global.css';
 import '@mantine/core/styles.layer.css';
 import '@mantine/notifications/styles.layer.css';
@@ -16,6 +17,25 @@ import RouteErrorFallback from '~/components/route-error-fallback';
 import { getToken, getUser } from '~/utils/auth.server';
 import { getCurrentOrganizationId, setCurrentOrganizationId } from '~/session';
 import { theme } from '~/theme';
+import { trackNavigation } from '~/utils/breadcrumbs';
+
+const ROUTE_LABELS: Record<string, string> = {
+  'routes/encounters._index': 'Encounters list',
+  'routes/encounters.$patientId._index': 'Patient encounters',
+  'routes/encounters.$patientId.new': 'New encounter',
+  'routes/patients._index': 'Patients list',
+  'routes/patients.$patientId': 'Patient detail',
+  'routes/patients.new': 'New patient',
+  'routes/studies._index': 'Studies list',
+  'routes/studies.new': 'New study',
+  'routes/studies.$studyId': 'Study detail',
+  'routes/appointments': 'Appointments',
+  'routes/prescriptions': 'Prescriptions',
+  'routes/users': 'Users & roles',
+  'routes/accounting': 'Accounting',
+  'routes/stats': 'Statistics',
+  'routes/settings': 'Settings',
+};
 
 export const links: LinksFunction = () => [];
 
@@ -112,8 +132,20 @@ export const ErrorBoundary = () => {
 export default function App() {
   const data = useRouteLoaderData<typeof loader>('root');
   const locale = data?.locale || 'es';
+  const location = useLocation();
+  const matches = useMatches();
+  const prevPathRef = useRef(location.pathname);
 
   useChangeLanguage(locale);
+
+  useEffect(() => {
+    if (location.pathname === prevPathRef.current) return;
+    prevPathRef.current = location.pathname;
+
+    const deepestRouteId = matches.at(-1)?.id ?? '';
+    const label = ROUTE_LABELS[deepestRouteId] ?? deepestRouteId;
+    trackNavigation(label, { pathname: location.pathname, routeId: deepestRouteId });
+  }, [location.pathname, matches]);
 
   return (
     <Document>

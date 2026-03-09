@@ -32,6 +32,7 @@ import { AsYouType, type CountryCode } from 'libphonenumber-js';
 
 import { Icd10Selector } from '~/components/icd10-selector';
 import { PrepagaSelector } from '~/components/prepaga-selector';
+import { trackAction } from '~/utils/breadcrumbs';
 
 const COUNTRY_PHONE_OPTIONS = [
   { value: '54', label: '🇦🇷 +54', country: 'AR' as CountryCode },
@@ -323,6 +324,7 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, medicId, i
   // Pre-fill from props synchronously (if available); fire Recetario fetch for gap-fill
   useEffect(() => {
     if (opened) {
+      trackAction('Opened prescribe modal');
       if (initialPrescriptionResult) {
         setPrescriptionResult(initialPrescriptionResult);
         setStep(2);

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Modal, SegmentedControl, Stack } from '@mantine/core';
 import { Printer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { useFeathers } from '~/components/provider';
 import { pdfDataToBlob, printPdfBlob } from '~/utils/print-pdf';
 import { DateRangeFilterState, DateRangePopover, resolveDateRange } from '~/components/date-range-popover';
+import { trackAction, trackFeature } from '~/utils/breadcrumbs';
 
 type ExportContent = 'encounters' | 'studies' | 'both';
 
@@ -20,6 +21,7 @@ interface PrintPdfDialogProps {
 export function PrintPdfDialog({ opened, onClose, patientId, patientName, dateRange }: PrintPdfDialogProps) {
   const { t, i18n } = useTranslation();
   const client = useFeathers();
+  const prevOpenedRef = useRef(false);
   const [content, setContent] = useState<ExportContent>('both');
   const [rangeFilter, setRangeFilter] = useState<DateRangeFilterState>({
     mode: 'between',
@@ -57,6 +59,13 @@ export function PrintPdfDialog({ opened, onClose, patientId, patientName, dateRa
     });
   }, [dateRange]);
 
+  useEffect(() => {
+    if (opened && !prevOpenedRef.current) {
+      trackAction('Opened print PDF dialog', { patientId });
+    }
+    prevOpenedRef.current = opened;
+  }, [opened, patientId]);
+
   const isValid = useMemo(() => Boolean(resolvedRange), [resolvedRange]);
 
   const handleApplyRange = useCallback((nextState: DateRangeFilterState) => {
@@ -83,6 +92,7 @@ export function PrintPdfDialog({ opened, onClose, patientId, patientName, dateRa
         throw new Error(t('print_pdf.error_generating'));
       }
 
+      trackFeature('Exported PDF', { patientId });
       printPdfBlob(pdfDataToBlob(result));
       onClose();
     } catch (err: any) {

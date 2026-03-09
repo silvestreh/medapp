@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Button,
@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { useFeathers } from '~/components/provider';
 import { DateRangeFilterState, DateRangePopover, resolveDateRange } from '~/components/date-range-popover';
+import { trackAction, trackFeature } from '~/utils/breadcrumbs';
 
 type ExportContent = 'encounters' | 'studies' | 'both';
 
@@ -41,6 +42,7 @@ export function ExportSignedPdfDialog({
 }: ExportSignedPdfDialogProps) {
   const { t, i18n } = useTranslation();
   const client = useFeathers();
+  const prevOpenedRef = useRef(false);
   const [content, setContent] = useState<ExportContent>('both');
   const [rangeFilter, setRangeFilter] = useState<DateRangeFilterState>({
     mode: 'between',
@@ -88,6 +90,13 @@ export function ExportSignedPdfDialog({
     setRangeFilter(nextState);
   }, []);
 
+  useEffect(() => {
+    if (opened && !prevOpenedRef.current) {
+      trackAction('Opened export signed PDF dialog', { patientId });
+    }
+    prevOpenedRef.current = opened;
+  }, [opened, patientId]);
+
   const isValid = useMemo(() => {
     if (!resolvedRange) return false;
     if (signDigitally && !certificatePassword) return false;
@@ -126,6 +135,7 @@ export function ExportSignedPdfDialog({
       }
 
       const result = await client.service('signed-exports' as any).create(payload);
+      trackFeature('Exported signed PDF', { patientId });
 
       if (delivery === 'download' && result.pdf) {
         const pdfData = result.pdf.data || result.pdf;

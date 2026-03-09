@@ -8,6 +8,7 @@ import { styled } from '~/styled-system/jsx';
 import { useAccount, useOrganization } from '~/components/provider';
 import { deterministicColor } from '~/components/chat-manager';
 import { Account } from '~/declarations';
+import { trackAction } from '~/utils/breadcrumbs';
 
 const Logo = styled(Image, {
   base: {
@@ -107,6 +108,7 @@ export default function TopNav() {
   const handleSwitch = useCallback(
     (id: string) => () => {
       if (id !== currentOrganizationId) {
+        trackAction('Switched organization', { organizationId: id });
         switchOrganization(id);
       }
     },
@@ -114,6 +116,7 @@ export default function TopNav() {
   );
 
   const handleLogout = useCallback(() => {
+    trackAction('User logged out');
     logout();
   }, [logout]);
 

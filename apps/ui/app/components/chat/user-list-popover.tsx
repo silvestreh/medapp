@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { useChat, type OrgUser, type ConversationEntry } from '~/components/chat/chat-provider';
 import { useChatManager, deterministicColor, type ChatParticipant } from '~/components/chat-manager';
 import { useAccount } from '~/components/provider';
+import { trackAction } from '~/utils/breadcrumbs';
 
 const STATUS_COLORS: Record<string, string> = {
   online: 'var(--mantine-color-green-6)',
@@ -128,9 +129,9 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
         console.warn('[Chat] handleUserClick early exit — chatClient:', !!chatClient, 'user.id:', user?.id);
         return;
       }
-      close();
 
-      console.log('[Chat] Opening conversation with', orgUser.fullName, orgUser.userId);
+      close();
+      trackAction('Opened chat with user');
 
       try {
         let conversation = conversations.find(c => {

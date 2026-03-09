@@ -6,6 +6,7 @@ import { Download, Paperclip, X } from 'lucide-react';
 
 import { useFeathers } from '~/components/provider';
 import { styled } from '~/styled-system/jsx';
+import { trackAction } from '~/utils/breadcrumbs';
 
 export interface AttachmentData {
   url: string;
@@ -121,6 +122,7 @@ export function useAttachmentUpload(onAttached: (attachment: AttachmentData) => 
 
         const { url } = await res.json();
 
+        trackAction('Uploaded attachment', { fileName: file.name, mimeType: file.type });
         onAttached({
           url,
           fileName: file.name,

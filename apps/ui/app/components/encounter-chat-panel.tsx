@@ -9,6 +9,7 @@ import remarkGfm from 'remark-gfm';
 
 import { useFeathers, useMutation } from '~/components/provider';
 import { media } from '~/media';
+import { trackFeature } from '~/utils/breadcrumbs';
 
 type Role = 'assistant' | 'user';
 const CHAT_PAGE_SIZE = 20;
@@ -389,6 +390,7 @@ export function EncounterChatPanel({
   const handleSend = useCallback(async () => {
     const content = draftMessage.trim();
     if (!content || isLoading || !patientId) return;
+    trackFeature('Sent AI chat message', { patientId });
 
     let persistedUserMessage: ChatMessage;
     try {

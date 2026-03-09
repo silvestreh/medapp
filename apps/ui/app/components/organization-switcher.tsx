@@ -4,6 +4,7 @@ import { Building2, ChevronDown, Check } from 'lucide-react';
 
 import { styled } from '~/styled-system/jsx';
 import { useOrganization } from '~/components/provider';
+import { trackAction } from '~/utils/breadcrumbs';
 
 const SwitcherButton = styled(UnstyledButton, {
   base: {
@@ -45,6 +46,7 @@ const OrganizationSwitcher: React.FC = () => {
 
   const handleSwitch = useCallback((id: string) => () => {
     if (id !== currentOrganizationId) {
+      trackAction('Switched organization', { organizationId: id });
       switchOrganization(id);
     }
   }, [currentOrganizationId, switchOrganization]);

@@ -9,6 +9,7 @@ import { useFind } from '~/components/provider';
 import type { Patient } from '~/declarations';
 import { displayDocumentValue } from '~/utils';
 import { getMedicareLabel } from '~/components/medicare-display';
+import { trackAction } from '~/utils/breadcrumbs';
 
 export interface CreateNewPatientSlot {
   medicId: string;
@@ -110,6 +111,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
 
       const patient = patientByValue.get(value);
       if (patient) {
+        trackAction('Selected patient from search', { patientId: patient.id });
         onChange?.(patient.id);
         const name = `${patient.personalData.firstName} ${patient.personalData.lastName}`.trim();
         setInputValue(name);
