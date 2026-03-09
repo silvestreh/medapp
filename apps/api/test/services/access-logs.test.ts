@@ -76,6 +76,27 @@ describe('\'access-logs\' service', () => {
     assert.strictEqual(log.action, 'export');
   });
 
+  it('stores client info metadata (browser, OS, user agent)', async () => {
+    const log: any = await app.service('access-logs').create({
+      userId: user.id,
+      organizationId: org.id,
+      resource: 'studies',
+      patientId: patient.id,
+      action: 'read',
+      ip: '10.0.0.1',
+      metadata: {
+        browser: 'Chrome 122.0.0.0',
+        os: 'Mac OS 14.3.1',
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+      },
+    });
+
+    assert.ok(log.id);
+    assert.strictEqual(log.metadata.browser, 'Chrome 122.0.0.0');
+    assert.strictEqual(log.metadata.os, 'Mac OS 14.3.1');
+    assert.ok(log.metadata.userAgent);
+  });
+
   it('finds logs by userId', async () => {
     const results = await app.service('access-logs').find({
       query: { userId: user.id },

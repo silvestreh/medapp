@@ -1,4 +1,5 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
+import { UAParser } from 'ua-parser-js';
 
 type ResourceType = 'encounters' | 'studies' | 'prescriptions';
 type AccessAction = 'read' | 'write' | 'export';
@@ -27,9 +28,30 @@ function getClientIp(context: HookContext): string | null {
       return (Array.isArray(forwarded) ? forwarded[0] : forwarded).split(',')[0].trim();
     }
   }
+  // Express req.ip (respects trust proxy setting)
+  const req = (context.params as any)?.req;
+  if (req?.ip) return req.ip;
+
   const connection = (context.params as any)?.connection;
   if (connection?.remoteAddress) return connection.remoteAddress;
   return null;
+}
+
+function getClientInfo(context: HookContext): Record<string, any> | null {
+  const ua = context.params?.headers?.['user-agent'];
+  if (!ua) return null;
+
+  const { browser, os, device } = UAParser(ua);
+
+  const info: Record<string, any> = {};
+  if (browser.name) info.browser = browser.name + (browser.version ? ` ${browser.version}` : '');
+  if (os.name) info.os = os.name + (os.version ? ` ${os.version}` : '');
+  if (device.type) info.deviceType = device.type;
+  if (device.vendor) info.deviceVendor = device.vendor;
+  if (device.model) info.deviceModel = device.model;
+  info.userAgent = ua;
+
+  return info;
 }
 
 function getPatientIdFromContext(context: HookContext): string | undefined {
@@ -64,7 +86,12 @@ export const logAccess = (options: LogAccessOptions): Hook => {
 
     const action = resolveAction(context, options.action);
     const ip = getClientIp(context);
-    const metadata = options.getMetadata ? options.getMetadata(context) : undefined;
+    const customMetadata = options.getMetadata ? options.getMetadata(context) : undefined;
+    const clientInfo = getClientInfo(context);
+
+    const metadata = (customMetadata || clientInfo)
+      ? { ...clientInfo, ...customMetadata }
+      : undefined;
 
     // Fire and forget — access logging should never break the main request
     context.app.service('access-logs').create({

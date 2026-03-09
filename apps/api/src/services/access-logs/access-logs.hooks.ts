@@ -1,6 +1,6 @@
 import { Hook, HookContext, HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
-import { disallow } from 'feathers-hooks-common';
+import { disallow, iff, isProvider } from 'feathers-hooks-common';
 import { Forbidden } from '@feathersjs/errors';
 
 const { authenticate } = authentication.hooks;
@@ -16,9 +16,9 @@ const requireSuperAdmin = (): Hook => {
 
 export default {
   before: {
-    all: [authenticate('jwt')],
-    find: [requireSuperAdmin()],
-    get: [requireSuperAdmin()],
+    all: [iff(isProvider('external'), authenticate('jwt'))],
+    find: [iff(isProvider('external'), requireSuperAdmin())],
+    get: [iff(isProvider('external'), requireSuperAdmin())],
     create: [disallow('external')],
     update: [disallow('external')],
     patch: [disallow('external')],

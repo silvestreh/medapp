@@ -33,6 +33,8 @@ export type HookContext<T = any> = { app: Application } & FeathersHookContext<T>
 // converted to objects, breaking Sequelize $in queries.
 app.set('query parser', (str: string) => qs.parse(str, { arrayLimit: 500 }));
 app.configure(configuration());
+// Trust the first proxy (Railway) so req.ip / x-forwarded-for resolve correctly.
+app.set('trust proxy', true);
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
