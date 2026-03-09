@@ -20,7 +20,9 @@ const app: Application = express(feathers());
 
 app.configure(configuration());
 
-const corsOrigin = '*';
+const corsOrigin = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',')
+  : ['http://localhost:3030','http://localhost:5173'];
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: corsOrigin, credentials: true }));
@@ -33,14 +35,24 @@ app.get('/healthz', (_req: any, res: any) => {
 
 app.configure(express.rest());
 app.configure(socketio((io) => {
-  if (corsOrigin === '*') {
-    io.origins('*:*');
-  } else {
-    const allowed = Array.isArray(corsOrigin) ? corsOrigin : [corsOrigin];
-    io.origins((origin: string, cb: (err: string | null, ok: boolean) => void) => {
-      cb(null, allowed.some(a => origin.startsWith(a)));
-    });
-  }
+  io.origins((origin, callback) => {
+    // Check if the incoming origin is in our whitelist
+    if (corsOrigin.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Fail for everything else
+    console.warn(`[Chat] Blocked connection attempt from unauthorized origin: ${origin}`);
+    return callback('origin not allowed', false);
+  });
+  // if (corsOrigin === '*') {
+  //   io.origins('*:*');
+  // } else {
+  //   const allowed = Array.isArray(corsOrigin) ? corsOrigin : [corsOrigin];
+  //   io.origins((origin: string, cb: (err: string | null, ok: boolean) => void) => {
+  //     cb(null, allowed.some(a => origin.startsWith(a)));
+  //   });
+  // }
 
   // Typing indicator relay — ephemeral, no persistence
   io.on('connection', (socket: any) => {
