@@ -145,7 +145,7 @@ export function ChatProvider({ children }: PropsWithChildren) {
         }
       } catch (err) {
         if (err instanceof Error && err.message === 'cancelled') return;
-        // Connection failed — non-fatal
+        console.error('[Chat] Connection failed:', err);
       }
     })();
 
