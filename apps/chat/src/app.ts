@@ -20,11 +20,7 @@ const app: Application = express(feathers());
 
 app.configure(configuration());
 
-const corsOrigin = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',')
-  : process.env.NODE_ENV === 'production'
-    ? [`https://${app.get('host')}`]
-    : '*';
+const corsOrigin = '*';
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: corsOrigin, credentials: true }));
