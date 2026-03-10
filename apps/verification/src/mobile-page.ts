@@ -14,137 +14,155 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #f8f9fa;
       color: #1a1a2e;
-      min-height: 100vh;
-      padding: 16px;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
     }
-    .container { max-width: 420px; margin: 0 auto; }
-    h1 { font-size: 20px; text-align: center; margin: 16px 0; }
-    .step {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
-      border: 2px solid #e9ecef;
-      transition: border-color 0.2s;
+
+    /* Intro screen */
+    .intro {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 32px 24px;
+      max-width: 420px;
+      margin: 0 auto;
+      width: 100%;
     }
-    .step.active { border-color: #228be6; }
-    .step.done { border-color: #40c057; background: #f8fff8; }
-    .step-header {
+    .intro h1 { font-size: 24px; margin-bottom: 8px; }
+    .intro .subtitle { color: #868e96; font-size: 15px; margin-bottom: 32px; }
+    .intro-steps { list-style: none; margin-bottom: 40px; }
+    .intro-steps li {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid #f1f3f5;
     }
-    .step-number {
-      width: 32px; height: 32px;
+    .intro-steps li:last-child { border-bottom: none; }
+    .intro-step-num {
+      width: 36px; height: 36px;
       border-radius: 50%;
-      background: #e9ecef;
+      background: #e7f5ff;
+      color: #228be6;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 14px;
+      font-weight: 700; font-size: 15px;
+      flex-shrink: 0;
     }
-    .step.active .step-number { background: #228be6; color: #fff; }
-    .step.done .step-number { background: #40c057; color: #fff; }
-    .step-title { font-weight: 600; font-size: 16px; }
-    .step-desc { font-size: 13px; color: #868e96; margin-bottom: 12px; }
-    .preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; margin-top: 8px; }
-    .btn {
-      display: block; width: 100%; padding: 14px;
-      border: none; border-radius: 8px;
-      font-size: 16px; font-weight: 600;
-      cursor: pointer; text-align: center;
-    }
-    .btn-primary { background: #228be6; color: #fff; }
-    .btn-primary:disabled { background: #adb5bd; cursor: not-allowed; }
-    .btn-outline { background: #fff; color: #228be6; border: 2px solid #228be6; margin-top: 8px; }
-    .btn-secondary { background: #e9ecef; color: #495057; margin-top: 8px; }
-    .btn-danger { background: #fff; color: #e03131; border: 2px solid #e03131; margin-top: 8px; }
-    .done-screen {
-      text-align: center; padding: 40px 20px;
-      background: #fff; border-radius: 12px;
-    }
-    .done-screen .checkmark { font-size: 64px; margin-bottom: 16px; }
-    .done-screen h2 { margin-bottom: 8px; }
-    .done-screen p { color: #868e96; }
-    .error { color: #e03131; font-size: 13px; text-align: center; margin-top: 8px; }
+    .intro-step-text { font-size: 15px; }
+    .intro-step-text strong { display: block; margin-bottom: 2px; }
+    .intro-step-text span { color: #868e96; font-size: 13px; }
 
-    /* Camera viewfinder */
-    .camera-container {
-      position: relative;
-      width: 100%;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #000;
-      margin-bottom: 12px;
-    }
-    .camera-container video {
-      width: 100%;
-      display: block;
-    }
-    .camera-container canvas { display: none; }
-    .camera-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+    /* Intermediate screen between steps */
+    .intermediate {
+      flex: 1;
       display: flex;
-      align-items: flex-end;
+      flex-direction: column;
       justify-content: center;
-      padding-bottom: 16px;
-      pointer-events: none;
+      align-items: center;
+      padding: 32px 24px;
+      text-align: center;
+      max-width: 420px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .intermediate .check-badge {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: #d3f9d8;
+      color: #2b8a3e;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    .intermediate h2 { font-size: 20px; margin-bottom: 8px; }
+    .intermediate .next-label { color: #868e96; font-size: 14px; margin-bottom: 4px; }
+    .intermediate .next-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .intermediate .next-desc { color: #868e96; font-size: 14px; margin-bottom: 32px; line-height: 1.5; }
+
+    /* Full-screen camera */
+    .camera-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+      position: relative;
+    }
+    .camera-screen video {
+      flex: 1;
+      width: 100%;
+      object-fit: cover;
+    }
+    .camera-top-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: 16px 20px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+      z-index: 2;
+    }
+    .camera-step-label {
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .camera-title {
+      color: #fff;
+      font-size: 17px;
+      font-weight: 600;
+    }
+    .camera-bottom-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 16px 20px 32px;
+      background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      z-index: 2;
+    }
+    .camera-hint-text {
+      color: #fff;
+      font-size: 14px;
+      text-align: center;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
     }
     .capture-btn {
-      pointer-events: all;
-      width: 64px; height: 64px;
+      width: 72px; height: 72px;
       border-radius: 50%;
       border: 4px solid #fff;
-      background: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.25);
       cursor: pointer;
       transition: background 0.15s;
     }
-    .capture-btn:active { background: rgba(255,255,255,0.6); }
-    .camera-hint {
-      position: absolute;
-      top: 12px; left: 0; right: 0;
-      text-align: center;
-      color: #fff;
-      font-size: 13px;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-    }
-    .preview-container { position: relative; }
-    .preview-container img {
-      width: 100%;
-      border-radius: 8px;
-      display: block;
-    }
-    .preview-actions {
+    .capture-btn:active { background: rgba(255,255,255,0.5); }
+    .camera-secondary-actions {
       display: flex;
-      gap: 8px;
-      margin-top: 8px;
+      gap: 16px;
     }
-    .preview-actions .btn { flex: 1; }
-    .uploading-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(255,255,255,0.8);
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 8px;
-      font-weight: 600; color: #228be6;
-    }
-    .detect-overlay {
-      position: absolute;
-      bottom: 80px; left: 50%;
-      transform: translateX(-50%);
-      padding: 6px 16px;
-      border-radius: 20px;
+    .camera-secondary-actions button {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.8);
       font-size: 13px;
-      font-weight: 600;
-      pointer-events: none;
-      z-index: 2;
+      cursor: pointer;
+      padding: 4px 8px;
     }
-    .detect-overlay.scanning {
-      background: rgba(0,0,0,0.5);
+    .detect-pill {
+      padding: 8px 20px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .detect-pill.scanning {
+      background: rgba(255,255,255,0.15);
       color: #fff;
       animation: pulse 1.5s ease-in-out infinite;
     }
-    .detect-overlay.detected {
+    .detect-pill.detected {
       background: rgba(64,192,87,0.9);
       color: #fff;
     }
@@ -152,30 +170,141 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
       0%, 100% { opacity: 0.6; }
       50% { opacity: 1; }
     }
+
+    /* Preview screen */
+    .preview-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+    }
+    .preview-screen img {
+      flex: 1;
+      width: 100%;
+      object-fit: contain;
+    }
+    .preview-bar {
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px 32px;
+      background: #000;
+    }
+    .preview-bar button {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .preview-bar .btn-retake {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+    .preview-bar .btn-confirm {
+      background: #228be6;
+      color: #fff;
+    }
+    .preview-bar .btn-confirm:disabled {
+      background: #555;
+      color: #999;
+    }
+    .upload-indicator {
+      text-align: center;
+      color: #fff;
+      font-size: 14px;
+      padding: 8px;
+      background: rgba(34,139,230,0.8);
+    }
+
+    /* Done screen */
+    .done-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .done-screen .check-badge {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: #d3f9d8;
+      color: #2b8a3e;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+    .done-screen h2 { font-size: 22px; margin-bottom: 8px; }
+    .done-screen p { color: #868e96; font-size: 15px; line-height: 1.5; }
+
+    .btn {
+      display: block; width: 100%; padding: 16px;
+      border: none; border-radius: 10px;
+      font-size: 16px; font-weight: 600;
+      cursor: pointer; text-align: center;
+    }
+    .btn-primary { background: #228be6; color: #fff; }
+    .btn-secondary { background: #e9ecef; color: #495057; margin-top: 12px; }
+    .error-toast {
+      position: fixed;
+      bottom: 24px; left: 16px; right: 16px;
+      background: #e03131;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: center;
+      z-index: 100;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* No-camera fallback */
+    .fallback-upload {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 32px 24px;
+      text-align: center;
+      max-width: 420px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .fallback-upload h2 { font-size: 20px; margin-bottom: 8px; }
+    .fallback-upload p { color: #868e96; font-size: 14px; margin-bottom: 24px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Verificación de Identidad</h1>
-    <div id="app"></div>
-  </div>
+  <div id="app" style="flex:1;display:flex;flex-direction:column;"></div>
 
   <script>
     (function() {
       var TOKEN = ${JSON.stringify(token)};
       var API = ${JSON.stringify(apiBaseUrl)};
+
+      // State
+      var phase = 'intro'; // 'intro' | 'camera' | 'preview' | 'intermediate' | 'done'
       var currentStep = 0;
       var uploads = { idFront: null, idBack: null, selfie: null };
       var uploading = false;
       var error = '';
+      var errorTimer = null;
       var cameraStream = null;
       var capturedBlob = null;
       var capturedPreviewUrl = null;
       var cameraSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
       var scanAnimationId = null;
-      var autoDetectStatus = ''; // '', 'scanning', 'detected'
+      var autoDetectStatus = '';
 
-      // Feature detection for auto-scan APIs
+      // Feature detection
       var hasBarcodeDetector = typeof BarcodeDetector !== 'undefined';
       var hasFaceDetector = typeof FaceDetector !== 'undefined';
       var barcodeDetector = null;
@@ -189,10 +318,50 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
       }
 
       var steps = [
-        { key: 'idFront', title: 'Frente del DNI', desc: 'Enfocá el frente de tu DNI', descAuto: 'Apuntá al frente del DNI — se captura automáticamente', facing: 'environment', autoDetect: 'barcode' },
-        { key: 'idBack', title: 'Dorso del DNI', desc: 'Enfocá el dorso de tu DNI', descAuto: 'Apuntá al dorso del DNI — se captura automáticamente', facing: 'environment', autoDetect: 'text' },
-        { key: 'selfie', title: 'Selfie', desc: 'Mirá a la cámara para tu selfie', descAuto: 'Mirá a la cámara — se captura automáticamente', facing: 'user', autoDetect: 'face' },
+        {
+          key: 'idFront',
+          title: 'Frente del DNI',
+          introTitle: 'Frente del DNI',
+          introDesc: 'Foto del frente donde se vea tu cara y el código de barras',
+          cameraHint: 'Encuadrá el frente del DNI',
+          cameraHintAuto: 'Se captura automáticamente al detectar el código',
+          nextTitle: 'Dorso del DNI',
+          nextDesc: 'Ahora necesitamos una foto del dorso de tu DNI.',
+          facing: 'environment',
+          autoDetect: 'barcode'
+        },
+        {
+          key: 'idBack',
+          title: 'Dorso del DNI',
+          introTitle: 'Dorso del DNI',
+          introDesc: 'Foto del dorso donde se vea la información',
+          cameraHint: 'Encuadrá el dorso del DNI',
+          cameraHintAuto: 'Se captura automáticamente al detectar el texto',
+          nextTitle: 'Selfie',
+          nextDesc: 'Por último, necesitamos una selfie tuya mirando a la cámara.',
+          facing: 'environment',
+          autoDetect: 'text'
+        },
+        {
+          key: 'selfie',
+          title: 'Selfie',
+          introTitle: 'Selfie',
+          introDesc: 'Una foto tuya mirando a la cámara',
+          cameraHint: 'Mirá a la cámara',
+          cameraHintAuto: 'Se captura automáticamente al detectar tu cara',
+          nextTitle: null,
+          nextDesc: null,
+          facing: 'user',
+          autoDetect: 'face'
+        }
       ];
+
+      function showError(msg) {
+        if (errorTimer) clearTimeout(errorTimer);
+        error = msg;
+        render();
+        errorTimer = setTimeout(function() { error = ''; render(); }, 5000);
+      }
 
       function stopScanning() {
         if (scanAnimationId) {
@@ -210,9 +379,6 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
         }
       }
 
-      // Detect MRZ-like text on the ID back by looking for multiple
-      // full-width rows of high-contrast text in the bottom 40% of the frame.
-      // Requires at least 6 qualifying rows (MRZ has 3 lines, each ~2-3px tall at scale).
       function detectTextLines(video) {
         var w = 320;
         var h = Math.round(w * video.videoHeight / video.videoWidth);
@@ -253,14 +419,13 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
             qualifyingRows++;
           }
         }
-
         return qualifyingRows >= 6;
       }
 
       function canAutoDetect(step) {
         if (step.autoDetect === 'barcode') return hasBarcodeDetector && barcodeDetector;
         if (step.autoDetect === 'face') return hasFaceDetector && faceDetector;
-        if (step.autoDetect === 'text') return true; // canvas-based, always available
+        if (step.autoDetect === 'text') return true;
         return false;
       }
 
@@ -273,7 +438,6 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
 
         var video = document.getElementById('camera-video');
         if (!video || !video.videoWidth) {
-          // Wait for video to be ready
           setTimeout(startAutoDetection, 200);
           return;
         }
@@ -290,20 +454,14 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
             return;
           }
 
-          // For text detection, skip frames (it's CPU-intensive on canvas)
           if (step.autoDetect === 'text') {
             frameSkip++;
             if (frameSkip % 5 !== 0) {
               scanAnimationId = requestAnimationFrame(scanFrame);
               return;
             }
-          }
-
-          if (step.autoDetect === 'text') {
-            // Canvas-based MRZ detection
             var found = detectTextLines(video);
             if (!cameraStream || capturedBlob) return;
-
             if (found) {
               consecutiveDetections++;
               if (consecutiveDetections >= requiredDetections) {
@@ -313,17 +471,13 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
                 return;
               }
             } else {
-              consecutiveDetections = Math.max(0, consecutiveDetections - 1); // decay slowly
+              consecutiveDetections = Math.max(0, consecutiveDetections - 1);
             }
             scanAnimationId = requestAnimationFrame(scanFrame);
           } else {
-            // BarcodeDetector or FaceDetector
             var detector = step.autoDetect === 'face' ? faceDetector : barcodeDetector;
-
             detector.detect(video).then(function(results) {
               if (!cameraStream || capturedBlob) return;
-
-              // For barcode: require PDF417 payload (>50 chars) to avoid triggering on small QR codes
               var hasValidResult = results && results.length > 0;
               if (hasValidResult && step.autoDetect === 'barcode') {
                 hasValidResult = results[0].rawValue && results[0].rawValue.length > 50;
@@ -339,42 +493,41 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
               } else {
                 consecutiveDetections = Math.max(0, consecutiveDetections - 1);
               }
-
               scanAnimationId = requestAnimationFrame(scanFrame);
             }).catch(function() {
               scanAnimationId = requestAnimationFrame(scanFrame);
             });
           }
         }
-
         scanAnimationId = requestAnimationFrame(scanFrame);
       }
 
-      function startCamera(facingMode) {
+      function openCamera() {
+        var step = steps[currentStep];
         stopCamera();
         capturedBlob = null;
         capturedPreviewUrl = null;
+        phase = 'camera';
+        render();
 
-        return navigator.mediaDevices.getUserMedia({
-          video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
+        navigator.mediaDevices.getUserMedia({
+          video: { facingMode: step.facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
           audio: false
         }).then(function(stream) {
           cameraStream = stream;
-          // Attach to video element after render
           requestAnimationFrame(function() {
             var video = document.getElementById('camera-video');
             if (video) {
               video.srcObject = stream;
               video.play().then(function() {
-                // Start auto-detection once video is playing
                 startAutoDetection();
               });
             }
           });
-          return true;
         }).catch(function(err) {
           console.warn('Camera access failed:', err);
-          return false;
+          cameraSupported = false;
+          render();
         });
       }
 
@@ -386,7 +539,6 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         var ctx = canvas.getContext('2d');
-        // Mirror selfie horizontally
         var step = steps[currentStep];
         if (step && step.facing === 'user') {
           ctx.translate(canvas.width, 0);
@@ -397,6 +549,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
         canvas.toBlob(function(blob) {
           capturedBlob = blob;
           capturedPreviewUrl = URL.createObjectURL(blob);
+          phase = 'preview';
           render();
         }, 'image/jpeg', 0.85);
       }
@@ -405,22 +558,14 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
         if (capturedPreviewUrl) URL.revokeObjectURL(capturedPreviewUrl);
         capturedBlob = null;
         capturedPreviewUrl = null;
-        var step = steps[currentStep];
-        if (step && cameraSupported) {
-          startCamera(step.facing).then(function(ok) {
-            if (!ok) cameraSupported = false;
-            render();
-          });
-        } else {
-          render();
-        }
+        openCamera();
       }
 
       async function confirmCapture() {
-        if (!capturedBlob) return;
-        var key = steps[currentStep].key;
+        if (!capturedBlob || uploading) return;
+        var step = steps[currentStep];
+        var key = step.key;
         uploading = true;
-        error = '';
         render();
 
         try {
@@ -443,11 +588,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
           capturedBlob = null;
           capturedPreviewUrl = null;
 
-          if (currentStep < steps.length - 1) {
-            currentStep++;
-          }
-
-          // Notify the server
+          // Notify server
           if (uploads.idFront && uploads.idBack && uploads.selfie) {
             await fetch(API + '/verification-sessions/by-token', {
               method: 'PATCH',
@@ -459,6 +600,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
                 selfieUrl: uploads.selfie.url,
               }),
             });
+            phase = 'done';
           } else {
             await fetch(API + '/verification-sessions/by-token', {
               method: 'PATCH',
@@ -468,123 +610,163 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
                 [key + 'Url']: uploads[key].url,
               }),
             });
+            currentStep++;
+            phase = 'intermediate';
           }
         } catch (e) {
           console.error('[mobile-upload] Upload error:', e);
           var msg = e.message || 'Error al subir la foto';
           if (msg === 'Load failed' || msg === 'Failed to fetch') {
-            msg = 'No se pudo conectar con el servidor. Verificá tu conexión a internet e intentá de nuevo.';
+            msg = 'No se pudo conectar con el servidor. Verificá tu conexión a internet.';
           }
-          error = msg + ' (API: ' + API + ')';
+          showError(msg);
         } finally {
           uploading = false;
           render();
-          // Start camera for next step if needed
-          var nextStep = steps[currentStep];
-          if (nextStep && !uploads[nextStep.key] && cameraSupported) {
-            startCamera(nextStep.facing).then(function(ok) {
-              if (!ok) { cameraSupported = false; render(); }
-            });
-          }
         }
       }
 
-      // Fallback: handle file input for devices where camera API fails
-      window.__handleFile = async function(key, input) {
+      function compressImage(file) {
+        return new Promise(function(resolve) {
+          var img = new Image();
+          img.onload = function() {
+            var maxDim = 1280;
+            var w = img.width;
+            var h = img.height;
+            if (w > maxDim || h > maxDim) {
+              var ratio = Math.min(maxDim / w, maxDim / h);
+              w = Math.round(w * ratio);
+              h = Math.round(h * ratio);
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            canvas.toBlob(function(blob) { resolve(blob); }, 'image/jpeg', 0.85);
+          };
+          img.onerror = function() { resolve(file); };
+          img.src = URL.createObjectURL(file);
+        });
+      }
+
+      window.__handleFile = async function(input) {
         var file = input.files && input.files[0];
         if (!file) return;
         input.value = '';
-        capturedBlob = file;
-        capturedPreviewUrl = URL.createObjectURL(file);
+        capturedBlob = await compressImage(file);
+        capturedPreviewUrl = URL.createObjectURL(capturedBlob);
+        phase = 'preview';
         render();
       };
 
       function render() {
         var app = document.getElementById('app');
-        if (uploads.idFront && uploads.idBack && uploads.selfie) {
-          stopCamera();
-          app.innerHTML =
-            '<div class="done-screen">' +
-              '<div class="checkmark">✅</div>' +
-              '<h2>¡Listo!</h2>' +
-              '<p>Ya podés volver a tu computadora. La verificación se completó exitosamente.</p>' +
-            '</div>';
-          return;
+        var step = steps[currentStep];
+        var html = '';
+
+        // -- INTRO --
+        if (phase === 'intro') {
+          html += '<div class="intro">';
+          html += '<h1>Verificación de Identidad</h1>';
+          html += '<p class="subtitle">Necesitamos verificar tu identidad. El proceso dura menos de un minuto.</p>';
+          html += '<ul class="intro-steps">';
+          for (var i = 0; i < steps.length; i++) {
+            html += '<li>';
+            html += '<div class="intro-step-num">' + (i + 1) + '</div>';
+            html += '<div class="intro-step-text"><strong>' + steps[i].introTitle + '</strong><span>' + steps[i].introDesc + '</span></div>';
+            html += '</li>';
+          }
+          html += '</ul>';
+          html += '<button class="btn btn-primary" onclick="window.__start()">Comenzar</button>';
+          html += '</div>';
         }
 
-        var html = '';
-        for (var i = 0; i < steps.length; i++) {
-          var s = steps[i];
-          var isDone = !!uploads[s.key];
-          var isActive = i === currentStep && !isDone;
-          var cls = isDone ? 'step done' : (isActive ? 'step active' : 'step');
-
-          html += '<div class="' + cls + '">';
-          html += '<div class="step-header">';
-          html += '<div class="step-number">' + (isDone ? '✓' : (i + 1)) + '</div>';
-          html += '<div class="step-title">' + s.title + '</div>';
+        // -- INTERMEDIATE (between steps) --
+        else if (phase === 'intermediate') {
+          var prevStep = steps[currentStep - 1];
+          html += '<div class="intermediate">';
+          html += '<div class="check-badge">&#10003;</div>';
+          html += '<h2>' + prevStep.title + ' lista</h2>';
+          html += '<p class="next-label">Siguiente paso</p>';
+          html += '<p class="next-title">' + step.title + '</p>';
+          html += '<p class="next-desc">' + prevStep.nextDesc + '</p>';
+          html += '<button class="btn btn-primary" onclick="window.__openCamera()">Continuar</button>';
           html += '</div>';
+        }
 
-          if (isActive) {
-            var useAutoDesc = canAutoDetect(s) && autoDetectStatus === 'scanning';
-            html += '<p class="step-desc">' + (useAutoDesc ? s.descAuto : s.desc) + '</p>';
+        // -- CAMERA (full screen) --
+        else if (phase === 'camera') {
+          var isSelfie = step.facing === 'user';
+          var hasAuto = canAutoDetect(step);
+          var hint = hasAuto && autoDetectStatus === 'scanning' ? step.cameraHintAuto : step.cameraHint;
 
-            if (capturedPreviewUrl) {
-              // Show captured photo preview with confirm/retake
-              html += '<div class="preview-container">';
-              html += '<img src="' + capturedPreviewUrl + '" alt="Preview">';
-              if (uploading) {
-                html += '<div class="uploading-overlay">Subiendo...</div>';
-              }
-              html += '</div>';
-              if (!uploading) {
-                html += '<div class="preview-actions">';
-                html += '<button class="btn btn-danger" onclick="window.__retake()">Volver a tomar</button>';
-                html += '<button class="btn btn-primary" onclick="window.__confirm()">Confirmar</button>';
-                html += '</div>';
-              }
-            } else if (cameraSupported && cameraStream) {
-              // Live camera viewfinder
-              html += '<div class="camera-container">';
-              html += '<video id="camera-video" autoplay playsinline muted' + (s.facing === 'user' ? ' style="transform:scaleX(-1)"' : '') + '></video>';
-              // Show detection status overlay
-              if (autoDetectStatus === 'detected') {
-                html += '<div class="detect-overlay detected">Detectado ✓</div>';
-              } else if (autoDetectStatus === 'scanning') {
-                html += '<div class="detect-overlay scanning">Buscando...</div>';
-              }
-              html += '<div class="camera-overlay">';
-              html += '<button class="capture-btn" onclick="window.__capture()" title="Captura manual"></button>';
-              html += '</div>';
-              html += '<div class="camera-hint">' + (useAutoDesc ? s.descAuto : s.desc) + '</div>';
-              html += '</div>';
-              // Fallback option
-              html += '<input type="file" id="file-' + s.key + '" accept="image/*" capture="' + (s.facing === 'user' ? 'user' : 'environment') + '" style="display:none" onchange="window.__handleFile(\\'' + s.key + '\\', this)">';
-              html += '<button class="btn btn-secondary" onclick="document.getElementById(\\'file-' + s.key + '\\').click()">Subir desde galería</button>';
-            } else {
-              // No camera: file input fallback
-              html += '<input type="file" id="file-' + s.key + '" accept="image/*" capture="' + (s.facing === 'user' ? 'user' : 'environment') + '" style="display:none" onchange="window.__handleFile(\\'' + s.key + '\\', this)">';
-              html += '<button class="btn btn-primary" onclick="document.getElementById(\\'file-' + s.key + '\\').click()" ' + (uploading ? 'disabled' : '') + '>';
-              html += 'Tomar foto';
-              html += '</button>';
+          if (cameraSupported) {
+            html += '<div class="camera-screen">';
+            html += '<video id="camera-video" autoplay playsinline muted' + (isSelfie ? ' style="transform:scaleX(-1)"' : '') + '></video>';
+            html += '<div class="camera-top-bar">';
+            html += '<div class="camera-step-label">Paso ' + (currentStep + 1) + ' de ' + steps.length + '</div>';
+            html += '<div class="camera-title">' + step.title + '</div>';
+            html += '</div>';
+            html += '<div class="camera-bottom-bar">';
+            html += '<div class="camera-hint-text">' + hint + '</div>';
+            if (autoDetectStatus === 'detected') {
+              html += '<div class="detect-pill detected">Detectado &#10003;</div>';
+            } else if (autoDetectStatus === 'scanning') {
+              html += '<div class="detect-pill scanning">Buscando...</div>';
             }
-
-            if (error) {
-              html += '<p class="error">' + error + '</p>';
-            }
+            html += '<button class="capture-btn" onclick="window.__capture()"></button>';
+            html += '<div class="camera-secondary-actions">';
+            html += '<input type="file" id="file-input" accept="image/*" capture="' + (isSelfie ? 'user' : 'environment') + '" style="display:none" onchange="window.__handleFile(this)">';
+            html += '<button onclick="document.getElementById(\\'file-input\\').click()">Subir desde galería</button>';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+          } else {
+            // No camera fallback
+            html += '<div class="fallback-upload">';
+            html += '<h2>' + step.title + '</h2>';
+            html += '<p>' + step.cameraHint + '</p>';
+            html += '<input type="file" id="file-input" accept="image/*" capture="' + (isSelfie ? 'user' : 'environment') + '" style="display:none" onchange="window.__handleFile(this)">';
+            html += '<button class="btn btn-primary" onclick="document.getElementById(\\'file-input\\').click()">Tomar foto</button>';
+            html += '</div>';
           }
+        }
 
-          if (isDone && uploads[s.key].preview) {
-            html += '<img class="preview" src="' + uploads[s.key].preview + '" alt="' + s.title + '">';
+        // -- PREVIEW --
+        else if (phase === 'preview') {
+          var isSelfiePreview = step.facing === 'user';
+          html += '<div class="preview-screen">';
+          if (uploading) {
+            html += '<div class="upload-indicator">Subiendo foto...</div>';
           }
-
+          html += '<img src="' + capturedPreviewUrl + '" alt="Preview"' + (isSelfiePreview ? '' : '') + '>';
+          html += '<div class="preview-bar">';
+          html += '<button class="btn-retake" onclick="window.__retake()"' + (uploading ? ' disabled' : '') + '>Volver a tomar</button>';
+          html += '<button class="btn-confirm" onclick="window.__confirm()"' + (uploading ? ' disabled' : '') + '>' + (uploading ? 'Subiendo...' : 'Confirmar') + '</button>';
           html += '</div>';
+          html += '</div>';
+        }
+
+        // -- DONE --
+        else if (phase === 'done') {
+          stopCamera();
+          html += '<div class="done-screen">';
+          html += '<div class="check-badge">&#10003;</div>';
+          html += '<h2>¡Verificación enviada!</h2>';
+          html += '<p>Ya podés volver a tu computadora. Te notificaremos cuando se complete la revisión.</p>';
+          html += '</div>';
+        }
+
+        // Error toast
+        if (error) {
+          html += '<div class="error-toast">' + error + '</div>';
         }
 
         app.innerHTML = html;
 
-        // Re-attach camera stream to video element if it exists
-        if (cameraStream && !capturedPreviewUrl) {
+        // Re-attach camera stream
+        if (phase === 'camera' && cameraStream) {
           var video = document.getElementById('camera-video');
           if (video && !video.srcObject) {
             video.srcObject = cameraStream;
@@ -593,19 +775,15 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
         }
       }
 
+      window.__start = function() {
+        openCamera();
+      };
+      window.__openCamera = openCamera;
       window.__capture = captureFrame;
       window.__retake = retake;
       window.__confirm = confirmCapture;
 
-      // Initialize: try to start camera for first step
-      if (cameraSupported) {
-        startCamera(steps[0].facing).then(function(ok) {
-          if (!ok) cameraSupported = false;
-          render();
-        });
-      } else {
-        render();
-      }
+      render();
     })();
   </script>
 </body>

@@ -11,9 +11,9 @@ const ALLOWED_MIMES = [
 ];
 
 const MAX_SIZE_BY_MIME: Record<string, number> = {
-  'image/png': 2 * 1024 * 1024,
-  'image/jpeg': 2 * 1024 * 1024,
-  'image/webp': 2 * 1024 * 1024,
+  'image/png': 5 * 1024 * 1024,
+  'image/jpeg': 5 * 1024 * 1024,
+  'image/webp': 5 * 1024 * 1024,
   'image/svg+xml': 2 * 1024 * 1024,
   'application/pdf': 10 * 1024 * 1024,
   'application/dicom': 50 * 1024 * 1024,

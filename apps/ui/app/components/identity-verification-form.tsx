@@ -33,7 +33,7 @@ interface PhotoValidation {
   hasFace: boolean;
 }
 
-type CaptureMode = 'detecting' | 'camera' | 'qr';
+type CaptureMode = 'intro' | 'camera' | 'qr';
 
 const ACCEPT_IMAGES = 'image/png,image/jpeg,image/webp';
 
@@ -72,7 +72,7 @@ export function IdentityVerificationForm({
   });
   const [uploading, setUploading] = useState<UploadSlot | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [captureMode, setCaptureMode] = useState<CaptureMode>('detecting');
+  const [captureMode, setCaptureMode] = useState<CaptureMode>('intro');
   const [activeStep, setActiveStep] = useState(0);
   const [validating, setValidating] = useState(false);
   const [validationWarning, setValidationWarning] = useState<string | null>(null);
@@ -96,22 +96,15 @@ export function IdentityVerificationForm({
       .join('\n\n');
   }, [rejectionReason, t]);
 
-  // Detect camera availability
-  useEffect(() => {
-    if (currentStatus !== 'none' && currentStatus !== 'rejected') return;
-
-    const detectCamera = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        stream.getTracks().forEach((track) => track.stop());
-        setCaptureMode('camera');
-      } catch {
-        setCaptureMode('qr');
-      }
-    };
-
-    detectCamera();
-  }, [currentStatus]);
+  const handleStartCamera = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+      setCaptureMode('camera');
+    } catch {
+      setCaptureMode('qr');
+    }
+  }, []);
 
   const getAuthHeaders = useCallback(async () => {
     const token = await (client as any).authentication?.getAccessToken?.();
@@ -345,8 +338,45 @@ export function IdentityVerificationForm({
 
       {(currentStatus === 'none' || currentStatus === 'rejected') && (
         <>
+          {/* Intro: explain the process before accessing camera */}
+          {captureMode === 'intro' && (
+            <FormCard>
+              <Stack gap="md" p="md">
+                <Text fw={600}>{t('identity_verification.intro_title')}</Text>
+                <Text size="sm" c="dimmed">{t('identity_verification.intro_subtitle')}</Text>
+                <Stack gap="xs">
+                  <Group gap="sm" wrap="nowrap">
+                    <Text fw={700} c="blue" size="lg" style={{ width: 24, textAlign: 'center', flexShrink: 0 }}>1</Text>
+                    <div>
+                      <Text size="sm" fw={600}>{t('identity_verification.id_front')}</Text>
+                      <Text size="xs" c="dimmed">{t('identity_verification.intro_step1_desc')}</Text>
+                    </div>
+                  </Group>
+                  <Group gap="sm" wrap="nowrap">
+                    <Text fw={700} c="blue" size="lg" style={{ width: 24, textAlign: 'center', flexShrink: 0 }}>2</Text>
+                    <div>
+                      <Text size="sm" fw={600}>{t('identity_verification.id_back')}</Text>
+                      <Text size="xs" c="dimmed">{t('identity_verification.intro_step2_desc')}</Text>
+                    </div>
+                  </Group>
+                  <Group gap="sm" wrap="nowrap">
+                    <Text fw={700} c="blue" size="lg" style={{ width: 24, textAlign: 'center', flexShrink: 0 }}>3</Text>
+                    <div>
+                      <Text size="sm" fw={600}>{t('identity_verification.selfie')}</Text>
+                      <Text size="xs" c="dimmed">{t('identity_verification.intro_step3_desc')}</Text>
+                    </div>
+                  </Group>
+                </Stack>
+                <Button onClick={handleStartCamera}>{t('identity_verification.start_button')}</Button>
+                <Button variant="subtle" size="sm" onClick={() => setCaptureMode('qr')}>
+                  {t('identity_verification.mode_qr')}
+                </Button>
+              </Stack>
+            </FormCard>
+          )}
+
           {/* Mode switcher */}
-          {captureMode !== 'detecting' && (
+          {(captureMode === 'camera' || captureMode === 'qr') && (
             <SegmentedControl
               value={captureMode}
               onChange={(value) => setCaptureMode(value as CaptureMode)}
