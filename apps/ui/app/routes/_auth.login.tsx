@@ -72,7 +72,7 @@ export const action: ActionFunction = async ({ request }) => {
   const username = String(formData.get('username') || '');
   const password = String(formData.get('password') || '');
   const twoFactorCode = String(formData.get('twoFactorCode') || '');
-  const apiUrl = process.env.API_URL;
+  const apiUrl = process.env.API_URL ?? 'http://localhost:3030';
   const client = createFeathersClient(apiUrl);
 
   try {

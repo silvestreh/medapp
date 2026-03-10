@@ -21,6 +21,7 @@ export default function (app: Application): void {
 
   app.use(
     '/signing-certificates',
+    // @ts-expect-error multer types conflict between express-serve-static-core v4 and v5
     upload.single('certificate'),
     (req: any, _res: any, next: any) => {
       req.feathers.file = req.file;
