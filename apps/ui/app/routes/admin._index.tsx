@@ -17,9 +17,20 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, XCircle, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Loader, ScanLine, Fingerprint } from 'lucide-react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
+
+interface DniScanData {
+  tramiteNumber: string;
+  lastName: string;
+  firstName: string;
+  gender: string;
+  dniNumber: string;
+  exemplar: string;
+  birthDate: string;
+  issueDate: string;
+}
 
 interface VerificationItem {
   id: string;
@@ -32,6 +43,13 @@ interface VerificationItem {
   rejectionReason: string | null;
   verifiedAt: string | null;
   createdAt: string;
+  dniScanData: DniScanData | null;
+  dniScanMatch: boolean | null;
+  dniScanErrors: string | null;
+  faceSimilarityScore: number | null;
+  faceMatch: boolean | null;
+  faceMatchError: string | null;
+  autoCheckCompletedAt: string | null;
   user?: {
     id: string;
     username: string;
@@ -150,6 +168,19 @@ export default function AdminVerifications() {
     return '-';
   };
 
+  const autoCheckBadge = useCallback(
+    (match: boolean | null, label: string) => {
+      if (match === null) {
+        return <Badge color="gray" variant="light" size="xs" leftSection={<Loader size={10} />}>{label}</Badge>;
+      }
+      if (match) {
+        return <Badge color="green" variant="light" size="xs" leftSection={<CheckCircle size={10} />}>{label}</Badge>;
+      }
+      return <Badge color="red" variant="light" size="xs" leftSection={<XCircle size={10} />}>{label}</Badge>;
+    },
+    []
+  );
+
   return (
     <Stack gap="lg">
       <Group justify="space-between" align="center">
@@ -183,6 +214,7 @@ export default function AdminVerifications() {
               <Table.Th>{t('admin.col_user')}</Table.Th>
               <Table.Th>{t('admin.col_document')}</Table.Th>
               <Table.Th>{t('admin.col_status')}</Table.Th>
+              <Table.Th>{t('admin.col_auto_checks')}</Table.Th>
               <Table.Th>{t('admin.col_date')}</Table.Th>
               <Table.Th />
             </Table.Tr>
@@ -196,6 +228,19 @@ export default function AdminVerifications() {
                   <Badge color={statusColors[v.status]} variant="light">
                     {t(`admin.status_${v.status}`)}
                   </Badge>
+                </Table.Td>
+                <Table.Td>
+                  {!v.autoCheckCompletedAt && (
+                    <Badge color="gray" variant="light" size="xs" leftSection={<Loader size={10} />}>
+                      {t('admin.processing')}
+                    </Badge>
+                  )}
+                  {v.autoCheckCompletedAt && (
+                    <Group gap={4}>
+                      {autoCheckBadge(v.dniScanMatch, 'DNI')}
+                      {autoCheckBadge(v.faceMatch, t('admin.face'))}
+                    </Group>
+                  )}
                 </Table.Td>
                 <Table.Td>{new Date(v.createdAt).toLocaleDateString()}</Table.Td>
                 <Table.Td>
@@ -244,6 +289,93 @@ export default function AdminVerifications() {
             <Paper withBorder p="xs" radius="md">
               <Image src={selected.selfieUrl} alt="Selfie" mah={300} fit="contain" radius="sm" />
             </Paper>
+
+            {/* Automated Checks Section */}
+            <Text fw={700} size="md" mt="sm">
+              {t('admin.auto_checks_title')}
+            </Text>
+
+            {!selected.autoCheckCompletedAt && (
+              <Paper withBorder p="sm" radius="md" bg="gray.0">
+                <Group gap="xs">
+                  <Loader size={16} />
+                  <Text size="sm" c="dimmed">{t('admin.auto_checks_processing')}</Text>
+                </Group>
+              </Paper>
+            )}
+
+            {selected.autoCheckCompletedAt && (
+              <Stack gap="sm">
+                {/* PDF417 Barcode Results */}
+                <Paper withBorder p="sm" radius="md">
+                  <Group gap="xs" mb="xs">
+                    <ScanLine size={16} />
+                    <Text fw={600} size="sm">{t('admin.dni_scan_title')}</Text>
+                    {selected.dniScanMatch !== null && (
+                      <Badge color={selected.dniScanMatch ? 'green' : 'red'} variant="light" size="sm">
+                        {selected.dniScanMatch ? t('admin.match') : t('admin.mismatch')}
+                      </Badge>
+                    )}
+                  </Group>
+                  {selected.dniScanData && (
+                    <Table withRowBorders={false} horizontalSpacing={4} verticalSpacing={2}>
+                      <Table.Tbody>
+                        <Table.Tr>
+                          <Table.Td><Text size="xs" c="dimmed">{t('admin.dni_number')}</Text></Table.Td>
+                          <Table.Td><Text size="xs">{selected.dniScanData.dniNumber}</Text></Table.Td>
+                        </Table.Tr>
+                        <Table.Tr>
+                          <Table.Td><Text size="xs" c="dimmed">{t('admin.dni_name')}</Text></Table.Td>
+                          <Table.Td><Text size="xs">{selected.dniScanData.lastName}, {selected.dniScanData.firstName}</Text></Table.Td>
+                        </Table.Tr>
+                        <Table.Tr>
+                          <Table.Td><Text size="xs" c="dimmed">{t('admin.dni_birth_date')}</Text></Table.Td>
+                          <Table.Td><Text size="xs">{selected.dniScanData.birthDate}</Text></Table.Td>
+                        </Table.Tr>
+                        <Table.Tr>
+                          <Table.Td><Text size="xs" c="dimmed">{t('admin.dni_gender')}</Text></Table.Td>
+                          <Table.Td><Text size="xs">{selected.dniScanData.gender}</Text></Table.Td>
+                        </Table.Tr>
+                        <Table.Tr>
+                          <Table.Td><Text size="xs" c="dimmed">{t('admin.dni_tramite')}</Text></Table.Td>
+                          <Table.Td><Text size="xs">{selected.dniScanData.tramiteNumber}</Text></Table.Td>
+                        </Table.Tr>
+                      </Table.Tbody>
+                    </Table>
+                  )}
+                  {selected.dniScanErrors && (
+                    <Text size="xs" c="red" mt="xs">{selected.dniScanErrors}</Text>
+                  )}
+                  {!selected.dniScanData && !selected.dniScanErrors && (
+                    <Text size="xs" c="dimmed">{t('admin.no_data')}</Text>
+                  )}
+                </Paper>
+
+                {/* Face Comparison Results */}
+                <Paper withBorder p="sm" radius="md">
+                  <Group gap="xs" mb="xs">
+                    <Fingerprint size={16} />
+                    <Text fw={600} size="sm">{t('admin.face_comparison_title')}</Text>
+                    {selected.faceMatch !== null && (
+                      <Badge color={selected.faceMatch ? 'green' : 'red'} variant="light" size="sm">
+                        {selected.faceMatch ? t('admin.match') : t('admin.mismatch')}
+                      </Badge>
+                    )}
+                  </Group>
+                  {selected.faceSimilarityScore !== null && (
+                    <Text size="sm">
+                      {t('admin.face_similarity')}: <Text span fw={600}>{(selected.faceSimilarityScore * 100).toFixed(1)}%</Text>
+                    </Text>
+                  )}
+                  {selected.faceMatchError && (
+                    <Text size="xs" c="red" mt="xs">{selected.faceMatchError}</Text>
+                  )}
+                  {selected.faceSimilarityScore === null && !selected.faceMatchError && (
+                    <Text size="xs" c="dimmed">{t('admin.no_data')}</Text>
+                  )}
+                </Paper>
+              </Stack>
+            )}
 
             {selected.status === 'pending' && (
               <Form method="post">
