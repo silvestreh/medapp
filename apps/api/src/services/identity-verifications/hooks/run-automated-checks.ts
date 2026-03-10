@@ -1,15 +1,16 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
 import path from 'path';
+import axios from 'axios';
+import FormData from 'form-data';
 import { decryptFileFromDisk } from '../../../utils/decrypt-file';
-import { scanDniBarcode, validateDniAgainstPersonalData } from '../../../utils/scan-dni-barcode';
-import { compareFaces } from '../../../utils/compare-faces';
 import { decryptValue } from '../../../hooks/encryption';
-import { DniScanData } from '../../../declarations';
+
+const VERIFICATION_API_URL = process.env.VERIFICATION_API_URL || 'http://localhost:3032';
 
 /**
- * Fire-and-forget after.create hook that runs automated checks on the uploaded documents:
- * 1. Scans PDF417 barcode on ID front → extracts personal data → validates against DB
- * 2. Compares faces between ID front photo and selfie
+ * Fire-and-forget after.create hook that runs automated checks on the uploaded documents.
+ * Decrypts files locally, then sends them to the verification API for CPU-intensive
+ * barcode scanning and face comparison.
  *
  * Results are stored via internal patch (no provider → bypasses superadmin hooks).
  * If mismatches are found, the verification is auto-rejected with a descriptive reason.
@@ -65,38 +66,46 @@ export const runAutomatedChecks = (): Hook => {
         console.error('[auto-checks] Failed to fetch personal data:', message);
       }
 
-      // Step 1: Scan PDF417 barcode on ID front
-      let dniScanData: DniScanData | null = null;
-      try {
-        const idFrontBuffer = decryptFileFromDisk(uploadsDir, idFrontUrl);
-        dniScanData = await scanDniBarcode(idFrontBuffer);
-        updates.dniScanData = dniScanData;
-
-        const validationErrors = validateDniAgainstPersonalData(dniScanData, personalData);
-        updates.dniScanMatch = validationErrors.length === 0;
-        updates.dniScanErrors = validationErrors.length > 0 ? validationErrors.join('; ') : null;
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        updates.dniScanData = null;
-        updates.dniScanMatch = null;
-        updates.dniScanErrors = message;
-        console.error('[auto-checks] PDF417 scan failed:', message);
-      }
-
-      // Step 2: Compare faces (ID front vs selfie)
+      // Decrypt files and send to verification API for processing
       try {
         const idFrontBuffer = decryptFileFromDisk(uploadsDir, idFrontUrl);
         const selfieBuffer = decryptFileFromDisk(uploadsDir, selfieUrl);
-        const result = await compareFaces(idFrontBuffer, selfieBuffer);
-        updates.faceSimilarityScore = result.similarity;
-        updates.faceMatch = result.match;
-        updates.faceMatchError = null;
+
+        // Create a JWT to authenticate with the verification API
+        const authService = app.service('authentication') as any;
+        const accessToken = await authService.createAccessToken({ sub: userId });
+
+        const form = new FormData();
+        form.append('idFront', idFrontBuffer, { filename: 'idFront.jpg', contentType: 'image/jpeg' });
+        form.append('selfie', selfieBuffer, { filename: 'selfie.jpg', contentType: 'image/jpeg' });
+        form.append('personalData', JSON.stringify(personalData));
+
+        console.log(`[auto-checks] Sending to verification API: ${VERIFICATION_API_URL}/run-checks`);
+
+        const response = await axios.post(`${VERIFICATION_API_URL}/run-checks`, form, {
+          headers: {
+            ...form.getHeaders(),
+            Authorization: `Bearer ${accessToken}`,
+          },
+          timeout: 60000, // 60s timeout for ML processing
+        });
+
+        const result = response.data;
+        updates.dniScanData = result.dniScanData;
+        updates.dniScanMatch = result.dniScanMatch;
+        updates.dniScanErrors = result.dniScanErrors;
+        updates.faceSimilarityScore = result.faceSimilarityScore;
+        updates.faceMatch = result.faceMatch;
+        updates.faceMatchError = result.faceMatchError;
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
+        console.error('[auto-checks] Verification API call failed:', message);
+        updates.dniScanData = null;
+        updates.dniScanMatch = null;
+        updates.dniScanErrors = `Verification API error: ${message}`;
         updates.faceSimilarityScore = null;
         updates.faceMatch = null;
-        updates.faceMatchError = message;
-        console.error('[auto-checks] Face comparison failed:', message);
+        updates.faceMatchError = `Verification API error: ${message}`;
       }
 
       // Save results via internal patch (no provider → bypasses superadmin + sanitization hooks)

@@ -1,9 +1,19 @@
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import type { ReaderOptions } from 'zxing-wasm/reader';
-import { DniScanData } from '../declarations';
 
 dayjs.extend(customParseFormat);
+
+export interface DniScanData {
+  tramiteNumber: string;
+  lastName: string;
+  firstName: string;
+  gender: string;
+  dniNumber: string;
+  exemplar: string;
+  birthDate: string;
+  issueDate: string;
+}
 
 /**
  * Scans the PDF417 barcode on the front of an Argentine DNI and extracts personal data.
@@ -14,7 +24,6 @@ dayjs.extend(customParseFormat);
  * birthDate and issueDate are in DD/MM/YYYY format.
  */
 export async function scanDniBarcode(imageBuffer: Buffer): Promise<DniScanData> {
-  // Lazy-load native modules to avoid crashing the API at startup
   const { createCanvas, loadImage } = require('canvas');
   const { readBarcodesFromImageData } = require('zxing-wasm/reader');
 
@@ -44,10 +53,8 @@ export async function scanDniBarcode(imageBuffer: Buffer): Promise<DniScanData> 
 }
 
 export function parseDniBarcodeText(text: string): DniScanData {
-  // The barcode text uses @ as separator
   const fields = text.split('@');
 
-  // Remove empty first element if the text starts with @
   if (fields[0] === '') {
     fields.shift();
   }
@@ -84,7 +91,6 @@ export function validateDniAgainstPersonalData(
 ): string[] {
   const errors: string[] = [];
 
-  // Compare DNI number
   if (personalData.documentValue) {
     const dbDni = personalData.documentValue.replace(/\D/g, '');
     const scannedDni = dniData.dniNumber.replace(/\D/g, '');
@@ -93,7 +99,6 @@ export function validateDniAgainstPersonalData(
     }
   }
 
-  // Compare last name (case-insensitive, normalize accents)
   if (personalData.lastName) {
     const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     if (normalize(dniData.lastName) !== normalize(personalData.lastName)) {
@@ -101,7 +106,6 @@ export function validateDniAgainstPersonalData(
     }
   }
 
-  // Compare first name
   if (personalData.firstName) {
     const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     if (normalize(dniData.firstName) !== normalize(personalData.firstName)) {
@@ -109,7 +113,6 @@ export function validateDniAgainstPersonalData(
     }
   }
 
-  // Compare birth date — DNI format is DD/MM/YYYY, DB could be YYYY-MM-DD or other formats
   if (personalData.birthDate) {
     const scannedDate = dayjs(dniData.birthDate, 'DD/MM/YYYY', true);
     const dbDate = dayjs(personalData.birthDate);
@@ -120,7 +123,6 @@ export function validateDniAgainstPersonalData(
     }
   }
 
-  // Compare gender
   if (personalData.gender) {
     const genderMap: Record<string, string> = { M: 'male', F: 'female' };
     const scannedGender = genderMap[dniData.gender.toUpperCase()] || dniData.gender.toLowerCase();

@@ -7,7 +7,6 @@ let canvasModule: any;
 function ensureInitialized(): void {
   if (initialized) return;
 
-  // Lazy-load native modules to avoid crashing the API at startup
   canvasModule = require('canvas');
   const { Canvas, Image, ImageData: CanvasImageData } = canvasModule;
 
@@ -31,7 +30,7 @@ async function ensureModelsLoaded(): Promise<void> {
 
   if (modelsLoaded) return;
 
-  const modelsDir = path.resolve(__dirname, '../../face-models');
+  const modelsDir = path.resolve(__dirname, '../face-models');
   await faceapi.nets.tinyFaceDetector.loadFromDisk(modelsDir);
   await faceapi.nets.faceLandmark68Net.loadFromDisk(modelsDir);
   await faceapi.nets.faceRecognitionNet.loadFromDisk(modelsDir);
@@ -61,7 +60,7 @@ export interface FaceComparisonResult {
 
 /**
  * Compares faces from two images (ID front and selfie) using face-api.js.
- * Uses tinyFaceDetector to keep memory usage low (suitable for Railway).
+ * Uses tinyFaceDetector to keep memory usage low.
  *
  * @returns similarity score (0-1) and boolean match (distance < 0.6)
  */

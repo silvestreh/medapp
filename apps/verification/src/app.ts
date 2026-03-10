@@ -18,6 +18,7 @@ import authentication from './authentication';
 import { setupUploadProxy } from './upload-proxy';
 import { setupMobilePage } from './mobile-page';
 import { setupValidatePhoto } from './validate-photo';
+import { setupRunChecks } from './run-checks';
 
 const app: Application = express(feathers());
 
@@ -43,6 +44,7 @@ app.get('/healthz', (_req: any, res: any) => {
 setupMobilePage(app);
 setupUploadProxy(app);
 setupValidatePhoto(app);
+setupRunChecks(app);
 
 app.configure(express.rest());
 app.configure(socketio((io) => {

@@ -24,6 +24,7 @@
     "axios": "^1.7.7",
     "canvas": "^3.2.1",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",
     "face-api.js": "^0.22.2",
     "feathers-hooks-common": "^6.1.5",
