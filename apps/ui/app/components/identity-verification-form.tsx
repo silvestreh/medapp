@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Group, Image, Loader, Paper, SegmentedControl, Stack, Stepper, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
+import Markdown from 'react-markdown';
 import { Camera, CreditCard, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 
 import { useFeathers } from '~/components/provider';
@@ -76,6 +77,24 @@ export function IdentityVerificationForm({
   const [validating, setValidating] = useState(false);
   const [validationWarning, setValidationWarning] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const translatedRejectionReason = useMemo(() => {
+    if (!rejectionReason) return null;
+    return rejectionReason
+      .split('\n')
+      .map((line) => {
+        const [key, ...rest] = line.split(':');
+        const details = rest.join(':').trim();
+        if (key === 'dni_mismatch') {
+          return t('identity_verification.rejection_dni_mismatch', { details });
+        }
+        if (key === 'face_mismatch') {
+          return t('identity_verification.rejection_face_mismatch', { score: details });
+        }
+        return t('identity_verification.rejection_unknown', { reason: line });
+      })
+      .join('\n\n');
+  }, [rejectionReason, t]);
 
   // Detect camera availability
   useEffect(() => {
@@ -315,9 +334,10 @@ export function IdentityVerificationForm({
       {currentStatus === 'rejected' && (
         <Alert icon={<XCircle size={18} />} color="red">
           {t('identity_verification.status_rejected')}
-          {rejectionReason && (
-            <Text size="sm" mt="xs">
-              {t('identity_verification.rejection_reason')}: {rejectionReason}
+          {translatedRejectionReason && (
+            <Text size="sm" mt="xs" component="div">
+              <strong>{t('identity_verification.rejection_reason')}:</strong>
+              <Markdown>{translatedRejectionReason}</Markdown>
             </Text>
           )}
         </Alert>

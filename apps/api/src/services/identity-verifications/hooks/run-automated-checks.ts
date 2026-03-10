@@ -105,13 +105,13 @@ export const runAutomatedChecks = (): Hook => {
       const rejectionReasons: string[] = [];
 
       if (updates.dniScanMatch === false && updates.dniScanErrors) {
-        rejectionReasons.push(`DNI barcode mismatch: ${updates.dniScanErrors}`);
+        rejectionReasons.push(`dni_mismatch:${updates.dniScanErrors}`);
       }
 
       if (updates.faceMatch === false) {
         const score = updates.faceSimilarityScore;
         const pct = typeof score === 'number' ? `${(score * 100).toFixed(1)}%` : 'unknown';
-        rejectionReasons.push(`Face comparison failed: similarity ${pct} (threshold: 60%)`);
+        rejectionReasons.push(`face_mismatch:${pct}`);
       }
 
       if (rejectionReasons.length > 0) {

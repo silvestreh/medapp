@@ -470,7 +470,12 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
             });
           }
         } catch (e) {
-          error = e.message || 'Error al subir la foto';
+          console.error('[mobile-upload] Upload error:', e);
+          var msg = e.message || 'Error al subir la foto';
+          if (msg === 'Load failed' || msg === 'Failed to fetch') {
+            msg = 'No se pudo conectar con el servidor. Verificá tu conexión a internet e intentá de nuevo.';
+          }
+          error = msg + ' (API: ' + API + ')';
         } finally {
           uploading = false;
           render();
@@ -644,9 +649,12 @@ export function setupMobilePage(app: Application): void {
       }
 
       // Determine the base URL for API calls from the mobile page
-      const protocol = req.protocol;
+      // Trust x-forwarded-proto from Railway's proxy
+      const protocol = req.get('x-forwarded-proto')?.split(',')[0]?.trim() || req.protocol;
       const host = req.get('host');
       const apiBaseUrl = `${protocol}://${host}`;
+      logger.info('[mobile-page] Serving page with API base: %s (x-fwd-proto: %s, req.protocol: %s)',
+        apiBaseUrl, req.get('x-forwarded-proto'), req.protocol);
 
       const html = generateMobileHtml(token, apiBaseUrl);
       res.set('Content-Type', 'text/html');

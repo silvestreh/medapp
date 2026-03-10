@@ -195,13 +195,9 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
     []
   );
 
-  const submitLabel = method === 'generate'
-    ? t('digital_signature.generate')
-    : t('digital_signature.upload');
+  const submitLabel = method === 'generate' ? t('digital_signature.generate') : t('digital_signature.upload');
 
-  const submitIcon = method === 'generate'
-    ? <KeyRound size={16} />
-    : <Upload size={16} />;
+  const submitIcon = method === 'generate' ? <KeyRound size={16} /> : <Upload size={16} />;
 
   return (
     <Stack gap={0}>
@@ -255,7 +251,7 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
 
         {!certificate && (
           <>
-            <FieldRow label={`${t('digital_signature.method_label')}:`} variant="stacked">
+            <Stack p="sm" mb="-1em">
               <SegmentedControl
                 value={method}
                 onChange={handleMethodChange}
@@ -265,15 +261,20 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
                 ]}
                 fullWidth
               />
-            </FieldRow>
-
+              {method === 'generate' && (
+                <Alert
+                  variant="light"
+                  color="var(--mantine-primary-color-4)"
+                  icon={<Info size={14} />}
+                  py="xs"
+                  style={{ flex: 1 }}
+                >
+                  <Text size="xs">{t('digital_signature.generate_info')}</Text>
+                </Alert>
+              )}
+            </Stack>
             {method === 'generate' && (
               <>
-                <FieldRow label="" variant="stacked">
-                  <Alert variant="light" color="var(--mantine-primary-color-4)" icon={<Info size={14} />} py="xs" style={{ flex: 1 }}>
-                    <Text size="xs">{t('digital_signature.generate_info')}</Text>
-                  </Alert>
-                </FieldRow>
                 <FieldRow label={`${t('digital_signature.generate_password_label')}:`} variant="stacked">
                   <Group grow>
                     <PasswordInput

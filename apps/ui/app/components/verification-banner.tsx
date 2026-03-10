@@ -1,4 +1,4 @@
-import { Alert, Anchor } from '@mantine/core';
+import { Alert, Button, Group } from '@mantine/core';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '@remix-run/react';
@@ -21,13 +21,12 @@ export function VerificationBanner({ isVerified }: VerificationBannerProps) {
       color="red"
       styles={{ root: { borderRadius: 0 } }}
     >
-      {t(
-        'verification.unverified_message',
-        'Your medical license has not been verified. Please go to your Profile to verify your license.'
-      )}{' '}
-      <Anchor component={Link} to="/settings" fw={600}>
-        {t('common.view', 'View')}
-      </Anchor>
+      <Group>
+        {t('verification.unverified_message')}{' '}
+        <Button component={Link} to="/settings/id-verification" fw={600} ml="auto" color="red">
+          {t('verification.verify_id')}
+        </Button>
+      </Group>
     </Alert>
   );
 }

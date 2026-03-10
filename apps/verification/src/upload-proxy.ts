@@ -67,9 +67,11 @@ export function setupUploadProxy(app: Application): void {
 
       return res.json({ url: response.data.url });
     } catch (error: any) {
-      logger.error('[upload-proxy] Error:', error.message);
       const status = error.response?.status || 500;
-      const message = error.response?.data?.message || error.message || 'Upload failed';
+      const responseData = error.response?.data;
+      const message = responseData?.message || error.message || 'Upload failed';
+      logger.error('[upload-proxy] Error: %s | Status: %d | Upstream: %j | Code: %s',
+        error.message, status, responseData, error.code);
       return res.status(status).json({ message });
     }
   });
