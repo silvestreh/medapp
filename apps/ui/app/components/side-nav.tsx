@@ -13,6 +13,7 @@ import {
   BarChart3,
   Calculator,
   MessageCircle,
+  ShieldCheck,
   type LucideProps,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -299,6 +300,25 @@ const SideNav: React.FC = () => {
               </HasPermission>
             );
           })}
+        {user && (user as any).isSuperAdmin && (() => {
+          const isAdminActive = matches.at(-1)?.pathname.startsWith('/admin');
+          return (
+            <Tooltip label={t('navigation.admin', 'Admin')} position="right">
+              <NavItem
+                tone="red"
+                active={isAdminActive}
+                component={NavLink}
+                prefetch="intent"
+                to={isAdminActive ? '#' : '/admin'}
+                variant="subtle"
+                size="3em"
+                className={isAdminActive ? 'active' : ''}
+              >
+                <ShieldCheck size={isMobile ? 18 : 22} />
+              </NavItem>
+            </Tooltip>
+          );
+        })()}
       </StickyContent>
       <LanguageSwitcherContainer>
         {user && (

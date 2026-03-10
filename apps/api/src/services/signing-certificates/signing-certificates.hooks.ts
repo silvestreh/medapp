@@ -6,6 +6,7 @@ import { handleCertificateGeneration } from './hooks/handle-certificate-generati
 import { handleCertificateUpload } from './hooks/handle-certificate-upload';
 import { removeExistingCertificate } from './hooks/remove-existing-certificate';
 import { stripCertificateData } from './hooks/strip-certificate-data';
+import { requireIdentityVerification } from './hooks/require-identity-verification';
 import { includeDecryptedAttributes } from '../../hooks/include-decrypted-attributes';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
@@ -17,7 +18,7 @@ export default {
     all: [authenticate('jwt'), verifyOrganizationMembership()],
     find: [restrictToMedicOwner(), includeDecryptedAttributes()],
     get: [disallow('external')],
-    create: [enforceActiveOrganization(), restrictToMedicOwner(), handleCertificateGeneration(), handleCertificateUpload(), removeExistingCertificate()],
+    create: [enforceActiveOrganization(), restrictToMedicOwner(), requireIdentityVerification(), handleCertificateGeneration(), handleCertificateUpload(), removeExistingCertificate()],
     update: [disallow('external')],
     patch: [disallow('external')],
     remove: [enforceActiveOrganization(), restrictToMedicOwner()],

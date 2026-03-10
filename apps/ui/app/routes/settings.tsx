@@ -2,7 +2,7 @@ import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from '@rem
 import { NavLink as RemixNavLink, Outlet, useLoaderData, useRouteLoaderData } from '@remix-run/react';
 import { Flex, NavLink } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { User, Shield, PenTool, Building2, FileText, Bot } from 'lucide-react';
+import { User, Shield, PenTool, Building2, FileText, Bot, CreditCard } from 'lucide-react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
@@ -137,6 +137,27 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         }
       }
     }
+    let identityVerification: {
+      status: 'pending' | 'verified' | 'rejected';
+      rejectionReason: string | null;
+    } | null = null;
+    if (isMedic) {
+      try {
+        const ivResponse = await client.service('identity-verifications' as any).find({
+          query: { $sort: { createdAt: -1 }, $limit: 1 },
+        });
+        const ivList = Array.isArray(ivResponse) ? ivResponse : (ivResponse as any)?.data || [];
+        if (ivList.length > 0) {
+          identityVerification = {
+            status: ivList[0].status,
+            rejectionReason: ivList[0].rejectionReason || null,
+          };
+        }
+      } catch {
+        // identity-verifications table may not exist yet
+      }
+    }
+
     let passkeys: { id: string; deviceName: string | null; createdAt: string }[] = [];
     try {
       const credentialsResponse = await client.service('passkey-credentials').find({
@@ -220,6 +241,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       user: fullUser,
       isMedic,
       mdSettings: mdSettingsRecord,
+      identityVerification,
       passkeys,
       isOrgOwner,
       currentOrg,
@@ -254,6 +276,16 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
         variant="light"
         style={navLinkStyle}
       />
+      {isMedic && (
+        <NavLink
+          component={RemixNavLink}
+          to="/settings/id-verification"
+          label={t('profile.tab_id_verification')}
+          leftSection={<CreditCard size={16} />}
+          variant="light"
+          style={navLinkStyle}
+        />
+      )}
       {isMedic && (
         <NavLink
           component={RemixNavLink}

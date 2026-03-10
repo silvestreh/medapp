@@ -350,6 +350,21 @@ export interface Prescription {
   } | null;
 }
 
+export interface IdentityVerification {
+  id: Id;
+  userId: Id;
+  status: 'pending' | 'verified' | 'rejected';
+  idFrontUrl: string;
+  idBackUrl: string;
+  selfieUrl: string;
+  notes: string | null;
+  rejectionReason: string | null;
+  verifiedAt: Date | null;
+  verifiedBy: Id | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 export interface EncounterAiChatMessage {
   id: Id;
   organizationId: Id;

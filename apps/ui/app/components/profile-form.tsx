@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Button, Tooltip } from '@mantine/core';
+import { Button } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { useHotkeys } from '@mantine/hooks';
 import { Form } from '@remix-run/react';
@@ -110,23 +110,6 @@ export function ProfileForm({
 
   useHotkeys([['mod+S', () => formRef.current?.requestSubmit()]], []);
 
-  const handleVerifyLicense = useCallback(() => {
-    const form = document.getElementById('profile-update-form') as HTMLFormElement;
-
-    if (form) {
-      const intentInput = form.querySelector('input[name="intent"]') as HTMLInputElement;
-
-      if (intentInput) {
-        intentInput.value = 'verify-license';
-        form.requestSubmit();
-
-        setTimeout(() => {
-          intentInput.value = 'update-profile';
-        }, 100);
-      }
-    }
-  }, []);
-
   useEffect(() => {
     profileForm.setValues(initialProfile);
     profileForm.clearErrors();
@@ -144,22 +127,13 @@ export function ProfileForm({
 
   const hasProfileSuccess = actionData?.ok && actionData.intent === 'update-profile';
   const isProfileError = actionData?.ok === false && actionData.intent === 'update-profile';
-  const hasVerificationSuccess = actionData?.ok && actionData.intent === 'verify-license';
-  const isVerificationError = actionData?.ok === false && actionData.intent === 'verify-license';
   const errorMessage = actionData?.ok === false && actionData && 'error' in actionData ? actionData.error : '';
 
   useEffect(() => {
     if (hasProfileSuccess) {
       showNotification({ color: 'teal', message: t('profile.profile_saved') });
     }
-    if (hasVerificationSuccess) {
-      showNotification({ color: 'teal', message: t('verification.success_message') });
-      // Refresh the page to update the banner and button state
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    }
-  }, [hasProfileSuccess, hasVerificationSuccess, t]);
+  }, [hasProfileSuccess, t]);
 
   useEffect(() => {
     if (isProfileError) {
@@ -168,13 +142,7 @@ export function ProfileForm({
         message: typeof errorMessage === 'string' ? errorMessage : t('profile.profile_save_error'),
       });
     }
-    if (isVerificationError) {
-      showNotification({
-        color: 'red',
-        message: typeof errorMessage === 'string' ? errorMessage : t('verification.error_message'),
-      });
-    }
-  }, [isProfileError, isVerificationError, errorMessage, t]);
+  }, [isProfileError, errorMessage, t]);
 
   const payload = useMemo(() => {
     const values = profileForm.values;
@@ -286,29 +254,6 @@ export function ProfileForm({
             <FieldRow label={`${t('profile.state_license_number')}:`} variant="stacked">
               <StyledTextInput {...profileForm.getInputProps('stateLicenseNumber')} />
             </FieldRow>
-            {!mdSettings?.isVerified && (
-              <FieldRow label="" variant="stacked">
-                <Tooltip
-                  label={t(
-                    'verification.document_required',
-                    'Please complete your personal data with your document number first.'
-                  )}
-                  disabled={!!(payload as any).documentValue}
-                >
-                  <div style={{ display: 'inline-block' }}>
-                    <Button
-                      variant="outline"
-                      color="yellow"
-                      loading={isVerifyingLicense}
-                      disabled={!(payload as any).documentValue || isSavingProfile}
-                      onClick={handleVerifyLicense}
-                    >
-                      {t('verification.verify_button', 'Verify License')}
-                    </Button>
-                  </div>
-                </Tooltip>
-              </FieldRow>
-            )}
           </FormCard>
         </>
       )}

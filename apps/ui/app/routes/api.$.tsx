@@ -57,6 +57,8 @@ const ALLOWED_PATHS = new Set([
   'file-uploads',
   'uploads',
   'shared-encounter-access',
+  'access-logs',
+  'identity-verifications',
 ]);
 
 function getFirstSegment(request: Request): string {

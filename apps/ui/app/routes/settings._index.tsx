@@ -40,26 +40,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ ok: true, intent });
     }
 
-    if (intent === 'verify-license') {
-      const payload = parseFormJson<{
-        personalData?: Record<string, unknown>;
-        contactData?: Record<string, unknown>;
-        mdSettings?: Record<string, unknown>;
-      }>(formData.get('payload'));
-
-      // Update profile first to ensure DNI is saved
-      await client.service('profile').create({
-        action: 'update-profile',
-        personalData: payload.personalData,
-        contactData: payload.contactData,
-        mdSettings: payload.mdSettings,
-      });
-
-      // Then verify
-      const result = await client.service('practitioner-verification').create({});
-      return json({ ok: true, intent, result });
-    }
-
     return json({ ok: false, intent, error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
     return json({ ok: false, intent, error: error?.message || 'Operation failed' }, { status: 400 });
@@ -73,8 +53,6 @@ export default function ProfileIndex() {
   const { t } = useTranslation();
 
   const isSavingProfile = navigation.state === 'submitting' && navigation.formData?.get('intent') === 'update-profile';
-  const isVerifyingLicense =
-    navigation.state === 'submitting' && navigation.formData?.get('intent') === 'verify-license';
 
   const countryOptions = useMemo(
     () => buildSelectOptions(t('countries', { returnObjects: true }) as Record<string, string>),
@@ -96,7 +74,7 @@ export default function ProfileIndex() {
       countryOptions={countryOptions}
       provinceOptions={provinceOptions}
       isSavingProfile={isSavingProfile}
-      isVerifyingLicense={isVerifyingLicense}
+      isVerifyingLicense={false}
     />
   );
 }

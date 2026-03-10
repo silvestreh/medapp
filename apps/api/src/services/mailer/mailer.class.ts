@@ -4,12 +4,14 @@ import * as orgInviteTemplate from './templates/org-invite';
 import * as orgInviteNewUserTemplate from './templates/org-invite-new-user';
 import * as medicalHistoryExportTemplate from './templates/medical-history-export';
 import * as prescriptionShareTemplate from './templates/prescription-share';
+import * as identityVerificationPendingTemplate from './templates/identity-verification-pending';
 
 const templates: Record<string, { render: (data: any) => string }> = {
   'org-invite': orgInviteTemplate,
   'org-invite-new-user': orgInviteNewUserTemplate,
   'medical-history-export': medicalHistoryExportTemplate,
   'prescription-share': prescriptionShareTemplate,
+  'identity-verification-pending': identityVerificationPendingTemplate,
 };
 
 const isProduction = process.env.NODE_ENV === 'production';
