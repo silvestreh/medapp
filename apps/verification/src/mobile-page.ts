@@ -6,7 +6,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Verificación de Identidad</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,6 +17,10 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
 
     /* Intro screen */
@@ -97,7 +101,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
     .camera-top-bar {
       position: absolute;
       top: 0; left: 0; right: 0;
-      padding: 16px 20px;
+      padding: calc(16px + env(safe-area-inset-top)) 20px 16px;
       background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
       z-index: 2;
     }
@@ -116,7 +120,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
     .camera-bottom-bar {
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      padding: 16px 20px 32px;
+      padding: 16px 20px calc(32px + env(safe-area-inset-bottom));
       background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
       display: flex;
       flex-direction: column;
@@ -186,7 +190,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
     .preview-bar {
       display: flex;
       gap: 12px;
-      padding: 16px 20px 32px;
+      padding: 16px 20px calc(32px + env(safe-area-inset-bottom));
       background: #000;
     }
     .preview-bar button {
