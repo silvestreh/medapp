@@ -203,7 +203,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [sendNotificationEmail(), runAutomatedChecks()],
+    create: [runAutomatedChecks()],
     update: [],
     patch: [cleanupFiles()],
     remove: [],

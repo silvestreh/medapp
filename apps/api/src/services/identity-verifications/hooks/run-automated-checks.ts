@@ -26,6 +26,7 @@ export const runAutomatedChecks = (): Hook => {
       const app = context.app;
       const uploadsDir = path.resolve(app.get('uploads')?.dir || './public/uploads');
       const updates: Record<string, unknown> = {};
+      console.log(`[auto-checks] Starting for verification ${id} (user ${userId})`);
 
       // Fetch the user's personal data for cross-validation
       let personalData: {
