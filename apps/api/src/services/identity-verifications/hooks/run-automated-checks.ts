@@ -68,8 +68,11 @@ export const runAutomatedChecks = (): Hook => {
 
       // Decrypt files and send to verification API for processing
       try {
+        console.log(`[auto-checks] Decrypting idFront: ${idFrontUrl}`);
         const idFrontBuffer = decryptFileFromDisk(uploadsDir, idFrontUrl);
+        console.log(`[auto-checks] Decrypting selfie: ${selfieUrl}`);
         const selfieBuffer = decryptFileFromDisk(uploadsDir, selfieUrl);
+        console.log(`[auto-checks] Decrypted files — idFront: ${idFrontBuffer.length} bytes, selfie: ${selfieBuffer.length} bytes`);
 
         // Create a JWT to authenticate with the verification API
         const authService = app.service('authentication') as any;
@@ -91,6 +94,13 @@ export const runAutomatedChecks = (): Hook => {
         });
 
         const result = response.data;
+        console.log(`[auto-checks] Verification API response:`, JSON.stringify({
+          dniScanMatch: result.dniScanMatch,
+          dniScanErrors: result.dniScanErrors,
+          faceMatch: result.faceMatch,
+          faceSimilarityScore: result.faceSimilarityScore,
+          faceMatchError: result.faceMatchError,
+        }));
         updates.dniScanData = result.dniScanData;
         updates.dniScanMatch = result.dniScanMatch;
         updates.dniScanErrors = result.dniScanErrors;
@@ -99,7 +109,15 @@ export const runAutomatedChecks = (): Hook => {
         updates.faceMatchError = result.faceMatchError;
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
+        const axiosErr = err as any;
         console.error('[auto-checks] Verification API call failed:', message);
+        if (axiosErr.response) {
+          console.error('[auto-checks] Response status:', axiosErr.response.status);
+          console.error('[auto-checks] Response data:', JSON.stringify(axiosErr.response.data));
+        } else if (axiosErr.code) {
+          console.error('[auto-checks] Error code:', axiosErr.code);
+        }
+        console.error('[auto-checks] Target URL:', `${VERIFICATION_API_URL}/run-checks`);
         updates.dniScanData = null;
         updates.dniScanMatch = null;
         updates.dniScanErrors = `Verification API error: ${message}`;
