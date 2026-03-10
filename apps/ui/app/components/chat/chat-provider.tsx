@@ -32,6 +32,7 @@ export interface OrgUser {
   lastName: string;
   initials: string;
   fullName: string;
+  roleIds: string[];
 }
 
 export interface ConversationEntry {
@@ -192,6 +193,7 @@ export function ChatProvider({ children }: PropsWithChildren) {
               lastName,
               initials,
               fullName,
+              roleIds: m.user.roleIds ?? [],
             };
           });
 

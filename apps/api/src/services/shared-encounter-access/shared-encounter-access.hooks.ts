@@ -8,6 +8,7 @@ import { blockSuperAdmin } from '../../hooks/block-super-admin';
 import { setGrantingMedic } from './hooks/set-granting-medic';
 import { scopeToMedic } from './hooks/scope-to-medic';
 import { authorizeGrantRemoval } from './hooks/authorize-grant-removal';
+import { validateGrantedIsMedic } from './hooks/validate-granted-is-medic';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -22,7 +23,10 @@ export default {
     ],
     find: [scopeToMedic()],
     get: [],
-    create: [setGrantingMedic()],
+    create: [
+      setGrantingMedic(),
+      validateGrantedIsMedic(),
+    ],
     update: [disallow('external')],
     patch: [disallow('external')],
     remove: [authorizeGrantRemoval()]

@@ -2,6 +2,11 @@ import { Hook, HookContext } from '@feathersjs/feathers';
 import { BadRequest } from '@feathersjs/errors';
 
 export const handleCertificateUpload = (): Hook => async (context: HookContext): Promise<HookContext> => {
+  // Skip if certificate was already set by generation hook
+  if (context.data?.certificate) {
+    return context;
+  }
+
   const { params } = context;
   const file = (params as any).file as Express.Multer.File | undefined;
   const isClientEncrypted = !!(params as any).isClientEncrypted;

@@ -959,14 +959,27 @@ export const es = {
   digital_signature: {
     title: 'Firma Digital',
     info_notice:
-      'Suba su certificado digital (.pfx o .p12) emitido por una Autoridad Certificante argentina para poder firmar digitalmente las historias clínicas exportadas. El certificado se almacena cifrado y su clave nunca se guarda.',
+      'Configure su certificado digital para firmar historias clínicas exportadas. Puede generar uno aquí o subir el suyo (.pfx o .p12). El certificado se almacena cifrado y su clave nunca se guarda.',
     certificate_loaded: 'Certificado cargado',
     certificate_pin_protected: 'Protegido con PIN',
     remove: 'Eliminar',
+    method_label: 'Método',
+    method_generate: 'Generar certificado',
+    method_upload: 'Subir certificado',
     file_label: 'Certificado digital',
     file_placeholder: 'Seleccionar archivo .pfx o .p12',
     upload: 'Subir certificado',
     upload_error: 'Error al subir el certificado',
+    generate: 'Generar certificado',
+    generate_error: 'Error al generar el certificado',
+    generate_info:
+      'Generaremos un certificado autofirmado para usted. Elija una contraseña que será requerida cada vez que firme un documento.',
+    generate_password_label: 'Contraseña del certificado',
+    generate_password_placeholder: 'Elija una contraseña',
+    generate_password_confirm_placeholder: 'Re-ingrese la contraseña',
+    generate_password_warning:
+      'Esta contraseña será requerida cada vez que firme un documento. Nunca se almacena en nuestros servidores. Si la olvida, deberá generar un nuevo certificado.',
+    password_mismatch: 'Las contraseñas no coinciden',
     remove_error: 'Error al eliminar el certificado',
     security_notice:
       'Su certificado se almacena con encriptación de alto nivel. La firma solo puede realizarse con su contraseña del certificado, la cual nunca se almacena en nuestros servidores. Esto significa que nadie puede firmar en su nombre — ni siquiera nosotros.',

@@ -19,16 +19,25 @@ export default function (app: Application): void {
     paginate: app.get('paginate'),
   };
 
+  const conditionalMulter = (req: any, res: any, next: any) => {
+    // Skip multer for JSON-based certificate generation requests
+    if (req.body?.action === 'generate') {
+      return next();
+    }
+    upload.single('certificate')(req, res, next);
+  };
+
+  const extractFileInfo = (req: any, _res: any, next: any) => {
+    req.feathers.file = req.file;
+    req.feathers.isClientEncrypted = req.body?.isClientEncrypted === 'true';
+    next();
+  };
+
   app.use(
     '/signing-certificates',
-    // @ts-expect-error multer types conflict between express-serve-static-core v4 and v5
-    upload.single('certificate'),
-    (req: any, _res: any, next: any) => {
-      req.feathers.file = req.file;
-      req.feathers.isClientEncrypted = req.body?.isClientEncrypted === 'true';
-      next();
-    },
-    new SigningCertificates(options, app)
+    conditionalMulter,
+    extractFileInfo,
+    new SigningCertificates(options, app) as any
   );
 
   const service = app.service('signing-certificates');

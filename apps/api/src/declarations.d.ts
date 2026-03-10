@@ -316,6 +316,20 @@ export interface SigningCertificate {
   isClientEncrypted: boolean;
 }
 
+export interface DocumentSignature {
+  id: Id;
+  hash: string;
+  signedById: Id;
+  patientId: Id;
+  organizationId: Id | null;
+  signerName: string;
+  signedAt: Date;
+  fileName: string;
+  content: 'encounters' | 'studies' | 'both';
+  studyId: Id | null;
+  createdAt?: Date;
+}
+
 export interface Prescription {
   id: Id;
   organizationId: Id | null;

@@ -6,6 +6,7 @@ describe('\'shared-encounter-access\' service', () => {
   let org: any;
   let medicA: any;
   let medicB: any;
+  let nonMedicUser: any;
   let patient: any;
 
   before(async () => {
@@ -22,6 +23,13 @@ describe('\'shared-encounter-access\' service', () => {
       username: `test.medic.share.b.${Date.now()}`,
       password: 'SuperSecret1',
       roleIds: ['medic'],
+      organizationId: org.id,
+    });
+
+    nonMedicUser = await createTestUser({
+      username: `test.receptionist.share.${Date.now()}`,
+      password: 'SuperSecret1',
+      roleIds: ['receptionist'],
       organizationId: org.id,
     });
 
@@ -119,6 +127,21 @@ describe('\'shared-encounter-access\' service', () => {
     );
 
     await app.service('shared-encounter-access').remove(grant.id);
+  });
+
+  it('rejects sharing access with a non-medic user', async () => {
+    try {
+      await app.service('shared-encounter-access').create({
+        grantingMedicId: medicA.id,
+        grantedMedicId: nonMedicUser.id,
+        patientId: patient.id,
+        organizationId: org.id,
+      });
+      assert.fail('Should not allow sharing with non-medic');
+    } catch (error: any) {
+      assert.strictEqual(error.code, 400);
+      assert.ok(error.message.includes('medics'));
+    }
   });
 
   it('can remove a grant', async () => {

@@ -15,7 +15,7 @@ describe('\'signing-certificates\' service', () => {
 
     const org = await createTestOrganization();
     medic = await createTestUser({
-      username: 'cert.test.medic',
+      username: `cert.test.medic.${Date.now()}`,
       password: 'SuperSecret1',
       roleIds: ['medic'],
       organizationId: org.id,
@@ -96,6 +96,95 @@ describe('\'signing-certificates\' service', () => {
     } as any) as any[];
 
     assert.strictEqual(all.length, 1, 'Only one certificate exists after replacement');
+  });
+
+  describe('certificate generation', () => {
+    let generationMedic: any;
+
+    before(async () => {
+      const genOrg = await createTestOrganization();
+
+      generationMedic = await app.service('users').create({
+        username: `cert.gen.medic.${Date.now()}`,
+        password: 'SuperSecret1',
+        personalData: {
+          firstName: 'Generated',
+          lastName: 'CertDoc',
+          documentType: 'DNI',
+          documentValue: `GC${Date.now()}`,
+        },
+      });
+
+      await app.service('organization-users').create({
+        organizationId: genOrg.id,
+        userId: generationMedic.id,
+      } as any);
+
+      await app.service('user-roles').create({
+        userId: generationMedic.id,
+        roleId: 'medic',
+        organizationId: genOrg.id,
+      } as any);
+    });
+
+    it('generates a self-signed .p12 certificate', async () => {
+      const result: any = await app.service('signing-certificates').create(
+        { action: 'generate', password: 'myGeneratedPass123' } as any,
+        { user: generationMedic } as any
+      );
+
+      assert.ok(result.id, 'Certificate has an id');
+      assert.strictEqual(result.userId, generationMedic.id);
+      assert.ok(result.fileName, 'fileName is set');
+      assert.strictEqual(result.isClientEncrypted, false);
+    });
+
+    it('certificate data is stored (internal call)', async () => {
+      const certs = await app.service('signing-certificates').find({
+        query: { userId: generationMedic.id },
+        paginate: false,
+      } as any) as any[];
+
+      assert.strictEqual(certs.length, 1, 'One certificate found');
+      assert.ok(certs[0].certificate, 'Certificate data is present');
+    });
+
+    it('replaces existing certificate when generating a new one', async () => {
+      await app.service('signing-certificates').create(
+        { action: 'generate', password: 'anotherPass456' } as any,
+        { user: generationMedic } as any
+      );
+
+      const certs = await app.service('signing-certificates').find({
+        query: { userId: generationMedic.id },
+        paginate: false,
+      } as any) as any[];
+
+      assert.strictEqual(certs.length, 1, 'Only one certificate after regeneration');
+    });
+
+    it('rejects generation without password', async () => {
+      try {
+        await app.service('signing-certificates').create(
+          { action: 'generate' } as any,
+          { user: generationMedic } as any
+        );
+        assert.fail('Should throw BadRequest');
+      } catch (error: any) {
+        assert.strictEqual(error.name, 'BadRequest');
+        assert.ok(error.message.includes('Password'), 'Error mentions password');
+      }
+    });
+
+    after(async () => {
+      const certs = await app.service('signing-certificates').find({
+        query: { userId: generationMedic.id },
+        paginate: false,
+      } as any) as any[];
+      for (const cert of certs) {
+        await app.service('signing-certificates').remove(cert.id);
+      }
+    });
   });
 
   it('removes a certificate', async () => {

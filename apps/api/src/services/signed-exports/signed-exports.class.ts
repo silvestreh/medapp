@@ -4,7 +4,7 @@ import { P12Signer } from '@signpdf/signer-p12';
 import signpdf from '@signpdf/signpdf';
 import { pdflibAddPlaceholder } from '@signpdf/placeholder-pdf-lib';
 import { SUBFILTER_ETSI_CADES_DETACHED } from '@signpdf/utils';
-import { pbkdf2Sync, createDecipheriv } from 'crypto';
+import { pbkdf2Sync, createDecipheriv, createHash } from 'crypto';
 import dayjs from 'dayjs';
 
 import type { Application } from '../../declarations';
@@ -31,6 +31,8 @@ export interface SignedExportResult {
   pdf?: Buffer;
   fileName?: string;
   message?: string;
+  hash?: string;
+  patientId?: string;
 }
 
 export class SignedExports {
@@ -182,13 +184,30 @@ export class SignedExports {
 
     let pdfBuffer = await renderMedicalHistoryPdf(renderOptions);
 
+    let hash: string | undefined;
+
     if (wantSign) {
       pdfBuffer = await this.signPdf(pdfBuffer, user.id, certificatePassword!, renderOptions.doctor.fullName, locale, encryptionPin);
+      hash = createHash('sha256').update(pdfBuffer).digest('hex');
     }
 
     const patientName = renderOptions.patient.fullName.replace(/\s+/g, '_') || t.patientFallback;
     const dateStr = dayjs().format('YYYY-MM-DD');
     const fileName = `${t.filePrefix}_${patientName}_${dateStr}.pdf`;
+
+    if (wantSign && hash) {
+      await this.app.service('document-signatures').create({
+        hash,
+        signedById: user.id,
+        patientId,
+        organizationId: params.organizationId || null,
+        signerName: renderOptions.doctor.fullName,
+        signedAt: new Date(),
+        fileName,
+        content,
+        studyId: studyId || null,
+      }, { provider: undefined } as any);
+    }
 
     if (delivery === 'email') {
       await this.app.service('mailer').create({
@@ -208,10 +227,10 @@ export class SignedExports {
         }],
       } as any);
 
-      return { success: true, message: `${t.pdfSentTo} ${emailTo}` };
+      return { success: true, message: `${t.pdfSentTo} ${emailTo}`, hash, patientId };
     }
 
-    return { success: true, pdf: pdfBuffer, fileName };
+    return { success: true, pdf: pdfBuffer, fileName, hash, patientId };
   }
 
   private async signPdf(

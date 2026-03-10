@@ -38,6 +38,8 @@ const ALLOWED_PATHS = new Set([
   'mailer',
   'invites',
   'signing-certificates',
+  'document-signatures',
+  'document-verification',
   'signed-exports',
   'stats',
   'practitioner-verification',

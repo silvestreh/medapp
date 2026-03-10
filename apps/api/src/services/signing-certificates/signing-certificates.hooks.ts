@@ -2,6 +2,7 @@ import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { disallow } from 'feathers-hooks-common';
 import { restrictToMedicOwner } from './hooks/restrict-to-medic-owner';
+import { handleCertificateGeneration } from './hooks/handle-certificate-generation';
 import { handleCertificateUpload } from './hooks/handle-certificate-upload';
 import { removeExistingCertificate } from './hooks/remove-existing-certificate';
 import { stripCertificateData } from './hooks/strip-certificate-data';
@@ -16,7 +17,7 @@ export default {
     all: [authenticate('jwt'), verifyOrganizationMembership()],
     find: [restrictToMedicOwner(), includeDecryptedAttributes()],
     get: [disallow('external')],
-    create: [enforceActiveOrganization(), restrictToMedicOwner(), handleCertificateUpload(), removeExistingCertificate()],
+    create: [enforceActiveOrganization(), restrictToMedicOwner(), handleCertificateGeneration(), handleCertificateUpload(), removeExistingCertificate()],
     update: [disallow('external')],
     patch: [disallow('external')],
     remove: [enforceActiveOrganization(), restrictToMedicOwner()],

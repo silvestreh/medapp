@@ -955,14 +955,27 @@ export const en: typeof es = {
   digital_signature: {
     title: 'Digital Signature',
     info_notice:
-      'Upload your digital certificate (.pfx or .p12) issued by an Argentine Certificate Authority to digitally sign exported medical histories. The certificate is stored encrypted and your password is never saved.',
+      'Set up your digital certificate to sign exported medical histories. You can generate one here or upload your own (.pfx or .p12). The certificate is stored encrypted and your password is never saved.',
     certificate_loaded: 'Certificate uploaded',
     certificate_pin_protected: 'Protected with PIN',
     remove: 'Remove',
+    method_label: 'Method',
+    method_generate: 'Generate certificate',
+    method_upload: 'Upload certificate',
     file_label: 'Digital certificate',
     file_placeholder: 'Select .pfx or .p12 file',
     upload: 'Upload certificate',
     upload_error: 'Failed to upload certificate',
+    generate: 'Generate certificate',
+    generate_error: 'Failed to generate certificate',
+    generate_info:
+      'We will generate a self-signed certificate for you. Choose a password that will be required every time you sign a document.',
+    generate_password_label: 'Certificate password',
+    generate_password_placeholder: 'Choose a password',
+    generate_password_confirm_placeholder: 'Re-enter password',
+    generate_password_warning:
+      'This password will be required every time you sign a document. It is never stored on our servers. If you forget it, you will need to generate a new certificate.',
+    password_mismatch: 'Passwords do not match',
     remove_error: 'Failed to remove certificate',
     security_notice:
       'Your certificate is stored with strong encryption. Signing can only be performed with your certificate password, which is never stored on our servers. This means nobody can sign on your behalf — not even us.',

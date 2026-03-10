@@ -200,6 +200,57 @@ describe('\'signed-exports\' service', () => {
         'Signed PDF starts with %PDF header'
       );
     });
+
+    it('stores document signature hash after signing', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        content: 'both',
+        certificatePassword: CERT_PASSWORD,
+        delivery: 'download',
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
+
+      assert.ok(result.hash, 'Hash is returned in result');
+      assert.strictEqual(result.hash.length, 64, 'Hash is 64 characters (SHA-256 hex)');
+
+      const signatures = await app.service('document-signatures').find({
+        query: { hash: result.hash },
+        paginate: false,
+        provider: undefined,
+      } as any) as any[];
+
+      assert.strictEqual(signatures.length, 1, 'One signature record created');
+      assert.strictEqual(signatures[0].signedById, medic.id);
+      assert.strictEqual(signatures[0].patientId, patient.id);
+      assert.ok(signatures[0].signerName, 'Signer name is stored');
+      assert.ok(signatures[0].signedAt, 'Signed date is stored');
+      assert.ok(signatures[0].fileName, 'File name is stored');
+    });
+
+    it('does not store hash for unsigned PDFs', async () => {
+      const beforeSigs = await app.service('document-signatures').find({
+        query: { signedById: medic.id },
+        paginate: false,
+        provider: undefined,
+      } as any) as any[];
+
+      const beforeCount = beforeSigs.length;
+
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        content: 'both',
+        delivery: 'download',
+      }, { user: medic, orgRoleIds: ['medic'], organizationId: org.id } as any);
+
+      assert.ok(!result.hash, 'No hash for unsigned PDF');
+
+      const afterSigs = await app.service('document-signatures').find({
+        query: { signedById: medic.id },
+        paginate: false,
+        provider: undefined,
+      } as any) as any[];
+
+      assert.strictEqual(afterSigs.length, beforeCount, 'No new signature record created');
+    });
   });
 
   describe('error handling', () => {

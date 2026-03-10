@@ -1,13 +1,15 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Alert, Button, Checkbox, FileInput, Group, PasswordInput, Text, Stack } from '@mantine/core';
+import { Alert, Button, Checkbox, FileInput, Group, PasswordInput, SegmentedControl, Text, Stack } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
-import { FileSignature, Trash2, Upload, Info, ShieldCheck, Lock } from 'lucide-react';
+import { FileSignature, Trash2, Upload, Info, ShieldCheck, Lock, KeyRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import Portal from '~/components/portal';
 import { useFeathers } from '~/components/provider';
 import { encryptWithPin } from '~/lib/client-crypto';
 import { FormCard, FieldRow, SectionTitle, FormHeader } from '~/components/forms/styles';
+
+type CertificateMethod = 'generate' | 'upload';
 
 interface CertificateInfo {
   id: string;
@@ -24,14 +26,21 @@ interface ProfileDigitalSignatureProps {
 export function ProfileDigitalSignature({ certificate, onCertificateChange }: ProfileDigitalSignatureProps) {
   const { t } = useTranslation();
   const client = useFeathers();
-  const [isUploading, setIsUploading] = useState(false);
+  const [method, setMethod] = useState<CertificateMethod>('generate');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Upload state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pinProtect, setPinProtect] = useState(false);
   const [pin, setPin] = useState('');
   const [pinConfirm, setPinConfirm] = useState('');
   const fileInputRef = useRef<HTMLButtonElement>(null);
+
+  // Generate state
+  const [generatePassword, setGeneratePassword] = useState('');
+  const [generatePasswordConfirm, setGeneratePasswordConfirm] = useState('');
 
   const pinError = useMemo(() => {
     if (!pinProtect || !pinConfirm) return null;
@@ -39,18 +48,64 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
     return null;
   }, [pinProtect, pin, pinConfirm, t]);
 
-  const canUpload = useMemo(() => {
+  const generatePasswordError = useMemo(() => {
+    if (!generatePasswordConfirm) return null;
+    if (generatePassword !== generatePasswordConfirm) return t('digital_signature.password_mismatch');
+    return null;
+  }, [generatePassword, generatePasswordConfirm, t]);
+
+  const canSubmit = useMemo(() => {
+    if (method === 'generate') {
+      return generatePassword.length > 0 && generatePassword === generatePasswordConfirm;
+    }
     if (!selectedFile) return false;
     if (pinProtect) {
       return pin.length > 0 && pin === pinConfirm;
     }
     return true;
-  }, [selectedFile, pinProtect, pin, pinConfirm]);
+  }, [method, selectedFile, pinProtect, pin, pinConfirm, generatePassword, generatePasswordConfirm]);
+
+  const handleGenerate = useCallback(async () => {
+    if (!client || !generatePassword) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const token = await (client as any).authentication?.getAccessToken?.();
+      const baseUrl = '/api';
+      const orgId = (client as any).organizationId;
+
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (orgId) headers['organization-id'] = orgId;
+
+      const response = await fetch(`${baseUrl}/signing-certificates`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ action: 'generate', password: generatePassword }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.message || t('digital_signature.generate_error'));
+      }
+
+      setGeneratePassword('');
+      setGeneratePasswordConfirm('');
+      onCertificateChange();
+    } catch (err: any) {
+      setError(err.message || t('digital_signature.generate_error'));
+    } finally {
+      setIsSubmitting(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client, generatePassword, onCertificateChange]);
 
   const handleUpload = useCallback(async () => {
     if (!selectedFile || !client) return;
 
-    setIsUploading(true);
+    setIsSubmitting(true);
     setError(null);
 
     try {
@@ -93,10 +148,18 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
     } catch (err: any) {
       setError(err.message || t('digital_signature.upload_error'));
     } finally {
-      setIsUploading(false);
+      setIsSubmitting(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFile, client, onCertificateChange, pinProtect, pin]);
+
+  const handleSubmit = useCallback(() => {
+    if (method === 'generate') {
+      handleGenerate();
+    } else {
+      handleUpload();
+    }
+  }, [method, handleGenerate, handleUpload]);
 
   const handleRemove = useCallback(async () => {
     if (!certificate || !client) return;
@@ -115,17 +178,30 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [certificate, client, onCertificateChange]);
 
+  const handleMethodChange = useCallback((value: string) => {
+    setMethod(value as CertificateMethod);
+    setError(null);
+  }, []);
+
   useHotkeys(
     [
       [
         'mod+S',
         () => {
-          if (canUpload) handleUpload();
+          if (canSubmit) handleSubmit();
         },
       ],
     ],
     []
   );
+
+  const submitLabel = method === 'generate'
+    ? t('digital_signature.generate')
+    : t('digital_signature.upload');
+
+  const submitIcon = method === 'generate'
+    ? <KeyRound size={16} />
+    : <Upload size={16} />;
 
   return (
     <Stack gap={0}>
@@ -179,53 +255,101 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
 
         {!certificate && (
           <>
-            <FieldRow label={`${t('digital_signature.file_label')}:`} variant="stacked">
-              <FileInput
-                ref={fileInputRef}
-                placeholder={t('digital_signature.file_placeholder')}
-                accept=".pfx,.p12"
-                value={selectedFile}
-                onChange={setSelectedFile}
+            <FieldRow label={`${t('digital_signature.method_label')}:`} variant="stacked">
+              <SegmentedControl
+                value={method}
+                onChange={handleMethodChange}
+                data={[
+                  { label: t('digital_signature.method_generate'), value: 'generate' },
+                  { label: t('digital_signature.method_upload'), value: 'upload' },
+                ]}
+                fullWidth
               />
             </FieldRow>
 
-            {selectedFile && (
+            {method === 'generate' && (
               <>
                 <FieldRow label="" variant="stacked">
-                  <Checkbox
-                    label={t('digital_signature.pin_protect_label')}
-                    description={t('digital_signature.pin_protect_description')}
-                    checked={pinProtect}
-                    onChange={event => setPinProtect(event.currentTarget.checked)}
+                  <Alert variant="light" color="var(--mantine-primary-color-4)" icon={<Info size={14} />} py="xs" style={{ flex: 1 }}>
+                    <Text size="xs">{t('digital_signature.generate_info')}</Text>
+                  </Alert>
+                </FieldRow>
+                <FieldRow label={`${t('digital_signature.generate_password_label')}:`} variant="stacked">
+                  <Group grow>
+                    <PasswordInput
+                      placeholder={t('digital_signature.generate_password_placeholder')}
+                      value={generatePassword}
+                      onChange={event => setGeneratePassword(event.currentTarget.value)}
+                    />
+                    <PasswordInput
+                      placeholder={t('digital_signature.generate_password_confirm_placeholder')}
+                      value={generatePasswordConfirm}
+                      onChange={event => setGeneratePasswordConfirm(event.currentTarget.value)}
+                      error={generatePasswordError}
+                    />
+                  </Group>
+                  <Alert
+                    variant="light"
+                    color="orange"
+                    icon={<Info size={14} />}
+                    py="xs"
+                    style={{ flex: 1, marginTop: '1rem' }}
+                  >
+                    <Text size="xs">{t('digital_signature.generate_password_warning')}</Text>
+                  </Alert>
+                </FieldRow>
+              </>
+            )}
+
+            {method === 'upload' && (
+              <>
+                <FieldRow label={`${t('digital_signature.file_label')}:`} variant="stacked">
+                  <FileInput
+                    ref={fileInputRef}
+                    placeholder={t('digital_signature.file_placeholder')}
+                    accept=".pfx,.p12"
+                    value={selectedFile}
+                    onChange={setSelectedFile}
                   />
                 </FieldRow>
 
-                {pinProtect && (
+                {selectedFile && (
                   <>
-                    <FieldRow label={`${t('digital_signature.pin_label')}:`} variant="stacked">
-                      <Group grow>
-                        <PasswordInput
-                          placeholder={t('digital_signature.pin_placeholder')}
-                          value={pin}
-                          onChange={event => setPin(event.currentTarget.value)}
-                        />
-                        <PasswordInput
-                          placeholder={t('digital_signature.pin_confirm_placeholder')}
-                          value={pinConfirm}
-                          onChange={event => setPinConfirm(event.currentTarget.value)}
-                          error={pinError}
-                        />
-                      </Group>
-                      <Alert
-                        variant="light"
-                        color="orange"
-                        icon={<Info size={14} />}
-                        py="xs"
-                        style={{ flex: 1, marginTop: '1rem' }}
-                      >
-                        <Text size="xs">{t('digital_signature.pin_warning')}</Text>
-                      </Alert>
+                    <FieldRow label="" variant="stacked">
+                      <Checkbox
+                        label={t('digital_signature.pin_protect_label')}
+                        description={t('digital_signature.pin_protect_description')}
+                        checked={pinProtect}
+                        onChange={event => setPinProtect(event.currentTarget.checked)}
+                      />
                     </FieldRow>
+
+                    {pinProtect && (
+                      <FieldRow label={`${t('digital_signature.pin_label')}:`} variant="stacked">
+                        <Group grow>
+                          <PasswordInput
+                            placeholder={t('digital_signature.pin_placeholder')}
+                            value={pin}
+                            onChange={event => setPin(event.currentTarget.value)}
+                          />
+                          <PasswordInput
+                            placeholder={t('digital_signature.pin_confirm_placeholder')}
+                            value={pinConfirm}
+                            onChange={event => setPinConfirm(event.currentTarget.value)}
+                            error={pinError}
+                          />
+                        </Group>
+                        <Alert
+                          variant="light"
+                          color="orange"
+                          icon={<Info size={14} />}
+                          py="xs"
+                          style={{ flex: 1, marginTop: '1rem' }}
+                        >
+                          <Text size="xs">{t('digital_signature.pin_warning')}</Text>
+                        </Alert>
+                      </FieldRow>
+                    )}
                   </>
                 )}
               </>
@@ -233,11 +357,13 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
           </>
         )}
       </FormCard>
-      <Portal id="form-actions">
-        <Button leftSection={<Upload size={16} />} loading={isUploading} disabled={!canUpload} onClick={handleUpload}>
-          {t('digital_signature.upload')}
-        </Button>
-      </Portal>
+      {!certificate && (
+        <Portal id="form-actions">
+          <Button leftSection={submitIcon} loading={isSubmitting} disabled={!canSubmit} onClick={handleSubmit}>
+            {submitLabel}
+          </Button>
+        </Portal>
+      )}
       <Alert variant="light" color="yellow" icon={<ShieldCheck size={16} />} style={{ flex: 1, marginTop: '1rem' }}>
         {t('digital_signature.security_notice')}
       </Alert>

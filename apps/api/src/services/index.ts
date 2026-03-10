@@ -29,6 +29,8 @@ import organizationPatients from './organization-patients/organization-patients.
 import mailer from './mailer/mailer.service';
 import invites from './invites/invites.service';
 import signingCertificates from './signing-certificates/signing-certificates.service';
+import documentSignatures from './document-signatures/document-signatures.service';
+import documentVerification from './document-verification/document-verification.service';
 import signedExports from './signed-exports/signed-exports.service';
 import stats from './stats/stats.service';
 import practitionerVerification from './practitioner-verification/practitioner-verification.service';
@@ -78,6 +80,8 @@ export default function (app: Application): void {
   app.configure(mailer);
   app.configure(invites);
   app.configure(signingCertificates);
+  app.configure(documentSignatures);
+  app.configure(documentVerification);
   app.configure(signedExports);
   app.configure(stats);
   app.configure(practitionerVerification);

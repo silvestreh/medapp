@@ -233,6 +233,12 @@ export function MessagingChatPanel({
     return other?.name ?? '';
   }, [participants, isGroup, user?.id]);
 
+  const canShareEncounters = useMemo(() => {
+    if (isGroup || !recipientUserId) return false;
+    const recipientOrgUser = orgUsers.find(u => u.userId === recipientUserId);
+    return recipientOrgUser?.roleIds.includes('medic') ?? false;
+  }, [isGroup, recipientUserId, orgUsers]);
+
   // Load initial messages
   useEffect(() => {
     if (!chatClient || !conversationId || !isActive || loadedRef.current) return;
@@ -387,10 +393,10 @@ export function MessagingChatPanel({
 
         const metadata: SharedEncounterMetadata | undefined = sharePatient
           ? {
-            type: 'shared-encounter-access',
-            patientId: sharePatient.id,
-            patientName: `${sharePatient.personalData.firstName} ${sharePatient.personalData.lastName}`.trim(),
-          }
+              type: 'shared-encounter-access',
+              patientId: sharePatient.id,
+              patientName: `${sharePatient.personalData.firstName} ${sharePatient.personalData.lastName}`.trim(),
+            }
           : undefined;
 
         await chatClient.service('messages').create({
@@ -409,7 +415,17 @@ export function MessagingChatPanel({
       requestAnimationFrame(() => textareaRef.current?.focus());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatClient, conversationId, draftMessage, isSending, replyTo, editingMessageId, pendingSharePatient, recipientUserId, feathersClient]);
+  }, [
+    chatClient,
+    conversationId,
+    draftMessage,
+    isSending,
+    replyTo,
+    editingMessageId,
+    pendingSharePatient,
+    recipientUserId,
+    feathersClient,
+  ]);
 
   const handleDraftChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -898,10 +914,10 @@ export function MessagingChatPanel({
             onOptionSubmit={handleShareEncounterSelect}
             data={sharePatientOptions.data}
             filter={({ options }) => options}
-            size="xs"
             leftSection={isLoadingPatients ? <Loader size={14} /> : undefined}
             comboboxProps={{ withinPortal: true, zIndex: 1400 }}
             autoFocus
+            variant="unstyled"
           />
         </Box>
       )}
@@ -947,14 +963,13 @@ export function MessagingChatPanel({
       )}
 
       {/* Input */}
-      <Group gap={0} align="end" style={{ flexShrink: 0 }}>
-        {!isGroup && (
+      <Group gap={0} align="center" style={{ flexShrink: 0 }}>
+        {canShareEncounters && (
           <ActionIcon
             variant="subtle"
             color="gray"
-            size="sm"
+            size="lg"
             ml="xs"
-            mb={8}
             title={t('chat.share_encounters_tooltip')}
             onClick={handleToggleShareEncounters}
           >
