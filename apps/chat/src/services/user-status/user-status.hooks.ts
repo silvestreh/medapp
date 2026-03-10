@@ -6,6 +6,9 @@ import { Forbidden } from '@feathersjs/errors';
  * Only allow users to update their own status.
  */
 const restrictToOwnStatus = () => async (context: HookContext) => {
+  // Skip restriction for internal (server-side) calls
+  if (!context.params.provider) return context;
+
   const userId = context.params.user?.id;
 
   if (context.id) {

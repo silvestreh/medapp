@@ -1,0 +1,4 @@
+{
+  "port": 9032,
+  "postgres": "postgres://postgres:@localhost:5432/athelas_verification_test"
+}

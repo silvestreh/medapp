@@ -55,6 +55,34 @@ export default function (app: Application): typeof Model {
         key: 'id',
       },
     },
+    dniScanData: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+    },
+    dniScanMatch: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
+    dniScanErrors: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    faceSimilarityScore: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    faceMatch: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
+    faceMatchError: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    autoCheckCompletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   }, {
     hooks: {
       beforeCount(options: any): HookReturn {

@@ -3,6 +3,8 @@ import * as authentication from '@feathersjs/authentication';
 import { disallow, iff, isProvider } from 'feathers-hooks-common';
 import { BadRequest, Forbidden } from '@feathersjs/errors';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
+import { runAutomatedChecks } from './hooks/run-automated-checks';
+import { cleanupFiles } from './hooks/cleanup-files';
 
 const { authenticate } = authentication.hooks;
 
@@ -201,9 +203,9 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [sendNotificationEmail()],
+    create: [sendNotificationEmail(), runAutomatedChecks()],
     update: [],
-    patch: [],
+    patch: [cleanupFiles()],
     remove: [],
   },
 

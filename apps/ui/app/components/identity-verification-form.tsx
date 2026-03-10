@@ -1,11 +1,13 @@
-import { useCallback, useRef, useState } from 'react';
-import { Alert, Badge, Button, Group, Image, Stack, Text, Paper } from '@mantine/core';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, Button, Group, Image, Loader, Paper, SegmentedControl, Stack, Stepper, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
-import { Camera, CreditCard, CheckCircle, XCircle, Clock, Upload } from 'lucide-react';
+import { Camera, CreditCard, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 
 import { useFeathers } from '~/components/provider';
 import { SectionTitle, FormCard } from '~/components/forms/styles';
+import { CameraCapture } from '~/components/camera-capture';
+import { QrVerificationSession } from '~/components/qr-verification-session';
 
 type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected';
 
@@ -13,6 +15,7 @@ interface IdentityVerificationFormProps {
   currentStatus: VerificationStatus;
   rejectionReason?: string | null;
   onSubmitted: () => void;
+  autoChecksRunning?: boolean;
 }
 
 type UploadSlot = 'idFront' | 'idBack' | 'selfie';
@@ -23,12 +26,40 @@ interface UploadedFile {
   preview?: string;
 }
 
+interface PhotoValidation {
+  hasBarcode: boolean;
+  hasFace: boolean;
+}
+
+type CaptureMode = 'detecting' | 'camera' | 'qr';
+
 const ACCEPT_IMAGES = 'image/png,image/jpeg,image/webp';
+
+const SLOT_FACING_MODE: Record<UploadSlot, 'environment' | 'user'> = {
+  idFront: 'environment',
+  idBack: 'environment',
+  selfie: 'user',
+};
+
+const SLOT_AUTO_DETECT: Record<UploadSlot, 'barcode' | 'face' | 'text'> = {
+  idFront: 'barcode',
+  idBack: 'text',
+  selfie: 'face',
+};
+
+const SLOT_ORDER: UploadSlot[] = ['idFront', 'idBack', 'selfie'];
+
+function slotToTranslationKey(slot: UploadSlot): string {
+  if (slot === 'idFront') return 'id_front';
+  if (slot === 'idBack') return 'id_back';
+  return 'selfie';
+}
 
 export function IdentityVerificationForm({
   currentStatus,
   rejectionReason,
   onSubmitted,
+  autoChecksRunning = false,
 }: IdentityVerificationFormProps) {
   const { t } = useTranslation();
   const client = useFeathers();
@@ -39,35 +70,100 @@ export function IdentityVerificationForm({
   });
   const [uploading, setUploading] = useState<UploadSlot | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [captureMode, setCaptureMode] = useState<CaptureMode>('detecting');
+  const [activeStep, setActiveStep] = useState(0);
+  const [validating, setValidating] = useState(false);
+  const [validationWarning, setValidationWarning] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const activeSlotRef = useRef<UploadSlot>('idFront');
 
-  const handlePickFile = useCallback((slot: UploadSlot) => {
-    activeSlotRef.current = slot;
-    fileInputRef.current?.click();
-  }, []);
+  // Detect camera availability
+  useEffect(() => {
+    if (currentStatus !== 'none' && currentStatus !== 'rejected') return;
 
-  const handleFileChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      e.target.value = '';
-
-      const slot = activeSlotRef.current;
-      setUploading(slot);
-
+    const detectCamera = async () => {
       try {
-        const token = await (client as any).authentication?.getAccessToken?.();
-        const orgId = (client as any).organizationId;
-        const authHeaders: Record<string, string> = {};
-        if (token) authHeaders['Authorization'] = `Bearer ${token}`;
-        if (orgId) authHeaders['organization-id'] = orgId;
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream.getTracks().forEach((track) => track.stop());
+        setCaptureMode('camera');
+      } catch {
+        setCaptureMode('qr');
+      }
+    };
+
+    detectCamera();
+  }, [currentStatus]);
+
+  const getAuthHeaders = useCallback(async () => {
+    const token = await (client as any).authentication?.getAccessToken?.();
+    const orgId = (client as any).organizationId;
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (orgId) headers['organization-id'] = orgId;
+    return headers;
+  }, [client]);
+
+  const validateIdFrontPhoto = useCallback(
+    async (fileUrl: string): Promise<PhotoValidation | null> => {
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch('/api/identity-verifications/validate-photo', {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileUrl }),
+        });
+
+        if (!res.ok) return null;
+        return await res.json();
+      } catch {
+        return null;
+      }
+    },
+    [getAuthHeaders]
+  );
+
+  const submitVerification = useCallback(
+    async (urls: { idFrontUrl: string; idBackUrl: string; selfieUrl: string }) => {
+      setSubmitting(true);
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch('/api/identity-verifications', {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify(urls),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Submission failed');
+        }
+
+        notifications.show({
+          message: t('identity_verification.submitted_success'),
+          color: 'green',
+        });
+        onSubmitted();
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : t('common.something_went_wrong');
+        notifications.show({ message, color: 'red' });
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [getAuthHeaders, t, onSubmitted]
+  );
+
+  const uploadBlob = useCallback(
+    async (blob: Blob, slot: UploadSlot) => {
+      setUploading(slot);
+      setValidationWarning(null);
+      try {
+        const headers = await getAuthHeaders();
 
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', blob, `${slot}.jpg`);
         const res = await fetch('/api/file-uploads?encrypted=true', {
           method: 'POST',
-          headers: authHeaders,
+          headers,
           body: formData,
         });
 
@@ -77,62 +173,115 @@ export function IdentityVerificationForm({
         }
 
         const { url } = await res.json();
-        const preview = URL.createObjectURL(file);
+        const preview = URL.createObjectURL(blob);
 
-        setUploads((prev) => ({
-          ...prev,
-          [slot]: { url, fileName: file.name, preview },
-        }));
-      } catch (err: any) {
-        notifications.show({ message: err.message || t('common.something_went_wrong'), color: 'red' });
+        const newUploads = {
+          ...uploads,
+          [slot]: { url, fileName: `${slot}.jpg`, preview },
+        };
+        setUploads(newUploads);
+
+        // Validate ID front photo
+        if (slot === 'idFront') {
+          setValidating(true);
+          const validation = await validateIdFrontPhoto(url);
+          setValidating(false);
+
+          if (validation) {
+            const warnings: string[] = [];
+            if (!validation.hasBarcode) {
+              warnings.push(t('identity_verification.no_barcode_warning'));
+            }
+            if (!validation.hasFace) {
+              warnings.push(t('identity_verification.no_face_warning'));
+            }
+
+            if (warnings.length > 0) {
+              setValidationWarning(warnings.join(' '));
+              // Don't auto-advance — let user retake or manually continue
+              return;
+            }
+          }
+          // Validation passed or unavailable — auto-advance
+          setActiveStep(1);
+        } else if (slot === 'idBack') {
+          // Auto-advance to selfie
+          setActiveStep(2);
+        } else if (slot === 'selfie') {
+          // All photos uploaded — auto-submit
+          const finalUploads = newUploads as Record<UploadSlot, UploadedFile>;
+          if (finalUploads.idFront && finalUploads.idBack && finalUploads.selfie) {
+            await submitVerification({
+              idFrontUrl: finalUploads.idFront.url,
+              idBackUrl: finalUploads.idBack.url,
+              selfieUrl: finalUploads.selfie.url,
+            });
+          }
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : t('common.something_went_wrong');
+        notifications.show({ message, color: 'red' });
       } finally {
         setUploading(null);
       }
     },
-    [client, t]
+    [client, t, uploads, getAuthHeaders, validateIdFrontPhoto, submitVerification]
   );
 
-  const handleSubmit = useCallback(async () => {
-    if (!uploads.idFront || !uploads.idBack || !uploads.selfie) return;
-
-    setSubmitting(true);
-    try {
-      const token = await (client as any).authentication?.getAccessToken?.();
-      const orgId = (client as any).organizationId;
-      const authHeaders: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (token) authHeaders['Authorization'] = `Bearer ${token}`;
-      if (orgId) authHeaders['organization-id'] = orgId;
-
-      const res = await fetch('/api/identity-verifications', {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({
-          idFrontUrl: uploads.idFront.url,
-          idBackUrl: uploads.idBack.url,
-          selfieUrl: uploads.selfie.url,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Submission failed');
+  const handleCameraCapture = useCallback(
+    (blob: Blob) => {
+      const slot = SLOT_ORDER[activeStep];
+      if (slot) {
+        uploadBlob(blob, slot);
       }
+    },
+    [activeStep, uploadBlob]
+  );
 
-      notifications.show({
-        message: t('identity_verification.submitted_success'),
-        color: 'green',
-      });
-      onSubmitted();
-    } catch (err: any) {
-      notifications.show({ message: err.message || t('common.something_went_wrong'), color: 'red' });
-    } finally {
-      setSubmitting(false);
+  const handleCancelCapture = useCallback(() => {
+    // no-op: camera is always visible in current step
+  }, []);
+
+  const handlePickFile = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      e.target.value = '';
+
+      const slot = SLOT_ORDER[activeStep];
+      if (slot) {
+        await uploadBlob(file, slot);
+      }
+    },
+    [activeStep, uploadBlob]
+  );
+
+  const handleForceAdvance = useCallback(() => {
+    setValidationWarning(null);
+    setActiveStep((s) => Math.min(s + 1, 2));
+  }, []);
+
+  const handleRetake = useCallback(() => {
+    const slot = SLOT_ORDER[activeStep];
+    if (slot) {
+      setUploads((prev) => ({ ...prev, [slot]: null }));
+      setValidationWarning(null);
     }
-  }, [uploads, client, t, onSubmitted]);
+  }, [activeStep]);
 
-  const allUploaded = uploads.idFront && uploads.idBack && uploads.selfie;
+  const handleQrCompleted = useCallback(
+    (urls: { idFrontUrl: string; idBackUrl: string; selfieUrl: string }) => {
+      submitVerification(urls);
+    },
+    [submitVerification]
+  );
+
+  const currentSlot = SLOT_ORDER[activeStep];
+  const currentUpload = currentSlot ? uploads[currentSlot] : null;
 
   return (
     <Stack gap="md">
@@ -147,8 +296,14 @@ export function IdentityVerificationForm({
       )}
 
       {currentStatus === 'pending' && (
-        <Alert icon={<Clock size={18} />} color="yellow">
-          {t('identity_verification.status_pending')}
+        <Alert
+          icon={autoChecksRunning ? <Loader size={18} /> : <Clock size={18} />}
+          color={autoChecksRunning ? 'blue' : 'yellow'}
+        >
+          {autoChecksRunning
+            ? t('identity_verification.auto_checking')
+            : t('identity_verification.status_pending')
+          }
         </Alert>
       )}
 
@@ -165,94 +320,172 @@ export function IdentityVerificationForm({
 
       {(currentStatus === 'none' || currentStatus === 'rejected') && (
         <>
-          <Text size="sm" c="dimmed">
-            {t('identity_verification.instructions')}
-          </Text>
+          {/* Mode switcher */}
+          {captureMode !== 'detecting' && (
+            <SegmentedControl
+              value={captureMode}
+              onChange={(value) => setCaptureMode(value as CaptureMode)}
+              data={[
+                { label: t('identity_verification.mode_camera'), value: 'camera' },
+                { label: t('identity_verification.mode_qr'), value: 'qr' },
+              ]}
+              size="sm"
+            />
+          )}
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={ACCEPT_IMAGES}
-            style={{ display: 'none' }}
-            onChange={handleFileChange}
-          />
+          {/* QR Mode */}
+          {captureMode === 'qr' && (
+            <QrVerificationSession onCompleted={handleQrCompleted} />
+          )}
 
-          <FormCard>
-            <Stack gap="md" p="md">
-              <UploadSlotButton
-                label={t('identity_verification.id_front')}
-                file={uploads.idFront}
-                loading={uploading === 'idFront'}
-                onClick={() => handlePickFile('idFront')}
-              />
-              <UploadSlotButton
-                label={t('identity_verification.id_back')}
-                file={uploads.idBack}
-                loading={uploading === 'idBack'}
-                onClick={() => handlePickFile('idBack')}
-              />
-              <UploadSlotButton
-                label={t('identity_verification.selfie')}
-                file={uploads.selfie}
-                loading={uploading === 'selfie'}
-                onClick={() => handlePickFile('selfie')}
-              />
-            </Stack>
-          </FormCard>
+          {/* Camera Mode */}
+          {captureMode === 'camera' && (
+            <>
+              <Stepper active={activeStep} size="sm">
+                <Stepper.Step
+                  label={t('identity_verification.id_front')}
+                  description={uploads.idFront ? t('identity_verification.step_done') : undefined}
+                />
+                <Stepper.Step
+                  label={t('identity_verification.id_back')}
+                  description={uploads.idBack ? t('identity_verification.step_done') : undefined}
+                />
+                <Stepper.Step
+                  label={t('identity_verification.selfie')}
+                  description={uploads.selfie ? t('identity_verification.step_done') : undefined}
+                />
+              </Stepper>
 
-          <Button
-            onClick={handleSubmit}
-            loading={submitting}
-            disabled={!allUploaded}
-            leftSection={<Upload size={16} />}
-          >
-            {t('identity_verification.submit_button')}
-          </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPT_IMAGES}
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+              />
+
+              {/* Submitting state */}
+              {submitting && (
+                <Paper withBorder p="xl" radius="md">
+                  <Stack align="center" gap="sm">
+                    <Loader size="md" />
+                    <Text size="sm" c="dimmed">
+                      {t('identity_verification.submitting')}
+                    </Text>
+                  </Stack>
+                </Paper>
+              )}
+
+              {/* Current step content */}
+              {!submitting && currentSlot && (
+                <FormCard>
+                  <Stack gap="md" p="md">
+                    <Text fw={600}>
+                      {t(`identity_verification.${slotToTranslationKey(currentSlot)}` as 'identity_verification.id_front')}
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      {t(`identity_verification.${slotToTranslationKey(currentSlot)}_hint` as 'identity_verification.id_front_hint')}
+                    </Text>
+
+                    {/* Show preview of already-captured photo */}
+                    {currentUpload?.preview && (
+                      <Image
+                        src={currentUpload.preview}
+                        alt={currentSlot}
+                        mah={200}
+                        radius="sm"
+                        fit="contain"
+                      />
+                    )}
+
+                    {/* Validating spinner */}
+                    {validating && (
+                      <Paper withBorder p="md" radius="md">
+                        <Group gap="sm" justify="center">
+                          <Loader size="sm" />
+                          <Text size="sm" c="dimmed">
+                            {t('identity_verification.validating_photo')}
+                          </Text>
+                        </Group>
+                      </Paper>
+                    )}
+
+                    {/* Validation warning */}
+                    {validationWarning && (
+                      <Alert icon={<AlertTriangle size={16} />} color="orange" withCloseButton={false}>
+                        <Text size="sm">{validationWarning}</Text>
+                        <Group gap="xs" mt="sm">
+                          <Button size="xs" variant="outline" color="orange" onClick={handleRetake}>
+                            {t('identity_verification.retake')}
+                          </Button>
+                          <Button size="xs" variant="light" onClick={handleForceAdvance}>
+                            {t('identity_verification.continue_anyway')}
+                          </Button>
+                        </Group>
+                      </Alert>
+                    )}
+
+                    {/* Camera viewfinder or upload button */}
+                    {!currentUpload && !validating && (
+                      <>
+                        <CameraCapture
+                          key={currentSlot}
+                          facingMode={SLOT_FACING_MODE[currentSlot]}
+                          autoDetect={SLOT_AUTO_DETECT[currentSlot]}
+                          onCapture={handleCameraCapture}
+                          onCancel={handleCancelCapture}
+                          label={t(`identity_verification.${slotToTranslationKey(currentSlot)}` as 'identity_verification.id_front')}
+                        />
+                        <Button
+                          variant="subtle"
+                          size="sm"
+                          onClick={handlePickFile}
+                          disabled={!!uploading}
+                        >
+                          {t('identity_verification.upload_file')}
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Retake button when photo is captured but no warning */}
+                    {currentUpload && !validating && !validationWarning && (
+                      <Group gap="xs">
+                        <Button
+                          variant="light"
+                          size="sm"
+                          leftSection={<Camera size={14} />}
+                          onClick={handleRetake}
+                        >
+                          {t('identity_verification.retake')}
+                        </Button>
+                      </Group>
+                    )}
+
+                    {/* Loading indicator while uploading */}
+                    {uploading === currentSlot && (
+                      <Group gap="sm" justify="center">
+                        <Loader size="sm" />
+                        <Text size="sm" c="dimmed">
+                          {t('identity_verification.uploading')}
+                        </Text>
+                      </Group>
+                    )}
+                  </Stack>
+                </FormCard>
+              )}
+            </>
+          )}
+
+          {/* Detecting state */}
+          {captureMode === 'detecting' && (
+            <Paper withBorder p="xl" radius="md">
+              <Text ta="center" c="dimmed" size="sm">
+                {t('identity_verification.detecting_camera')}
+              </Text>
+            </Paper>
+          )}
         </>
       )}
     </Stack>
-  );
-}
-
-function UploadSlotButton({
-  label,
-  file,
-  loading,
-  onClick,
-}: {
-  label: string;
-  file: UploadedFile | null;
-  loading: boolean;
-  onClick: () => void;
-}) {
-  const { t } = useTranslation();
-
-  return (
-    <Paper withBorder p="sm" radius="md">
-      <Group justify="space-between" align="center">
-        <div>
-          <Text fw={500} size="sm">
-            {label}
-          </Text>
-          {file && (
-            <Badge color="green" variant="light" size="sm" mt={4}>
-              {file.fileName}
-            </Badge>
-          )}
-        </div>
-        <Button
-          variant={file ? 'light' : 'outline'}
-          size="xs"
-          loading={loading}
-          onClick={onClick}
-          leftSection={<Camera size={14} />}
-        >
-          {file ? t('identity_verification.change_photo') : t('identity_verification.upload_photo')}
-        </Button>
-      </Group>
-      {file?.preview && (
-        <Image src={file.preview} alt={label} mah={120} mt="xs" radius="sm" fit="contain" />
-      )}
-    </Paper>
   );
 }

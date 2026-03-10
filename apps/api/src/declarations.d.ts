@@ -350,6 +350,17 @@ export interface Prescription {
   } | null;
 }
 
+export interface DniScanData {
+  tramiteNumber: string;
+  lastName: string;
+  firstName: string;
+  gender: string;
+  dniNumber: string;
+  exemplar: string;
+  birthDate: string;
+  issueDate: string;
+}
+
 export interface IdentityVerification {
   id: Id;
   userId: Id;
@@ -361,6 +372,13 @@ export interface IdentityVerification {
   rejectionReason: string | null;
   verifiedAt: Date | null;
   verifiedBy: Id | null;
+  dniScanData: DniScanData | null;
+  dniScanMatch: boolean | null;
+  dniScanErrors: string | null;
+  faceSimilarityScore: number | null;
+  faceMatch: boolean | null;
+  faceMatchError: string | null;
+  autoCheckCompletedAt: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }

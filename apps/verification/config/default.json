@@ -1,0 +1,23 @@
+{
+  "host": "localhost",
+  "port": 3032,
+  "paginate": {
+    "default": 25,
+    "max": 100
+  },
+  "authentication": {
+    "entity": "user",
+    "service": "users",
+    "secret": "pQEfj7/BoSbImgEhS+/XvDuIBS0=",
+    "authStrategies": ["jwt"],
+    "jwtOptions": {
+      "header": { "typ": "access" },
+      "audience": "https://athel.as",
+      "issuer": "feathers",
+      "algorithm": "HS256",
+      "expiresIn": "1d"
+    }
+  },
+  "postgres": "postgres://postgres:@localhost:5432/athelas_verification",
+  "mainApiUrl": "http://localhost:3030"
+}

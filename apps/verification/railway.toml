@@ -1,0 +1,11 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "pnpm --filter athelas-verification... build"
+watchPatterns = ["apps/verification/**"]
+
+[deploy]
+startCommand = "pnpm --filter athelas-verification start"
+healthcheckPath = "/healthz"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
