@@ -1,10 +1,12 @@
 {
+  "host": "HOST",
+  "port": "PORT",
+  "postgres": "DB_URL",
   "authentication": {
     "secret": "AUTH_SECRET",
     "jwtOptions": {
       "audience": "AUTH_AUDIENCE"
     }
   },
-  "postgres": "DB_URL",
   "mainApiUrl": "MAIN_API_URL"
 }

@@ -10,7 +10,8 @@ type VerificationApp = Application & {
 };
 
 const VERIFICATION_API_URL =
-  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_VERIFICATION_API_URL) || 'http://localhost:3032';
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_VERIFICATION_API_URL) ||
+  'http://localhost:3032';
 
 export function getVerificationApiUrl(): string {
   return VERIFICATION_API_URL;
