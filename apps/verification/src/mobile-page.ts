@@ -335,12 +335,12 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
           title: 'Dorso del DNI',
           introTitle: 'Dorso del DNI',
           introDesc: 'Foto del dorso donde se vea la información',
-          cameraHint: 'Encuadrá el dorso del DNI',
-          cameraHintAuto: 'Se captura automáticamente al detectar el texto',
+          cameraHint: 'Encuadrá el dorso del DNI y tocá el botón',
+          cameraHintAuto: '',
           nextTitle: 'Selfie',
           nextDesc: 'Por último, necesitamos una selfie tuya mirando a la cámara.',
           facing: 'environment',
-          autoDetect: 'text'
+          autoDetect: 'none'
         },
         {
           key: 'selfie',
