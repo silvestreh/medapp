@@ -1,0 +1,10 @@
+{
+  "authentication": {
+    "secret": "AUTH_SECRET",
+    "jwtOptions": {
+      "audience": "AUTH_AUDIENCE"
+    }
+  },
+  "postgres": "DB_URL",
+  "mainApiUrl": "MAIN_API_URL"
+}
