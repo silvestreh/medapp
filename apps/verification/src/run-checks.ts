@@ -1,8 +1,12 @@
 import multer from 'multer';
+import exifr from 'exifr';
 import { Application } from './declarations';
 import { scanDniBarcode, validateDniAgainstPersonalData, DniScanData } from './scan-dni-barcode';
 import { compareFaces } from './compare-faces';
 import logger from './logger';
+
+/** Max age in minutes for a selfie to be considered "recent" */
+const SELFIE_MAX_AGE_MINUTES = 10;
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -16,6 +20,8 @@ interface RunChecksResult {
   faceSimilarityScore: number | null;
   faceMatch: boolean | null;
   faceMatchError: string | null;
+  selfieExifDate: string | null;
+  selfieRecent: boolean | null;
 }
 
 export function setupRunChecks(app: Application): void {
@@ -78,6 +84,8 @@ export function setupRunChecks(app: Application): void {
         faceSimilarityScore: null,
         faceMatch: null,
         faceMatchError: null,
+        selfieExifDate: null,
+        selfieRecent: null,
       };
 
       // Step 1: Scan PDF417 barcode on ID front
@@ -110,7 +118,33 @@ export function setupRunChecks(app: Application): void {
         logger.error('[run-checks] Face comparison failed:', message);
       }
 
-      logger.info('[run-checks] Completed: dniMatch=%s, faceMatch=%s', result.dniScanMatch, result.faceMatch);
+      // Step 3: Check selfie EXIF data for recency
+      try {
+        const exif = await exifr.parse(selfieBuffer, ['DateTimeOriginal', 'CreateDate', 'ModifyDate']);
+        const exifDate = exif?.DateTimeOriginal || exif?.CreateDate || exif?.ModifyDate || null;
+
+        if (exifDate) {
+          const photoTime = exifDate instanceof Date ? exifDate : new Date(exifDate);
+          result.selfieExifDate = photoTime.toISOString();
+          const ageMinutes = (Date.now() - photoTime.getTime()) / 60000;
+          result.selfieRecent = ageMinutes <= SELFIE_MAX_AGE_MINUTES;
+          logger.info('[run-checks] Selfie EXIF date: %s (age: %.1f min, recent: %s)',
+            result.selfieExifDate, ageMinutes, result.selfieRecent);
+        } else {
+          // No EXIF date — camera captures from canvas (toBlob) strip EXIF.
+          // This is expected for our flow, so we don't flag it as an error.
+          result.selfieExifDate = null;
+          result.selfieRecent = null;
+          logger.info('[run-checks] No EXIF date found in selfie (expected for canvas captures)');
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        logger.warn('[run-checks] EXIF parse failed: %s', message);
+        result.selfieExifDate = null;
+        result.selfieRecent = null;
+      }
+
+      logger.info('[run-checks] Completed: dniMatch=%s, faceMatch=%s, selfieRecent=%s', result.dniScanMatch, result.faceMatch, result.selfieRecent);
       res.json(result);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);

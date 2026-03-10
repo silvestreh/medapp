@@ -1184,6 +1184,8 @@ export const en: typeof es = {
     continue_anyway: 'Continue anyway',
     rejection_dni_mismatch: 'The **DNI barcode** data does not match your profile: {{details}}',
     rejection_face_mismatch: '**Face comparison** was not successful (similarity: {{score}}, minimum required: 60%).',
+    rejection_selfie_not_recent:
+      'The **selfie** was not taken recently. Please take a new selfie at the time of verification.',
     rejection_unknown: '{{reason}}',
     intro_title: 'How does it work?',
     intro_subtitle: 'We need to verify your identity. The process takes less than a minute and you will need your ID.',

@@ -91,6 +91,9 @@ export function IdentityVerificationForm({
         if (key === 'face_mismatch') {
           return t('identity_verification.rejection_face_mismatch', { score: details });
         }
+        if (key === 'selfie_not_recent') {
+          return t('identity_verification.rejection_selfie_not_recent');
+        }
         return t('identity_verification.rejection_unknown', { reason: line });
       })
       .join('\n\n');

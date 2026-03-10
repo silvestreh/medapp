@@ -1186,8 +1186,11 @@ export const es = {
     no_barcode_warning: 'No se detectó el código de barras del DNI. Asegurate de que se vea bien el frente del DNI.',
     no_face_warning: 'No se detectó una cara en la foto. Asegurate de que la foto del DNI se vea completa.',
     continue_anyway: 'Continuar de todos modos',
-    rejection_dni_mismatch: 'Los datos del **código de barras del DNI** no coinciden con los datos de tu perfil: {{details}}',
+    rejection_dni_mismatch:
+      'Los datos del **código de barras del DNI** no coinciden con los datos de tu perfil: {{details}}',
     rejection_face_mismatch: 'La **comparación facial** no fue exitosa (similitud: {{score}}, mínimo requerido: 60%).',
+    rejection_selfie_not_recent:
+      'La **selfie** no fue tomada recientemente. Por favor tomá una nueva selfie al momento de la verificación.',
     rejection_unknown: '{{reason}}',
     intro_title: '¿Cómo funciona?',
     intro_subtitle: 'Necesitamos verificar tu identidad. El proceso dura menos de un minuto y vas a necesitar tu DNI.',

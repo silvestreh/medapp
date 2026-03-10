@@ -29,7 +29,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 32px 24px;
+      padding: 32px 24px calc(32px + env(safe-area-inset-bottom));
       max-width: 420px;
       margin: 0 auto;
       width: 100%;
@@ -65,7 +65,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 32px 24px;
+      padding: 32px 24px calc(32px + env(safe-area-inset-bottom));
       text-align: center;
       max-width: 420px;
       margin: 0 auto;
@@ -120,7 +120,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
     .camera-bottom-bar {
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      padding: 16px 20px calc(32px + env(safe-area-inset-bottom));
+      padding: 16px 20px calc(64px + env(safe-area-inset-bottom));
       background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
       display: flex;
       flex-direction: column;
@@ -190,7 +190,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
     .preview-bar {
       display: flex;
       gap: 12px;
-      padding: 16px 20px calc(32px + env(safe-area-inset-bottom));
+      padding: 16px 20px calc(64px + env(safe-area-inset-bottom));
       background: #000;
     }
     .preview-bar button {
@@ -229,7 +229,7 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 32px 24px;
+      padding: 32px 24px calc(32px + env(safe-area-inset-bottom));
       text-align: center;
     }
     .done-screen .check-badge {
@@ -720,19 +720,25 @@ function generateMobileHtml(token: string, apiBaseUrl: string): string {
               html += '<div class="detect-pill scanning">Buscando...</div>';
             }
             html += '<button class="capture-btn" onclick="window.__capture()"></button>';
-            html += '<div class="camera-secondary-actions">';
-            html += '<input type="file" id="file-input" accept="image/*" capture="' + (isSelfie ? 'user' : 'environment') + '" style="display:none" onchange="window.__handleFile(this)">';
-            html += '<button onclick="document.getElementById(\\'file-input\\').click()">Subir desde galería</button>';
-            html += '</div>';
+            if (!isSelfie) {
+              html += '<div class="camera-secondary-actions">';
+              html += '<input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="window.__handleFile(this)">';
+              html += '<button onclick="document.getElementById(\\'file-input\\').click()">Subir desde galería</button>';
+              html += '</div>';
+            }
             html += '</div>';
             html += '</div>';
           } else {
             // No camera fallback
             html += '<div class="fallback-upload">';
             html += '<h2>' + step.title + '</h2>';
-            html += '<p>' + step.cameraHint + '</p>';
-            html += '<input type="file" id="file-input" accept="image/*" capture="' + (isSelfie ? 'user' : 'environment') + '" style="display:none" onchange="window.__handleFile(this)">';
-            html += '<button class="btn btn-primary" onclick="document.getElementById(\\'file-input\\').click()">Tomar foto</button>';
+            if (isSelfie) {
+              html += '<p>Se necesita acceso a la cámara para tomar la selfie. Por favor habilitá el acceso a la cámara en los ajustes de tu navegador.</p>';
+            } else {
+              html += '<p>' + step.cameraHint + '</p>';
+              html += '<input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="window.__handleFile(this)">';
+              html += '<button class="btn btn-primary" onclick="document.getElementById(\\'file-input\\').click()">Tomar foto</button>';
+            }
             html += '</div>';
           }
         }

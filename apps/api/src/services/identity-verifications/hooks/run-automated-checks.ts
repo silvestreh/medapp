@@ -100,6 +100,8 @@ export const runAutomatedChecks = (): Hook => {
           faceMatch: result.faceMatch,
           faceSimilarityScore: result.faceSimilarityScore,
           faceMatchError: result.faceMatchError,
+          selfieExifDate: result.selfieExifDate,
+          selfieRecent: result.selfieRecent,
         }));
         updates.dniScanData = result.dniScanData;
         updates.dniScanMatch = result.dniScanMatch;
@@ -107,6 +109,8 @@ export const runAutomatedChecks = (): Hook => {
         updates.faceSimilarityScore = result.faceSimilarityScore;
         updates.faceMatch = result.faceMatch;
         updates.faceMatchError = result.faceMatchError;
+        updates.selfieExifDate = result.selfieExifDate;
+        updates.selfieRecent = result.selfieRecent;
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         const axiosErr = err as any;
@@ -140,6 +144,10 @@ export const runAutomatedChecks = (): Hook => {
         const score = updates.faceSimilarityScore;
         const pct = typeof score === 'number' ? `${(score * 100).toFixed(1)}%` : 'unknown';
         rejectionReasons.push(`face_mismatch:${pct}`);
+      }
+
+      if (updates.selfieRecent === false) {
+        rejectionReasons.push(`selfie_not_recent:${updates.selfieExifDate}`);
       }
 
       if (rejectionReasons.length > 0) {
