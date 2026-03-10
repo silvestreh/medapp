@@ -17,6 +17,7 @@ import channels from './channels';
 import authentication from './authentication';
 import { setupUploadProxy } from './upload-proxy';
 import { setupMobilePage } from './mobile-page';
+import { setupValidatePhoto } from './validate-photo';
 
 const app: Application = express(feathers());
 
@@ -35,9 +36,10 @@ app.get('/healthz', (_req: any, res: any) => {
   res.json({ ok: true });
 });
 
-// Mobile page and upload proxy (before feathers middleware)
+// Mobile page, upload proxy, and photo validation (before feathers middleware)
 setupMobilePage(app);
 setupUploadProxy(app);
+setupValidatePhoto(app);
 
 app.configure(express.rest());
 app.configure(socketio((io) => {

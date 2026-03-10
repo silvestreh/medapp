@@ -8,6 +8,7 @@ import { useFeathers } from '~/components/provider';
 import { SectionTitle, FormCard } from '~/components/forms/styles';
 import { CameraCapture } from '~/components/camera-capture';
 import { QrVerificationSession } from '~/components/qr-verification-session';
+import { getVerificationApiUrl } from '~/verification-feathers';
 
 type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected';
 
@@ -103,13 +104,17 @@ export function IdentityVerificationForm({
   }, [client]);
 
   const validateIdFrontPhoto = useCallback(
-    async (fileUrl: string): Promise<PhotoValidation | null> => {
+    async (blob: Blob): Promise<PhotoValidation | null> => {
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch('/api/identity-verifications/validate-photo', {
+        const formData = new FormData();
+        formData.append('file', blob, 'idFront.jpg');
+
+        const verificationUrl = getVerificationApiUrl();
+        const res = await fetch(`${verificationUrl}/validate-photo`, {
           method: 'POST',
-          headers: { ...headers, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileUrl }),
+          headers,
+          body: formData,
         });
 
         if (!res.ok) return null;
@@ -184,7 +189,7 @@ export function IdentityVerificationForm({
         // Validate ID front photo
         if (slot === 'idFront') {
           setValidating(true);
-          const validation = await validateIdFrontPhoto(url);
+          const validation = await validateIdFrontPhoto(blob);
           setValidating(false);
 
           if (validation) {
