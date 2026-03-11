@@ -1,5 +1,6 @@
 [build]
 builder = "NIXPACKS"
+installCommand = "pnpm install"
 buildCommand = "pnpm --filter athelas-verification... build"
 watchPatterns = ["apps/verification/**"]
 
