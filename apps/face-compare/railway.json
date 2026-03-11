@@ -6,16 +6,26 @@
       "providers": ["python"],
       "phases": {
         "setup": {
-          "aptPkgs": [
-            "libgl1",
-            "libglib2.0-0",
-            "libxcb1",
-            "libx11-6",
-            "libxext6",
-            "libsm6",
-            "libice6",
-            "libxrender1",
+          "nixPkgs": [
+            "libGL",
+            "glib",
+            "xorg.libxcb",
+            "xorg.libX11",
+            "xorg.libXext",
+            "xorg.libSM",
+            "xorg.libICE",
+            "xorg.libXrender",
             "ffmpeg"
+          ],
+          "nixLibs": [
+            "libGL",
+            "glib",
+            "xorg.libxcb",
+            "xorg.libX11",
+            "xorg.libXext",
+            "xorg.libSM",
+            "xorg.libICE",
+            "xorg.libXrender"
           ]
         }
       }
