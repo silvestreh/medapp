@@ -3,7 +3,22 @@
   "build": {
     "builder": "NIXPACKS",
     "nixpacksPlan": {
-      "providers": ["python"]
+      "providers": ["python"],
+      "phases": {
+        "setup": {
+          "aptPkgs": [
+            "libgl1-mesa-glx",
+            "libglib2.0-0",
+            "libxcb1",
+            "libx11-6",
+            "libxext6",
+            "libsm6",
+            "libice6",
+            "libxrender1",
+            "ffmpeg"
+          ]
+        }
+      }
     },
     "watchPatterns": ["apps/face-compare/**"]
   },
