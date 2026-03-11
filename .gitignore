@@ -38,6 +38,11 @@ apps/colmed-*
 # Uploads (dev)
 public/uploads
 
+# Python
+__pycache__
+*.pyc
+venv/
+
 # Misc
 .DS_Store
 *.pem
