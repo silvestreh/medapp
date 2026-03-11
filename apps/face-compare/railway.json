@@ -1,41 +1,11 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS",
-    "nixpacksPlan": {
-      "providers": ["python"],
-      "phases": {
-        "setup": {
-          "nixPkgs": [
-            "python311",
-            "python311Packages.pip",
-            "libGL",
-            "glib",
-            "xorg.libxcb",
-            "xorg.libX11",
-            "xorg.libXext",
-            "xorg.libSM",
-            "xorg.libICE",
-            "xorg.libXrender",
-            "ffmpeg"
-          ],
-          "nixLibs": [
-            "libGL",
-            "glib",
-            "xorg.libxcb",
-            "xorg.libX11",
-            "xorg.libXext",
-            "xorg.libSM",
-            "xorg.libICE",
-            "xorg.libXrender"
-          ]
-        }
-      }
-    },
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile",
     "watchPatterns": ["apps/face-compare/**"]
   },
   "deploy": {
-    "startCommand": "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
