@@ -107,7 +107,6 @@ export const runAutomatedChecks = (): Hook => {
             callback_key: faceCompareApiKey,
           },
           {
-            headers: { 'x-api-key': faceCompareApiKey },
             timeout: 10000, // Just submitting — should be fast
           },
         );

@@ -16,27 +16,15 @@ import cv2
 import numpy as np
 import requests as http_requests
 from deepface import DeepFace
-from fastapi import Depends, FastAPI, HTTPException, Security
-from fastapi.security import APIKeyHeader
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, HttpUrl
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-API_KEY = os.environ.get("API_KEY", "")
 UPLOADS_API_KEY = os.environ.get("UPLOADS_API_KEY", "")
 
 app = FastAPI(title="Face Compare Service")
-
-api_key_header = APIKeyHeader(name="x-api-key")
-
-
-def _verify_api_key(key: str = Security(api_key_header)) -> str:
-    if not API_KEY:
-        raise HTTPException(status_code=500, detail="API_KEY not configured")
-    if key != API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid API key")
-    return key
 
 
 # ---------------------------------------------------------------------------
@@ -375,7 +363,7 @@ def _compare_faces(id_img: np.ndarray, frame_img: np.ndarray) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 @app.post("/compare", response_model=CompareResponse)
-def compare(req: CompareRequest, _key: str = Depends(_verify_api_key)):
+def compare(req: CompareRequest):
     """Synchronous face comparison (backward compatible)."""
     logger.info("Fetching and decrypting DNI image")
     id_bytes = _fetch_file(str(req.id_url))
@@ -439,7 +427,7 @@ def compare(req: CompareRequest, _key: str = Depends(_verify_api_key)):
 
 
 @app.post("/compare-async", response_model=JobSubmitResponse)
-async def compare_async(req: AsyncCompareRequest, _key: str = Depends(_verify_api_key)):
+async def compare_async(req: AsyncCompareRequest):
     """Submit a face comparison job to the queue. Returns immediately with job_id."""
     job_id = str(uuid.uuid4())
 
@@ -472,7 +460,7 @@ async def compare_async(req: AsyncCompareRequest, _key: str = Depends(_verify_ap
 
 
 @app.get("/jobs/{job_id}")
-def get_job(job_id: str, _key: str = Depends(_verify_api_key)):
+def get_job(job_id: str):
     """Check job status (fallback, not normally needed)."""
     job = jobs.get(job_id)
     if not job:
