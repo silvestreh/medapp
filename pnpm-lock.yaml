@@ -334,6 +334,124 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
 
+  apps/kyc:
+    dependencies:
+      '@athelas/encryption':
+        specifier: workspace:*
+        version: link:../../packages/encryption
+      '@feathersjs/authentication':
+        specifier: ^4.5.18
+        version: 4.5.18
+      '@feathersjs/configuration':
+        specifier: ^4.5.17
+        version: 4.5.17
+      '@feathersjs/errors':
+        specifier: ^4.5.17
+        version: 4.5.19
+      '@feathersjs/express':
+        specifier: ^4.5.18
+        version: 4.5.18
+      '@feathersjs/feathers':
+        specifier: ^4.5.17
+        version: 4.5.17
+      '@feathersjs/socketio':
+        specifier: ^4.5.18
+        version: 4.5.19
+      '@feathersjs/transport-commons':
+        specifier: ^4.5.17
+        version: 4.5.19
+      axios:
+        specifier: ^1.7.7
+        version: 1.9.0
+      canvas:
+        specifier: ^3.2.1
+        version: 3.2.1
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.5
+      dayjs:
+        specifier: ^1.11.13
+        version: 1.11.13
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.5.0
+      exifr:
+        specifier: ^7.1.3
+        version: 7.1.3
+      face-api.js:
+        specifier: ^0.22.2
+        version: 0.22.2
+      feathers-hooks-common:
+        specifier: ^6.1.5
+        version: 6.1.5
+      feathers-sequelize:
+        specifier: ^6.4.0
+        version: 6.4.0
+      form-data:
+        specifier: ^4.0.3
+        version: 4.0.3
+      helmet:
+        specifier: ^5.1.1
+        version: 5.1.1
+      multer:
+        specifier: ^2.0.2
+        version: 2.0.2
+      pg:
+        specifier: ^8.13.1
+        version: 8.16.0
+      sequelize:
+        specifier: ^6.37.5
+        version: 6.37.7(pg@8.16.0)
+      winston:
+        specifier: ^3.16.0
+        version: 3.17.0
+      zxing-wasm:
+        specifier: ^3.0.1
+        version: 3.0.1(@types/emscripten@1.41.5)
+    devDependencies:
+      '@feathersjs/authentication-client':
+        specifier: ^4.5.18
+        version: 4.5.18
+      '@feathersjs/rest-client':
+        specifier: ^4.5.17
+        version: 4.5.18
+      '@tailwindcss/cli':
+        specifier: ^4.2.1
+        version: 4.2.1
+      '@types/cors':
+        specifier: ^2.8.17
+        version: 2.8.19
+      '@types/mocha':
+        specifier: ^10.0.9
+        version: 10.0.10
+      '@types/multer':
+        specifier: ^1.4.12
+        version: 1.4.13
+      '@types/node':
+        specifier: ^22.9.0
+        version: 22.19.13
+      mocha:
+        specifier: ^10.7.3
+        version: 10.8.2
+      shx:
+        specifier: ^0.3.4
+        version: 0.3.4
+      source-map-support:
+        specifier: ^0.5.21
+        version: 0.5.21
+      tailwindcss:
+        specifier: ^4.2.1
+        version: 4.2.1
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@swc/core@1.11.31(@swc/helpers@0.5.19))(@types/node@22.19.13)(typescript@5.9.3)
+      ts-node-dev:
+        specifier: ^2.0.0
+        version: 2.0.0(@swc/core@1.11.31(@swc/helpers@0.5.19))(@types/node@22.19.13)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
   apps/scrapers:
     dependencies:
       cli-progress:
@@ -602,124 +720,6 @@ importers:
       vite-tsconfig-paths:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.8.3)(vite@6.3.5(@types/node@25.2.3)(jiti@2.6.1)(less@2.7.1)(lightningcss@1.31.1)(sugarss@4.0.1(postcss@8.5.5))(terser@5.42.0)(tsx@4.21.0)(yaml@2.8.0))
-
-  apps/verification:
-    dependencies:
-      '@athelas/encryption':
-        specifier: workspace:*
-        version: link:../../packages/encryption
-      '@feathersjs/authentication':
-        specifier: ^4.5.18
-        version: 4.5.18
-      '@feathersjs/configuration':
-        specifier: ^4.5.17
-        version: 4.5.17
-      '@feathersjs/errors':
-        specifier: ^4.5.17
-        version: 4.5.19
-      '@feathersjs/express':
-        specifier: ^4.5.18
-        version: 4.5.18
-      '@feathersjs/feathers':
-        specifier: ^4.5.17
-        version: 4.5.17
-      '@feathersjs/socketio':
-        specifier: ^4.5.18
-        version: 4.5.19
-      '@feathersjs/transport-commons':
-        specifier: ^4.5.17
-        version: 4.5.19
-      axios:
-        specifier: ^1.7.7
-        version: 1.9.0
-      canvas:
-        specifier: ^3.2.1
-        version: 3.2.1
-      cors:
-        specifier: ^2.8.5
-        version: 2.8.5
-      dayjs:
-        specifier: ^1.11.13
-        version: 1.11.13
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.5.0
-      exifr:
-        specifier: ^7.1.3
-        version: 7.1.3
-      face-api.js:
-        specifier: ^0.22.2
-        version: 0.22.2
-      feathers-hooks-common:
-        specifier: ^6.1.5
-        version: 6.1.5
-      feathers-sequelize:
-        specifier: ^6.4.0
-        version: 6.4.0
-      form-data:
-        specifier: ^4.0.3
-        version: 4.0.3
-      helmet:
-        specifier: ^5.1.1
-        version: 5.1.1
-      multer:
-        specifier: ^2.0.2
-        version: 2.0.2
-      pg:
-        specifier: ^8.13.1
-        version: 8.16.0
-      sequelize:
-        specifier: ^6.37.5
-        version: 6.37.7(pg@8.16.0)
-      winston:
-        specifier: ^3.16.0
-        version: 3.17.0
-      zxing-wasm:
-        specifier: ^3.0.1
-        version: 3.0.1(@types/emscripten@1.41.5)
-    devDependencies:
-      '@feathersjs/authentication-client':
-        specifier: ^4.5.18
-        version: 4.5.18
-      '@feathersjs/rest-client':
-        specifier: ^4.5.17
-        version: 4.5.18
-      '@tailwindcss/cli':
-        specifier: ^4.2.1
-        version: 4.2.1
-      '@types/cors':
-        specifier: ^2.8.17
-        version: 2.8.19
-      '@types/mocha':
-        specifier: ^10.0.9
-        version: 10.0.10
-      '@types/multer':
-        specifier: ^1.4.12
-        version: 1.4.13
-      '@types/node':
-        specifier: ^22.9.0
-        version: 22.19.13
-      mocha:
-        specifier: ^10.7.3
-        version: 10.8.2
-      shx:
-        specifier: ^0.3.4
-        version: 0.3.4
-      source-map-support:
-        specifier: ^0.5.21
-        version: 0.5.21
-      tailwindcss:
-        specifier: ^4.2.1
-        version: 4.2.1
-      ts-node:
-        specifier: ^10.9.2
-        version: 10.9.2(@swc/core@1.11.31(@swc/helpers@0.5.19))(@types/node@22.19.13)(typescript@5.9.3)
-      ts-node-dev:
-        specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.11.31(@swc/helpers@0.5.19))(@types/node@22.19.13)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.6.3
-        version: 5.9.3
 
   packages/brand: {}
 
