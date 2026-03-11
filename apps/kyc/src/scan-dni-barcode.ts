@@ -24,7 +24,7 @@ export interface DniScanData {
  * birthDate and issueDate are in DD/MM/YYYY format.
  */
 export async function scanDniBarcode(imageBuffer: Buffer): Promise<DniScanData> {
-  const { createCanvas, loadImage } = require('canvas');
+  const { createCanvas, loadImage } = require('@napi-rs/canvas');
   const { readBarcodesFromImageData } = require('zxing-wasm/reader');
 
   const image = await loadImage(imageBuffer);

@@ -46,7 +46,7 @@ export function setupValidatePhoto(app: Application): void {
 
       // Check for PDF417 barcode
       try {
-        const { createCanvas, loadImage } = require('canvas');
+        const { createCanvas, loadImage } = require('@napi-rs/canvas');
         const { readBarcodesFromImageData } = require('zxing-wasm/reader');
 
         const image = await loadImage(buffer);

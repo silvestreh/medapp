@@ -45,3 +45,4 @@ public/uploads
 .temp
 *.tsbuildinfo
 *.enc
+lib/

@@ -7,7 +7,7 @@ let canvasModule: any;
 function ensureInitialized(): void {
   if (initialized) return;
 
-  canvasModule = require('canvas');
+  canvasModule = require('@napi-rs/canvas');
   const { Canvas, Image, ImageData: CanvasImageData } = canvasModule;
 
   faceapi = require('face-api.js');
