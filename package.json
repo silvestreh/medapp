@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "pnpm --parallel dev",
+    "dev": "pnpm --parallel --filter='!@athelas/face-compare' dev",
+    "dev:face-compare": "docker build -t face-compare apps/face-compare && docker run --rm -p 8000:8000 --add-host=host.docker.internal:host-gateway --env-file apps/face-compare/.env face-compare",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "clean": "pnpm -r clean"

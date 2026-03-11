@@ -51,6 +51,7 @@ app.get('/healthz', (_req: any, res: any) => {
   try {
     const apiKey = req.headers['x-api-key'];
     const expectedKey = process.env.UPLOADS_API_KEY;
+
     if (!expectedKey || apiKey !== expectedKey) {
       return res.status(401).json({ message: 'Unauthorized' });
     }

@@ -16,7 +16,8 @@ import cv2
 import numpy as np
 import requests as http_requests
 from deepface import DeepFace
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, HttpUrl
 
 logging.basicConfig(level=logging.INFO)
@@ -25,6 +26,18 @@ logger = logging.getLogger(__name__)
 UPLOADS_API_KEY = os.environ.get("UPLOADS_API_KEY", "")
 
 app = FastAPI(title="Face Compare Service")
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(">>> %s %s", request.method, request.url.path)
+    try:
+        response = await call_next(request)
+        logger.info("<<< %s %s -> %d", request.method, request.url.path, response.status_code)
+        return response
+    except Exception as e:
+        logger.exception("!!! %s %s unhandled error: %s", request.method, request.url.path, e)
+        return JSONResponse(status_code=500, content={"detail": str(e)})
 
 
 # ---------------------------------------------------------------------------
@@ -263,14 +276,22 @@ def _fetch_file(url: str) -> bytes:
     if not UPLOADS_API_KEY:
         raise ValueError("UPLOADS_API_KEY not configured")
 
-    resp = http_requests.get(
-        str(url),
-        headers={"x-api-key": UPLOADS_API_KEY},
-        timeout=30,
-    )
+    logger.info("Fetching file: %s", url)
+    try:
+        resp = http_requests.get(
+            str(url),
+            headers={"x-api-key": UPLOADS_API_KEY},
+            timeout=30,
+        )
+    except Exception as e:
+        logger.error("Failed to fetch %s: %s", url, e)
+        raise ValueError(f"Network error fetching file: {e}")
+
     if resp.status_code != 200:
+        logger.error("Failed to fetch %s: status=%d body=%s", url, resp.status_code, resp.text[:500])
         raise ValueError(f"Failed to download from URL (status {resp.status_code})")
 
+    logger.info("Fetched %s: %d bytes", url, len(resp.content))
     return resp.content
 
 
@@ -429,6 +450,8 @@ def compare(req: CompareRequest):
 @app.post("/compare-async", response_model=JobSubmitResponse)
 async def compare_async(req: AsyncCompareRequest):
     """Submit a face comparison job to the queue. Returns immediately with job_id."""
+    logger.info("compare-async request: id_url=%s video_url=%s progress_url=%s verification_id=%s",
+                req.id_url, req.video_url, req.progress_url, req.verification_id)
     job_id = str(uuid.uuid4())
 
     with queued_lock:
