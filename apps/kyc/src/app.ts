@@ -20,6 +20,7 @@ import { setupUploadProxy } from './upload-proxy';
 import { setupMobilePage } from './mobile-page';
 import { setupValidatePhoto } from './validate-photo';
 import { setupRunChecks } from './run-checks';
+import { setupAutoCheckProgress } from './auto-check-progress';
 import { decryptFileFromDisk } from './file-storage';
 
 const app: Application = express(feathers());
@@ -80,6 +81,7 @@ setupMobilePage(app);
 setupUploadProxy(app);
 setupValidatePhoto(app);
 setupRunChecks(app);
+setupAutoCheckProgress(app);
 
 app.configure(express.rest());
 app.configure(socketio((io) => {

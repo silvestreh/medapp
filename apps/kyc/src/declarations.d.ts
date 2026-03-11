@@ -41,6 +41,7 @@ export interface IdentityVerification {
   faceMatch: boolean | null;
   faceMatchError: string | null;
   autoCheckCompletedAt: Date | null;
+  autoCheckProgress: { step: string; current: number | null; total: number | null; position: number | null } | null;
   clientIp: string | null;
   clientUserAgent: string | null;
   deviceFingerprint: Record<string, unknown> | null;

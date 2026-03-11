@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Button, Group, Image, Loader, Paper, SegmentedControl, Stack, Stepper, Text } from '@mantine/core';
+import { Alert, Button, Group, Image, Loader, Paper, Progress, SegmentedControl, Stack, Stepper, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -13,9 +13,17 @@ import { getVerificationApiUrl } from '~/verification-feathers';
 
 type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected';
 
+interface AutoCheckProgress {
+  step: string;
+  current: number | null;
+  total: number | null;
+  position: number | null;
+}
+
 interface IdentityVerificationFormProps {
   currentStatus: VerificationStatus;
   rejectionReason?: string | null;
+  autoCheckProgress?: AutoCheckProgress | null;
   onSubmitted: () => void;
   autoChecksRunning?: boolean;
 }
@@ -61,6 +69,7 @@ function slotToTranslationKey(slot: UploadSlot): string {
 export function IdentityVerificationForm({
   currentStatus,
   rejectionReason,
+  autoCheckProgress,
   onSubmitted,
   autoChecksRunning = false,
 }: IdentityVerificationFormProps) {
@@ -332,6 +341,29 @@ export function IdentityVerificationForm({
             ? t('identity_verification.auto_checking')
             : t('identity_verification.status_pending')
           }
+          {autoChecksRunning && autoCheckProgress && (
+            <Stack gap="xs" mt="sm">
+              <Text size="sm">
+                {autoCheckProgress.step === 'queued' && autoCheckProgress.position != null && (
+                  autoCheckProgress.position === 0
+                    ? t('identity_verification.progress_queued_next')
+                    : t('identity_verification.progress_queued', { position: autoCheckProgress.position })
+                )}
+                {autoCheckProgress.step !== 'queued' && (
+                  t(`identity_verification.progress_${autoCheckProgress.step}`)
+                )}
+              </Text>
+              {autoCheckProgress.step === 'comparing_frame' &&
+                autoCheckProgress.current != null &&
+                autoCheckProgress.total != null && (
+                <Progress
+                  value={(autoCheckProgress.current / autoCheckProgress.total) * 100}
+                  size="sm"
+                  animated
+                />
+              )}
+            </Stack>
+          )}
         </Alert>
       )}
 

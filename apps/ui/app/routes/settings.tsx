@@ -140,6 +140,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     let identityVerification: {
       status: 'pending' | 'verified' | 'rejected';
       rejectionReason: string | null;
+      autoCheckCompletedAt: string | null;
+      autoCheckProgress: { step: string; current: number | null; total: number | null; position: number | null } | null;
     } | null = null;
     if (isMedic) {
       try {
@@ -151,6 +153,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           identityVerification = {
             status: ivList[0].status,
             rejectionReason: ivList[0].rejectionReason || null,
+            autoCheckCompletedAt: ivList[0].autoCheckCompletedAt || null,
+            autoCheckProgress: ivList[0].autoCheckProgress || null,
           };
         }
       } catch {

@@ -15,8 +15,23 @@ export default function SettingsIdVerification() {
   }, [revalidator]);
 
   const status = parentData?.identityVerification?.status;
+  const autoCheckCompletedAt = parentData?.identityVerification?.autoCheckCompletedAt;
 
-  // Poll every 3s while auto-checks are running, stop when status changes or after 60s
+  // Auto-start polling if we land on the page while checks are still running
+  useEffect(() => {
+    if (status === 'pending' && !autoCheckCompletedAt) {
+      setAutoChecksRunning(true);
+    }
+  }, [status, autoCheckCompletedAt]);
+
+  // Stop polling when checks complete
+  useEffect(() => {
+    if (autoChecksRunning && autoCheckCompletedAt) {
+      setAutoChecksRunning(false);
+    }
+  }, [autoChecksRunning, autoCheckCompletedAt]);
+
+  // Poll every 3s while auto-checks are running, stop after 180s
   useEffect(() => {
     if (!autoChecksRunning) return;
 
@@ -31,7 +46,7 @@ export default function SettingsIdVerification() {
 
     const timeout = setTimeout(() => {
       setAutoChecksRunning(false);
-    }, 60000);
+    }, 180000);
 
     return () => {
       clearInterval(interval);
@@ -45,6 +60,7 @@ export default function SettingsIdVerification() {
     <IdentityVerificationForm
       currentStatus={status ?? 'none'}
       rejectionReason={parentData.identityVerification?.rejectionReason}
+      autoCheckProgress={parentData.identityVerification?.autoCheckProgress}
       onSubmitted={handleSubmitted}
       autoChecksRunning={autoChecksRunning}
     />

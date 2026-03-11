@@ -88,6 +88,10 @@ export default function (app: Application): typeof Model {
       type: DataTypes.DATE,
       allowNull: true,
     },
+    autoCheckProgress: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+    },
     // Forensic / audit fields
     clientIp: {
       type: DataTypes.STRING,
