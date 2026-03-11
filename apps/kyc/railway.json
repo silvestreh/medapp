@@ -1,0 +1,14 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "RAILPACK",
+    "installCommand": "pnpm install",
+    "buildCommand": "pnpm --filter athelas-kyc... build",
+    "watchPatterns": ["apps/kyc/**"]
+  },
+  "deploy": {
+    "startCommand": "pnpm --filter athelas-kyc start",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
