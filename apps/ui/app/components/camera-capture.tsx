@@ -330,6 +330,8 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
           videoRef.current.srcObject = stream;
           videoRef.current.play().then(() => {
             if (active) startAutoDetection();
+          }).catch(() => {
+            // Playback aborted — component likely unmounted
           });
         }
       } catch (err: unknown) {
@@ -370,6 +372,8 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
           videoRef.current.srcObject = stream;
           videoRef.current.play().then(() => {
             startAutoDetection();
+          }).catch(() => {
+            // Playback aborted
           });
         }
       } catch (err: unknown) {
