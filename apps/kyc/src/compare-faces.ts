@@ -87,7 +87,7 @@ export async function compareFaces(
 
   const distance = faceapi.euclideanDistance(idDescriptor, selfieDescriptor);
   const similarity = Math.max(0, 1 - distance);
-  const match = distance < 0.6;
+  const match = distance < 0.5;
 
   return { similarity, match };
 }
