@@ -45,9 +45,15 @@ app.get('/healthz', (_req: any, res: any) => {
   res.json({ ok: true });
 });
 
-// Serve decrypted uploads (auth required via session token or JWT)
+// Serve decrypted uploads (requires API key for service-to-service access)
 (app as any).get('/uploads/:filename', async (req: any, res: any) => {
   try {
+    const apiKey = req.headers['x-api-key'];
+    const expectedKey = process.env.UPLOADS_API_KEY;
+    if (!expectedKey || apiKey !== expectedKey) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
     const uploadsDir = app.get('uploads')?.dir || './uploads';
     const filename = req.params.filename;
 
@@ -55,6 +61,7 @@ app.get('/healthz', (_req: any, res: any) => {
     const ext = filename.replace(/\.enc$/, '').split('.').pop();
     const mimeMap: Record<string, string> = {
       jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
+      webm: 'video/webm', mp4: 'video/mp4',
     };
     const contentType = mimeMap[ext] || 'application/octet-stream';
 

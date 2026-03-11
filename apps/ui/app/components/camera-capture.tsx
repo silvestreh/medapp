@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Badge, Button, Group, Paper, Stack, Text } from '@mantine/core';
+import { Badge, Button, Group, Paper, Progress, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { Camera, RotateCcw, Check } from 'lucide-react';
+import { Camera, RotateCcw, Check, Video } from 'lucide-react';
 
 type AutoDetectMode = 'barcode' | 'face' | 'text' | 'none';
 
@@ -12,6 +12,8 @@ interface CameraCaptureProps {
   label: string;
   autoDetect?: AutoDetectMode;
 }
+
+const VIDEO_RECORD_DURATION_MS = 2000;
 
 // ── Lazy-loaded detection engines ──
 
@@ -158,10 +160,14 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanIdRef = useRef<number | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
   const [captured, setCaptured] = useState<string | null>(null);
   const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [detectStatus, setDetectStatus] = useState<'' | 'scanning' | 'detected'>('');
+  const [detectStatus, setDetectStatus] = useState<'' | 'scanning' | 'detected' | 'recording'>('');
+  const [recordProgress, setRecordProgress] = useState(0);
+
+  const isVideoMode = autoDetect === 'face';
 
   const stopScanning = useCallback(() => {
     if (scanIdRef.current !== null) {
@@ -196,6 +202,60 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
       'image/jpeg',
       0.9
     );
+  }, [stopScanning]);
+
+  const doVideoRecord = useCallback(() => {
+    stopScanning();
+    const stream = streamRef.current;
+    if (!stream) return;
+
+    setDetectStatus('recording');
+    setRecordProgress(0);
+
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+      ? 'video/webm;codecs=vp9'
+      : 'video/webm';
+
+    const recorder = new MediaRecorder(stream, { mimeType });
+    recorderRef.current = recorder;
+    const chunks: Blob[] = [];
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunks.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      recorderRef.current = null;
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const previewUrl = URL.createObjectURL(blob);
+      setCaptured(previewUrl);
+      setCapturedBlob(blob);
+      setDetectStatus('');
+      setRecordProgress(0);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+
+    recorder.start();
+
+    // Progress animation
+    const startTime = Date.now();
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min((elapsed / VIDEO_RECORD_DURATION_MS) * 100, 100);
+      setRecordProgress(progress);
+      if (elapsed >= VIDEO_RECORD_DURATION_MS) {
+        clearInterval(progressInterval);
+      }
+    }, 50);
+
+    setTimeout(() => {
+      clearInterval(progressInterval);
+      if (recorder.state === 'recording') {
+        recorder.stop();
+      }
+    }, VIDEO_RECORD_DURATION_MS);
   }, [stopScanning]);
 
   const startAutoDetection = useCallback(() => {
@@ -275,14 +335,14 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
           scanIdRef.current = requestAnimationFrame(scanFrame);
         });
       } else if (autoDetect === 'face' && faceDetector) {
-        // Real face detection via MediaPipe
+        // Real face detection via MediaPipe — triggers video recording
         const found = faceDetector.detect(vid);
         if (!streamRef.current) return;
         if (found) {
           consecutiveDetections++;
           if (consecutiveDetections >= requiredDetections) {
             setDetectStatus('detected');
-            setTimeout(doCapture, 300);
+            setTimeout(doVideoRecord, 300);
             return;
           }
         } else {
@@ -311,7 +371,7 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
     };
 
     scanIdRef.current = requestAnimationFrame(scanFrame);
-  }, [autoDetect, doCapture, capturedBlob]);
+  }, [autoDetect, doCapture, doVideoRecord, capturedBlob]);
 
   useEffect(() => {
     let active = true;
@@ -346,6 +406,9 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
     return () => {
       active = false;
       stopScanning();
+      if (recorderRef.current && recorderRef.current.state === 'recording') {
+        recorderRef.current.stop();
+      }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
@@ -354,8 +417,12 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
   }, [facingMode, startAutoDetection, stopScanning]);
 
   const handleCapture = useCallback(() => {
-    doCapture();
-  }, [doCapture]);
+    if (isVideoMode) {
+      doVideoRecord();
+    } else {
+      doCapture();
+    }
+  }, [isVideoMode, doCapture, doVideoRecord]);
 
   const handleRetake = useCallback(() => {
     setCaptured(null);
@@ -455,13 +522,34 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
                   {t('identity_verification.auto_detected')}
                 </Badge>
               )}
+              {detectStatus === 'recording' && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: 12,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
+                }}>
+                  <Badge color="red" variant="filled" size="lg">
+                    {t('identity_verification.recording_video')}
+                  </Badge>
+                  <Progress value={recordProgress} size="xs" color="red" w={120} />
+                </div>
+              )}
             </div>
             <Group>
               <Button
-                leftSection={<Camera size={16} />}
+                leftSection={isVideoMode ? <Video size={16} /> : <Camera size={16} />}
                 onClick={handleCapture}
+                disabled={detectStatus === 'recording'}
               >
-                {t('identity_verification.capture')}
+                {isVideoMode
+                  ? t('identity_verification.record_video')
+                  : t('identity_verification.capture')
+                }
               </Button>
               <Button variant="light" onClick={onCancel}>
                 {t('common.cancel')}
@@ -472,16 +560,33 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
 
         {captured && (
           <>
-            <img
-              src={captured}
-              alt={label}
-              style={{
-                width: '100%',
-                maxHeight: 300,
-                borderRadius: 8,
-                objectFit: 'contain',
-              }}
-            />
+            {isVideoMode && (
+              <video
+                src={captured}
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                  width: '100%',
+                  maxHeight: 300,
+                  borderRadius: 8,
+                  objectFit: 'contain',
+                }}
+              />
+            )}
+            {!isVideoMode && (
+              <img
+                src={captured}
+                alt={label}
+                style={{
+                  width: '100%',
+                  maxHeight: 300,
+                  borderRadius: 8,
+                  objectFit: 'contain',
+                }}
+              />
+            )}
             <Group>
               <Button
                 color="green"

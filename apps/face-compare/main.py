@@ -1,4 +1,3 @@
-import hashlib
 import io
 import logging
 import os
@@ -12,17 +11,28 @@ import av
 import cv2
 import numpy as np
 import requests as http_requests
-from Crypto.Cipher import AES
 from deepface import DeepFace
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Security
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, HttpUrl
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY", "")
+API_KEY = os.environ.get("API_KEY", "")
+UPLOADS_API_KEY = os.environ.get("UPLOADS_API_KEY", "")
 
 app = FastAPI(title="Face Compare Service")
+
+api_key_header = APIKeyHeader(name="x-api-key")
+
+
+def _verify_api_key(key: str = Security(api_key_header)) -> str:
+    if not API_KEY:
+        raise HTTPException(status_code=500, detail="API_KEY not configured")
+    if key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    return key
 
 
 # ---------------------------------------------------------------------------
@@ -54,44 +64,23 @@ class CompareResponse(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _derive_key(passphrase: str) -> bytes:
-    """Derive a 32-byte key via SHA-256, matching the existing Node.js encryption."""
-    return hashlib.sha256(passphrase.encode("utf-8")).digest()
+def _fetch_file(url: str) -> bytes:
+    """Fetch a file from the KYC service's /uploads endpoint (which decrypts and serves cleartext)."""
+    if not UPLOADS_API_KEY:
+        raise HTTPException(status_code=500, detail="UPLOADS_API_KEY not configured")
 
-
-def _decrypt(data: bytes, passphrase: str) -> bytes:
-    """
-    Decrypt AES-256-GCM data in the project's format:
-    [16-byte IV][16-byte authTag][ciphertext]
-    """
-    if len(data) < 32:
-        raise ValueError("Encrypted data too short")
-
-    iv = data[:16]
-    auth_tag = data[16:32]
-    ciphertext = data[32:]
-
-    key = _derive_key(passphrase)
-    cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
-    return cipher.decrypt_and_verify(ciphertext, auth_tag)
-
-
-def _fetch_and_decrypt(url: str) -> bytes:
-    """Download encrypted data from a URL and decrypt it in memory."""
-    if not ENCRYPTION_KEY:
-        raise HTTPException(status_code=500, detail="ENCRYPTION_KEY not configured")
-
-    resp = http_requests.get(str(url), timeout=30)
+    resp = http_requests.get(
+        str(url),
+        headers={"x-api-key": UPLOADS_API_KEY},
+        timeout=30,
+    )
     if resp.status_code != 200:
         raise HTTPException(
             status_code=400,
             detail=f"Failed to download from URL (status {resp.status_code})",
         )
 
-    try:
-        return _decrypt(resp.content, ENCRYPTION_KEY)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Decryption failed: {e}")
+    return resp.content
 
 
 def _bytes_to_cv2(image_bytes: bytes) -> np.ndarray:
@@ -105,62 +94,55 @@ def _bytes_to_cv2(image_bytes: bytes) -> np.ndarray:
 
 def _extract_frames(video_bytes: bytes, num_frames: int = 5) -> list[np.ndarray]:
     """
-    Extract evenly-spaced frames from an in-memory video using PyAV.
-    Skips the first/last 10% of the video to avoid blank frames.
+    Extract keyframes from an in-memory video using PyAV.
+    Keyframes (I-frames) are full-resolution and sharpest — best for face comparison.
+    Falls back to evenly-spaced sampling if not enough keyframes are found.
     Returns BGR numpy arrays compatible with OpenCV/deepface.
     """
     container = av.open(io.BytesIO(video_bytes))
     stream = container.streams.video[0]
 
-    total_frames = stream.frames
-    if total_frames == 0:
-        # If frame count is unknown, decode all and sample afterwards
-        all_frames: list[np.ndarray] = []
-        for frame in container.decode(video=0):
-            rgb = frame.to_ndarray(format="bgr24")
-            all_frames.append(rgb)
-        container.close()
+    # First pass: collect all keyframes
+    keyframes: list[np.ndarray] = []
+    all_frames: list[np.ndarray] = []
+    total_decoded = 0
 
-        if not all_frames:
-            raise ValueError("Video contains no decodable frames")
-
-        total = len(all_frames)
-        start = max(0, int(total * 0.1))
-        end = max(start + 1, int(total * 0.9))
-        usable = all_frames[start:end]
-
-        if len(usable) <= num_frames:
-            return usable
-
-        indices = np.linspace(0, len(usable) - 1, num_frames, dtype=int)
-        return [usable[i] for i in indices]
-
-    # Known frame count: seek to specific positions
-    start = max(0, int(total_frames * 0.1))
-    end = max(start + 1, int(total_frames * 0.9))
-    usable_count = end - start
-
-    if usable_count <= num_frames:
-        target_indices = set(range(start, end))
-    else:
-        target_indices = set(
-            int(i) for i in np.linspace(start, end - 1, num_frames, dtype=int)
-        )
-
-    frames: list[np.ndarray] = []
-    for i, frame in enumerate(container.decode(video=0)):
-        if i >= end:
-            break
-        if i in target_indices:
+    for packet in container.demux(stream):
+        for frame in packet.decode():
+            total_decoded += 1
             bgr = frame.to_ndarray(format="bgr24")
-            frames.append(bgr)
+            all_frames.append(bgr)
+            if frame.key_frame:
+                keyframes.append(bgr)
 
     container.close()
 
-    if not frames:
-        raise ValueError("Could not extract any frames from video")
+    if not all_frames:
+        raise ValueError("Video contains no decodable frames")
 
-    return frames
+    logger.info(
+        "Video: %d total frames, %d keyframes", total_decoded, len(keyframes),
+    )
+
+    # Use keyframes if we have enough (skip first which may be blank)
+    if len(keyframes) >= 2:
+        usable = keyframes[1:] if len(keyframes) > num_frames else keyframes
+        if len(usable) <= num_frames:
+            return usable
+        indices = np.linspace(0, len(usable) - 1, num_frames, dtype=int)
+        return [usable[i] for i in indices]
+
+    # Fallback: evenly-spaced from all frames, skip first/last 10%
+    total = len(all_frames)
+    start = max(0, int(total * 0.1))
+    end = max(start + 1, int(total * 0.9))
+    usable = all_frames[start:end]
+
+    if len(usable) <= num_frames:
+        return usable
+
+    indices = np.linspace(0, len(usable) - 1, num_frames, dtype=int)
+    return [usable[i] for i in indices]
 
 
 def _compare_faces(id_img: np.ndarray, frame_img: np.ndarray) -> dict[str, Any]:
@@ -169,9 +151,9 @@ def _compare_faces(id_img: np.ndarray, frame_img: np.ndarray) -> dict[str, Any]:
         img1_path=id_img,
         img2_path=frame_img,
         model_name="ArcFace",
-        detector_backend="opencv",
+        detector_backend="retinaface",
         distance_metric="cosine",
-        enforce_detection=True,
+        enforce_detection=False,
     )
     distance = float(result["distance"])
     threshold = float(result["threshold"])
@@ -190,10 +172,10 @@ def _compare_faces(id_img: np.ndarray, frame_img: np.ndarray) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 @app.post("/compare", response_model=CompareResponse)
-def compare(req: CompareRequest):
+def compare(req: CompareRequest, _key: str = Depends(_verify_api_key)):
     # 1. Fetch and decrypt DNI image
     logger.info("Fetching and decrypting DNI image")
-    id_bytes = _fetch_and_decrypt(str(req.id_url))
+    id_bytes = _fetch_file(str(req.id_url))
 
     try:
         id_img = _bytes_to_cv2(id_bytes)
@@ -202,7 +184,7 @@ def compare(req: CompareRequest):
 
     # 2. Fetch, decrypt, and extract frames from video
     logger.info("Fetching and decrypting video")
-    video_bytes = _fetch_and_decrypt(str(req.video_url))
+    video_bytes = _fetch_file(str(req.video_url))
 
     try:
         frames = _extract_frames(video_bytes, num_frames=5)
@@ -223,6 +205,10 @@ def compare(req: CompareRequest):
                     distance=result["distance"],
                     similarity_percent=result["similarity_percent"],
                 )
+            )
+            logger.info(
+                "Frame %d: verified=%s, distance=%.4f, similarity=%.2f%%",
+                i + 1, result["verified"], result["distance"], result["similarity_percent"],
             )
         except Exception as e:
             logger.warning("Frame %d: face detection failed (%s), skipping", i + 1, e)

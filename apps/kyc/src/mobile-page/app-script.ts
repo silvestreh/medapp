@@ -19,6 +19,10 @@ export function generateAppScript(steps: StepDef[]): string {
   var scanAnimationId = null;
   var autoDetectStatus = '';
   var previewValidation = '';
+  var mediaRecorder = null;
+  var recordProgress = 0;
+  var recordProgressInterval = null;
+  var VIDEO_RECORD_DURATION_MS = 2000;
 
   var steps = ${JSON.stringify(steps)};
 
@@ -70,6 +74,14 @@ export function generateAppScript(steps: StepDef[]): string {
 
   function stopCamera() {
     stopScanning();
+    if (recordProgressInterval) {
+      clearInterval(recordProgressInterval);
+      recordProgressInterval = null;
+    }
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      mediaRecorder = null;
+    }
     if (cameraStream) {
       cameraStream.getTracks().forEach(function(t) { t.stop(); });
       cameraStream = null;
@@ -174,28 +186,49 @@ export function generateAppScript(steps: StepDef[]): string {
         }
         scanAnimationId = requestAnimationFrame(scanFrame);
       } else {
-        var detector = step.autoDetect === 'face' ? faceDetector : barcodeDetector;
-        detector.detect(video).then(function(results) {
-          if (!cameraStream || capturedBlob) return;
-          var hasValidResult = results && results.length > 0;
-          if (hasValidResult && step.autoDetect === 'barcode') {
-            hasValidResult = results[0].rawValue && results[0].rawValue.length > 50;
-          }
-          if (hasValidResult) {
-            consecutiveDetections++;
-            if (consecutiveDetections >= requiredDetections) {
-              autoDetectStatus = 'detected';
-              render();
-              setTimeout(captureFrame, 300);
-              return;
+        if (step.autoDetect === 'face' && faceDetector) {
+          faceDetector.detect(video).then(function(results) {
+            if (!cameraStream || capturedBlob) return;
+            var hasValidResult = results && results.length > 0;
+            if (hasValidResult) {
+              consecutiveDetections++;
+              if (consecutiveDetections >= requiredDetections) {
+                autoDetectStatus = 'detected';
+                render();
+                setTimeout(recordVideo, 300);
+                return;
+              }
+            } else {
+              consecutiveDetections = Math.max(0, consecutiveDetections - 1);
             }
-          } else {
-            consecutiveDetections = Math.max(0, consecutiveDetections - 1);
-          }
-          scanAnimationId = requestAnimationFrame(scanFrame);
-        }).catch(function() {
-          scanAnimationId = requestAnimationFrame(scanFrame);
-        });
+            scanAnimationId = requestAnimationFrame(scanFrame);
+          }).catch(function() {
+            scanAnimationId = requestAnimationFrame(scanFrame);
+          });
+        } else {
+          var detector = barcodeDetector;
+          detector.detect(video).then(function(results) {
+            if (!cameraStream || capturedBlob) return;
+            var hasValidResult = results && results.length > 0;
+            if (hasValidResult && step.autoDetect === 'barcode') {
+              hasValidResult = results[0].rawValue && results[0].rawValue.length > 50;
+            }
+            if (hasValidResult) {
+              consecutiveDetections++;
+              if (consecutiveDetections >= requiredDetections) {
+                autoDetectStatus = 'detected';
+                render();
+                setTimeout(captureFrame, 300);
+                return;
+              }
+            } else {
+              consecutiveDetections = Math.max(0, consecutiveDetections - 1);
+            }
+            scanAnimationId = requestAnimationFrame(scanFrame);
+          }).catch(function() {
+            scanAnimationId = requestAnimationFrame(scanFrame);
+          });
+        }
       }
     }
     scanAnimationId = requestAnimationFrame(scanFrame);
@@ -255,6 +288,63 @@ export function generateAppScript(steps: StepDef[]): string {
       render();
       validatePreview();
     }, 'image/jpeg', 0.85);
+  }
+
+  function recordVideo() {
+    stopScanning();
+    if (!cameraStream) return;
+
+    autoDetectStatus = 'recording';
+    recordProgress = 0;
+    render();
+
+    var mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+      ? 'video/webm;codecs=vp9'
+      : 'video/webm';
+
+    var recorder = new MediaRecorder(cameraStream, { mimeType: mimeType });
+    mediaRecorder = recorder;
+    var chunks = [];
+
+    recorder.ondataavailable = function(e) {
+      if (e.data.size > 0) chunks.push(e.data);
+    };
+
+    recorder.onstop = function() {
+      mediaRecorder = null;
+      var blob = new Blob(chunks, { type: 'video/webm' });
+      capturedBlob = blob;
+      capturedPreviewUrl = URL.createObjectURL(blob);
+      previewValidation = 'valid';
+      autoDetectStatus = '';
+      recordProgress = 0;
+      stopCamera();
+      phase = 'preview';
+      render();
+    };
+
+    recorder.start();
+
+    var startTime = Date.now();
+    recordProgressInterval = setInterval(function() {
+      var elapsed = Date.now() - startTime;
+      recordProgress = Math.min((elapsed / VIDEO_RECORD_DURATION_MS) * 100, 100);
+      render();
+      if (elapsed >= VIDEO_RECORD_DURATION_MS) {
+        clearInterval(recordProgressInterval);
+        recordProgressInterval = null;
+      }
+    }, 50);
+
+    setTimeout(function() {
+      if (recordProgressInterval) {
+        clearInterval(recordProgressInterval);
+        recordProgressInterval = null;
+      }
+      if (recorder.state === 'recording') {
+        recorder.stop();
+      }
+    }, VIDEO_RECORD_DURATION_MS);
   }
 
   // --- Preview validation ---
@@ -317,7 +407,8 @@ export function generateAppScript(steps: StepDef[]): string {
 
     try {
       var formData = new FormData();
-      formData.append('file', capturedBlob, key + '.jpg');
+      var fileName = key === 'selfie' ? 'selfie.webm' : key + '.jpg';
+      formData.append('file', capturedBlob, fileName);
 
       var resp = await fetch(API + '/upload', {
         method: 'POST',
@@ -462,12 +553,19 @@ export function generateAppScript(steps: StepDef[]): string {
         html += '</div>';
         html += '<div class="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-3 z-10" style="padding:1rem 1.25rem calc(4rem + env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(0,0,0,0.6),transparent)">';
         html += '<div class="text-white text-sm text-center" style="text-shadow:0 1px 3px rgba(0,0,0,0.5)">' + hint + '</div>';
-        if (autoDetectStatus === 'detected') {
+        if (autoDetectStatus === 'recording') {
+          html += '<div class="flex flex-col items-center gap-2">';
+          html += '<div class="py-2 px-5 rounded-3xl text-sm font-semibold bg-red-500/90 text-white">Grabando...</div>';
+          html += '<div class="w-32 h-1.5 rounded-full bg-white/20 overflow-hidden"><div class="h-full bg-red-500 rounded-full transition-all" style="width:' + recordProgress + '%"></div></div>';
+          html += '</div>';
+        } else if (autoDetectStatus === 'detected') {
           html += '<div class="py-2 px-5 rounded-3xl text-sm font-semibold bg-green-500/90 text-white">Detectado &#10003;</div>';
         } else if (autoDetectStatus === 'scanning') {
           html += '<div class="py-2 px-5 rounded-3xl text-sm font-semibold bg-white/15 text-white animate-pulse">Buscando...</div>';
         }
-        html += '<button class="w-[72px] h-[72px] rounded-full border-4 border-white bg-white/25 cursor-pointer active:bg-white/50" onclick="window.__capture()"></button>';
+        if (autoDetectStatus !== 'recording') {
+          html += '<button class="w-[72px] h-[72px] rounded-full border-4 border-white bg-white/25 cursor-pointer active:bg-white/50" onclick="window.__capture()"></button>';
+        }
         if (!isSelfie) {
           html += '<div class="flex gap-4">';
           html += '<input type="file" id="file-input" accept="image/*" capture="environment" class="hidden" onchange="window.__handleFile(this)">';
@@ -500,7 +598,11 @@ export function generateAppScript(steps: StepDef[]): string {
       if (previewValidation === 'invalid') {
         html += '<div class="fixed left-0 right-0 text-center text-white text-sm py-3 px-5 bg-red-600 z-10 leading-snug" style="top:calc(60px + env(safe-area-inset-top))">No se detectó el código de barras del DNI. Volvé a tomar la foto asegurándote de que se vea el frente completo del documento.</div>';
       }
-      html += '<img src="' + capturedPreviewUrl + '" alt="Preview" class="flex-1 w-full object-contain">';
+      if (step && step.key === 'selfie') {
+        html += '<video src="' + capturedPreviewUrl + '" autoplay loop muted playsinline class="flex-1 w-full object-contain"></video>';
+      } else {
+        html += '<img src="' + capturedPreviewUrl + '" alt="Preview" class="flex-1 w-full object-contain">';
+      }
       html += '<div class="fixed top-0 left-0 right-0 flex gap-3 z-10 bg-black/85" style="padding:calc(1rem + env(safe-area-inset-top)) 1.25rem 1rem">';
       html += '<button class="flex-1 py-3.5 rounded-xl border-none text-base font-semibold cursor-pointer bg-white/15 text-white" onclick="window.__retake()"' + (uploading ? ' disabled' : '') + '>Volver a tomar</button>';
       if (previewValidation === 'invalid') {
@@ -539,7 +641,14 @@ export function generateAppScript(steps: StepDef[]): string {
 
   window.__start = function() { openCamera(); };
   window.__openCamera = openCamera;
-  window.__capture = captureFrame;
+  window.__capture = function() {
+    var step = steps[currentStep];
+    if (step && step.key === 'selfie') {
+      recordVideo();
+    } else {
+      captureFrame();
+    }
+  };
   window.__retake = retake;
   window.__confirm = confirmCapture;
 

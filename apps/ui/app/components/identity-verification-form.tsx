@@ -36,6 +36,7 @@ interface PhotoValidation {
 type CaptureMode = 'intro' | 'camera' | 'qr';
 
 const ACCEPT_IMAGES = 'image/png,image/jpeg,image/webp';
+const ACCEPT_VIDEO = 'video/webm,video/mp4';
 
 const SLOT_FACING_MODE: Record<UploadSlot, 'environment' | 'user'> = {
   idFront: 'environment',
@@ -180,7 +181,8 @@ export function IdentityVerificationForm({
         const headers = await getAuthHeaders();
 
         const formData = new FormData();
-        formData.append('file', blob, `${slot}.jpg`);
+        const fileName = slot === 'selfie' ? 'selfie.webm' : `${slot}.jpg`;
+        formData.append('file', blob, fileName);
         const verificationUrl = getVerificationApiUrl();
         const res = await fetch(`${verificationUrl}/upload`, {
           method: 'POST',
@@ -423,7 +425,7 @@ export function IdentityVerificationForm({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept={ACCEPT_IMAGES}
+                accept={currentSlot === 'selfie' ? ACCEPT_VIDEO : ACCEPT_IMAGES}
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
               />
@@ -451,8 +453,23 @@ export function IdentityVerificationForm({
                       {t(`identity_verification.${slotToTranslationKey(currentSlot)}_hint` as 'identity_verification.id_front_hint')}
                     </Text>
 
-                    {/* Show preview of already-captured photo */}
-                    {currentUpload?.preview && (
+                    {/* Show preview of already-captured photo/video */}
+                    {currentUpload?.preview && currentSlot === 'selfie' && (
+                      <video
+                        src={currentUpload.preview}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        style={{
+                          maxHeight: 200,
+                          borderRadius: 'var(--mantine-radius-sm)',
+                          objectFit: 'contain',
+                          width: '100%',
+                        }}
+                      />
+                    )}
+                    {currentUpload?.preview && currentSlot !== 'selfie' && (
                       <Image
                         src={currentUpload.preview}
                         alt={currentSlot}

@@ -1,16 +1,14 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
-import exifr from 'exifr';
+import axios from 'axios';
 import { decryptFileFromDisk } from '../../../file-storage';
 import { encryptJson } from '../../../encryption';
 import { scanDniBarcode, validateDniAgainstPersonalData } from '../../../scan-dni-barcode';
-import { compareFaces } from '../../../compare-faces';
 import logger from '../../../logger';
 
-const SELFIE_MAX_AGE_MINUTES = 10;
-
 /**
- * Fire-and-forget after.create hook that runs automated checks locally.
- * Decrypts files from local storage, runs barcode scan + face comparison + EXIF check.
+ * Fire-and-forget after.create hook that runs automated checks.
+ * Decrypts ID front locally for barcode scan, then calls the face-compare
+ * microservice for face verification (DNI image vs selfie video).
  * Auto-rejects on failures.
  */
 export const runAutomatedChecks = (): Hook => {
@@ -27,17 +25,14 @@ export const runAutomatedChecks = (): Hook => {
 
       logger.info('[auto-checks] Starting for verification %s', id);
 
-      // Decrypt files locally
+      // Decrypt ID front locally for barcode scan
       let idFrontBuffer: Buffer;
-      let selfieBuffer: Buffer;
       try {
         idFrontBuffer = decryptFileFromDisk(uploadsDir, idFrontUrl);
-        selfieBuffer = decryptFileFromDisk(uploadsDir, selfieUrl);
-        logger.info('[auto-checks] Decrypted files — idFront: %d bytes, selfie: %d bytes',
-          idFrontBuffer.length, selfieBuffer.length);
+        logger.info('[auto-checks] Decrypted idFront: %d bytes', idFrontBuffer.length);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
-        logger.error('[auto-checks] Failed to decrypt files: %s', message);
+        logger.error('[auto-checks] Failed to decrypt idFront: %s', message);
         updates.autoCheckCompletedAt = new Date();
         updates.dniScanErrors = `Decrypt error: ${message}`;
         updates.faceMatchError = `Decrypt error: ${message}`;
@@ -68,39 +63,47 @@ export const runAutomatedChecks = (): Hook => {
         logger.error('[auto-checks] PDF417 scan failed: %s', message);
       }
 
-      // Step 2: Compare faces (ID front vs selfie)
-      try {
-        const faceResult = await compareFaces(idFrontBuffer, selfieBuffer);
-        updates.faceMatchConfidence = `${(faceResult.similarity * 100).toFixed(2)}%`;
-        updates.faceMatch = faceResult.match;
-        updates.faceMatchError = null;
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
+      // Step 2: Compare faces via face-compare microservice (DNI image vs selfie video)
+      const faceCompareUrl = process.env.FACE_COMPARE_API_URL;
+      const faceCompareApiKey = process.env.FACE_COMPARE_API_KEY;
+      const kycBaseUrl = process.env.KYC_BASE_URL;
+
+      if (!faceCompareUrl || !faceCompareApiKey || !kycBaseUrl) {
+        logger.error('[auto-checks] Missing face-compare env vars (FACE_COMPARE_API_URL, FACE_COMPARE_API_KEY, KYC_BASE_URL)');
         updates.faceMatchConfidence = null;
         updates.faceMatch = null;
-        updates.faceMatchError = message;
-        logger.error('[auto-checks] Face comparison failed: %s', message);
-      }
+        updates.faceMatchError = 'Face compare service not configured';
+      } else {
+        try {
+          const response = await axios.post(
+            `${faceCompareUrl}/compare`,
+            {
+              id_url: `${kycBaseUrl}${idFrontUrl}`,
+              video_url: `${kycBaseUrl}${selfieUrl}`,
+            },
+            {
+              headers: { 'x-api-key': faceCompareApiKey },
+              timeout: 120000,
+            },
+          );
 
-      // Step 3: Check selfie EXIF data for recency
-      try {
-        const exif = await exifr.parse(selfieBuffer, ['DateTimeOriginal', 'CreateDate', 'ModifyDate']);
-        const exifDate = exif?.DateTimeOriginal || exif?.CreateDate || exif?.ModifyDate || null;
-
-        if (exifDate) {
-          const photoTime = exifDate instanceof Date ? exifDate : new Date(exifDate);
-          updates.selfieExifDate = photoTime.toISOString();
-          const ageMinutes = (Date.now() - photoTime.getTime()) / 60000;
-          updates.selfieRecent = ageMinutes <= SELFIE_MAX_AGE_MINUTES;
-        } else {
-          updates.selfieExifDate = null;
-          updates.selfieRecent = null;
+          updates.faceMatch = response.data.verified;
+          updates.faceMatchConfidence = `${response.data.similarity_percent}%`;
+          updates.faceMatchError = null;
+          logger.info(
+            '[auto-checks] Face compare result: verified=%s, similarity=%s%%, frames=%d/%d',
+            response.data.verified,
+            response.data.similarity_percent,
+            response.data.frames_matched,
+            response.data.frames_analyzed,
+          );
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          updates.faceMatchConfidence = null;
+          updates.faceMatch = null;
+          updates.faceMatchError = message;
+          logger.error('[auto-checks] Face comparison failed: %s', message);
         }
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        logger.warn('[auto-checks] EXIF parse failed: %s', message);
-        updates.selfieExifDate = null;
-        updates.selfieRecent = null;
       }
 
       // Auto-reject on failures
@@ -117,10 +120,6 @@ export const runAutomatedChecks = (): Hook => {
         rejectionReasons.push(`face_mismatch:${updates.faceMatchConfidence || 'unknown'}`);
       } else if (updates.faceMatch === null && updates.faceMatchError) {
         rejectionReasons.push(`face_match_failed:${updates.faceMatchError}`);
-      }
-
-      if (updates.selfieRecent === false) {
-        rejectionReasons.push(`selfie_not_recent:${updates.selfieExifDate}`);
       }
 
       if (rejectionReasons.length > 0) {

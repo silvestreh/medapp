@@ -4,7 +4,6 @@ deepface
 tf-keras
 opencv-python-headless
 numpy
-pycryptodome
 requests
 av
 python-dotenv
