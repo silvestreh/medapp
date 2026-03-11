@@ -1,5 +1,5 @@
 [build]
-builder = "NIXPACKS"
+builder = "RAILPACK"
 installCommand = "pnpm install"
 buildCommand = "pnpm --filter athelas-kyc... build"
 watchPatterns = ["apps/kyc/**"]
