@@ -1,7 +1,7 @@
 {
-  "name": "athelas-verification",
+  "name": "athelas-kyc",
   "version": "1.0.0",
-  "description": "Athelas Verification API - Identity verification session coordination",
+  "description": "Athelas KYC API - Identity verification session coordination",
   "main": "lib/",
   "scripts": {
     "build": "shx rm -rf lib/ && tsc && pnpm run build:css",
