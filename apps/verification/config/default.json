@@ -19,5 +19,8 @@
     }
   },
   "postgres": "postgres://postgres:@localhost:5432/athelas_verification",
-  "mainApiUrl": "http://localhost:3030"
+  "mainApiUrl": "http://localhost:3030",
+  "uploads": {
+    "dir": "./uploads"
+  }
 }

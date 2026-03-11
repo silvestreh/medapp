@@ -375,7 +375,7 @@ export interface IdentityVerification {
   dniScanData: DniScanData | null;
   dniScanMatch: boolean | null;
   dniScanErrors: string | null;
-  faceSimilarityScore: number | null;
+  faceMatchConfidence: string | null;
   faceMatch: boolean | null;
   faceMatchError: string | null;
   autoCheckCompletedAt: Date | null;

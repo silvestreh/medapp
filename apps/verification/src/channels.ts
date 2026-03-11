@@ -35,4 +35,10 @@ export default function (app: Application): void {
     const userId = hook.result.userId;
     return (app as any).channel(`session/${userId}`);
   });
+
+  // Route identity-verifications events to the user's session channel
+  (app as any).service('identity-verifications').publish((_data: any, hook: HookContext) => {
+    const userId = hook.result.userId;
+    return (app as any).channel(`session/${userId}`);
+  });
 }

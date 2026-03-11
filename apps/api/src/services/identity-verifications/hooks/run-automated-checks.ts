@@ -98,7 +98,7 @@ export const runAutomatedChecks = (): Hook => {
           dniScanMatch: result.dniScanMatch,
           dniScanErrors: result.dniScanErrors,
           faceMatch: result.faceMatch,
-          faceSimilarityScore: result.faceSimilarityScore,
+          faceMatchConfidence: result.faceMatchConfidence,
           faceMatchError: result.faceMatchError,
           selfieExifDate: result.selfieExifDate,
           selfieRecent: result.selfieRecent,
@@ -106,7 +106,7 @@ export const runAutomatedChecks = (): Hook => {
         updates.dniScanData = result.dniScanData;
         updates.dniScanMatch = result.dniScanMatch;
         updates.dniScanErrors = result.dniScanErrors;
-        updates.faceSimilarityScore = result.faceSimilarityScore;
+        updates.faceMatchConfidence = result.faceMatchConfidence;
         updates.faceMatch = result.faceMatch;
         updates.faceMatchError = result.faceMatchError;
         updates.selfieExifDate = result.selfieExifDate;
@@ -125,7 +125,7 @@ export const runAutomatedChecks = (): Hook => {
         updates.dniScanData = null;
         updates.dniScanMatch = null;
         updates.dniScanErrors = `Verification API error: ${message}`;
-        updates.faceSimilarityScore = null;
+        updates.faceMatchConfidence = null;
         updates.faceMatch = null;
         updates.faceMatchError = `Verification API error: ${message}`;
       }
@@ -138,12 +138,14 @@ export const runAutomatedChecks = (): Hook => {
 
       if (updates.dniScanMatch === false && updates.dniScanErrors) {
         rejectionReasons.push(`dni_mismatch:${updates.dniScanErrors}`);
+      } else if (updates.dniScanData === null && updates.dniScanErrors) {
+        rejectionReasons.push(`dni_scan_failed:${updates.dniScanErrors}`);
       }
 
       if (updates.faceMatch === false) {
-        const score = updates.faceSimilarityScore;
-        const pct = typeof score === 'number' ? `${(score * 100).toFixed(1)}%` : 'unknown';
-        rejectionReasons.push(`face_mismatch:${pct}`);
+        rejectionReasons.push(`face_mismatch:${updates.faceMatchConfidence || 'unknown'}`);
+      } else if (updates.faceMatch === null && updates.faceMatchError) {
+        rejectionReasons.push(`face_match_failed:${updates.faceMatchError}`);
       }
 
       if (updates.selfieRecent === false) {

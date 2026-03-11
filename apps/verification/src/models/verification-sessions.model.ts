@@ -40,6 +40,22 @@ export default function (app: Application): typeof Model {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    clientIp: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    clientUserAgent: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    deviceFingerprint: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+    },
+    personalData: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+    },
   }, {
     indexes: [
       { fields: ['token'], unique: true },

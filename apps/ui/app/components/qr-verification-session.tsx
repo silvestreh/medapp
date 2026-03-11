@@ -18,7 +18,7 @@ interface VerificationSession {
 }
 
 interface QrVerificationSessionProps {
-  onCompleted: (urls: { idFrontUrl: string; idBackUrl: string; selfieUrl: string }) => void;
+  onCompleted: () => void;
 }
 
 export function QrVerificationSession({ onCompleted }: QrVerificationSessionProps) {
@@ -65,12 +65,9 @@ export function QrVerificationSession({ onCompleted }: QrVerificationSessionProp
         if (updated.id === (newSession as VerificationSession).id) {
           setSession(updated);
 
-          if (updated.status === 'completed' && updated.idFrontUrl && updated.idBackUrl && updated.selfieUrl) {
-            onCompleted({
-              idFrontUrl: updated.idFrontUrl,
-              idBackUrl: updated.idBackUrl,
-              selfieUrl: updated.selfieUrl,
-            });
+          if (updated.status === 'completed') {
+            // Verification API auto-creates the identity verification on session completion
+            onCompleted();
           }
         }
       });

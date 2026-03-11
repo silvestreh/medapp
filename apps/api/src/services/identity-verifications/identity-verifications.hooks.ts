@@ -3,8 +3,6 @@ import * as authentication from '@feathersjs/authentication';
 import { disallow, iff, isProvider } from 'feathers-hooks-common';
 import { BadRequest, Forbidden } from '@feathersjs/errors';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
-import { runAutomatedChecks } from './hooks/run-automated-checks';
-import { cleanupFiles } from './hooks/cleanup-files';
 
 const { authenticate } = authentication.hooks;
 
@@ -44,7 +42,6 @@ const validateCreate = (): Hook => {
       throw new BadRequest('ID front photo, ID back photo, and selfie are all required');
     }
 
-    // Set userId to current user and force pending status
     context.data.userId = user.id;
     context.data.status = 'pending';
     context.data.verifiedAt = null;
@@ -99,19 +96,6 @@ const handleApprovalOrRejection = (): Hook => {
     }
 
     if (status === 'rejected') {
-      // Set md_settings.isVerified = false
-      const sequelize = context.app.get('sequelizeClient');
-      const mdSettings = await sequelize.models.md_settings.findOne({
-        where: { userId: targetUserId },
-        raw: true,
-      });
-
-      if (mdSettings) {
-        await context.app.service('md-settings').patch(mdSettings.id, {
-          isVerified: false,
-        });
-      }
-
       context.data.verifiedAt = null;
       context.data.verifiedBy = null;
 
@@ -134,55 +118,45 @@ const handleApprovalOrRejection = (): Hook => {
   };
 };
 
-const sendNotificationEmail = (): Hook => {
-  return async (context: HookContext): Promise<HookContext> => {
-    try {
-      const userId = context.result.userId;
-      const fullUser = await context.app.service('users').get(userId, { provider: undefined } as any) as any;
-      const personalData = fullUser.personalData || {};
-      const fullName = [personalData.firstName, personalData.lastName].filter(Boolean).join(' ') || fullUser.username;
-
-      await context.app.service('mailer').create({
-        template: 'identity-verification-pending',
-        to: 'admin@athel.as',
-        subject: `New identity verification: ${fullName}`,
-        data: {
-          userName: fullName,
-          userId,
-        },
-      });
-    } catch (error) {
-      console.error('Failed to send identity verification notification email:', error);
-    }
-
-    return context;
-  };
-};
-
-const includeUserData = (): Hook => {
+/**
+ * After hook: enrich verification results with user data for super admin views.
+ * Since we're proxying to the verification API (no Sequelize), we do a separate lookup.
+ */
+const enrichWithUserData = (): Hook => {
   return async (context: HookContext): Promise<HookContext> => {
     if (!context.params.isSuperAdmin) return context;
 
     const sequelize = context.app.get('sequelizeClient');
     const { users, personal_data } = sequelize.models;
 
-    context.params.sequelize = {
-      include: [
-        {
-          model: users,
-          as: 'user',
+    const enrichOne = async (item: any): Promise<any> => {
+      if (!item?.userId) return item;
+      try {
+        const user = await users.findByPk(item.userId, {
           attributes: ['id', 'username'],
-          include: [
-            {
-              model: personal_data,
-              attributes: ['firstName', 'lastName', 'documentType', 'documentValue'],
-            },
-          ],
-        },
-      ],
-      raw: false,
-      nest: true,
+          include: [{
+            model: personal_data,
+            attributes: ['firstName', 'lastName', 'documentType', 'documentValue'],
+          }],
+          raw: false,
+          nest: true,
+        });
+        if (user) {
+          item.user = user.toJSON();
+        }
+      } catch {
+        // Silently skip enrichment on error
+      }
+      return item;
     };
+
+    if (context.result?.data) {
+      // Paginated result
+      context.result.data = await Promise.all(context.result.data.map(enrichOne));
+    } else if (context.result && !context.result.data) {
+      // Single result
+      context.result = await enrichOne(context.result);
+    }
 
     return context;
   };
@@ -191,7 +165,7 @@ const includeUserData = (): Hook => {
 export default {
   before: {
     all: [iff(isProvider('external'), authenticate('jwt'), verifyOrganizationMembership())],
-    find: [restrictFindToOwnerOrSuperAdmin(), includeUserData()],
+    find: [restrictFindToOwnerOrSuperAdmin()],
     get: [restrictFindToOwnerOrSuperAdmin()],
     create: [validateCreate()],
     update: [disallow('external')],
@@ -201,11 +175,11 @@ export default {
 
   after: {
     all: [],
-    find: [],
-    get: [],
-    create: [runAutomatedChecks()],
+    find: [enrichWithUserData()],
+    get: [enrichWithUserData()],
+    create: [],
     update: [],
-    patch: [cleanupFiles()],
+    patch: [],
     remove: [],
   },
 

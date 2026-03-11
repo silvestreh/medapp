@@ -54,6 +54,7 @@
   "dependencies": {
     "@athelas/brand": "workspace:*",
     "@athelas/encounter-schemas": "workspace:*",
+    "@athelas/encryption": "workspace:*",
     "@athelas/translations": "workspace:*",
     "@feathersjs/authentication": "^4.5.18",
     "@feathersjs/authentication-local": "^4.5.18",

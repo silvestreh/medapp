@@ -70,10 +70,20 @@ export async function compareFaces(
 ): Promise<FaceComparisonResult> {
   await ensureModelsLoaded();
 
-  const [idDescriptor, selfieDescriptor] = await Promise.all([
-    getDescriptor(idFrontBuffer),
-    getDescriptor(selfieBuffer),
-  ]);
+  let idDescriptor: Float32Array;
+  let selfieDescriptor: Float32Array;
+
+  try {
+    idDescriptor = await getDescriptor(idFrontBuffer);
+  } catch {
+    throw new Error('No face detected in ID front photo');
+  }
+
+  try {
+    selfieDescriptor = await getDescriptor(selfieBuffer);
+  } catch {
+    throw new Error('No face detected in selfie');
+  }
 
   const distance = faceapi.euclideanDistance(idDescriptor, selfieDescriptor);
   const similarity = Math.max(0, 1 - distance);

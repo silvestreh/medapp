@@ -25,6 +25,7 @@ import { HookContext as FeathersHookContext } from '@feathersjs/feathers';
 import authentication from './authentication';
 import sequelize from './sequelize';
 import qs from 'qs';
+import { setupIdentityVerificationWebhook } from './webhooks/identity-verification';
 // Don't remove this comment. It's needed to format import lines nicely.
 const app: Application = express(feathers());
 export type HookContext<T = any> = { app: Application } & FeathersHookContext<T>;
@@ -113,6 +114,9 @@ app.use('/uploads', (req: any, res: any, next: any) => {
   res.set('Content-Length', String(decrypted.length));
   res.send(decrypted);
 }, express.static(uploadsDir));
+
+// Webhook endpoints (before feathers middleware)
+setupIdentityVerificationWebhook(app);
 
 app.configure(express.rest());
 app.configure(sequelize);

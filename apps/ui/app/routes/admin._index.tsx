@@ -46,7 +46,7 @@ interface VerificationItem {
   dniScanData: DniScanData | null;
   dniScanMatch: boolean | null;
   dniScanErrors: string | null;
-  faceSimilarityScore: number | null;
+  faceMatchConfidence: string | null;
   faceMatch: boolean | null;
   faceMatchError: string | null;
   autoCheckCompletedAt: string | null;
@@ -362,15 +362,15 @@ export default function AdminVerifications() {
                       </Badge>
                     )}
                   </Group>
-                  {selected.faceSimilarityScore !== null && (
+                  {selected.faceMatchConfidence !== null && (
                     <Text size="sm">
-                      {t('admin.face_similarity')}: <Text span fw={600}>{(selected.faceSimilarityScore * 100).toFixed(1)}%</Text>
+                      {t('admin.face_similarity')}: <Text span fw={600}>{selected.faceMatchConfidence}</Text>
                     </Text>
                   )}
                   {selected.faceMatchError && (
                     <Text size="xs" c="red" mt="xs">{selected.faceMatchError}</Text>
                   )}
-                  {selected.faceSimilarityScore === null && !selected.faceMatchError && (
+                  {selected.faceMatchConfidence === null && !selected.faceMatchError && (
                     <Text size="xs" c="dimmed">{t('admin.no_data')}</Text>
                   )}
                 </Paper>

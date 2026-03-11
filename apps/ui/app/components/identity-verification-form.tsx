@@ -181,7 +181,8 @@ export function IdentityVerificationForm({
 
         const formData = new FormData();
         formData.append('file', blob, `${slot}.jpg`);
-        const res = await fetch('/api/file-uploads?encrypted=true', {
+        const verificationUrl = getVerificationApiUrl();
+        const res = await fetch(`${verificationUrl}/upload`, {
           method: 'POST',
           headers,
           body: formData,
@@ -294,10 +295,15 @@ export function IdentityVerificationForm({
   }, [activeStep]);
 
   const handleQrCompleted = useCallback(
-    (urls: { idFrontUrl: string; idBackUrl: string; selfieUrl: string }) => {
-      submitVerification(urls);
+    () => {
+      // Verification API auto-creates identity verification on session completion
+      notifications.show({
+        message: t('identity_verification.submitted_success'),
+        color: 'green',
+      });
+      onSubmitted();
     },
-    [submitVerification]
+    [t, onSubmitted]
   );
 
   const currentSlot = SLOT_ORDER[activeStep];

@@ -1,7 +1,6 @@
 import { ServiceAddons } from '@feathersjs/feathers';
 import type { Application, IdentityVerification } from '../../declarations';
 import { IdentityVerifications } from './identity-verifications.class';
-import createModel from '../../models/identity-verifications.model';
 import hooks from './identity-verifications.hooks';
 
 declare module '../../declarations' {
@@ -11,12 +10,7 @@ declare module '../../declarations' {
 }
 
 export default function (app: Application): void {
-  const options = {
-    Model: createModel(app),
-    paginate: app.get('paginate'),
-  };
-
-  app.use('/identity-verifications', new IdentityVerifications(options, app));
+  app.use('/identity-verifications', new IdentityVerifications(app));
 
   const service = app.service('identity-verifications');
   service.hooks(hooks);

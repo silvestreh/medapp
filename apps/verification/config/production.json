@@ -8,5 +8,8 @@
       "audience": "AUTH_AUDIENCE"
     }
   },
-  "mainApiUrl": "MAIN_API_URL"
+  "mainApiUrl": "MAIN_API_URL",
+  "uploads": {
+    "dir": "/data/uploads"
+  }
 }

@@ -17,7 +17,7 @@ interface RunChecksResult {
   dniScanData: DniScanData | null;
   dniScanMatch: boolean | null;
   dniScanErrors: string | null;
-  faceSimilarityScore: number | null;
+  faceMatchConfidence: string | null;
   faceMatch: boolean | null;
   faceMatchError: string | null;
   selfieExifDate: string | null;
@@ -81,7 +81,7 @@ export function setupRunChecks(app: Application): void {
         dniScanData: null,
         dniScanMatch: null,
         dniScanErrors: null,
-        faceSimilarityScore: null,
+        faceMatchConfidence: null,
         faceMatch: null,
         faceMatchError: null,
         selfieExifDate: null,
@@ -107,12 +107,12 @@ export function setupRunChecks(app: Application): void {
       // Step 2: Compare faces (ID front vs selfie)
       try {
         const faceResult = await compareFaces(idFrontBuffer, selfieBuffer);
-        result.faceSimilarityScore = faceResult.similarity;
+        result.faceMatchConfidence = `${(faceResult.similarity * 100).toFixed(2)}%`;
         result.faceMatch = faceResult.match;
         result.faceMatchError = null;
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
-        result.faceSimilarityScore = null;
+        result.faceMatchConfidence = null;
         result.faceMatch = null;
         result.faceMatchError = message;
         logger.error('[run-checks] Face comparison failed:', message);

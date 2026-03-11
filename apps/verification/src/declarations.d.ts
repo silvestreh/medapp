@@ -14,6 +14,37 @@ export interface VerificationSession {
   idBackUrl: string | null;
   selfieUrl: string | null;
   expiresAt: Date;
+  clientIp: string | null;
+  clientUserAgent: string | null;
+  deviceFingerprint: Record<string, unknown> | null;
+  personalData: Record<string, unknown> | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IdentityVerification {
+  id: string;
+  userId: string;
+  sessionId: string | null;
+  status: 'pending' | 'verified' | 'rejected';
+  idFrontUrl: string;
+  idBackUrl: string;
+  selfieUrl: string;
+  notes: string | null;
+  rejectionReason: string | null;
+  verifiedAt: Date | null;
+  verifiedBy: string | null;
+  dniScanData: Record<string, unknown> | null;
+  dniScanMatch: boolean | null;
+  dniScanErrors: string | null;
+  faceMatchConfidence: string | null;
+  faceMatch: boolean | null;
+  faceMatchError: string | null;
+  autoCheckCompletedAt: Date | null;
+  clientIp: string | null;
+  clientUserAgent: string | null;
+  deviceFingerprint: Record<string, unknown> | null;
+  personalData: Record<string, unknown> | null;
   createdAt: Date;
   updatedAt: Date;
 }

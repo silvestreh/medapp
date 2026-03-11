@@ -1,78 +1,103 @@
 import multer from 'multer';
-import axios from 'axios';
-import FormData from 'form-data';
-import { AuthenticationService } from '@feathersjs/authentication';
 import { Application } from './declarations';
 import logger from './logger';
+import { scanDniBarcode } from './scan-dni-barcode';
+import { encryptToDisk } from './file-storage';
+
+const MIME_TO_EXT: Record<string, string> = {
+  'image/png': '.png',
+  'image/jpeg': '.jpg',
+  'image/webp': '.webp',
+};
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
+/**
+ * Authenticates the upload request via session token or JWT.
+ * Returns true if authenticated, false otherwise.
+ */
+async function authenticateUpload(app: Application, req: any, res: any): Promise<boolean> {
+  // Option 1: Session token (mobile flow)
+  const sessionToken = req.headers['x-session-token'];
+  if (sessionToken) {
+    await app.get('sequelizeSync');
+    const sequelize = app.get('sequelizeClient');
+    const session = await sequelize.models.verification_sessions.findOne({
+      where: { token: sessionToken },
+      raw: true,
+    });
+
+    if (!session) {
+      res.status(403).json({ message: 'Invalid session token' });
+      return false;
+    }
+
+    if (new Date(session.expiresAt) < new Date()) {
+      res.status(400).json({ message: 'Session has expired' });
+      return false;
+    }
+
+    return true;
+  }
+
+  // Option 2: JWT (desktop flow)
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    try {
+      const authService = app.service('authentication') as any;
+      const accessToken = authHeader.replace('Bearer ', '');
+      const result = await authService.create(
+        { strategy: 'jwt', accessToken },
+        { provider: 'rest' }
+      );
+      if (result?.user) return true;
+    } catch {
+      // Fall through to 401
+    }
+  }
+
+  res.status(401).json({ message: 'Authentication required' });
+  return false;
+}
+
 export function setupUploadProxy(app: Application): void {
   const expressApp = app as any;
 
   expressApp.post('/upload', upload.single('file'), async (req: any, res: any) => {
     try {
-      const sessionToken = req.headers['x-session-token'];
-      if (!sessionToken) {
-        return res.status(401).json({ message: 'Missing session token' });
-      }
-
-      // Wait for DB sync before querying
-      await app.get('sequelizeSync');
-
-      const sequelize = app.get('sequelizeClient');
-      const session = await sequelize.models.verification_sessions.findOne({
-        where: { token: sessionToken },
-        raw: true,
-      });
-
-      if (!session) {
-        return res.status(403).json({ message: 'Invalid session token' });
-      }
-
-      if (new Date(session.expiresAt) < new Date()) {
-        return res.status(400).json({ message: 'Session has expired' });
-      }
+      const authenticated = await authenticateUpload(app, req, res);
+      if (!authenticated) return;
 
       if (!req.file) {
         return res.status(400).json({ message: 'No file provided' });
       }
 
-      // Generate a JWT for the session's userId using the shared auth secret
-      const authService = app.service('authentication') as unknown as AuthenticationService;
-      const accessToken = await authService.createAccessToken({ sub: session.userId });
-
-      // Forward the file to the main API's file-uploads endpoint
-      const mainApiUrl = app.get('mainApiUrl') || 'http://localhost:3030';
-      const formData = new FormData();
-      formData.append('file', req.file.buffer, {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-      });
-
-      const response = await axios.post(
-        `${mainApiUrl}/file-uploads?encrypted=true`,
-        formData,
-        {
-          headers: {
-            ...formData.getHeaders(),
-            'Authorization': `Bearer ${accessToken}`,
-          },
-          maxContentLength: 10 * 1024 * 1024,
+      // Validate barcode on ID front before accepting the upload
+      if (req.file.originalname === 'idFront.jpg') {
+        try {
+          await scanDniBarcode(req.file.buffer);
+          logger.info('[upload] ID front barcode validation passed');
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          logger.warn('[upload] ID front barcode validation failed: %s', message);
+          return res.status(422).json({
+            message: 'No se detectó el código de barras del DNI. Asegurate de que la foto muestre el frente completo del documento.',
+          });
         }
-      );
+      }
 
-      return res.json({ url: response.data.url });
+      const ext = MIME_TO_EXT[req.file.mimetype] || '.bin';
+      const uploadsDir = app.get('uploads')?.dir || './uploads';
+      const url = encryptToDisk(req.file.buffer, ext, uploadsDir);
+
+      logger.info('[upload] File stored locally: %s', url);
+      return res.json({ url });
     } catch (error: any) {
-      const status = error.response?.status || 500;
-      const responseData = error.response?.data;
-      const message = responseData?.message || error.message || 'Upload failed';
-      logger.error('[upload-proxy] Error: %s | Status: %d | Upstream: %j | Code: %s',
-        error.message, status, responseData, error.code);
-      return res.status(status).json({ message });
+      logger.error('[upload] Error: %s', error.message);
+      return res.status(500).json({ message: error.message || 'Upload failed' });
     }
   });
 }

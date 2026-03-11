@@ -13,10 +13,10 @@ export default function (app: Application): typeof Model {
     userId: {
       type: DataTypes.STRING,
       allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
+    },
+    sessionId: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     status: {
       type: DataTypes.ENUM('pending', 'verified', 'rejected'),
@@ -50,13 +50,10 @@ export default function (app: Application): typeof Model {
     verifiedBy: {
       type: DataTypes.STRING,
       allowNull: true,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
     },
+    // Automated check results
     dniScanData: {
-      type: DataTypes.JSONB,
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     dniScanMatch: {
@@ -79,8 +76,33 @@ export default function (app: Application): typeof Model {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    selfieExifDate: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    selfieRecent: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
     autoCheckCompletedAt: {
       type: DataTypes.DATE,
+      allowNull: true,
+    },
+    // Forensic / audit fields
+    clientIp: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    clientUserAgent: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    deviceFingerprint: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+    },
+    personalData: {
+      type: DataTypes.JSONB,
       allowNull: true,
     },
   }, {
@@ -91,15 +113,20 @@ export default function (app: Application): typeof Model {
     },
     indexes: [
       { fields: ['userId'] },
+      { fields: ['sessionId'] },
       { fields: ['status'] },
       { fields: ['createdAt'] },
     ],
   });
 
   (identityVerifications as any).associate = function (models: any): void {
-    const { users } = models;
-    identityVerifications.belongsTo(users, { foreignKey: 'userId', as: 'user' });
-    identityVerifications.belongsTo(users, { foreignKey: 'verifiedBy', as: 'reviewer' });
+    const { verification_sessions } = models;
+    if (verification_sessions) {
+      identityVerifications.belongsTo(verification_sessions, {
+        foreignKey: 'sessionId',
+        as: 'session',
+      });
+    }
   };
 
   return identityVerifications;

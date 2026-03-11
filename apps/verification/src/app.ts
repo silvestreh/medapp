@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import path from 'path';
 import helmet from 'helmet';
 import cors from 'cors';
 import feathers from '@feathersjs/feathers';
@@ -19,6 +20,7 @@ import { setupUploadProxy } from './upload-proxy';
 import { setupMobilePage } from './mobile-page';
 import { setupValidatePhoto } from './validate-photo';
 import { setupRunChecks } from './run-checks';
+import { decryptFileFromDisk } from './file-storage';
 
 const app: Application = express(feathers());
 
@@ -36,8 +38,34 @@ app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files (styles.css, etc.)
+(app as any).use('/public', require('express').static(path.resolve(__dirname, '../public')));
+
 app.get('/healthz', (_req: any, res: any) => {
   res.json({ ok: true });
+});
+
+// Serve decrypted uploads (auth required via session token or JWT)
+(app as any).get('/uploads/:filename', async (req: any, res: any) => {
+  try {
+    const uploadsDir = app.get('uploads')?.dir || './uploads';
+    const filename = req.params.filename;
+
+    // Derive content type from the original extension (e.g. uuid.jpg.enc → jpg)
+    const ext = filename.replace(/\.enc$/, '').split('.').pop();
+    const mimeMap: Record<string, string> = {
+      jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
+    };
+    const contentType = mimeMap[ext] || 'application/octet-stream';
+
+    const decrypted = decryptFileFromDisk(uploadsDir, `/uploads/${filename}`);
+    res.set('Content-Type', contentType);
+    res.set('Cache-Control', 'private, no-store');
+    res.send(decrypted);
+  } catch (error: any) {
+    logger.error('[uploads] Decrypt error: %s', error.message);
+    res.status(404).json({ message: 'File not found' });
+  }
 });
 
 // Mobile page, upload proxy, and photo validation (before feathers middleware)
