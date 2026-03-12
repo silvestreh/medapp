@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge, Button, Group, Paper, Progress, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { Camera, RotateCcw, Check, Video } from 'lucide-react';
+import { getVideoImageData, detectMrzText } from '@athelas/kyc-utils';
 
 type AutoDetectMode = 'barcode' | 'face' | 'text' | 'none';
 
@@ -104,87 +105,7 @@ function getFaceLandmarker() {
   return faceLandmarkerPromise;
 }
 
-// ── Canvas helpers ──
-
-/** Get ImageData from a video frame for barcode detection */
-function getVideoImageData(video: HTMLVideoElement): ImageData | null {
-  if (!video.videoWidth || !video.videoHeight) return null;
-  const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-  ctx.drawImage(video, 0, 0);
-  return ctx.getImageData(0, 0, canvas.width, canvas.height);
-}
-
-function getVideoSnapshot(
-  video: HTMLVideoElement,
-  scale = 320
-): { ctx: CanvasRenderingContext2D; w: number; h: number } | null {
-  const w = scale;
-  const h = Math.round((w * video.videoHeight) / video.videoWidth);
-  if (h <= 0) return null;
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-  ctx.drawImage(video, 0, 0, w, h);
-  return { ctx, w, h };
-}
-
-/**
- * Detect MRZ-like text on ID back by looking for:
- * 1. Multiple horizontal rows of high-contrast text in the bottom 40%
- * 2. Each row must span most of the card width (MRZ lines are full-width)
- * 3. At least 2 qualifying rows (Argentine DNI has 3 MRZ lines)
- */
-function detectMrzText(video: HTMLVideoElement): boolean {
-  const snap = getVideoSnapshot(video);
-  if (!snap) return false;
-  const { ctx, w, h } = snap;
-
-  const startY = Math.floor(h * 0.55);
-  const regionH = h - startY;
-  if (regionH < 10) return false;
-
-  const imgData = ctx.getImageData(0, startY, w, regionH);
-  const data = imgData.data;
-
-  // Build a row-by-row edge density profile
-  let qualifyingRows = 0;
-  const minRowWidth = Math.floor(w * 0.6); // MRZ spans at least 60% of width
-
-  for (let y = 1; y < regionH - 1; y++) {
-    let edgePixels = 0;
-    let firstEdge = w;
-    let lastEdge = 0;
-
-    for (let x = 1; x < w - 1; x++) {
-      const idx = (y * w + x) * 4;
-      const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
-      const idxAbove = ((y - 1) * w + x) * 4;
-      const grayAbove = data[idxAbove] * 0.299 + data[idxAbove + 1] * 0.587 + data[idxAbove + 2] * 0.114;
-      if (Math.abs(gray - grayAbove) > 40) {
-        edgePixels++;
-        if (x < firstEdge) firstEdge = x;
-        if (x > lastEdge) lastEdge = x;
-      }
-    }
-
-    const edgeSpan = lastEdge - firstEdge;
-    const density = edgePixels / w;
-
-    // Row qualifies if: dense edges (>12%) spanning most of the width
-    if (density > 0.12 && edgeSpan > minRowWidth) {
-      qualifyingRows++;
-    }
-  }
-
-  // Need at least 6 qualifying rows (each MRZ line is ~2-3 pixel rows at this scale)
-  return qualifyingRows >= 6;
-}
+// ── Canvas helpers (imported from @athelas/kyc-utils) ──
 
 // ── Component ──
 

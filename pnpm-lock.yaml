@@ -341,6 +341,9 @@ importers:
       '@athelas/encryption':
         specifier: workspace:*
         version: link:../../packages/encryption
+      '@athelas/kyc-utils':
+        specifier: workspace:*
+        version: link:../../packages/kyc-utils
       '@feathersjs/authentication':
         specifier: ^4.5.18
         version: 4.5.18
@@ -517,6 +520,9 @@ importers:
       '@athelas/encounter-schemas':
         specifier: workspace:*
         version: link:../../packages/encounter-schemas
+      '@athelas/kyc-utils':
+        specifier: workspace:*
+        version: link:../../packages/kyc-utils
       '@feathersjs/authentication-client':
         specifier: ^5.0.40
         version: 5.0.40(typescript@5.8.3)
@@ -774,6 +780,8 @@ importers:
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
+
+  packages/kyc-utils: {}
 
   packages/translations:
     devDependencies:

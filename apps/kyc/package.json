@@ -19,6 +19,7 @@
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
     "@athelas/encryption": "workspace:*",
+    "@athelas/kyc-utils": "workspace:*",
     "@feathersjs/authentication": "^4.5.18",
     "@feathersjs/configuration": "^4.5.17",
     "@feathersjs/errors": "^4.5.17",

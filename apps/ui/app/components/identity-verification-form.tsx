@@ -79,8 +79,8 @@ const SLOT_FACING_MODE: Record<UploadSlot, 'environment' | 'user'> = {
   selfie: 'user',
 };
 
-const SLOT_AUTO_DETECT: Record<UploadSlot, 'barcode' | 'face' | 'text'> = {
-  idFront: 'barcode',
+const SLOT_AUTO_DETECT: Record<UploadSlot, 'barcode' | 'face' | 'text' | 'none'> = {
+  idFront: 'none',
   idBack: 'text',
   selfie: 'face',
 };
