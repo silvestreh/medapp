@@ -25,52 +25,83 @@ let barcodeDetectorPromise: Promise<{
 
 function getBarcodeDetector() {
   if (!barcodeDetectorPromise) {
-    barcodeDetectorPromise = import('barcode-detector').then((mod) => {
+    barcodeDetectorPromise = import('barcode-detector').then(mod => {
       return new mod.BarcodeDetector({ formats: ['pdf417'] });
     });
   }
   return barcodeDetectorPromise;
 }
 
-// @mediapipe/tasks-vision FaceDetector: WASM-based face detection
+// @mediapipe/tasks-vision FaceLandmarker: WASM-based face landmarks + head pose
 // Only loaded when autoDetect === 'face'
-let faceDetectorPromise: Promise<{
-  detect: (video: HTMLVideoElement) => boolean;
+interface FaceDetectResult {
+  detected: boolean;
+  lookingAtCamera: boolean;
+}
+
+const MAX_YAW_DEG = 20;
+const MAX_PITCH_DEG = 15;
+
+let faceLandmarkerPromise: Promise<{
+  detect: (video: HTMLVideoElement) => FaceDetectResult;
 }> | null = null;
 
-function getFaceDetector() {
-  if (!faceDetectorPromise) {
-    faceDetectorPromise = import('@mediapipe/tasks-vision').then(async (vision) => {
-      const { FaceDetector, FilesetResolver } = vision;
+function getFaceLandmarker() {
+  if (!faceLandmarkerPromise) {
+    faceLandmarkerPromise = import('@mediapipe/tasks-vision').then(async vision => {
+      const { FaceLandmarker, FilesetResolver } = vision;
       const filesetResolver = await FilesetResolver.forVisionTasks(
         'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
       );
-      const detector = await FaceDetector.createFromOptions(filesetResolver, {
+      const landmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
         baseOptions: {
-          modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite',
+          modelAssetPath:
+            'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
           delegate: 'GPU',
         },
         runningMode: 'VIDEO',
-        minDetectionConfidence: 0.5,
+        numFaces: 1,
+        outputFacialTransformationMatrixes: true,
       });
       let lastTimestamp = 0;
       return {
-        detect: (video: HTMLVideoElement): boolean => {
-          // MediaPipe VIDEO mode requires strictly increasing timestamps
+        detect: (video: HTMLVideoElement): FaceDetectResult => {
           const timestamp = performance.now();
-          if (timestamp <= lastTimestamp) return false;
+          if (timestamp <= lastTimestamp) return { detected: false, lookingAtCamera: false };
           lastTimestamp = timestamp;
           try {
-            const result = detector.detectForVideo(video, timestamp);
-            return result.detections.length > 0;
+            const result = landmarker.detectForVideo(video, timestamp);
+            if (!result.faceLandmarks || result.faceLandmarks.length === 0) {
+              return { detected: false, lookingAtCamera: false };
+            }
+
+            // Extract head pose from the facial transformation matrix
+            const matrices = result.facialTransformationMatrixes;
+            if (!matrices || matrices.length === 0) {
+              // Face detected but no pose data — assume looking at camera
+              return { detected: true, lookingAtCamera: true };
+            }
+
+            const matrix = matrices[0].data;
+            // 4x4 column-major rotation matrix → extract Euler angles
+            // matrix layout (column-major): [m00, m10, m20, m30, m01, m11, m21, m31, m02, m12, m22, m32, ...]
+            const m00 = matrix[0];
+            const m10 = matrix[1];
+            const m20 = matrix[2];
+
+            const pitch = Math.asin(-m20) * (180 / Math.PI);
+            const yaw = Math.atan2(m10, m00) * (180 / Math.PI);
+
+            const lookingAtCamera = Math.abs(yaw) < MAX_YAW_DEG && Math.abs(pitch) < MAX_PITCH_DEG;
+            return { detected: true, lookingAtCamera };
           } catch {
-            return false;
+            return { detected: false, lookingAtCamera: false };
           }
         },
       };
     });
   }
-  return faceDetectorPromise;
+  return faceLandmarkerPromise;
 }
 
 // ── Canvas helpers ──
@@ -87,7 +118,10 @@ function getVideoImageData(video: HTMLVideoElement): ImageData | null {
   return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-function getVideoSnapshot(video: HTMLVideoElement, scale = 320): { ctx: CanvasRenderingContext2D; w: number; h: number } | null {
+function getVideoSnapshot(
+  video: HTMLVideoElement,
+  scale = 320
+): { ctx: CanvasRenderingContext2D; w: number; h: number } | null {
   const w = scale;
   const h = Math.round((w * video.videoHeight) / video.videoWidth);
   if (h <= 0) return null;
@@ -161,10 +195,13 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
   const streamRef = useRef<MediaStream | null>(null);
   const scanIdRef = useRef<number | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const faceCheckIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recordingAbortedRef = useRef(false);
+  const startAutoDetectionRef = useRef<() => void>(() => {});
   const [captured, setCaptured] = useState<string | null>(null);
   const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [detectStatus, setDetectStatus] = useState<'' | 'scanning' | 'detected' | 'recording'>('');
+  const [detectStatus, setDetectStatus] = useState<'' | 'scanning' | 'detected' | 'recording' | 'face_lost'>('');
   const [recordProgress, setRecordProgress] = useState(0);
 
   const isVideoMode = autoDetect === 'face';
@@ -190,12 +227,12 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
 
     ctx.drawImage(video, 0, 0);
     canvas.toBlob(
-      (blob) => {
+      blob => {
         if (blob) {
           setCaptured(canvas.toDataURL('image/jpeg', 0.9));
           setCapturedBlob(blob);
           if (streamRef.current) {
-            streamRef.current.getTracks().forEach((track) => track.stop());
+            streamRef.current.getTracks().forEach(track => track.stop());
           }
         }
       },
@@ -209,23 +246,38 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
     const stream = streamRef.current;
     if (!stream) return;
 
+    recordingAbortedRef.current = false;
     setDetectStatus('recording');
     setRecordProgress(0);
 
-    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-      ? 'video/webm;codecs=vp9'
-      : 'video/webm';
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
 
     const recorder = new MediaRecorder(stream, { mimeType });
     recorderRef.current = recorder;
     const chunks: Blob[] = [];
 
-    recorder.ondataavailable = (e) => {
+    recorder.ondataavailable = e => {
       if (e.data.size > 0) chunks.push(e.data);
     };
 
     recorder.onstop = () => {
       recorderRef.current = null;
+      if (faceCheckIntervalRef.current) {
+        clearInterval(faceCheckIntervalRef.current);
+        faceCheckIntervalRef.current = null;
+      }
+
+      if (recordingAbortedRef.current) {
+        // Recording was aborted due to face loss — don't save, show warning and restart
+        setDetectStatus('face_lost');
+        setRecordProgress(0);
+        setTimeout(() => {
+          setDetectStatus('');
+          startAutoDetectionRef.current();
+        }, 2000);
+        return;
+      }
+
       const blob = new Blob(chunks, { type: 'video/webm' });
       const previewUrl = URL.createObjectURL(blob);
       setCaptured(previewUrl);
@@ -233,11 +285,40 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
       setDetectStatus('');
       setRecordProgress(0);
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
 
     recorder.start();
+
+    // Face tracking during recording — abort if face disappears or looks away
+    let consecutiveMisses = 0;
+    getFaceLandmarker()
+      .then(landmarker => {
+        faceCheckIntervalRef.current = setInterval(() => {
+          const video = videoRef.current;
+          if (!video || !video.videoWidth || recorder.state !== 'recording') return;
+
+          const result = landmarker.detect(video);
+          if (result.detected && result.lookingAtCamera) {
+            consecutiveMisses = 0;
+          } else {
+            consecutiveMisses++;
+            if (consecutiveMisses >= 2) {
+              // Face lost or not looking at camera for ~400ms — abort recording
+              recordingAbortedRef.current = true;
+              clearInterval(faceCheckIntervalRef.current!);
+              faceCheckIntervalRef.current = null;
+              if (recorder.state === 'recording') {
+                recorder.stop();
+              }
+            }
+          }
+        }, 200);
+      })
+      .catch(() => {
+        // Face landmarker not available — skip tracking, recording proceeds normally
+      });
 
     // Progress animation
     const startTime = Date.now();
@@ -252,6 +333,10 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
 
     setTimeout(() => {
       clearInterval(progressInterval);
+      if (faceCheckIntervalRef.current) {
+        clearInterval(faceCheckIntervalRef.current);
+        faceCheckIntervalRef.current = null;
+      }
       if (recorder.state === 'recording') {
         recorder.stop();
       }
@@ -274,23 +359,27 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
     let frameCount = 0;
     let detectorReady = false;
     let barcodeDetector: Awaited<ReturnType<typeof getBarcodeDetector>> | null = null;
-    let faceDetector: Awaited<ReturnType<typeof getFaceDetector>> | null = null;
+    let faceLandmarker: Awaited<ReturnType<typeof getFaceLandmarker>> | null = null;
 
     // Load detectors asynchronously
     if (autoDetect === 'barcode') {
-      getBarcodeDetector().then((d) => {
-        barcodeDetector = d;
-        detectorReady = true;
-      }).catch(() => {
-        // If barcode detector fails to load, scanning stays visible but won't auto-capture
-      });
+      getBarcodeDetector()
+        .then(d => {
+          barcodeDetector = d;
+          detectorReady = true;
+        })
+        .catch(() => {
+          // If barcode detector fails to load, scanning stays visible but won't auto-capture
+        });
     } else if (autoDetect === 'face') {
-      getFaceDetector().then((d) => {
-        faceDetector = d;
-        detectorReady = true;
-      }).catch(() => {
-        // If face detector fails to load, scanning stays visible but won't auto-capture
-      });
+      getFaceLandmarker()
+        .then(d => {
+          faceLandmarker = d;
+          detectorReady = true;
+        })
+        .catch(() => {
+          // If face landmarker fails to load, scanning stays visible but won't auto-capture
+        });
     } else if (autoDetect === 'text') {
       detectorReady = true; // MRZ uses canvas, no async load needed
     }
@@ -317,28 +406,31 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
           scanIdRef.current = requestAnimationFrame(scanFrame);
           return;
         }
-        barcodeDetector.detect(imgData).then((results) => {
-          if (!streamRef.current) return;
-          // PDF417 on Argentine DNIs has a long data payload (~200+ chars)
-          if (results && results.length > 0 && results[0].rawValue && results[0].rawValue.length > 50) {
-            consecutiveDetections++;
-            if (consecutiveDetections >= requiredDetections) {
-              setDetectStatus('detected');
-              setTimeout(doCapture, 300);
-              return;
+        barcodeDetector
+          .detect(imgData)
+          .then(results => {
+            if (!streamRef.current) return;
+            // PDF417 on Argentine DNIs has a long data payload (~200+ chars)
+            if (results && results.length > 0 && results[0].rawValue && results[0].rawValue.length > 50) {
+              consecutiveDetections++;
+              if (consecutiveDetections >= requiredDetections) {
+                setDetectStatus('detected');
+                setTimeout(doCapture, 300);
+                return;
+              }
+            } else {
+              consecutiveDetections = Math.max(0, consecutiveDetections - 1);
             }
-          } else {
-            consecutiveDetections = Math.max(0, consecutiveDetections - 1);
-          }
-          scanIdRef.current = requestAnimationFrame(scanFrame);
-        }).catch(() => {
-          scanIdRef.current = requestAnimationFrame(scanFrame);
-        });
-      } else if (autoDetect === 'face' && faceDetector) {
-        // Real face detection via MediaPipe — triggers video recording
-        const found = faceDetector.detect(vid);
+            scanIdRef.current = requestAnimationFrame(scanFrame);
+          })
+          .catch(() => {
+            scanIdRef.current = requestAnimationFrame(scanFrame);
+          });
+      } else if (autoDetect === 'face' && faceLandmarker) {
+        // Face landmark detection via MediaPipe — triggers video recording only if looking at camera
+        const result = faceLandmarker.detect(vid);
         if (!streamRef.current) return;
-        if (found) {
+        if (result.detected && result.lookingAtCamera) {
           consecutiveDetections++;
           if (consecutiveDetections >= requiredDetections) {
             setDetectStatus('detected');
@@ -373,6 +465,8 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
     scanIdRef.current = requestAnimationFrame(scanFrame);
   }, [autoDetect, doCapture, doVideoRecord, capturedBlob]);
 
+  startAutoDetectionRef.current = startAutoDetection;
+
   useEffect(() => {
     let active = true;
 
@@ -382,17 +476,20 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
           video: { facingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
         });
         if (!active) {
-          stream.getTracks().forEach((track) => track.stop());
+          stream.getTracks().forEach(track => track.stop());
           return;
         }
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play().then(() => {
-            if (active) startAutoDetection();
-          }).catch(() => {
-            // Playback aborted — component likely unmounted
-          });
+          videoRef.current
+            .play()
+            .then(() => {
+              if (active) startAutoDetection();
+            })
+            .catch(() => {
+              // Playback aborted — component likely unmounted
+            });
         }
       } catch (err: unknown) {
         if (active) {
@@ -406,11 +503,15 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
     return () => {
       active = false;
       stopScanning();
+      if (faceCheckIntervalRef.current) {
+        clearInterval(faceCheckIntervalRef.current);
+        faceCheckIntervalRef.current = null;
+      }
       if (recorderRef.current && recorderRef.current.state === 'recording') {
         recorderRef.current.stop();
       }
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
       }
     };
@@ -437,11 +538,14 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play().then(() => {
-            startAutoDetection();
-          }).catch(() => {
-            // Playback aborted
-          });
+          videoRef.current
+            .play()
+            .then(() => {
+              startAutoDetection();
+            })
+            .catch(() => {
+              // Playback aborted
+            });
         }
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'Camera access failed');
@@ -461,7 +565,9 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
     return (
       <Paper withBorder p="md" radius="md">
         <Stack gap="sm" align="center">
-          <Text c="red" size="sm">{error}</Text>
+          <Text c="red" size="sm">
+            {error}
+          </Text>
           <Button variant="light" onClick={onCancel}>
             {t('common.cancel')}
           </Button>
@@ -473,7 +579,9 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
   return (
     <Paper withBorder p="md" radius="md">
       <Stack gap="sm">
-        <Text fw={600} size="sm">{label}</Text>
+        <Text fw={600} size="sm">
+          {label}
+        </Text>
 
         {!captured && (
           <>
@@ -485,12 +593,69 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
                 muted
                 style={{
                   width: '100%',
-                  maxHeight: 300,
                   borderRadius: 8,
-                  objectFit: 'cover',
+                  display: 'block',
                   transform: facingMode === 'user' ? 'scaleX(-1)' : undefined,
                 }}
               />
+              {isVideoMode && (
+                <svg
+                  viewBox="0 0 200 300"
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '45%',
+                    height: '75%',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <ellipse
+                    cx="100"
+                    cy="150"
+                    rx="90"
+                    ry="140"
+                    fill="none"
+                    stroke={
+                      detectStatus === 'recording'
+                        ? '#fa5252'
+                        : detectStatus === 'detected'
+                          ? '#40c057'
+                          : 'rgba(255,255,255,0.6)'
+                    }
+                    strokeWidth="3"
+                    strokeDasharray={detectStatus === 'recording' ? 'none' : '8 4'}
+                  />
+                </svg>
+              )}
+              {!isVideoMode && (
+                <svg
+                  viewBox="0 0 400 260"
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '85%',
+                    height: '80%',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <rect
+                    x="10"
+                    y="10"
+                    width="380"
+                    height="240"
+                    rx="16"
+                    ry="16"
+                    fill="none"
+                    stroke={detectStatus === 'detected' ? '#40c057' : 'rgba(255,255,255,0.6)'}
+                    strokeWidth="3"
+                    strokeDasharray={detectStatus === 'detected' ? 'none' : '8 4'}
+                  />
+                </svg>
+              )}
               {detectStatus === 'scanning' && (
                 <Badge
                   color="dark"
@@ -522,17 +687,34 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
                   {t('identity_verification.auto_detected')}
                 </Badge>
               )}
+              {detectStatus === 'face_lost' && (
+                <Badge
+                  color="orange"
+                  variant="filled"
+                  size="lg"
+                  style={{
+                    position: 'absolute',
+                    bottom: 12,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                  }}
+                >
+                  {t('identity_verification.face_lost_during_recording')}
+                </Badge>
+              )}
               {detectStatus === 'recording' && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: 12,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 4,
-                }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 12,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
                   <Badge color="red" variant="filled" size="lg">
                     {t('identity_verification.recording_video')}
                   </Badge>
@@ -546,10 +728,7 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
                 onClick={handleCapture}
                 disabled={detectStatus === 'recording'}
               >
-                {isVideoMode
-                  ? t('identity_verification.record_video')
-                  : t('identity_verification.capture')
-                }
+                {isVideoMode ? t('identity_verification.record_video') : t('identity_verification.capture')}
               </Button>
               <Button variant="light" onClick={onCancel}>
                 {t('common.cancel')}
@@ -588,18 +767,10 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
               />
             )}
             <Group>
-              <Button
-                color="green"
-                leftSection={<Check size={16} />}
-                onClick={handleConfirm}
-              >
+              <Button color="green" leftSection={<Check size={16} />} onClick={handleConfirm}>
                 {t('identity_verification.confirm')}
               </Button>
-              <Button
-                variant="light"
-                leftSection={<RotateCcw size={16} />}
-                onClick={handleRetake}
-              >
+              <Button variant="light" leftSection={<RotateCcw size={16} />} onClick={handleRetake}>
                 {t('identity_verification.retake')}
               </Button>
             </Group>

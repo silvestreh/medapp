@@ -22,6 +22,8 @@ export function generateAppScript(steps: StepDef[]): string {
   var mediaRecorder = null;
   var recordProgress = 0;
   var recordProgressInterval = null;
+  var faceCheckInterval = null;
+  var recordingAborted = false;
   var VIDEO_RECORD_DURATION_MS = 2000;
 
   var steps = ${JSON.stringify(steps)};
@@ -44,15 +46,68 @@ export function generateAppScript(steps: StepDef[]): string {
 
   // Feature detection
   var hasBarcodeDetector = typeof BarcodeDetector !== 'undefined';
-  var hasFaceDetector = typeof FaceDetector !== 'undefined';
   var barcodeDetector = null;
-  var faceDetector = null;
 
   if (hasBarcodeDetector) {
     try { barcodeDetector = new BarcodeDetector({ formats: ['pdf417'] }); } catch(e) { hasBarcodeDetector = false; }
   }
-  if (hasFaceDetector) {
-    try { faceDetector = new FaceDetector({ fastMode: true, maxDetectedFaces: 1 }); } catch(e) { hasFaceDetector = false; }
+
+  // MediaPipe FaceLandmarker (loaded async from CDN)
+  var faceLandmarker = null;
+  var faceLandmarkerReady = false;
+  var faceLandmarkerLastTimestamp = 0;
+  var MAX_YAW_DEG = 20;
+  var MAX_PITCH_DEG = 15;
+
+  function loadFaceLandmarker() {
+    if (faceLandmarker || faceLandmarkerReady) return;
+    import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/+esm').then(function(vision) {
+      return vision.FilesetResolver.forVisionTasks(
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
+      ).then(function(fileset) {
+        return vision.FaceLandmarker.createFromOptions(fileset, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+            delegate: 'GPU',
+          },
+          runningMode: 'VIDEO',
+          numFaces: 1,
+          outputFacialTransformationMatrixes: true,
+        });
+      });
+    }).then(function(lm) {
+      faceLandmarker = lm;
+      faceLandmarkerReady = true;
+    }).catch(function(err) {
+      console.warn('FaceLandmarker failed to load:', err);
+    });
+  }
+
+  function detectFace(video) {
+    if (!faceLandmarker) return { detected: false, lookingAtCamera: false };
+    var timestamp = performance.now();
+    if (timestamp <= faceLandmarkerLastTimestamp) return { detected: false, lookingAtCamera: false };
+    faceLandmarkerLastTimestamp = timestamp;
+    try {
+      var result = faceLandmarker.detectForVideo(video, timestamp);
+      if (!result.faceLandmarks || result.faceLandmarks.length === 0) {
+        return { detected: false, lookingAtCamera: false };
+      }
+      var matrices = result.facialTransformationMatrixes;
+      if (!matrices || matrices.length === 0) {
+        return { detected: true, lookingAtCamera: true };
+      }
+      var matrix = matrices[0].data;
+      var m00 = matrix[0];
+      var m10 = matrix[1];
+      var m20 = matrix[2];
+      var pitch = Math.asin(-m20) * (180 / Math.PI);
+      var yaw = Math.atan2(m10, m00) * (180 / Math.PI);
+      var lookingAtCamera = Math.abs(yaw) < MAX_YAW_DEG && Math.abs(pitch) < MAX_PITCH_DEG;
+      return { detected: true, lookingAtCamera: lookingAtCamera };
+    } catch(e) {
+      return { detected: false, lookingAtCamera: false };
+    }
   }
 
   // --- Helpers ---
@@ -74,6 +129,10 @@ export function generateAppScript(steps: StepDef[]): string {
 
   function stopCamera() {
     stopScanning();
+    if (faceCheckInterval) {
+      clearInterval(faceCheckInterval);
+      faceCheckInterval = null;
+    }
     if (recordProgressInterval) {
       clearInterval(recordProgressInterval);
       recordProgressInterval = null;
@@ -135,14 +194,20 @@ export function generateAppScript(steps: StepDef[]): string {
 
   function canAutoDetect(step) {
     if (step.autoDetect === 'barcode') return hasBarcodeDetector && barcodeDetector;
-    if (step.autoDetect === 'face') return hasFaceDetector && faceDetector;
+    if (step.autoDetect === 'face') return faceLandmarkerReady && faceLandmarker;
     if (step.autoDetect === 'text') return true;
     return false;
   }
 
   function startAutoDetection() {
     var step = steps[currentStep];
-    if (!step || !canAutoDetect(step)) return;
+    if (!step) return;
+    // Wait for FaceLandmarker to load if needed
+    if (step.autoDetect === 'face' && !faceLandmarkerReady) {
+      setTimeout(startAutoDetection, 200);
+      return;
+    }
+    if (!canAutoDetect(step)) return;
 
     autoDetectStatus = 'scanning';
     render();
@@ -186,25 +251,21 @@ export function generateAppScript(steps: StepDef[]): string {
         }
         scanAnimationId = requestAnimationFrame(scanFrame);
       } else {
-        if (step.autoDetect === 'face' && faceDetector) {
-          faceDetector.detect(video).then(function(results) {
-            if (!cameraStream || capturedBlob) return;
-            var hasValidResult = results && results.length > 0;
-            if (hasValidResult) {
-              consecutiveDetections++;
-              if (consecutiveDetections >= requiredDetections) {
-                autoDetectStatus = 'detected';
-                render();
-                setTimeout(recordVideo, 300);
-                return;
-              }
-            } else {
-              consecutiveDetections = Math.max(0, consecutiveDetections - 1);
+        if (step.autoDetect === 'face' && faceLandmarker) {
+          var faceResult = detectFace(video);
+          if (!cameraStream || capturedBlob) return;
+          if (faceResult.detected && faceResult.lookingAtCamera) {
+            consecutiveDetections++;
+            if (consecutiveDetections >= requiredDetections) {
+              autoDetectStatus = 'detected';
+              render();
+              setTimeout(recordVideo, 300);
+              return;
             }
-            scanAnimationId = requestAnimationFrame(scanFrame);
-          }).catch(function() {
-            scanAnimationId = requestAnimationFrame(scanFrame);
-          });
+          } else {
+            consecutiveDetections = Math.max(0, consecutiveDetections - 1);
+          }
+          scanAnimationId = requestAnimationFrame(scanFrame);
         } else {
           var detector = barcodeDetector;
           detector.detect(video).then(function(results) {
@@ -242,6 +303,7 @@ export function generateAppScript(steps: StepDef[]): string {
     capturedBlob = null;
     capturedPreviewUrl = null;
     phase = 'camera';
+    if (step.autoDetect === 'face') loadFaceLandmarker();
     render();
 
     navigator.mediaDevices.getUserMedia({
@@ -294,6 +356,7 @@ export function generateAppScript(steps: StepDef[]): string {
     stopScanning();
     if (!cameraStream) return;
 
+    recordingAborted = false;
     autoDetectStatus = 'recording';
     recordProgress = 0;
     render();
@@ -312,6 +375,24 @@ export function generateAppScript(steps: StepDef[]): string {
 
     recorder.onstop = function() {
       mediaRecorder = null;
+      if (faceCheckInterval) {
+        clearInterval(faceCheckInterval);
+        faceCheckInterval = null;
+      }
+
+      if (recordingAborted) {
+        // Face lost during recording — show warning and restart
+        autoDetectStatus = 'face_lost';
+        recordProgress = 0;
+        render();
+        setTimeout(function() {
+          autoDetectStatus = '';
+          render();
+          openCamera();
+        }, 2000);
+        return;
+      }
+
       var blob = new Blob(chunks, { type: 'video/webm' });
       capturedBlob = blob;
       capturedPreviewUrl = URL.createObjectURL(blob);
@@ -324,6 +405,31 @@ export function generateAppScript(steps: StepDef[]): string {
     };
 
     recorder.start();
+
+    // Face tracking during recording — abort if face disappears or looks away
+    if (faceLandmarkerReady && faceLandmarker) {
+      var consecutiveMisses = 0;
+      faceCheckInterval = setInterval(function() {
+        var video = document.getElementById('camera-video');
+        if (!video || !video.videoWidth || recorder.state !== 'recording') return;
+
+        var faceResult = detectFace(video);
+        if (recorder.state !== 'recording') return;
+        if (faceResult.detected && faceResult.lookingAtCamera) {
+          consecutiveMisses = 0;
+        } else {
+          consecutiveMisses++;
+          if (consecutiveMisses >= 2) {
+            recordingAborted = true;
+            clearInterval(faceCheckInterval);
+            faceCheckInterval = null;
+            if (recorder.state === 'recording') {
+              recorder.stop();
+            }
+          }
+        }
+      }, 200);
+    }
 
     var startTime = Date.now();
     recordProgressInterval = setInterval(function() {
@@ -340,6 +446,10 @@ export function generateAppScript(steps: StepDef[]): string {
       if (recordProgressInterval) {
         clearInterval(recordProgressInterval);
         recordProgressInterval = null;
+      }
+      if (faceCheckInterval) {
+        clearInterval(faceCheckInterval);
+        faceCheckInterval = null;
       }
       if (recorder.state === 'recording') {
         recorder.stop();
@@ -528,6 +638,8 @@ export function generateAppScript(steps: StepDef[]): string {
     }
 
     else if (phase === 'intermediate') {
+      // Preload FaceLandmarker if next step is selfie
+      if (step && step.autoDetect === 'face') loadFaceLandmarker();
       var prevStep = steps[currentStep - 1];
       html += '<div class="flex-1 flex flex-col justify-center items-center px-6 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center max-w-[420px] mx-auto w-full">';
       html += '<div class="w-14 h-14 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-3xl mb-5">&#10003;</div>';
@@ -546,24 +658,35 @@ export function generateAppScript(steps: StepDef[]): string {
 
       if (cameraSupported) {
         html += '<div class="flex-1 flex flex-col bg-black relative">';
-        html += '<video id="camera-video" autoplay playsinline muted class="flex-1 w-full object-cover"' + (isSelfie ? ' style="transform:scaleX(-1)"' : '') + '></video>';
+        html += '<video id="camera-video" autoplay playsinline muted class="flex-1 w-full object-contain"' + (isSelfie ? ' style="transform:scaleX(-1)"' : '') + '></video>';
+        if (isSelfie) {
+          var ovalStroke = autoDetectStatus === 'recording' ? '#fa5252' : autoDetectStatus === 'detected' ? '#40c057' : 'rgba(255,255,255,0.6)';
+          var ovalDash = autoDetectStatus === 'recording' ? '' : ' stroke-dasharray="8 4"';
+          html += '<svg viewBox="0 0 200 300" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:45%;height:60%;pointer-events:none"><ellipse cx="100" cy="150" rx="90" ry="140" fill="none" stroke="' + ovalStroke + '" stroke-width="3"' + ovalDash + '/></svg>';
+        } else {
+          var rectStroke = autoDetectStatus === 'detected' ? '#40c057' : 'rgba(255,255,255,0.6)';
+          var rectDash = autoDetectStatus === 'detected' ? '' : ' stroke-dasharray="8 4"';
+          html += '<svg viewBox="0 0 400 260" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;height:45%;pointer-events:none"><rect x="10" y="10" width="380" height="240" rx="16" ry="16" fill="none" stroke="' + rectStroke + '" stroke-width="3"' + rectDash + '/></svg>';
+        }
         html += '<div class="absolute top-0 left-0 right-0 z-10" style="padding:calc(1rem + env(safe-area-inset-top)) 1.25rem 1rem;background:linear-gradient(to bottom,rgba(0,0,0,0.5),transparent)">';
         html += '<div class="text-white/70 text-xs uppercase tracking-widest mb-1">Paso ' + (currentStep + 1) + ' de ' + steps.length + '</div>';
         html += '<div class="text-white text-[17px] font-semibold">' + step.title + '</div>';
         html += '</div>';
         html += '<div class="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-3 z-10" style="padding:1rem 1.25rem calc(4rem + env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(0,0,0,0.6),transparent)">';
         html += '<div class="text-white text-sm text-center" style="text-shadow:0 1px 3px rgba(0,0,0,0.5)">' + hint + '</div>';
-        if (autoDetectStatus === 'recording') {
+        if (autoDetectStatus === 'face_lost') {
+          html += '<div class="py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white">Mantené la mirada en la cámara</div>';
+        } else if (autoDetectStatus === 'recording') {
           html += '<div class="flex flex-col items-center gap-2">';
-          html += '<div class="py-2 px-5 rounded-3xl text-sm font-semibold bg-red-500/90 text-white">Grabando...</div>';
+          html += '<div class="py-2 px-5 rounded-3xl text-sm font-semibold bg-red-500/90 text-white">Verificando...</div>';
           html += '<div class="w-32 h-1.5 rounded-full bg-white/20 overflow-hidden"><div class="h-full bg-red-500 rounded-full transition-all" style="width:' + recordProgress + '%"></div></div>';
           html += '</div>';
         } else if (autoDetectStatus === 'detected') {
-          html += '<div class="py-2 px-5 rounded-3xl text-sm font-semibold bg-green-500/90 text-white">Detectado &#10003;</div>';
+          html += '<div class="py-2 px-5 rounded-3xl text-sm font-semibold bg-green-500/90 text-white">Listo &#10003;</div>';
         } else if (autoDetectStatus === 'scanning') {
-          html += '<div class="py-2 px-5 rounded-3xl text-sm font-semibold bg-white/15 text-white animate-pulse">Buscando...</div>';
+          html += '<div class="py-2 px-5 rounded-3xl text-sm font-semibold bg-white/15 text-white animate-pulse">Verificando...</div>';
         }
-        if (autoDetectStatus !== 'recording') {
+        if (autoDetectStatus !== 'recording' && autoDetectStatus !== 'face_lost') {
           html += '<button class="w-[72px] h-[72px] rounded-full border-4 border-white bg-white/25 cursor-pointer active:bg-white/50" onclick="window.__capture()"></button>';
         }
         if (!isSelfie) {

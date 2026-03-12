@@ -61,6 +61,8 @@ export default function SettingsIdVerification() {
       currentStatus={status ?? 'none'}
       rejectionReason={parentData.identityVerification?.rejectionReason}
       autoCheckProgress={parentData.identityVerification?.autoCheckProgress}
+      dniScanData={parentData.identityVerification?.dniScanData}
+      userId={(parentData.user as any)?.id}
       onSubmitted={handleSubmitted}
       autoChecksRunning={autoChecksRunning}
     />

@@ -3,6 +3,7 @@ import * as local from '@feathersjs/authentication-local';
 import { BadRequest } from '@feathersjs/errors';
 import createPersonalData from '../../hooks/create-personal-data';
 import createContactData from '../../hooks/create-contact-data';
+import patchPersonalData from '../../hooks/patch-personal-data';
 import includeData from '../../hooks/include-data';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { lowerCase } from '../../hooks/lowerCase';
@@ -87,7 +88,9 @@ export default {
       handleSignupOrganization()
     ],
     update: [],
-    patch: [],
+    patch: [
+      patchPersonalData('user'),
+    ],
     remove: []
   },
 

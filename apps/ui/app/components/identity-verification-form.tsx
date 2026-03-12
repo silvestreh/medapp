@@ -1,9 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Button, Group, Image, Loader, Paper, Progress, SegmentedControl, Stack, Stepper, Text } from '@mantine/core';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  Alert,
+  Button,
+  Group,
+  Image,
+  Loader,
+  Paper,
+  Progress,
+  SegmentedControl,
+  Stack,
+  Stepper,
+  Text,
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
-import { Camera, CreditCard, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { Camera, CreditCard, CheckCircle, XCircle, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
 
 import { useFeathers } from '~/components/provider';
 import { SectionTitle, FormCard } from '~/components/forms/styles';
@@ -20,10 +34,23 @@ interface AutoCheckProgress {
   position: number | null;
 }
 
+interface DniScanData {
+  tramiteNumber: string;
+  lastName: string;
+  firstName: string;
+  gender: string;
+  dniNumber: string;
+  exemplar: string;
+  birthDate: string;
+  issueDate: string;
+}
+
 interface IdentityVerificationFormProps {
   currentStatus: VerificationStatus;
   rejectionReason?: string | null;
   autoCheckProgress?: AutoCheckProgress | null;
+  dniScanData?: DniScanData | null;
+  userId?: string;
   onSubmitted: () => void;
   autoChecksRunning?: boolean;
 }
@@ -41,7 +68,7 @@ interface PhotoValidation {
   hasFace: boolean;
 }
 
-type CaptureMode = 'intro' | 'camera' | 'qr';
+type CaptureMode = 'intro' | 'camera' | 'qr' | 'detecting';
 
 const ACCEPT_IMAGES = 'image/png,image/jpeg,image/webp';
 const ACCEPT_VIDEO = 'video/webm,video/mp4';
@@ -60,16 +87,30 @@ const SLOT_AUTO_DETECT: Record<UploadSlot, 'barcode' | 'face' | 'text'> = {
 
 const SLOT_ORDER: UploadSlot[] = ['idFront', 'idBack', 'selfie'];
 
+const PROGRESS_STEP_KEYS = [
+  'scanning_barcode',
+  'submitting_face_compare',
+  'downloading_files',
+  'extracting_frames',
+  'comparing_frame',
+] as const;
+
+type ProgressStepKey = (typeof PROGRESS_STEP_KEYS)[number];
+
 function slotToTranslationKey(slot: UploadSlot): string {
   if (slot === 'idFront') return 'id_front';
   if (slot === 'idBack') return 'id_back';
   return 'selfie';
 }
 
+dayjs.extend(customParseFormat);
+
 export function IdentityVerificationForm({
   currentStatus,
   rejectionReason,
   autoCheckProgress,
+  dniScanData,
+  userId,
   onSubmitted,
   autoChecksRunning = false,
 }: IdentityVerificationFormProps) {
@@ -88,31 +129,71 @@ export function IdentityVerificationForm({
   const [validationWarning, setValidationWarning] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [updatingRecords, setUpdatingRecords] = useState(false);
+
+  const isDniMismatch = useMemo(() => {
+    if (!rejectionReason) return false;
+    return rejectionReason.split('\n').some(line => line.startsWith('dni_mismatch'));
+  }, [rejectionReason]);
+
   const translatedRejectionReason = useMemo(() => {
     if (!rejectionReason) return null;
     return rejectionReason
       .split('\n')
-      .map((line) => {
-        const [key, ...rest] = line.split(':');
-        const details = rest.join(':').trim();
+      .map(line => {
+        const [key] = line.split(':');
         if (key === 'dni_mismatch') {
-          return t('identity_verification.rejection_dni_mismatch', { details });
+          return t('identity_verification.rejection_dni_mismatch');
+        }
+        if (key === 'dni_scan_failed') {
+          return t('identity_verification.rejection_unknown', { reason: line });
         }
         if (key === 'face_mismatch') {
-          return t('identity_verification.rejection_face_mismatch', { score: details });
+          return t('identity_verification.rejection_face_mismatch');
         }
         if (key === 'selfie_not_recent') {
           return t('identity_verification.rejection_selfie_not_recent');
+        }
+        if (key === 'license_invalid') {
+          return t('identity_verification.rejection_license_invalid');
         }
         return t('identity_verification.rejection_unknown', { reason: line });
       })
       .join('\n\n');
   }, [rejectionReason, t]);
 
+  const handleUpdateRecordsFromDni = useCallback(async () => {
+    if (!dniScanData) return;
+    setUpdatingRecords(true);
+    try {
+      const genderMap: Record<string, string> = { M: 'male', F: 'female' };
+      const birthDate = dayjs(dniScanData.birthDate, 'DD/MM/YYYY', true);
+
+      await (client as any).service('users').patch(userId, {
+        personalData: {
+          firstName: dniScanData.firstName,
+          lastName: dniScanData.lastName,
+          documentValue: dniScanData.dniNumber,
+          birthDate: birthDate.isValid() ? birthDate.format('YYYY-MM-DD') : undefined,
+          gender: genderMap[dniScanData.gender.toUpperCase()] || 'other',
+        },
+      });
+      notifications.show({
+        message: t('identity_verification.records_updated_success'),
+        color: 'green',
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : t('common.something_went_wrong');
+      notifications.show({ message, color: 'red' });
+    } finally {
+      setUpdatingRecords(false);
+    }
+  }, [dniScanData, client, t, userId]);
+
   const handleStartCamera = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach(track => track.stop());
       setCaptureMode('camera');
     } catch {
       setCaptureMode('qr');
@@ -257,7 +338,7 @@ export function IdentityVerificationForm({
         setUploading(null);
       }
     },
-    [client, t, uploads, getAuthHeaders, validateIdFrontPhoto, submitVerification]
+    [t, uploads, getAuthHeaders, validateIdFrontPhoto, submitVerification]
   );
 
   const handleCameraCapture = useCallback(
@@ -294,28 +375,25 @@ export function IdentityVerificationForm({
 
   const handleForceAdvance = useCallback(() => {
     setValidationWarning(null);
-    setActiveStep((s) => Math.min(s + 1, 2));
+    setActiveStep(s => Math.min(s + 1, 2));
   }, []);
 
   const handleRetake = useCallback(() => {
     const slot = SLOT_ORDER[activeStep];
     if (slot) {
-      setUploads((prev) => ({ ...prev, [slot]: null }));
+      setUploads(prev => ({ ...prev, [slot]: null }));
       setValidationWarning(null);
     }
   }, [activeStep]);
 
-  const handleQrCompleted = useCallback(
-    () => {
-      // Verification API auto-creates identity verification on session completion
-      notifications.show({
-        message: t('identity_verification.submitted_success'),
-        color: 'green',
-      });
-      onSubmitted();
-    },
-    [t, onSubmitted]
-  );
+  const handleQrCompleted = useCallback(() => {
+    // Verification API auto-creates identity verification on session completion
+    notifications.show({
+      message: t('identity_verification.submitted_success'),
+      color: 'green',
+    });
+    onSubmitted();
+  }, [t, onSubmitted]);
 
   const currentSlot = SLOT_ORDER[activeStep];
   const currentUpload = currentSlot ? uploads[currentSlot] : null;
@@ -337,31 +415,26 @@ export function IdentityVerificationForm({
           icon={autoChecksRunning ? <Loader size={18} /> : <Clock size={18} />}
           color={autoChecksRunning ? 'blue' : 'yellow'}
         >
-          {autoChecksRunning
-            ? t('identity_verification.auto_checking')
-            : t('identity_verification.status_pending')
-          }
+          {autoChecksRunning ? t('identity_verification.auto_checking') : t('identity_verification.status_pending')}
           {autoChecksRunning && autoCheckProgress && (
             <Stack gap="xs" mt="sm">
               <Text size="sm">
-                {autoCheckProgress.step === 'queued' && autoCheckProgress.position != null && (
-                  autoCheckProgress.position === 0
+                {autoCheckProgress.step === 'queued' &&
+                  autoCheckProgress.position != null &&
+                  (autoCheckProgress.position === 0
                     ? t('identity_verification.progress_queued_next')
-                    : t('identity_verification.progress_queued', { position: autoCheckProgress.position })
-                )}
-                {autoCheckProgress.step !== 'queued' && (
-                  t(`identity_verification.progress_${autoCheckProgress.step}`)
-                )}
+                    : t('identity_verification.progress_queued', { position: autoCheckProgress.position }))}
+                {autoCheckProgress.step !== 'queued' &&
+                  PROGRESS_STEP_KEYS.includes(autoCheckProgress.step as ProgressStepKey) &&
+                  t(
+                    `identity_verification.progress_${autoCheckProgress.step}` as `identity_verification.progress_${ProgressStepKey}`
+                  )}
               </Text>
               {autoCheckProgress.step === 'comparing_frame' &&
                 autoCheckProgress.current != null &&
                 autoCheckProgress.total != null && (
-                <Progress
-                  value={(autoCheckProgress.current / autoCheckProgress.total) * 100}
-                  size="sm"
-                  animated
-                />
-              )}
+                  <Progress value={(autoCheckProgress.current / autoCheckProgress.total) * 100} size="sm" animated />
+                )}
             </Stack>
           )}
         </Alert>
@@ -376,6 +449,19 @@ export function IdentityVerificationForm({
               <Markdown>{translatedRejectionReason}</Markdown>
             </Text>
           )}
+          {isDniMismatch && dniScanData && (
+            <Button
+              variant="light"
+              color="red"
+              size="xs"
+              mt="sm"
+              leftSection={<RefreshCw size={14} />}
+              loading={updatingRecords}
+              onClick={handleUpdateRecordsFromDni}
+            >
+              {t('identity_verification.update_records_from_dni')}
+            </Button>
+          )}
         </Alert>
       )}
 
@@ -386,27 +472,47 @@ export function IdentityVerificationForm({
             <FormCard>
               <Stack gap="md" p="md">
                 <Text fw={600}>{t('identity_verification.intro_title')}</Text>
-                <Text size="sm" c="dimmed">{t('identity_verification.intro_subtitle')}</Text>
+                <Text size="sm" c="dimmed">
+                  {t('identity_verification.intro_subtitle')}
+                </Text>
                 <Stack gap="xs">
                   <Group gap="sm" wrap="nowrap">
-                    <Text fw={700} c="blue" size="lg" style={{ width: 24, textAlign: 'center', flexShrink: 0 }}>1</Text>
+                    <Text fw={700} c="blue" size="lg" style={{ width: 24, textAlign: 'center', flexShrink: 0 }}>
+                      1
+                    </Text>
                     <div>
-                      <Text size="sm" fw={600}>{t('identity_verification.id_front')}</Text>
-                      <Text size="xs" c="dimmed">{t('identity_verification.intro_step1_desc')}</Text>
+                      <Text size="sm" fw={600}>
+                        {t('identity_verification.id_front')}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {t('identity_verification.intro_step1_desc')}
+                      </Text>
                     </div>
                   </Group>
                   <Group gap="sm" wrap="nowrap">
-                    <Text fw={700} c="blue" size="lg" style={{ width: 24, textAlign: 'center', flexShrink: 0 }}>2</Text>
+                    <Text fw={700} c="blue" size="lg" style={{ width: 24, textAlign: 'center', flexShrink: 0 }}>
+                      2
+                    </Text>
                     <div>
-                      <Text size="sm" fw={600}>{t('identity_verification.id_back')}</Text>
-                      <Text size="xs" c="dimmed">{t('identity_verification.intro_step2_desc')}</Text>
+                      <Text size="sm" fw={600}>
+                        {t('identity_verification.id_back')}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {t('identity_verification.intro_step2_desc')}
+                      </Text>
                     </div>
                   </Group>
                   <Group gap="sm" wrap="nowrap">
-                    <Text fw={700} c="blue" size="lg" style={{ width: 24, textAlign: 'center', flexShrink: 0 }}>3</Text>
+                    <Text fw={700} c="blue" size="lg" style={{ width: 24, textAlign: 'center', flexShrink: 0 }}>
+                      3
+                    </Text>
                     <div>
-                      <Text size="sm" fw={600}>{t('identity_verification.selfie')}</Text>
-                      <Text size="xs" c="dimmed">{t('identity_verification.intro_step3_desc')}</Text>
+                      <Text size="sm" fw={600}>
+                        {t('identity_verification.selfie')}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {t('identity_verification.intro_step3_desc')}
+                      </Text>
                     </div>
                   </Group>
                 </Stack>
@@ -422,7 +528,7 @@ export function IdentityVerificationForm({
           {(captureMode === 'camera' || captureMode === 'qr') && (
             <SegmentedControl
               value={captureMode}
-              onChange={(value) => setCaptureMode(value as CaptureMode)}
+              onChange={value => setCaptureMode(value as CaptureMode)}
               data={[
                 { label: t('identity_verification.mode_camera'), value: 'camera' },
                 { label: t('identity_verification.mode_qr'), value: 'qr' },
@@ -432,9 +538,7 @@ export function IdentityVerificationForm({
           )}
 
           {/* QR Mode */}
-          {captureMode === 'qr' && (
-            <QrVerificationSession onCompleted={handleQrCompleted} />
-          )}
+          {captureMode === 'qr' && <QrVerificationSession onCompleted={handleQrCompleted} />}
 
           {/* Camera Mode */}
           {captureMode === 'camera' && (
@@ -479,10 +583,14 @@ export function IdentityVerificationForm({
                 <FormCard>
                   <Stack gap="md" p="md">
                     <Text fw={600}>
-                      {t(`identity_verification.${slotToTranslationKey(currentSlot)}` as 'identity_verification.id_front')}
+                      {t(
+                        `identity_verification.${slotToTranslationKey(currentSlot)}` as 'identity_verification.id_front'
+                      )}
                     </Text>
                     <Text size="sm" c="dimmed">
-                      {t(`identity_verification.${slotToTranslationKey(currentSlot)}_hint` as 'identity_verification.id_front_hint')}
+                      {t(
+                        `identity_verification.${slotToTranslationKey(currentSlot)}_hint` as 'identity_verification.id_front_hint'
+                      )}
                     </Text>
 
                     {/* Show preview of already-captured photo/video */}
@@ -502,13 +610,7 @@ export function IdentityVerificationForm({
                       />
                     )}
                     {currentUpload?.preview && currentSlot !== 'selfie' && (
-                      <Image
-                        src={currentUpload.preview}
-                        alt={currentSlot}
-                        mah={200}
-                        radius="sm"
-                        fit="contain"
-                      />
+                      <Image src={currentUpload.preview} alt={currentSlot} mah={200} radius="sm" fit="contain" />
                     )}
 
                     {/* Validating spinner */}
@@ -547,14 +649,11 @@ export function IdentityVerificationForm({
                           autoDetect={SLOT_AUTO_DETECT[currentSlot]}
                           onCapture={handleCameraCapture}
                           onCancel={handleCancelCapture}
-                          label={t(`identity_verification.${slotToTranslationKey(currentSlot)}` as 'identity_verification.id_front')}
+                          label={t(
+                            `identity_verification.${slotToTranslationKey(currentSlot)}` as 'identity_verification.id_front'
+                          )}
                         />
-                        <Button
-                          variant="subtle"
-                          size="sm"
-                          onClick={handlePickFile}
-                          disabled={!!uploading}
-                        >
+                        <Button variant="subtle" size="sm" onClick={handlePickFile} disabled={!!uploading}>
                           {t('identity_verification.upload_file')}
                         </Button>
                       </>
@@ -563,12 +662,7 @@ export function IdentityVerificationForm({
                     {/* Retake button when photo is captured but no warning */}
                     {currentUpload && !validating && !validationWarning && (
                       <Group gap="xs">
-                        <Button
-                          variant="light"
-                          size="sm"
-                          leftSection={<Camera size={14} />}
-                          onClick={handleRetake}
-                        >
+                        <Button variant="light" size="sm" leftSection={<Camera size={14} />} onClick={handleRetake}>
                           {t('identity_verification.retake')}
                         </Button>
                       </Group>

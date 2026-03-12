@@ -71,6 +71,37 @@ export const runAutomatedChecks = (): Hook => {
         logger.error('[auto-checks] PDF417 scan failed: %s', message);
       }
 
+      // Early rejection: skip face comparison if DNI doesn't match or scan failed
+      if (updates.dniScanMatch === false) {
+        logger.info('[auto-checks] DNI mismatch — rejecting without face comparison');
+        await patchProgress({
+          ...updates,
+          autoCheckCompletedAt: new Date(),
+          autoCheckProgress: null,
+          faceMatch: null,
+          faceMatchConfidence: null,
+          faceMatchError: 'Skipped: DNI data mismatch',
+          status: 'rejected',
+          rejectionReason: `dni_mismatch:${updates.dniScanErrors}`,
+        });
+        return;
+      }
+
+      if (updates.dniScanData === null && updates.dniScanErrors) {
+        logger.info('[auto-checks] DNI scan failed — rejecting without face comparison');
+        await patchProgress({
+          ...updates,
+          autoCheckCompletedAt: new Date(),
+          autoCheckProgress: null,
+          faceMatch: null,
+          faceMatchConfidence: null,
+          faceMatchError: 'Skipped: DNI scan failed',
+          status: 'rejected',
+          rejectionReason: `dni_scan_failed:${updates.dniScanErrors}`,
+        });
+        return;
+      }
+
       // Save barcode results and update progress
       await patchProgress({
         ...updates,

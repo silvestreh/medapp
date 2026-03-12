@@ -65,8 +65,17 @@ export function setupIdentityVerificationWebhook(app: Application): void {
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : String(err);
           console.error('[webhook] SSSalud verification failed for user %s: %s', verification.userId, message);
-          // SSSalud failed — don't set isVerified, but don't reject either.
-          // Admin can review manually.
+          // Revert: reject the identity verification since license is invalid
+          try {
+            await app.service('identity-verifications').patch(verification.id, {
+              status: 'rejected',
+              rejectionReason: `license_invalid:${message}`,
+            }, { provider: undefined } as any);
+            console.log('[webhook] Reverted verification %s to rejected (SSSalud failed)', verification.id);
+          } catch (revertErr: unknown) {
+            const revertMessage = revertErr instanceof Error ? revertErr.message : String(revertErr);
+            console.error('[webhook] Failed to revert verification %s: %s', verification.id, revertMessage);
+          }
         }
       }
 

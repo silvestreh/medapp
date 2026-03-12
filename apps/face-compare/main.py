@@ -151,6 +151,7 @@ def _process_single_job(job: dict[str, Any]) -> dict[str, Any]:
     id_img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
     if id_img is None:
         raise ValueError("Could not decode DNI image")
+    logger.info("Job %s: ID image loaded: %dx%d", job["job_id"], id_img.shape[1], id_img.shape[0])
 
     video_bytes = _fetch_file(str(job["video_url"]))
 
@@ -371,6 +372,18 @@ def _compare_faces(id_img: np.ndarray, frame_img: np.ndarray) -> dict[str, Any]:
     threshold = float(result["threshold"])
     verified = distance <= threshold
     similarity_percent = round((1 - distance) * 100, 2)
+
+    # Log detected face regions to diagnose detection failures
+    for i, key in enumerate(["facial_areas"]):
+        areas = result.get(key, {})
+        for label in ["img1", "img2"]:
+            area = areas.get(label, {})
+            w = area.get("w", 0)
+            h = area.get("h", 0)
+            if w == 0 and h == 0:
+                logger.warning("Face NOT detected in %s — comparing full image region", label)
+            else:
+                logger.info("Face detected in %s: %dx%d at (%d,%d)", label, w, h, area.get("x", 0), area.get("y", 0))
 
     return {
         "verified": verified,

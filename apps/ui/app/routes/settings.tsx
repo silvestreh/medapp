@@ -142,6 +142,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       rejectionReason: string | null;
       autoCheckCompletedAt: string | null;
       autoCheckProgress: { step: string; current: number | null; total: number | null; position: number | null } | null;
+      dniScanData: {
+        tramiteNumber: string;
+        lastName: string;
+        firstName: string;
+        gender: string;
+        dniNumber: string;
+        exemplar: string;
+        birthDate: string;
+        issueDate: string;
+      } | null;
     } | null = null;
     if (isMedic) {
       try {
@@ -155,6 +165,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             rejectionReason: ivList[0].rejectionReason || null,
             autoCheckCompletedAt: ivList[0].autoCheckCompletedAt || null,
             autoCheckProgress: ivList[0].autoCheckProgress || null,
+            dniScanData: ivList[0].dniScanData || null,
           };
         }
       } catch {

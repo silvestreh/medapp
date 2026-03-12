@@ -3,6 +3,7 @@ import * as authentication from '@feathersjs/authentication';
 import { disallow, iff, isProvider } from 'feathers-hooks-common';
 import { BadRequest, Forbidden } from '@feathersjs/errors';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
+import { decryptValue } from '../../hooks/encryption';
 
 const { authenticate } = authentication.hooks;
 
@@ -48,6 +49,43 @@ const validateCreate = (): Hook => {
     context.data.verifiedBy = null;
     context.data.notes = null;
     context.data.rejectionReason = null;
+
+    return context;
+  };
+};
+
+const attachPersonalData = (): Hook => {
+  return async (context: HookContext): Promise<HookContext> => {
+    const userId = context.data.userId;
+    if (!userId) return context;
+
+    try {
+      const sequelize = context.app.get('sequelizeClient');
+      const user = await sequelize.models.users.findByPk(userId, {
+        include: [{
+          model: sequelize.models.personal_data,
+          attributes: ['firstName', 'lastName', 'documentType', 'documentValue', 'birthDate', 'gender'],
+        }],
+        raw: false,
+        nest: true,
+      });
+
+      if (user) {
+        const pd = (user as any).personal_data?.[0] || (user as any).personal_datum || null;
+        if (pd) {
+          context.data.personalData = {
+            firstName: pd.firstName,
+            lastName: pd.lastName,
+            documentValue: pd.documentValue ? decryptValue(pd.documentValue) : null,
+            birthDate: pd.birthDate ? decryptValue(pd.birthDate) : null,
+            gender: pd.gender,
+          };
+        }
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[attachPersonalData] Failed to fetch personal data:', message);
+    }
 
     return context;
   };
@@ -167,7 +205,7 @@ export default {
     all: [iff(isProvider('external'), authenticate('jwt'), verifyOrganizationMembership())],
     find: [restrictFindToOwnerOrSuperAdmin()],
     get: [restrictFindToOwnerOrSuperAdmin()],
-    create: [validateCreate()],
+    create: [validateCreate(), attachPersonalData()],
     update: [disallow('external')],
     patch: [requireSuperAdminForPatch(), handleApprovalOrRejection()],
     remove: [disallow('external')],
