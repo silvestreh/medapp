@@ -1,11 +1,6 @@
 import { Application } from '../declarations';
 import logger from '../logger';
-import { STEPS } from './steps';
-import { generateAppScript } from './app-script';
 import { generateMobileHtml, errorPage } from './template';
-
-// Generate the app script once at startup (TOKEN/API are injected per-request via window globals)
-const appScript = generateAppScript(STEPS);
 
 export function setupMobilePage(app: Application): void {
   const expressApp = app as any;
@@ -49,7 +44,7 @@ export function setupMobilePage(app: Application): void {
         req.protocol
       );
 
-      const html = generateMobileHtml(token, apiBaseUrl, appScript);
+      const html = generateMobileHtml(token, apiBaseUrl);
       res.set('Content-Type', 'text/html');
       res.send(html);
     } catch (error: any) {

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@source "./app-script.ts";
+@source "./client/**/*.tsx";
 @source "./template.ts";
 
 @theme {

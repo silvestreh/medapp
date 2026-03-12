@@ -11,5 +11,5 @@
     "skipLibCheck": true
   },
   "include": ["src"],
-  "exclude": ["lib"]
+  "exclude": ["lib", "src/mobile-page/client"]
 }

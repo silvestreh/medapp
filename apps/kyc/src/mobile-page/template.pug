@@ -1,0 +1,16 @@
+doctype html
+html(lang='es')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover')
+    title Verificación de Identidad
+    link(rel='stylesheet' href='/public/styles.css')
+  body(
+    class='font-[-apple-system,BlinkMacSystemFont,\'Segoe_UI\',Roboto,sans-serif] bg-gray-50 text-gray-900 min-h-dvh flex flex-col'
+    style='padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);'
+  )
+    #app.flex-1.flex.flex-col
+    script.
+      window.__TOKEN = !{tokenJson};
+      window.__API = !{apiJson};
+    script(src='/public/app.js' defer)
