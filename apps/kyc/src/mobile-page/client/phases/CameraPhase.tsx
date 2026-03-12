@@ -5,7 +5,7 @@ import { compressImage } from '../utils';
 
 type DetectStatus = '' | 'scanning' | 'detected' | 'recording' | 'face_lost';
 
-const VIDEO_RECORD_DURATION_MS = 2000;
+const VIDEO_RECORD_DURATION_MS = 6000;
 
 interface Props {
   step: StepDef;
@@ -188,8 +188,16 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
             frameCount++;
             if (frameCount % 6 !== 0) { scanIdRef.current = requestAnimationFrame(scanFrame); return; }
 
-            const imgData = getVideoImageData(vid);
-            if (!imgData) { scanIdRef.current = requestAnimationFrame(scanFrame); return; }
+            // Crop to bottom 55% of frame — barcode is in lower portion of card,
+            // this doubles effective barcode resolution without requiring close-up.
+            const cropCanvas = document.createElement('canvas');
+            const cropY = Math.floor(vid.videoHeight * 0.45);
+            cropCanvas.width = vid.videoWidth;
+            cropCanvas.height = vid.videoHeight - cropY;
+            const cropCtx = cropCanvas.getContext('2d');
+            if (!cropCtx) { scanIdRef.current = requestAnimationFrame(scanFrame); return; }
+            cropCtx.drawImage(vid, 0, cropY, vid.videoWidth, cropCanvas.height, 0, 0, vid.videoWidth, cropCanvas.height);
+            const imgData = cropCtx.getImageData(0, 0, cropCanvas.width, cropCanvas.height);
 
             detector.detect(imgData).then(results => {
               if (!activeRef.current || !streamRef.current) return;

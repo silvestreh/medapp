@@ -1,7 +1,7 @@
 fastapi
 uvicorn[standard]
-deepface
-tf-keras
+insightface
+onnxruntime
 opencv-python-headless
 numpy
 requests

@@ -14,7 +14,7 @@ interface CameraCaptureProps {
   autoDetect?: AutoDetectMode;
 }
 
-const VIDEO_RECORD_DURATION_MS = 2000;
+const VIDEO_RECORD_DURATION_MS = 6000;
 
 // ── Lazy-loaded detection engines ──
 
@@ -321,8 +321,19 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
       }
 
       if (autoDetect === 'barcode' && barcodeDetector) {
-        // Actually decode the barcode — only auto-captures when data is readable
-        const imgData = getVideoImageData(vid);
+        // Crop to bottom 55% of frame — barcode is in lower portion of card,
+        // this doubles effective barcode resolution without requiring close-up.
+        const cropCanvas = document.createElement('canvas');
+        const cropY = Math.floor(vid.videoHeight * 0.45);
+        cropCanvas.width = vid.videoWidth;
+        cropCanvas.height = vid.videoHeight - cropY;
+        const cropCtx = cropCanvas.getContext('2d');
+        if (!cropCtx) {
+          scanIdRef.current = requestAnimationFrame(scanFrame);
+          return;
+        }
+        cropCtx.drawImage(vid, 0, cropY, vid.videoWidth, cropCanvas.height, 0, 0, vid.videoWidth, cropCanvas.height);
+        const imgData = cropCtx.getImageData(0, 0, cropCanvas.width, cropCanvas.height);
         if (!imgData) {
           scanIdRef.current = requestAnimationFrame(scanFrame);
           return;

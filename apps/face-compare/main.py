@@ -15,7 +15,7 @@ import av
 import cv2
 import numpy as np
 import requests as http_requests
-from deepface import DeepFace
+from insightface.app import FaceAnalysis
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, HttpUrl
@@ -38,6 +38,32 @@ async def log_requests(request: Request, call_next):
     except Exception as e:
         logger.exception("!!! %s %s unhandled error: %s", request.method, request.url.path, e)
         return JSONResponse(status_code=500, content={"detail": str(e)})
+
+
+# ---------------------------------------------------------------------------
+# InsightFace model — lazy singleton, thread-safe
+# ---------------------------------------------------------------------------
+
+_face_app: FaceAnalysis | None = None
+_face_app_lock = threading.Lock()
+
+# Cosine similarity threshold for cross-domain verification (ID photo vs. live video).
+# InsightFace buffalo_l normed embeddings: dot product = cosine similarity.
+# Typical same-domain threshold is ~0.3; slightly relaxed here for cross-domain.
+SIMILARITY_THRESHOLD = 0.25
+
+
+def _get_face_app() -> FaceAnalysis:
+    global _face_app
+    if _face_app is None:
+        with _face_app_lock:
+            if _face_app is None:
+                logger.info("Loading InsightFace buffalo_l model...")
+                fa = FaceAnalysis(name="buffalo_l", providers=["CPUExecutionProvider"])
+                fa.prepare(ctx_id=0, det_size=(640, 640))
+                _face_app = fa
+                logger.info("InsightFace buffalo_l model ready")
+    return _face_app
 
 
 # ---------------------------------------------------------------------------
@@ -159,7 +185,7 @@ def _process_single_job(job: dict[str, Any]) -> dict[str, Any]:
 
     # 2. Extract frames
     _send_progress(job, "extracting_frames")
-    frames = _extract_frames(video_bytes, num_frames=5)
+    frames = _extract_frames(video_bytes, num_frames=8)
     logger.info("Job %s: extracted %d frames", job["job_id"], len(frames))
 
     # 3. Compare each frame
@@ -268,6 +294,10 @@ async def _cleanup_old_jobs() -> None:
 
 @app.on_event("startup")
 async def startup() -> None:
+    # Warm up the model in the background so the first job doesn't pay the load cost
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, _get_face_app)
+
     asyncio.create_task(_process_jobs())
     asyncio.create_task(_cleanup_old_jobs())
 
@@ -314,12 +344,11 @@ def _extract_frames(video_bytes: bytes, num_frames: int = 5) -> list[np.ndarray]
     Extract keyframes from an in-memory video using PyAV.
     Keyframes (I-frames) are full-resolution and sharpest — best for face comparison.
     Falls back to evenly-spaced sampling if not enough keyframes are found.
-    Returns BGR numpy arrays compatible with OpenCV/deepface.
+    Returns BGR numpy arrays compatible with OpenCV/InsightFace.
     """
     container = av.open(io.BytesIO(video_bytes))
     stream = container.streams.video[0]
 
-    # First pass: collect all keyframes
     keyframes: list[np.ndarray] = []
     all_frames: list[np.ndarray] = []
     total_decoded = 0
@@ -337,11 +366,8 @@ def _extract_frames(video_bytes: bytes, num_frames: int = 5) -> list[np.ndarray]
     if not all_frames:
         raise ValueError("Video contains no decodable frames")
 
-    logger.info(
-        "Video: %d total frames, %d keyframes", total_decoded, len(keyframes),
-    )
+    logger.info("Video: %d total frames, %d keyframes", total_decoded, len(keyframes))
 
-    # Use keyframes if we have enough (skip first which may be blank)
     if len(keyframes) >= 2:
         usable = keyframes[1:] if len(keyframes) > num_frames else keyframes
         if len(usable) <= num_frames:
@@ -349,7 +375,6 @@ def _extract_frames(video_bytes: bytes, num_frames: int = 5) -> list[np.ndarray]
         indices = np.linspace(0, len(usable) - 1, num_frames, dtype=int)
         return [usable[i] for i in indices]
 
-    # Fallback: evenly-spaced from all frames, skip first/last 10%
     total = len(all_frames)
     start = max(0, int(total * 0.1))
     end = max(start + 1, int(total * 0.9))
@@ -362,36 +387,45 @@ def _extract_frames(video_bytes: bytes, num_frames: int = 5) -> list[np.ndarray]
     return [usable[i] for i in indices]
 
 
-def _compare_faces(id_img: np.ndarray, frame_img: np.ndarray) -> dict[str, Any]:
-    """Run deepface verification between two BGR numpy arrays."""
-    result = DeepFace.verify(
-        img1_path=id_img,
-        img2_path=frame_img,
-        model_name="ArcFace",
-        detector_backend="retinaface",
-        distance_metric="cosine",
-        enforce_detection=False,
-    )
-    distance = float(result["distance"])
-    threshold = float(result["threshold"])
-    verified = distance <= threshold
-    similarity_percent = round((1 - distance) * 100, 2)
+def _get_best_embedding(face_app: FaceAnalysis, img: np.ndarray, label: str) -> np.ndarray:
+    """
+    Detect faces in img and return the L2-normed embedding of the highest-confidence face.
+    Raises ValueError if no face is detected.
+    """
+    faces = face_app.get(img)
+    if not faces:
+        raise ValueError(f"No face detected in {label}")
 
-    # Log detected face regions to diagnose detection failures
-    for i, key in enumerate(["facial_areas"]):
-        areas = result.get(key, {})
-        for label in ["img1", "img2"]:
-            area = areas.get(label, {})
-            w = area.get("w", 0)
-            h = area.get("h", 0)
-            if w == 0 and h == 0:
-                logger.warning("Face NOT detected in %s — comparing full image region", label)
-            else:
-                logger.info("Face detected in %s: %dx%d at (%d,%d)", label, w, h, area.get("x", 0), area.get("y", 0))
+    best = max(faces, key=lambda f: f.det_score)
+    bbox = best.bbox.astype(int)
+    logger.info(
+        "Face detected in %s: score=%.3f size=%dx%d at (%d,%d)",
+        label, best.det_score,
+        bbox[2] - bbox[0], bbox[3] - bbox[1],
+        bbox[0], bbox[1],
+    )
+    return best.normed_embedding
+
+
+def _compare_faces(id_img: np.ndarray, frame_img: np.ndarray) -> dict[str, Any]:
+    """
+    Run InsightFace buffalo_l verification between two BGR numpy arrays.
+    buffalo_l uses SCRFD for detection and ArcFace R100 for recognition.
+    normed_embedding is L2-normalized so cosine similarity = dot product.
+    """
+    face_app = _get_face_app()
+
+    id_embedding = _get_best_embedding(face_app, id_img, "ID image")
+    frame_embedding = _get_best_embedding(face_app, frame_img, "video frame")
+
+    similarity = float(np.dot(id_embedding, frame_embedding))
+    distance = round(1.0 - similarity, 6)
+    similarity_percent = round(similarity * 100, 2)
+    verified = similarity >= SIMILARITY_THRESHOLD
 
     return {
         "verified": verified,
-        "distance": round(distance, 6),
+        "distance": distance,
         "similarity_percent": similarity_percent,
     }
 
@@ -415,7 +449,7 @@ def compare(req: CompareRequest):
     video_bytes = _fetch_file(str(req.video_url))
 
     try:
-        frames = _extract_frames(video_bytes, num_frames=5)
+        frames = _extract_frames(video_bytes, num_frames=8)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Video processing failed: {e}")
 
@@ -487,7 +521,6 @@ async def compare_async(req: AsyncCompareRequest):
             "created_at": time.time(),
         }
 
-    # Send initial queued callback before enqueuing (so it arrives before processing starts)
     job = jobs[job_id]
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, _send_progress, job, "queued", None, None, queue_position)

@@ -28,8 +28,18 @@ export function PreviewPhase({ step, blob, previewUrl, uploading, onConfirm, onR
       .then(detector => {
         const img = new Image();
         img.onload = () => {
+          // Crop to bottom 55% before detection — barcode is in the lower portion
+          // of the DNI front; this doubles effective resolution without close-up.
+          const cropCanvas = document.createElement('canvas');
+          const cropY = Math.floor(img.naturalHeight * 0.45);
+          cropCanvas.width = img.naturalWidth;
+          cropCanvas.height = img.naturalHeight - cropY;
+          const ctx = cropCanvas.getContext('2d');
+          if (!ctx) { setPreviewValidation('valid'); return; }
+          ctx.drawImage(img, 0, cropY, img.naturalWidth, cropCanvas.height, 0, 0, img.naturalWidth, cropCanvas.height);
+          const imgData = ctx.getImageData(0, 0, cropCanvas.width, cropCanvas.height);
           detector
-            .detect(img)
+            .detect(imgData)
             .then(results => {
               const found = results && results.some(r => r.rawValue && r.rawValue.length > 50);
               setPreviewValidation(found ? 'valid' : 'invalid');
