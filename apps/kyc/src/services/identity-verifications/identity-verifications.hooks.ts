@@ -9,6 +9,21 @@ import { cleanupFiles } from './hooks/cleanup-files';
 
 const { authenticate } = authentication.hooks;
 
+/**
+ * Allow requests authenticated via x-webhook-secret header to bypass JWT auth.
+ * Marks them as internal (provider=undefined) so restrictToOwner/sanitizePatch skip them.
+ */
+const authenticateWithWebhookSecret = (): Hook => {
+  return async (context: HookContext): Promise<HookContext> => {
+    const webhookSecret = process.env.WEBHOOK_SECRET;
+    const receivedSecret = context.params.headers?.['x-webhook-secret'];
+    if (webhookSecret && receivedSecret === webhookSecret) {
+      context.params.provider = undefined;
+    }
+    return context;
+  };
+};
+
 const restrictToOwnerOrInternal = (): Hook => {
   return async (context: HookContext): Promise<HookContext> => {
     if (context.params.provider === undefined) return context;
@@ -99,7 +114,7 @@ const sanitizePatch = (): Hook => {
 
 export default {
   before: {
-    all: [iff(isProvider('external'), authenticate('jwt'))],
+    all: [authenticateWithWebhookSecret(), iff(isProvider('external'), authenticate('jwt'))],
     find: [restrictToOwnerOrInternal()],
     get: [restrictToOwnerOrInternal()],
     create: [validateCreate()],

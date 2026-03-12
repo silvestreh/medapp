@@ -1,4 +1,7 @@
+import axios from 'axios';
 import { Application } from '../declarations';
+
+const VERIFICATION_API_URL = process.env.VERIFICATION_API_URL || 'http://localhost:3032';
 
 interface VerificationWebhookPayload {
   event: string;
@@ -66,11 +69,13 @@ export function setupIdentityVerificationWebhook(app: Application): void {
           const message = err instanceof Error ? err.message : String(err);
           console.error('[webhook] SSSalud verification failed for user %s: %s', verification.userId, message);
           // Revert: reject the identity verification since license is invalid
+          // Call KYC directly (the proxy service requires a JWT we don't have here)
           try {
-            await app.service('identity-verifications').patch(verification.id, {
-              status: 'rejected',
-              rejectionReason: `license_invalid:${message}`,
-            }, { provider: undefined } as any);
+            await axios.patch(
+              `${VERIFICATION_API_URL}/identity-verifications/${verification.id}`,
+              { status: 'rejected', rejectionReason: `license_invalid:${message}` },
+              { headers: { 'x-webhook-secret': webhookSecret } }
+            );
             console.log('[webhook] Reverted verification %s to rejected (SSSalud failed)', verification.id);
           } catch (revertErr: unknown) {
             const revertMessage = revertErr instanceof Error ? revertErr.message : String(revertErr);

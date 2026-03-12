@@ -186,7 +186,9 @@ def _process_single_job(job: dict[str, Any]) -> dict[str, Any]:
 
     # 4. Aggregate
     frames_matched = sum(1 for f in per_frame if f["verified"])
-    verified = frames_matched > len(per_frame) / 2
+    # At least 1 frame must match — ID card vs webcam video is inherently
+    # harder than selfie-vs-selfie, so majority rule is too strict.
+    verified = frames_matched >= 1
 
     distances = [f["distance"] for f in per_frame]
     similarities = [f["similarity_percent"] for f in per_frame]
@@ -443,7 +445,7 @@ def compare(req: CompareRequest):
         )
 
     frames_matched = sum(1 for f in per_frame if f.verified)
-    verified = frames_matched > len(per_frame) / 2
+    verified = frames_matched >= 1
 
     distances = [f.distance for f in per_frame]
     similarities = [f.similarity_percent for f in per_frame]
