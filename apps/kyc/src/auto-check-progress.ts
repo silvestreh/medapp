@@ -36,7 +36,7 @@ export function setupAutoCheckProgress(app: Application): void {
     const verificationId = req.params.id;
     const { step, current, total, position, result, error } = req.body as ProgressPayload;
 
-    logger.info('[auto-check-progress] %s: step=%s current=%s total=%s', verificationId, step, current, total);
+    logger.info('[auto-check-progress] %s: step=%s current=%s total=%s body=%j', verificationId, step, current, total, req.body);
 
     try {
       if (step === 'done' && result) {

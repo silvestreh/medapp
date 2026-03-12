@@ -116,13 +116,15 @@ def _send_progress(
     url = str(job["progress_url"])
     headers = {"x-api-key": job["callback_key"], "Content-Type": "application/json"}
 
+    logger.info("Progress callback job=%s step=%s payload=%s", job["job_id"], step, payload)
+
     for attempt in range(3):
         try:
             resp = http_requests.post(url, json=payload, headers=headers, timeout=10)
             if resp.status_code < 300:
                 return
             logger.warning(
-                "Progress callback attempt %d failed (status %d)", attempt + 1, resp.status_code,
+                "Progress callback attempt %d failed (status %d body=%s)", attempt + 1, resp.status_code, resp.text[:500],
             )
         except Exception as e:
             logger.warning("Progress callback attempt %d error: %s", attempt + 1, e)
@@ -179,7 +181,7 @@ def _process_single_job(job: dict[str, Any]) -> dict[str, Any]:
                 job["job_id"], i + 1, result["verified"], result["distance"], result["similarity_percent"],
             )
         except Exception as e:
-            logger.warning("Job %s frame %d: face detection failed (%s), skipping", job["job_id"], i + 1, e)
+            logger.warning("Job %s frame %d: face detection failed (%s), skipping", job["job_id"], i + 1, e, exc_info=True)
 
     if not per_frame:
         raise ValueError("No faces could be detected in any video frame")
@@ -242,7 +244,7 @@ async def _process_jobs() -> None:
                 job["error"] = error_msg
                 job["finished_at"] = time.time()
             _send_progress(job, "error", error=error_msg)
-            logger.error("Job %s failed: %s", job_id, error_msg)
+            logger.exception("Job %s failed: %s", job_id, error_msg)
         finally:
             job_queue.task_done()
 

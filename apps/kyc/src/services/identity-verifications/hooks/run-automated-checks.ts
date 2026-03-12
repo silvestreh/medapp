@@ -127,30 +127,37 @@ export const runAutomatedChecks = (): Hook => {
         return;
       }
 
+      const payload = {
+        id_url: `${kycBaseUrl}${idFrontUrl}`,
+        video_url: `${kycBaseUrl}${selfieUrl}`,
+        progress_url: `${kycBaseUrl}/auto-check-progress/${id}`,
+        verification_id: id,
+        callback_key: faceCompareApiKey,
+      };
+      logger.info('[auto-checks] Submitting to %s/compare-async with id_url=%s video_url=%s progress_url=%s',
+        faceCompareUrl, payload.id_url, payload.video_url, payload.progress_url);
+
       try {
         const response = await axios.post(
           `${faceCompareUrl}/compare-async`,
-          {
-            id_url: `${kycBaseUrl}${idFrontUrl}`,
-            video_url: `${kycBaseUrl}${selfieUrl}`,
-            progress_url: `${kycBaseUrl}/auto-check-progress/${id}`,
-            verification_id: id,
-            callback_key: faceCompareApiKey,
-          },
+          payload,
           {
             timeout: 10000, // Just submitting — should be fast
           },
         );
 
         logger.info(
-          '[auto-checks] Face compare job submitted: job_id=%s, queue_position=%d',
+          '[auto-checks] Face compare job submitted: job_id=%s, queue_position=%d, response=%j',
           response.data.job_id,
           response.data.queue_position,
+          response.data,
         );
         // Progress updates and final result will arrive via callbacks to /auto-check-progress/:id
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        logger.error('[auto-checks] Failed to submit face compare job: %s', message);
+        const axiosErr = err as any;
+        const message = axiosErr instanceof Error ? axiosErr.message : String(axiosErr);
+        logger.error('[auto-checks] Failed to submit face compare job: %s | status=%s body=%j',
+          message, axiosErr.response?.status, axiosErr.response?.data);
         await patchProgress({
           autoCheckCompletedAt: new Date(),
           autoCheckProgress: null,

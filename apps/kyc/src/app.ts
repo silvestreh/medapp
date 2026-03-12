@@ -88,12 +88,13 @@ app.configure(express.rest());
 app.configure(socketio((io) => {
   io.origins((origin, callback) => {
     const o = origin?.trim()?.toLowerCase();
+    logger.info('[socketio] connection attempt from origin: %s (allowed: %j)', origin, corsOrigin);
 
     if (corsOrigin.includes(o)) {
       return callback(null, true);
     }
 
-    console.warn(`[Verification] Blocked connection attempt from unauthorized origin: ${origin}`);
+    logger.warn('[socketio] BLOCKED origin: %s', origin);
     return callback('origin not allowed', false);
   });
 }));

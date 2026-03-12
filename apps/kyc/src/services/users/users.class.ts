@@ -2,6 +2,7 @@ import axios from 'axios';
 import { NotFound } from '@feathersjs/errors';
 import { Id, Params } from '@feathersjs/feathers';
 import { Application } from '../../declarations';
+import logger from '../../logger';
 
 interface VerificationUser {
   id: string;
@@ -25,20 +26,29 @@ export class Users {
     const key = String(id);
     const cached = userCache.get(key);
     if (cached && cached.expiry > Date.now()) {
+      logger.info('[users.get] cache hit for id=%s', id);
       return cached.data;
     }
 
+    const url = `${this.mainApiUrl}/users/${id}`;
+    logger.info('[users.get] fetching id=%s from %s', id, url);
+    const t0 = Date.now();
+
     try {
       const accessToken = params?.authentication?.accessToken;
-      const response = await axios.get(`${this.mainApiUrl}/users/${id}`, {
+      const response = await axios.get(url, {
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
         timeout: 5000,
       });
 
+      logger.info('[users.get] OK id=%s status=%d elapsed=%dms', id, response.status, Date.now() - t0);
       const user: VerificationUser = { id: response.data.id, username: response.data.username };
       userCache.set(key, { data: user, expiry: Date.now() + CACHE_TTL });
       return user;
     } catch (err: any) {
+      logger.warn('[users.get] ERROR id=%s elapsed=%dms code=%s status=%s message=%s',
+        id, Date.now() - t0, err.code, err.response?.status, err.message);
+
       if (err.response?.status === 404) {
         throw new NotFound(`User ${id} not found`);
       }
@@ -47,6 +57,7 @@ export class Users {
       // return minimal user data. The JWT is already verified locally — we just
       // need the user entity for Feathers.
       if (err.response?.status === 401 || err.response?.status === 403 || !err.response) {
+        logger.warn('[users.get] falling back to minimal user for id=%s', id);
         const minimalUser: VerificationUser = { id: String(id), username: '' };
         userCache.set(key, { data: minimalUser, expiry: Date.now() + CACHE_TTL });
         return minimalUser;
