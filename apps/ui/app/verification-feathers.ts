@@ -29,7 +29,7 @@ export async function createVerificationClient(accessToken?: string): Promise<Ve
 
   if (accessToken) {
     const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Verification auth timeout (10s)')), 10_000)
+      setTimeout(() => reject(new Error('Verification auth timeout (30s)')), 30_000)
     );
     await Promise.race([client.authenticate({ strategy: 'jwt', accessToken }), timeout]);
   }

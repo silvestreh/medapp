@@ -29,11 +29,16 @@ export class IdentityVerifications {
 
   async find(params?: Params): Promise<Paginated<IdentityVerification>> {
     const headers = this.getHeaders(params);
-    const response = await axios.get(`${VERIFICATION_API_URL}/identity-verifications`, {
-      headers,
-      params: params?.query,
-    });
-    return response.data;
+    try {
+      const response = await axios.get(`${VERIFICATION_API_URL}/identity-verifications`, {
+        headers,
+        params: params?.query,
+      });
+      return response.data;
+    } catch (err: any) {
+      if (err.response?.status === 404) return { total: 0, data: [], limit: 0, skip: 0 };
+      throw new GeneralError(err.response?.data?.message || err.message);
+    }
   }
 
   async get(id: Id, params?: Params): Promise<IdentityVerification> {
@@ -51,10 +56,15 @@ export class IdentityVerifications {
 
   async create(data: Partial<IdentityVerification>, params?: Params): Promise<IdentityVerification> {
     const headers = this.getHeaders(params);
-    const response = await axios.post(`${VERIFICATION_API_URL}/identity-verifications`, data, {
-      headers,
-    });
-    return response.data;
+    try {
+      const response = await axios.post(`${VERIFICATION_API_URL}/identity-verifications`, data, {
+        headers,
+      });
+      return response.data;
+    } catch (err: any) {
+      if (err.response?.status === 404) throw new NotFound('Verification not found');
+      throw new GeneralError(err.response?.data?.message || err.message);
+    }
   }
 
   async patch(id: Id, data: Partial<IdentityVerification>, params?: Params): Promise<IdentityVerification> {

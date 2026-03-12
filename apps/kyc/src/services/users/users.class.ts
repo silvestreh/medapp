@@ -32,6 +32,7 @@ export class Users {
       const accessToken = params?.authentication?.accessToken;
       const response = await axios.get(`${this.mainApiUrl}/users/${id}`, {
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+        timeout: 5000,
       });
 
       const user: VerificationUser = { id: response.data.id, username: response.data.username };
@@ -42,9 +43,10 @@ export class Users {
         throw new NotFound(`User ${id} not found`);
       }
 
-      // If the main API returns an auth/permission error, return minimal user data.
-      // The JWT is already verified locally — we just need the user entity for Feathers.
-      if (err.response?.status === 401 || err.response?.status === 403) {
+      // If the main API returns an auth/permission error, or is unreachable/slow,
+      // return minimal user data. The JWT is already verified locally — we just
+      // need the user entity for Feathers.
+      if (err.response?.status === 401 || err.response?.status === 403 || !err.response) {
         const minimalUser: VerificationUser = { id: String(id), username: '' };
         userCache.set(key, { data: minimalUser, expiry: Date.now() + CACHE_TTL });
         return minimalUser;
