@@ -4,7 +4,7 @@
   "description": "Athelas KYC API - Identity verification session coordination",
   "main": "lib/",
   "scripts": {
-    "build": "shx rm -rf lib/ && tsc && shx mkdir -p lib/mobile-page && shx cp src/mobile-page/template.pug lib/mobile-page/template.pug && pnpm run build:css && pnpm run build:client",
+    "build": "shx rm -rf lib/ && tsc && shx mkdir -p lib/mobile-page && shx cp src/mobile-page/template.pug lib/mobile-page/template.pug && shx cp src/mobile-page/error.pug lib/mobile-page/error.pug && pnpm run build:css && pnpm run build:client",
     "build:client": "esbuild src/mobile-page/client/index.tsx --bundle --minify --outfile=public/app.js --platform=browser --target=es2020 --jsx=automatic",
     "build:css": "tailwindcss -i src/mobile-page/tailwind.css -o public/styles.css --minify",
     "dev": "concurrently \"ts-node-dev --no-notify src/\" \"pnpm run watch:client\"",
