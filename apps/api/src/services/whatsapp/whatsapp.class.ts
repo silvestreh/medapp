@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Application } from '../../declarations';
 
 export interface WhatsAppDocumentData {
-  type: 'document';
+  type?: 'document';
   to: string;
   documentUrl: string;
   filename?: string;
