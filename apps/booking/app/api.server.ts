@@ -11,9 +11,14 @@ export interface OrganizationInfo {
   email: string | null;
 }
 
-export interface BookingData {
-  patientId: string;
-  data: any[];
+export interface PatientBooking {
+  id: string;
+  startDate: string;
+  medic: {
+    firstName: string;
+    lastName: string;
+    specialty: string;
+  };
 }
 
 export interface MedicData {
@@ -110,7 +115,14 @@ export async function verifyTurnstile(turnstileToken: string): Promise<boolean> 
   return result.success === true;
 }
 
-export async function findBookings(token: string): Promise<BookingData> {
+export async function cancelBooking(token: string, appointmentId: string): Promise<{ ok: boolean }> {
   const client = createClient(token);
-  return await client.service('booking').find({}) as BookingData;
+  return await client.service('booking').remove(appointmentId) as { ok: boolean };
+}
+
+export async function findBookings(token: string): Promise<PatientBooking[]> {
+  const client = createClient(token);
+  return await client.service('booking').find({
+    query: { intent: 'find-bookings' },
+  }) as PatientBooking[];
 }

@@ -40,6 +40,10 @@ export class Booking {
       return this.findAppointments(params);
     }
 
+    if (intent === 'find-bookings') {
+      return this.findBookings(params);
+    }
+
     return { patientId, data: [] };
   }
 
@@ -97,6 +101,37 @@ export class Booking {
     );
 
     return { ok: true, appointmentId: appointment.id };
+  }
+
+  async remove(id: string, params: any) {
+    const patientId = params.patient?.id;
+    const organizationId = params.patient?.organizationId;
+
+    if (!patientId || !organizationId) {
+      throw new BadRequest('Patient context is required');
+    }
+
+    if (!id) {
+      throw new BadRequest('Appointment ID is required');
+    }
+
+    // Verify the appointment belongs to this patient and organization
+    const appointment = await this.app.service('appointments').get(id, {
+      provider: undefined,
+    }) as any;
+
+    if (!appointment || appointment.patientId !== patientId) {
+      throw new BadRequest('Appointment not found');
+    }
+
+    // Only allow cancelling future appointments
+    if (dayjs(appointment.startDate).isBefore(dayjs())) {
+      throw new BadRequest('Cannot cancel past appointments');
+    }
+
+    await this.app.service('appointments').remove(id, { provider: undefined });
+
+    return { ok: true };
   }
 
   async findMedics(params: any) {
@@ -216,5 +251,50 @@ export class Booking {
     }
 
     return slots;
+  }
+
+  async findBookings(params: any) {
+    const patientId = params.patient?.id;
+    const organizationId = params.patient?.organizationId;
+
+    if (!patientId || !organizationId) {
+      throw new BadRequest('Patient context is required');
+    }
+
+    const appointmentsResult = await this.app.service('appointments').find({
+      query: {
+        patientId,
+        organizationId,
+        startDate: { $gte: dayjs().startOf('day').toISOString() },
+        $sort: { startDate: 1 },
+        $limit: 50,
+      },
+      provider: undefined,
+    }) as any;
+    const appointments = appointmentsResult.data || appointmentsResult;
+
+    // Enrich with medic info
+    const medicCache = new Map<string, { firstName: string; lastName: string; specialty: string }>();
+
+    return Promise.all(
+      appointments.map(async (appt: any) => {
+        let medic = medicCache.get(appt.medicId);
+        if (!medic) {
+          const user = await this.app.service('users').get(appt.medicId) as any;
+          medic = {
+            firstName: user.personalData?.firstName || '',
+            lastName: user.personalData?.lastName || '',
+            specialty: user.settings?.medicalSpecialty || '',
+          };
+          medicCache.set(appt.medicId, medic);
+        }
+
+        return {
+          id: appt.id,
+          startDate: appt.startDate,
+          medic,
+        };
+      })
+    );
   }
 }
