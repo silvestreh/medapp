@@ -142,6 +142,17 @@ export class PatientOtp {
       attempts: 0,
     });
 
+    // Send OTP via WhatsApp
+    try {
+      await this.app.service('whatsapp').create({
+        type: 'text',
+        to: result.phone,
+        body: `Tu código de verificación es: ${code}\n\nExpira en 5 minutos.`,
+      });
+    } catch (err) {
+      console.error('[Patient OTP] Failed to send WhatsApp message:', err);
+    }
+
     console.log(`[Patient OTP] Code for document ${documentNumber}: ${code}`);
 
     return { action: 'request-otp', status: 'otp_sent', maskedPhone: this.maskPhone(result.phone) };
