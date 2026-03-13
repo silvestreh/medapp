@@ -21,7 +21,7 @@ const authenticatePatient = (): Hook => async (context: HookContext): Promise<Ho
       throw new NotAuthenticated('Invalid token type');
     }
 
-    context.params.patient = { id: payload.sub };
+    context.params.patient = { id: payload.sub, organizationId: payload.organizationId };
   } catch (error: any) {
     if (error instanceof NotAuthenticated) throw error;
     throw new NotAuthenticated('Invalid or expired token');

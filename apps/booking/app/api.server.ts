@@ -1,37 +1,53 @@
-import axios from 'axios';
+import { createClient } from '~/feathers.server';
 
-const API_URL = process.env.API_URL || 'http://localhost:3030';
+// -- Types --
 
-const api = axios.create({
-  baseURL: API_URL,
-  timeout: 10000,
-});
-
-interface RequestOtpResponse {
-  action: string;
-  status: 'otp_sent' | 'not_found' | 'no_phone' | 'rate_limited';
+export interface OrganizationInfo {
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
 }
 
-interface VerifyOtpResponse {
-  action: string;
-  verified: boolean;
-  accessToken: string;
-  patient: { id: string };
+export interface BookingData {
+  patientId: string;
+  data: any[];
 }
 
-export async function requestOtp(documentNumber: string): Promise<RequestOtpResponse> {
-  const { data } = await api.post('/patient-otp', {
+// -- patient-otp (public, no auth) --
+
+export async function getOrganization(slug: string): Promise<OrganizationInfo> {
+  const client = createClient();
+  const result = await client.service('patient-otp').create({
+    action: 'get-organization',
+    slug,
+  }) as any;
+  return result.organization;
+}
+
+export async function requestOtp(documentNumber: string) {
+  const client = createClient();
+  return await client.service('patient-otp').create({
     action: 'request-otp',
     documentNumber,
-  });
-  return data;
+  }) as { action: string; status: 'otp_sent' | 'not_found' | 'no_phone' | 'rate_limited'; maskedPhone?: string };
 }
 
-export async function verifyOtp(documentNumber: string, code: string): Promise<VerifyOtpResponse> {
-  const { data } = await api.post('/patient-otp', {
-    action: 'verify-otp',
+export async function verifyOtp(documentNumber: string, code: string, slug: string) {
+  const client = createClient();
+  return await client.service('authentication').create({
+    strategy: 'patient-otp',
     documentNumber,
     code,
-  });
-  return data;
+    slug,
+  }) as { accessToken: string; authentication: any; patient: { id: string; organizationId: string } };
+}
+
+// -- booking (authenticated) --
+
+export async function findBookings(token: string): Promise<BookingData> {
+  const client = createClient(token);
+  return await client.service('booking').find({}) as BookingData;
 }

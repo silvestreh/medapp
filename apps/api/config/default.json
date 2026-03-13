@@ -15,7 +15,8 @@
     "secret": "pQEfj7/BoSbImgEhS+/XvDuIBS0=",
     "authStrategies": [
       "jwt",
-      "local"
+      "local",
+      "patient-otp"
     ],
     "jwtOptions": {
       "header": {

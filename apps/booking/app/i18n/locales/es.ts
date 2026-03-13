@@ -1,0 +1,32 @@
+export const es = {
+  auth: {
+    title: 'Iniciar sesión',
+    document_label: 'Número de documento',
+    document_placeholder: 'Ingresá tu número de documento',
+    continue: 'Continuar',
+    verify: 'Verificar',
+    otp_sent: 'Enviamos un código de verificación al teléfono {{phone}}.',
+    use_different_document: 'Usar otro documento',
+    error: 'Error',
+    document_required: 'El número de documento es obligatorio',
+    enter_code: 'Ingresá el código de 6 dígitos.',
+    not_found: 'No se encontró un paciente con ese documento.',
+    no_phone: 'No hay un teléfono registrado. Contactá a la clínica para agregarlo.',
+    rate_limited: 'Demasiados intentos. Intentá de nuevo más tarde.',
+    server_error: 'No se pudo conectar al servidor. Intentá de nuevo.',
+    invalid_code: 'Código inválido o expirado.',
+    something_went_wrong: 'Algo salió mal.',
+  },
+  booking: {
+    title: 'Turnos',
+    coming_soon: 'Tu página de turnos estará disponible pronto.',
+  },
+  common: {
+    logout: 'Cerrar sesión',
+    error: 'Error',
+    something_went_wrong: 'Algo salió mal',
+    try_again: 'Intentá de nuevo más tarde.',
+    navigate_to_org: 'Navegá a la URL de tu organización para continuar.',
+    org_not_found: 'La organización no existe o la URL es incorrecta.',
+  },
+};

@@ -9,6 +9,10 @@ export class Booking {
 
   async find(params: any) {
     const patientId = params.patient?.id;
+    console.log('\n\n\n\n');
+    console.log('find on booking service', patientId);
+    console.log('params', params);
+    console.log('\n\n\n\n');
     return { patientId, data: [] };
   }
 

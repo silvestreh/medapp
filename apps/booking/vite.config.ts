@@ -21,6 +21,15 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  ssr: {
+    external: [
+      '@feathersjs/feathers',
+      '@feathersjs/rest-client',
+      '@feathersjs/commons',
+      '@feathersjs/errors',
+      '@feathersjs/transport-commons',
+    ],
+  },
   server: {
     port: 5174,
   },

@@ -1,15 +1,29 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from '@remix-run/react';
+import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
+import { useChangeLanguage } from 'remix-i18next/react';
 import '~/global.css';
 import '@mantine/core/styles.layer.css';
 import '@mantine/notifications/styles.layer.css';
 
 import { theme } from '~/theme';
+import { localeCookie, resolveLocale } from '~/i18n/i18next.server';
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const locale = await resolveLocale(request);
+  return json(
+    { locale },
+    { headers: { 'Set-Cookie': await localeCookie.serialize(locale) } }
+  );
+};
 
 function Document({ children }: { children: React.ReactNode }) {
+  const data = useRouteLoaderData<typeof loader>('root');
+  const locale = data?.locale || 'es';
+
   return (
-    <html lang="es" dir="ltr" suppressHydrationWarning>
+    <html lang={locale} dir="ltr" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -40,6 +54,10 @@ export function ErrorBoundary() {
 }
 
 export default function App() {
+  const data = useRouteLoaderData<typeof loader>('root');
+  const locale = data?.locale || 'es';
+  useChangeLanguage(locale);
+
   return (
     <Document>
       <MantineProvider theme={theme}>

@@ -254,6 +254,12 @@ importers:
 
   apps/booking:
     dependencies:
+      '@feathersjs/feathers':
+        specifier: ^5.0.40
+        version: 5.0.42
+      '@feathersjs/rest-client':
+        specifier: ^5.0.40
+        version: 5.0.40
       '@mantine/core':
         specifier: ^8.0.0
         version: 8.3.14(@mantine/hooks@8.3.14(react@18.3.1))(@types/react@19.1.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -275,9 +281,9 @@ importers:
       '@remix-run/serve':
         specifier: ^2.16.5
         version: 2.16.8(typescript@5.9.3)
-      axios:
-        specifier: ^1.9.0
-        version: 1.9.0
+      i18next:
+        specifier: ^23.16.8
+        version: 23.16.8
       isbot:
         specifier: ^5.1.27
         version: 5.1.28
@@ -290,6 +296,12 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
+      react-i18next:
+        specifier: ^15.7.4
+        version: 15.7.4(i18next@23.16.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+      remix-i18next:
+        specifier: ^6.4.1
+        version: 6.4.1(@remix-run/node@2.16.8(typescript@5.9.3))(@remix-run/react@2.16.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(i18next@23.16.8)(react-i18next@15.7.4(i18next@23.16.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(react@18.3.1)
     devDependencies:
       '@pandacss/dev':
         specifier: ^1.8.1
@@ -18606,6 +18618,16 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       typescript: 5.8.3
 
+  react-i18next@15.7.4(i18next@23.16.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3):
+    dependencies:
+      '@babel/runtime': 7.28.6
+      html-parse-stringify: 3.0.1
+      i18next: 23.16.8
+      react: 18.3.1
+    optionalDependencies:
+      react-dom: 18.3.1(react@18.3.1)
+      typescript: 5.9.3
+
   react-is@16.13.1: {}
 
   react-is@18.3.1: {}
@@ -18864,6 +18886,15 @@ snapshots:
       react-i18next: 15.7.4(i18next@23.16.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
     optionalDependencies:
       '@remix-run/node': 2.16.8(typescript@5.8.3)
+
+  remix-i18next@6.4.1(@remix-run/node@2.16.8(typescript@5.9.3))(@remix-run/react@2.16.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(i18next@23.16.8)(react-i18next@15.7.4(i18next@23.16.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(react@18.3.1):
+    dependencies:
+      '@remix-run/react': 2.16.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+      i18next: 23.16.8
+      react: 18.3.1
+      react-i18next: 15.7.4(i18next@23.16.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+    optionalDependencies:
+      '@remix-run/node': 2.16.8(typescript@5.9.3)
 
   request-compose@1.2.3: {}
 
