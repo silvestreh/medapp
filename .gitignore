@@ -31,7 +31,7 @@ pnpm-debug.log*
 coverage
 
 # Panda CSS generated
-apps/ui/app/styled-system
+styled-system/
 apps/studies-book*
 apps/colmed-*
 
