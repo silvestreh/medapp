@@ -48,6 +48,8 @@ import fileUploads from './file-uploads/file-uploads.service';
 import sharedEncounterAccess from './shared-encounter-access/shared-encounter-access.service';
 import accessLogs from './access-logs/access-logs.service';
 import identityVerifications from './identity-verifications/identity-verifications.service';
+import patientOtp from './patient-otp/patient-otp.service';
+import booking from './booking/booking.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -100,4 +102,6 @@ export default function (app: Application): void {
   app.configure(sharedEncounterAccess);
   app.configure(accessLogs);
   app.configure(identityVerifications);
+  app.configure(patientOtp);
+  app.configure(booking);
 }
