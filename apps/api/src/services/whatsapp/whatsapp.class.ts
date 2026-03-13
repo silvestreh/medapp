@@ -1,12 +1,21 @@
 import axios from 'axios';
 import type { Application } from '../../declarations';
 
-export interface WhatsAppCreateData {
+export interface WhatsAppDocumentData {
+  type: 'document';
   to: string;
   documentUrl: string;
   filename?: string;
   caption?: string;
 }
+
+export interface WhatsAppTextData {
+  type: 'text';
+  to: string;
+  body: string;
+}
+
+export type WhatsAppCreateData = WhatsAppDocumentData | WhatsAppTextData;
 
 export interface WhatsAppResult {
   sent: boolean;
@@ -28,14 +37,9 @@ export class WhatsApp {
   }
 
   async create(data: WhatsAppCreateData): Promise<WhatsAppResult> {
-    const { to, documentUrl, filename = 'document.pdf', caption } = data;
-
-    const phone = to.replace(/[^0-9]/g, '');
+    const phone = data.to.replace(/[^0-9]/g, '');
     if (!phone) {
       throw new Error('Invalid phone number');
-    }
-    if (!documentUrl) {
-      throw new Error('documentUrl is required');
     }
 
     const token = this.getToken();
@@ -44,7 +48,38 @@ export class WhatsApp {
       return { sent: false };
     }
 
-    // Download the PDF into memory
+    const type = data.type || 'document';
+
+    if (type === 'text' && 'body' in data) {
+      return this.sendText(phone, data.body, token);
+    }
+
+    return this.sendDocument(phone, data as WhatsAppDocumentData, token);
+  }
+
+  private async sendText(phone: string, body: string, token: string): Promise<WhatsAppResult> {
+    const response = await axios.post(
+      `${this.config.apiUrl}/messages/text`,
+      { to: phone, body },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000,
+      }
+    );
+
+    return { sent: true, messageId: response.data?.message?.id };
+  }
+
+  private async sendDocument(phone: string, data: WhatsAppDocumentData, token: string): Promise<WhatsAppResult> {
+    const { documentUrl, filename = 'document.pdf', caption } = data;
+
+    if (!documentUrl) {
+      throw new Error('documentUrl is required');
+    }
+
     const pdfResponse = await axios.get(documentUrl, {
       responseType: 'arraybuffer',
       timeout: 30000,
@@ -53,15 +88,9 @@ export class WhatsApp {
     const mimeType = pdfResponse.headers['content-type'] || 'application/pdf';
     const mediaDataUri = `data:${mimeType};base64,${base64}`;
 
-    // Send via Whapi
     const response = await axios.post(
       `${this.config.apiUrl}/messages/document`,
-      {
-        to: phone,
-        media: mediaDataUri,
-        filename,
-        caption,
-      },
+      { to: phone, media: mediaDataUri, filename, caption },
       {
         headers: {
           Authorization: `Bearer ${token}`,

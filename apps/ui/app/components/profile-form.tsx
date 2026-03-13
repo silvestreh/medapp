@@ -8,7 +8,17 @@ import { useTranslation } from 'react-i18next';
 import { User, Mail, Stethoscope } from 'lucide-react';
 
 import Portal from '~/components/portal';
-import { FormCard, FieldRow, StyledSelect, StyledTextInput, SectionTitle } from '~/components/forms/styles';
+import {
+  FormCard,
+  FieldRow,
+  StyledSelect,
+  StyledTagsInput,
+  StyledTextInput,
+  SectionTitle,
+} from '~/components/forms/styles';
+import medicalSpecialties from '~/medical-specialties.json';
+
+const specialtyOptions = medicalSpecialties.map(s => s.nombre);
 
 type PersonalDataLike =
   | { firstName?: string | null; lastName?: string | null; documentType?: string | null; documentValue?: string | null }
@@ -55,7 +65,12 @@ function getInitialProfileValues(
     city: cd?.city ?? '',
     province: cd?.province ?? '',
     country: cd?.country ?? '',
-    medicalSpecialty: mdSettings?.medicalSpecialty ?? '',
+    medicalSpecialty: mdSettings?.medicalSpecialty
+      ? mdSettings.medicalSpecialty
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
+      : ([] as string[]),
     nationalLicenseNumber: mdSettings?.nationalLicenseNumber ?? '',
     stateLicense: mdSettings?.stateLicense ?? '',
     stateLicenseNumber: mdSettings?.stateLicenseNumber ?? '',
@@ -88,7 +103,6 @@ export function ProfileForm({
   countryOptions,
   provinceOptions,
   isSavingProfile,
-  isVerifyingLicense,
   showFormActions = true,
 }: ProfileFormProps) {
   const { t } = useTranslation();
@@ -165,7 +179,7 @@ export function ProfileForm({
       ...(isMedic
         ? {
             mdSettings: {
-              medicalSpecialty: values.medicalSpecialty || undefined,
+              medicalSpecialty: values.medicalSpecialty.length > 0 ? values.medicalSpecialty.join(', ') : undefined,
               nationalLicenseNumber: values.nationalLicenseNumber || undefined,
               stateLicense: values.stateLicense || undefined,
               stateLicenseNumber: values.stateLicenseNumber || undefined,
@@ -243,7 +257,7 @@ export function ProfileForm({
           </SectionTitle>
           <FormCard>
             <FieldRow label={`${t('profile.medical_specialty')}:`} variant="stacked">
-              <StyledTextInput {...profileForm.getInputProps('medicalSpecialty')} />
+              <StyledTagsInput data={specialtyOptions} {...profileForm.getInputProps('medicalSpecialty')} />
             </FieldRow>
             <FieldRow label={`${t('profile.national_license_number')}:`} variant="stacked">
               <StyledTextInput {...profileForm.getInputProps('nationalLicenseNumber')} />

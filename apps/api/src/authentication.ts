@@ -4,6 +4,7 @@ import { expressOauth } from '@feathersjs/authentication-oauth';
 
 import { Application } from './declarations';
 import { TwoFactorLocalStrategy } from './two-factor-local-strategy';
+import { PatientOtpStrategy } from './patient-otp-strategy';
 import syncRecetarioUserId from './hooks/sync-recetario-user-id';
 
 declare module './declarations' {
@@ -17,6 +18,7 @@ export default function(app: Application): void {
 
   authentication.register('jwt', new JWTStrategy());
   authentication.register('local', new TwoFactorLocalStrategy());
+  authentication.register('patient-otp', new PatientOtpStrategy());
 
   app.use('/authentication', authentication);
   app.configure(expressOauth());

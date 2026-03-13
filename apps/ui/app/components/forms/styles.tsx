@@ -8,6 +8,7 @@ import {
   Title,
   Stack,
   Select,
+  TagsInput,
   Checkbox,
   Text,
   type GroupProps,
@@ -462,6 +463,29 @@ export const StyledSelect = styled(Select, {
       fontSize: 'var(--mantine-font-size-md)',
 
       '&:focus': {
+        boxShadow: 'none',
+      },
+    },
+  },
+});
+
+export const StyledTagsInput = styled(TagsInput, {
+  base: {
+    backgroundColor: 'transparent',
+    border: 'none',
+    flex: 1,
+
+    '& .mantine-TagsInput-input': {
+      border: 'none',
+      backgroundColor: 'transparent',
+      flex: 1,
+      height: 'auto',
+      minHeight: '1.75rem',
+      lineHeight: 1.75,
+      padding: 0,
+      fontSize: 'var(--mantine-font-size-md)',
+
+      '&:focus-within': {
         boxShadow: 'none',
       },
     },
