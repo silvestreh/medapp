@@ -16,6 +16,19 @@ export interface BookingData {
   data: any[];
 }
 
+export interface MedicData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  specialty: string;
+}
+
+export interface AnonymizedSlot {
+  date: string;
+  taken: boolean;
+  extra?: boolean;
+}
+
 // -- patient-otp (public, no auth) --
 
 export async function getOrganization(slug: string): Promise<OrganizationInfo> {
@@ -46,6 +59,56 @@ export async function verifyOtp(documentNumber: string, code: string, slug: stri
 }
 
 // -- booking (authenticated) --
+
+export async function findMedics(token: string): Promise<MedicData[]> {
+  const client = createClient(token);
+  return await client.service('booking').find({
+    query: { intent: 'find-medics' },
+  }) as MedicData[];
+}
+
+export async function findAppointments(token: string, medicId: string, date?: string): Promise<AnonymizedSlot[]> {
+  const client = createClient(token);
+  return await client.service('booking').find({
+    query: { intent: 'find-appointments', medicId, date },
+  }) as AnonymizedSlot[];
+}
+
+export async function createBooking(
+  token: string,
+  medicId: string,
+  startDate: string
+): Promise<{ ok: boolean; appointmentId?: string }> {
+  const client = createClient(token);
+  return await client.service('booking').create({ medicId, startDate }) as {
+    ok: boolean;
+    appointmentId?: string;
+  };
+}
+
+// -- Turnstile verification --
+
+const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || '';
+const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+
+export async function verifyTurnstile(turnstileToken: string): Promise<boolean> {
+  if (!TURNSTILE_SECRET_KEY) {
+    console.warn('TURNSTILE_SECRET_KEY not set, skipping verification');
+    return true;
+  }
+
+  const response = await fetch(TURNSTILE_VERIFY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      secret: TURNSTILE_SECRET_KEY,
+      response: turnstileToken,
+    }),
+  });
+
+  const result = await response.json();
+  return result.success === true;
+}
 
 export async function findBookings(token: string): Promise<BookingData> {
   const client = createClient(token);

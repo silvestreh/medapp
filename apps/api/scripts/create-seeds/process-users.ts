@@ -24,6 +24,20 @@ import type {
   SeedContactData,
   SeedMdSettings,
 } from './types';
+import medicalSpecialties from '../medical-specialties.json';
+
+const knownSpecialties = medicalSpecialties.map(s => s.nombre);
+const knownSpecialtiesLower = knownSpecialties.map(s => s.toLowerCase());
+
+function normalizeMedicalSpecialty(raw: string | undefined | null): string | undefined {
+  if (!raw) return undefined;
+  const parts = raw.split(/,\s*|\s+y\s+/i).map(s => s.trim()).filter(Boolean);
+  const normalized = parts.map(part => {
+    const idx = knownSpecialtiesLower.findIndex(k => k === part.toLowerCase());
+    return idx >= 0 ? knownSpecialties[idx] : startCase(part.toLowerCase());
+  });
+  return normalized.length > 0 ? normalized.join(', ') : undefined;
+}
 
 interface ProcessUsersOptions {
   users: MongoUser[];
@@ -145,7 +159,7 @@ export async function processUsers({
     if (user.__class === 'Medic') {
       mdSettings = {
         userId,
-        medicalSpecialty: user.medical_specialty,
+        medicalSpecialty: normalizeMedicalSpecialty(user.medical_specialty),
         nationalLicenseNumber: user.national_license_number,
         stateLicense: user.state_license,
         stateLicenseNumber: user.state_license_number,

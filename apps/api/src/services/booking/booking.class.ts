@@ -1,4 +1,25 @@
+import dayjs from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import { BadRequest } from '@feathersjs/errors';
 import type { Application } from '../../declarations';
+
+dayjs.extend(isSameOrBefore);
+
+const WEEKDAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+
+interface MedicData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  specialty: string;
+  isActive?: boolean;
+}
+
+interface AnonymizedSlot {
+  date: string;
+  taken: boolean;
+  extra?: boolean;
+}
 
 export class Booking {
   app: Application;
@@ -9,15 +30,191 @@ export class Booking {
 
   async find(params: any) {
     const patientId = params.patient?.id;
-    console.log('\n\n\n\n');
-    console.log('find on booking service', patientId);
-    console.log('params', params);
-    console.log('\n\n\n\n');
+    const intent = params.query?.intent;
+
+    if (intent === 'find-medics') {
+      return this.findMedics(params);
+    }
+
+    if (intent === 'find-appointments') {
+      return this.findAppointments(params);
+    }
+
     return { patientId, data: [] };
   }
 
   async create(data: any, params: any) {
     const patientId = params.patient?.id;
-    return { patientId, ...data };
+    const organizationId = params.patient?.organizationId;
+
+    if (!patientId || !organizationId) {
+      throw new BadRequest('Patient context is required');
+    }
+
+    const { medicId, startDate } = data;
+
+    if (!medicId || !startDate) {
+      throw new BadRequest('medicId and startDate are required');
+    }
+
+    // Verify the medic belongs to this organization
+    const userRolesResult = await this.app.service('user-roles').find({
+      query: { userId: medicId, organizationId, roleId: 'medic', $limit: 1 },
+    }) as any;
+    const userRoles = userRolesResult.data || userRolesResult;
+
+    if (userRoles.length === 0) {
+      throw new BadRequest('Invalid medic');
+    }
+
+    // Check the slot is not already taken
+    const targetDate = dayjs(startDate);
+    const existingResult = await this.app.service('appointments').find({
+      query: {
+        medicId,
+        organizationId,
+        startDate: targetDate.toISOString(),
+        $limit: 1,
+      },
+      provider: undefined,
+    }) as any;
+    const existing = existingResult.data || existingResult;
+
+    if (existing.length > 0) {
+      throw new BadRequest('This slot is already taken');
+    }
+
+    // Create the appointment
+    const appointment = await (this.app.service('appointments') as any).create(
+      {
+        patientId,
+        medicId,
+        organizationId,
+        startDate: targetDate.toDate(),
+        extra: false,
+      },
+      { provider: undefined }
+    );
+
+    return { ok: true, appointmentId: appointment.id };
+  }
+
+  async findMedics(params: any) {
+    const organizationId = params.patient?.organizationId;
+
+    if (!organizationId) {
+      throw new BadRequest('Organization ID is required');
+    }
+
+    const userRolesResult = await this.app.service('user-roles').find({
+      query: {
+        organizationId,
+        roleId: 'medic',
+        $select: ['userId'],
+        $limit: 100,
+      },
+    }) as any;
+    const userRoles = userRolesResult.data || userRolesResult;
+
+    const medics: MedicData[] = await Promise.all(
+      userRoles.map(async (role: any) => {
+        const user = await this.app.service('users').get(role.userId) as any;
+
+        return {
+          id: role.userId,
+          firstName: user.personalData?.firstName || '',
+          lastName: user.personalData?.lastName || '',
+          specialty: user.settings?.medicalSpecialty || '',
+          isActive: user.settings?.isVerified,
+        };
+      }),
+    );
+
+    return medics.filter((medic: MedicData) => medic.isActive);
+  }
+
+  async findAppointments(params: any) {
+    const organizationId = params.patient?.organizationId;
+    const { medicId, date } = params.query || {};
+
+    if (!organizationId) {
+      throw new BadRequest('Organization ID is required');
+    }
+
+    if (!medicId) {
+      throw new BadRequest('medicId is required');
+    }
+
+    const targetDate = dayjs(date || undefined);
+    if (!targetDate.isValid()) {
+      throw new BadRequest('Invalid date');
+    }
+
+    // Fetch medic's schedule settings
+    const settingsResult = await this.app.service('md-settings').find({
+      query: { userId: medicId, $limit: 1 },
+      provider: undefined,
+    }) as any;
+    const settings = (settingsResult.data || settingsResult)[0];
+
+    if (!settings) {
+      return [];
+    }
+
+    // Generate empty slots from schedule
+    const day = WEEKDAY_NAMES[targetDate.day()];
+    const dayStart = settings[`${day}Start`];
+    const dayEnd = settings[`${day}End`];
+    const duration = settings.encounterDuration ?? 20;
+
+    const slots: AnonymizedSlot[] = [];
+
+    if (dayStart && dayEnd) {
+      const startTime = dayjs(targetDate.format('YYYY-MM-DD') + 'T' + dayStart);
+      const endTime = dayjs(targetDate.format('YYYY-MM-DD') + 'T' + dayEnd);
+
+      if (startTime.isValid() && endTime.isValid() && !startTime.isAfter(endTime)) {
+        let current = startTime;
+        while (current.isSameOrBefore(endTime)) {
+          slots.push({ date: current.toISOString(), taken: false });
+          current = current.add(duration, 'minute');
+        }
+      }
+    }
+
+    // Fetch ALL appointments for this medic on this date (across orgs — a medic
+    // can't be in two places at once, and some legacy rows lack organizationId).
+    const dayStartISO = targetDate.startOf('day').toISOString();
+    const dayEndISO = targetDate.endOf('day').toISOString();
+
+    const appointmentsResult = await this.app.service('appointments').find({
+      query: {
+        medicId,
+        startDate: { $gte: dayStartISO, $lte: dayEndISO },
+        $limit: 100,
+      },
+      provider: undefined,
+    }) as any;
+    const appointments = appointmentsResult.data || appointmentsResult;
+
+    // Mark taken slots
+    for (const appt of appointments) {
+      const apptMs = dayjs(appt.startDate).valueOf();
+
+      if (appt.extra) {
+        slots.push({ date: dayjs(appt.startDate).toISOString(), taken: true, extra: true });
+        continue;
+      }
+
+      // Match by closest minute (tolerance of 60 s) to handle ms/tz drift
+      const slotIndex = slots.findIndex(
+        slot => Math.abs(dayjs(slot.date).valueOf() - apptMs) < 60_000
+      );
+      if (slotIndex !== -1) {
+        slots[slotIndex].taken = true;
+      }
+    }
+
+    return slots;
   }
 }

@@ -1,0 +1,102 @@
+[
+  {
+    "nombre": "Clínica Médica",
+    "categories": ["General", "Chequeo Adultos", "Malestar General"]
+  },
+  {
+    "nombre": "Pediatría",
+    "categories": ["Niños", "Adolescentes", "Bebés", "General"]
+  },
+  {
+    "nombre": "Ginecología",
+    "categories": ["Mujer", "Salud Sexual", "Embarazo", "Control Anual"]
+  },
+  {
+    "nombre": "Obstetricia",
+    "categories": ["Embarazo", "Parto", "Prenatal"]
+  },
+  {
+    "nombre": "Cardiología",
+    "categories": ["Corazón", "Presión Arterial", "Pecho"]
+  },
+  {
+    "nombre": "Dermatología",
+    "categories": ["Piel", "Lunares", "Acné", "Pelo"]
+  },
+  {
+    "nombre": "Traumatología",
+    "categories": ["Huesos", "Articulaciones", "Golpes", "Lesiones"]
+  },
+  {
+    "nombre": "Oftalmología",
+    "categories": ["Ojos", "Visión", "Anteojos"]
+  },
+  {
+    "nombre": "Otorrinolaringología",
+    "categories": ["Oído", "Nariz", "Garganta"]
+  },
+  {
+    "nombre": "Odontología",
+    "categories": ["Dientes", "Boca", "Caries"]
+  },
+  {
+    "nombre": "Gastroenterología",
+    "categories": ["Estómago", "Digestión", "Hígado", "Intestino"]
+  },
+  {
+    "nombre": "Endocrinología",
+    "categories": ["Diabetes", "Hormonas", "Tiroides", "Metabolismo"]
+  },
+  {
+    "nombre": "Urología",
+    "categories": ["Sistema Urinario", "Riñones", "Próstata"]
+  },
+  {
+    "nombre": "Neurología",
+    "categories": ["Cerebro", "Nervios", "Migrañas", "Memoria"]
+  },
+  {
+    "nombre": "Psicología",
+    "categories": ["Salud Mental", "Terapia", "Ansiedad", "Depresión"]
+  },
+  {
+    "nombre": "Psiquiatría",
+    "categories": ["Salud Mental", "Medicación", "Trastornos Severos"]
+  },
+  {
+    "nombre": "Kinesiología",
+    "categories": ["Rehabilitación", "Masajes", "Fisioterapia", "Postura"]
+  },
+  {
+    "nombre": "Nutrición",
+    "categories": ["Alimentación", "Dieta", "Sobrepeso"]
+  },
+  {
+    "nombre": "Fonoaudiología",
+    "categories": ["Habla", "Lenguaje", "Audición", "Voz"]
+  },
+  {
+    "nombre": "Neumonología",
+    "categories": ["Pulmones", "Respiración", "Asma"]
+  },
+  {
+    "nombre": "Reumatología",
+    "categories": ["Artritis", "Artrosis", "Dolor Crónico", "Autoinmune"]
+  },
+  {
+    "nombre": "Hematología",
+    "categories": ["Sangre", "Anemia", "Coagulación"]
+  },
+  {
+    "nombre": "Oncología",
+    "categories": ["Cáncer", "Tumores"]
+  },
+  {
+    "nombre": "Podología",
+    "categories": ["Pies", "Uñas", "Pisada"]
+  },
+  {
+    "nombre": "Alergia e Inmunología",
+    "categories": ["Alergias", "Defensas", "Erupciones"]
+  }
+]

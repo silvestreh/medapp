@@ -47,7 +47,7 @@ export default function SlugLayout() {
           </ActionIcon>
         </Form>
       )}
-      <Container size="xs" py="xl" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <Container size={isAuthPage ? 'xs' : 'sm'} py="xl" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <Outlet />
       </Container>
     </>
