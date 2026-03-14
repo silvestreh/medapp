@@ -1,5 +1,5 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from '@remix-run/react';
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LinksFunction, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { useChangeLanguage } from 'remix-i18next/react';
@@ -10,6 +10,15 @@ import '@mantine/notifications/styles.layer.css';
 
 import { theme } from '~/theme';
 import { localeCookie, resolveLocale } from '~/i18n/i18next.server';
+
+export const meta: MetaFunction = () => [
+  { title: 'Turnos Online' },
+];
+
+export const links: LinksFunction = () => [
+  { rel: 'icon', href: '/favicon.ico', sizes: '32x32' },
+  { rel: 'icon', href: '/favicon.webp', type: 'image/webp' },
+];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const locale = await resolveLocale(request);

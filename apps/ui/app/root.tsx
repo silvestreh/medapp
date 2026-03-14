@@ -1,4 +1,13 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, useLocation, useMatches } from '@remix-run/react';
+import {
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useRouteLoaderData,
+  useLocation,
+  useMatches,
+} from '@remix-run/react';
 import { json, type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
@@ -48,7 +57,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   if (!currentOrganizationId && initialUser?.organizations?.length) {
     currentOrganizationId = initialUser.organizations[0].id;
-    const cookieHeader = await setCurrentOrganizationId(request, currentOrganizationId);
+    const cookieHeader = await setCurrentOrganizationId(request, currentOrganizationId as string);
     return json(
       { initialToken, initialUser, locale, currentOrganizationId },
       {
@@ -96,7 +105,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const { initialToken, initialUser, currentOrganizationId } = data || {};
 
   return (
-    <FeathersProvider initialToken={initialToken} initialUser={initialUser} initialOrganizationId={currentOrganizationId}>
+    <FeathersProvider
+      initialToken={initialToken}
+      initialUser={initialUser}
+      initialOrganizationId={currentOrganizationId}
+    >
       <MantineProvider theme={theme}>
         <ModalsProvider>
           <Notifications position="top-right" mt="5em" />

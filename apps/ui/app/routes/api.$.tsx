@@ -56,6 +56,7 @@ const ALLOWED_PATHS = new Set([
   'whatsapp-instances',
   'webhooks',
   'file-uploads',
+  'url-fetch',
   'uploads',
   'shared-encounter-access',
   'access-logs',

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { useLoaderData, useFetcher, useParams, Link } from '@remix-run/react';
 import { Button, TextInput, Title, Text, Radio, Modal, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -21,6 +21,12 @@ import {
 } from '~/api.server';
 
 dayjs.locale('es');
+
+export const meta: MetaFunction = ({ matches }) => {
+  const slugData = matches.find(m => m.id === 'routes/$slug')?.data as { organization?: { name: string } } | undefined;
+  const orgName = slugData?.organization?.name;
+  return [{ title: orgName ? `Nuevo turno | ${orgName}` : 'Nuevo turno' }];
+};
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const token = await getPatientToken(request);

@@ -1,11 +1,17 @@
 import { useEffect, useCallback, useState } from 'react';
-import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
+import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { useActionData, useNavigation, Form } from '@remix-run/react';
 import { Card, Title, TextInput, Button, PinInput, Stack, Text, Anchor } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { requestOtp, verifyOtp } from '~/api.server';
 import { getPatientToken, setPatientToken } from '~/session.server';
+
+export const meta: MetaFunction = ({ matches }) => {
+  const slugData = matches.find(m => m.id === 'routes/$slug')?.data as { organization?: { name: string } } | undefined;
+  const orgName = slugData?.organization?.name;
+  return [{ title: orgName ? `Iniciar sesión | ${orgName}` : 'Iniciar sesión' }];
+};
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const token = await getPatientToken(request);

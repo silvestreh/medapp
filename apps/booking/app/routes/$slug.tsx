@@ -1,4 +1,4 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { Outlet, Form, useLocation, useRouteLoaderData } from '@remix-run/react';
 import { Container, ActionIcon, Text, Title, Stack } from '@mantine/core';
 import { SignOutIcon } from '@phosphor-icons/react';
@@ -14,6 +14,12 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   } catch {
     return json({ organization: null, error: true as const }, { status: 404 });
   }
+};
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const orgName = data?.organization?.name;
+  if (!orgName) return [];
+  return [{ title: `Turnos | ${orgName}` }];
 };
 
 export type SlugLoaderData = {

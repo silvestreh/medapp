@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { useLoaderData, Link, useFetcher } from '@remix-run/react';
 import { Button, Title, Text, Modal, Group } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -13,6 +13,12 @@ import { getPatientToken } from '~/session.server';
 import { findBookings, cancelBooking, type PatientBooking } from '~/api.server';
 
 dayjs.locale('es');
+
+export const meta: MetaFunction = ({ matches }) => {
+  const slugData = matches.find(m => m.id === 'routes/$slug')?.data as { organization?: { name: string } } | undefined;
+  const orgName = slugData?.organization?.name;
+  return [{ title: orgName ? `Mis turnos | ${orgName}` : 'Mis turnos' }];
+};
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const token = await getPatientToken(request);
