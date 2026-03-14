@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { Camera, CreditCard, CheckCircle, XCircle, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { CameraIcon, CreditCardIcon, CheckCircleIcon, XCircleIcon, ClockIcon, WarningIcon, ArrowsClockwiseIcon } from '@phosphor-icons/react';
 
 import { useFeathers } from '~/components/provider';
 import { SectionTitle, FormCard } from '~/components/forms/styles';
@@ -400,19 +400,19 @@ export function IdentityVerificationForm({
 
   return (
     <Stack gap="md">
-      <SectionTitle id="identity-verification" icon={<CreditCard />}>
+      <SectionTitle id="identity-verification" icon={<CreditCardIcon />}>
         {t('identity_verification.title')}
       </SectionTitle>
 
       {currentStatus === 'verified' && (
-        <Alert icon={<CheckCircle size={18} />} color="green">
+        <Alert icon={<CheckCircleIcon size={18} />} color="green">
           {t('identity_verification.status_verified')}
         </Alert>
       )}
 
       {currentStatus === 'pending' && (
         <Alert
-          icon={autoChecksRunning ? <Loader size={18} /> : <Clock size={18} />}
+          icon={autoChecksRunning ? <Loader size={18} /> : <ClockIcon size={18} />}
           color={autoChecksRunning ? 'blue' : 'yellow'}
         >
           {autoChecksRunning ? t('identity_verification.auto_checking') : t('identity_verification.status_pending')}
@@ -441,7 +441,7 @@ export function IdentityVerificationForm({
       )}
 
       {currentStatus === 'rejected' && (
-        <Alert icon={<XCircle size={18} />} color="red">
+        <Alert icon={<XCircleIcon size={18} />} color="red">
           {t('identity_verification.status_rejected')}
           {translatedRejectionReason && (
             <Text size="sm" mt="xs" component="div">
@@ -455,7 +455,7 @@ export function IdentityVerificationForm({
               color="red"
               size="xs"
               mt="sm"
-              leftSection={<RefreshCw size={14} />}
+              leftSection={<ArrowsClockwiseIcon size={14} />}
               loading={updatingRecords}
               onClick={handleUpdateRecordsFromDni}
             >
@@ -627,7 +627,7 @@ export function IdentityVerificationForm({
 
                     {/* Validation warning */}
                     {validationWarning && (
-                      <Alert icon={<AlertTriangle size={16} />} color="orange" withCloseButton={false}>
+                      <Alert icon={<WarningIcon size={16} />} color="orange" withCloseButton={false}>
                         <Text size="sm">{validationWarning}</Text>
                         <Group gap="xs" mt="sm">
                           <Button size="xs" variant="outline" color="orange" onClick={handleRetake}>
@@ -662,7 +662,7 @@ export function IdentityVerificationForm({
                     {/* Retake button when photo is captured but no warning */}
                     {currentUpload && !validating && !validationWarning && (
                       <Group gap="xs">
-                        <Button variant="light" size="sm" leftSection={<Camera size={14} />} onClick={handleRetake}>
+                        <Button variant="light" size="sm" leftSection={<CameraIcon size={14} />} onClick={handleRetake}>
                           {t('identity_verification.retake')}
                         </Button>
                       </Group>

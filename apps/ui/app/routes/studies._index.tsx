@@ -3,7 +3,7 @@ import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useClickOutside, useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Search, Plus, Filter } from 'lucide-react';
+import { MagnifyingGlassIcon, PlusIcon, FunnelIcon } from '@phosphor-icons/react';
 import { Link, useLoaderData, useSearchParams } from '@remix-run/react';
 import { TextInput, Stack, Loader, Group, Button, Autocomplete, Select, Popover } from '@mantine/core';
 import dayjs from 'dayjs';
@@ -319,7 +319,7 @@ export default function StudiesIndex() {
             placeholder={t('studies.search_placeholder')}
             value={inputValue}
             onChange={event => setInputValue(event.currentTarget.value)}
-            leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
+            leftSection={isLoading ? <Loader size={16} /> : <MagnifyingGlassIcon size={16} />}
             flex={1}
             size="lg"
             variant="unstyled"
@@ -360,7 +360,7 @@ export default function StudiesIndex() {
                 variant="filled"
               />
               {isVerified && (
-                <Button component={Link} to="/studies/new" leftSection={<Plus size={16} />}>
+                <Button component={Link} to="/studies/new" leftSection={<PlusIcon size={16} />}>
                   {t('studies.new_study')}
                 </Button>
               )}
@@ -385,7 +385,7 @@ export default function StudiesIndex() {
             >
               <Popover.Target>
                 <div ref={setFilterTargetNode}>
-                  <Button variant="default" leftSection={<Filter size={16} />} onClick={toggleFilters}>
+                  <Button variant="default" leftSection={<FunnelIcon size={16} />} onClick={toggleFilters}>
                     {t('common.filters')}
                   </Button>
                 </div>

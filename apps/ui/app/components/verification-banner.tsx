@@ -1,5 +1,5 @@
 import { Alert, Button, Group } from '@mantine/core';
-import { AlertTriangle } from 'lucide-react';
+import { WarningIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '@remix-run/react';
 
@@ -16,7 +16,7 @@ export function VerificationBanner({ isVerified }: VerificationBannerProps) {
 
   return (
     <Alert
-      icon={<AlertTriangle size={32} />}
+      icon={<WarningIcon size={32} />}
       title={t('verification.unverified_title', 'Unverified Practitioner')}
       color="red"
       styles={{ root: { borderRadius: 0 } }}

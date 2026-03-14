@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Badge, Button, Group, Popover, Text } from '@mantine/core';
 import { useFetcher } from '@remix-run/react';
 import { showNotification } from '@mantine/notifications';
-import { Send } from 'lucide-react';
+import { PaperPlaneTiltIcon } from '@phosphor-icons/react';
 import { FormContainer, FormCard, FieldRow, StyledTitle, ItemHeader } from '~/components/forms/styles';
 import { PrescribeModal, type PrescriptionResult } from '~/components/prescribe-modal';
 
@@ -89,7 +89,7 @@ export function PrescriptionDetail({ prescription: rx, onCancelled }: Prescripti
               </Button>
             )}
             {rx.status === 'completed' && (
-              <Button variant="light" size="xs" leftSection={<Send size={14} />} onClick={() => setShareOpened(true)}>
+              <Button variant="light" size="xs" leftSection={<PaperPlaneTiltIcon size={14} />} onClick={() => setShareOpened(true)}>
                 {t('recetario.send_via')}
               </Button>
             )}

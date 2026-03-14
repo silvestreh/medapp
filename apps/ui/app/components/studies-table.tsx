@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@remix-run/react';
-import { Search, FlaskConical } from 'lucide-react';
+import { MagnifyingGlassIcon, FlaskIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import { Table, Text as BaseText, Pagination, Group, Badge } from '@mantine/core';
 
@@ -216,9 +216,9 @@ export function StudiesTable({
   const emptyState = (
     <EmptyState onClick={onEmptyClick} style={{ cursor: 'pointer' }}>
       {searchValue && !isLoading ? (
-        <FlaskConical size={48} color="var(--mantine-color-dimmed)" />
+        <FlaskIcon size={48} color="var(--mantine-color-dimmed)" />
       ) : (
-        <Search size={48} color="var(--mantine-color-dimmed)" />
+        <MagnifyingGlassIcon size={48} color="var(--mantine-color-dimmed)" />
       )}
       <BaseText c="dimmed" ta="center">
         {searchValue && !isLoading ? t('studies.no_results') : t('studies.search_prompt')}

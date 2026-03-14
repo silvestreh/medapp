@@ -45,7 +45,7 @@ Adhere to these styling rules when creating or modifying medical forms in the `a
 4.  **Auto-Saving (onChange)**: Forms should NOT have an `onSubmit` callback or a submit button. Instead, they must accept an `onChange` prop. This callback should be invoked whenever any field value changes by triggering the `onChange` in a `useEffect` watching `form.values`. General form debouncing is discouraged to keep the UI responsive; only use `useDebouncedValue` for specific fields that perform heavy database queries (e.g., ICD-10 or medication searches).
 5. **Mobile first**: Every component must work on mobile and adapt to larger screens. There's a `media` object exported from `~/stitches` to help with that.
 6. **Re-use**: Don't reinvent the wheel, when possible rely on `lodash`, `mantine`, etc. If you have to roll your own components, use PandaCSS for styling.
-7. **Icons**: If icons are needed, always use `lucide-react` and never attempt to install another icon library.
+7. **Icons**: If icons are needed, always use `@phosphor-icons/react` and never attempt to install another icon library.
 8. **Encounter Tree**: In the `encounter-tree.tsx`, clicking a date should do nothing. Navigation should only happen when clicking specific form items within an encounter.
 9. **Linting**: React hooks can't be called conditionally. The early exit pattern can't be used earlier than hook calls.
 

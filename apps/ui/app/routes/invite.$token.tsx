@@ -3,7 +3,7 @@ import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { Alert, Button, Container, Paper, PasswordInput, Text, Title } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Check } from 'lucide-react';
+import { WarningCircleIcon, CheckIcon } from '@phosphor-icons/react';
 
 import createFeathersClient from '~/feathers';
 import { getSession, commitSession } from '~/session';
@@ -136,7 +136,7 @@ export default function InviteAcceptPage() {
     return (
       <Container size={420} my={40}>
         <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-          <Alert icon={<AlertCircle size={16} />} color="red" title={t('invite.invalid_title')}>
+          <Alert icon={<WarningCircleIcon size={16} />} color="red" title={t('invite.invalid_title')}>
             {t('invite.not_found')}
           </Alert>
         </Paper>
@@ -148,7 +148,7 @@ export default function InviteAcceptPage() {
     return (
       <Container size={420} my={40}>
         <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-          <Alert icon={<AlertCircle size={16} />} color="orange" title={t('invite.expired_title')}>
+          <Alert icon={<WarningCircleIcon size={16} />} color="orange" title={t('invite.expired_title')}>
             {t('invite.expired')}
           </Alert>
         </Paper>
@@ -160,7 +160,7 @@ export default function InviteAcceptPage() {
     return (
       <Container size={420} my={40}>
         <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-          <Alert icon={<Check size={16} />} color="teal" title={t('invite.already_accepted_title')}>
+          <Alert icon={<CheckIcon size={16} />} color="teal" title={t('invite.already_accepted_title')}>
             {t('invite.already_accepted')}
           </Alert>
         </Paper>
@@ -184,7 +184,7 @@ export default function InviteAcceptPage() {
 
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         {actionData && !actionData.ok && (
-          <Alert icon={<AlertCircle size={16} />} color="red" mb="md">
+          <Alert icon={<WarningCircleIcon size={16} />} color="red" mb="md">
             {actionData.error === 'passwords_mismatch' ? t('invite.passwords_mismatch') : actionData.error}
           </Alert>
         )}

@@ -12,7 +12,7 @@ import {
   Badge,
   Group,
 } from '@mantine/core';
-import { ChevronRight, ChevronDown, Search, X, Check } from 'lucide-react';
+import { CaretRightIcon, CaretDownIcon, MagnifyingGlassIcon, XIcon, CheckIcon } from '@phosphor-icons/react';
 
 import { useFeathers } from '~/components/provider';
 import { useTranslation } from 'react-i18next';
@@ -383,10 +383,10 @@ export function Icd10Selector({
           }}
         >
           <TreeIcon>
-            {hasChildren ? isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} /> : null}
+            {hasChildren ? isExpanded ? <CaretDownIcon size={14} /> : <CaretRightIcon size={14} /> : null}
           </TreeIcon>
           <NodeText>{highlightText(`${node.id} - ${node.name}`, debouncedSearch)}</NodeText>
-          {values.includes(nodeId) && <Check size={14} color="var(--mantine-primary-color-4)" />}
+          {values.includes(nodeId) && <CheckIcon size={14} color="var(--mantine-primary-color-4)" />}
         </NodeContainer>
 
         {isExpanded && node.children && <Box>{node.children.map(childId => renderNode(childId, level + 1))}</Box>}
@@ -413,7 +413,7 @@ export function Icd10Selector({
                 removeValue(id);
               }}
             >
-              <X size={12} />
+              <XIcon size={12} />
             </ActionIcon>
           )
         }
@@ -504,10 +504,10 @@ export function Icd10Selector({
                   }}
                   style={{ pointerEvents: 'all' }}
                 >
-                  <X size={16} />
+                  <XIcon size={16} />
                 </ActionIcon>
               ) : !readOnly ? (
-                <Search size={16} color="gray" />
+                <MagnifyingGlassIcon size={16} color="gray" />
               ) : null
             }
             rightSectionPointerEvents={loading || (values.length > 0 && !readOnly && !multiSelect) ? 'all' : 'none'}

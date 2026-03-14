@@ -4,7 +4,7 @@ import { useLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from '@mantine/hooks';
 import { ActionIcon, Button, Group, Table, Text } from '@mantine/core';
-import { Plus, UserPlus } from 'lucide-react';
+import { PlusIcon, UserPlusIcon } from '@phosphor-icons/react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import Portal from '~/components/portal';
@@ -194,13 +194,13 @@ export default function UsersIndex() {
       <Portal id="form-actions">
         <Group>
           {isDesktop && (
-            <Button leftSection={<UserPlus size={16} />} onClick={handleOpenInvite}>
+            <Button leftSection={<UserPlusIcon size={16} />} onClick={handleOpenInvite}>
               {t('users.invite_user')}
             </Button>
           )}
           {!isDesktop && (
             <ActionIcon onClick={handleOpenInvite}>
-              <Plus size={16} />
+              <PlusIcon size={16} />
             </ActionIcon>
           )}
         </Group>

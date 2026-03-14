@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 import { Text, Stack, Divider, ActionIcon } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
+import { XIcon } from '@phosphor-icons/react';
 import { styled } from '~/styled-system/jsx';
 
 interface NewEncounterSidebarProps {
@@ -80,7 +80,7 @@ const NewEncounterSidebar: FC<NewEncounterSidebarProps> = ({
                     onRemoveForm(formKey);
                   }}
                 >
-                  <X size={14} />
+                  <XIcon size={14} />
                 </ActionIcon>
               </FormItem>
             )

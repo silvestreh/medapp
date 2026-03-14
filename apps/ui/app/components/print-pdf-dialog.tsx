@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Modal, SegmentedControl, Stack } from '@mantine/core';
-import { Printer } from 'lucide-react';
+import { PrinterIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { useFeathers } from '~/components/provider';
@@ -137,7 +137,7 @@ export function PrintPdfDialog({ opened, onClose, patientId, patientName, dateRa
         )}
 
         <Button
-          leftSection={<Printer size={16} />}
+          leftSection={<PrinterIcon size={16} />}
           loading={isLoading}
           disabled={!isValid}
           onClick={handlePrint}

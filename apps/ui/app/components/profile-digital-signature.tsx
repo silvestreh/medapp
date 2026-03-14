@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, FileInput, Group, PasswordInput, SegmentedControl, Text, Stack } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
-import { FileSignature, Trash2, Upload, Info, ShieldCheck, Lock, KeyRound } from 'lucide-react';
+import { SignatureIcon, TrashIcon, UploadIcon, InfoIcon, ShieldCheckIcon, LockIcon, KeyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 import Portal from '~/components/portal';
@@ -197,17 +197,17 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
 
   const submitLabel = method === 'generate' ? t('digital_signature.generate') : t('digital_signature.upload');
 
-  const submitIcon = method === 'generate' ? <KeyRound size={16} /> : <Upload size={16} />;
+  const submitIcon = method === 'generate' ? <KeyIcon size={16} /> : <UploadIcon size={16} />;
 
   return (
     <Stack gap={0}>
       <FormHeader>
-        <SectionTitle icon={<FileSignature />}>{t('digital_signature.title')}</SectionTitle>
+        <SectionTitle icon={<SignatureIcon />}>{t('digital_signature.title')}</SectionTitle>
       </FormHeader>
       <Alert
         variant="light"
         color="var(--mantine-primary-color-4)"
-        icon={<Info size={16} />}
+        icon={<InfoIcon size={16} />}
         style={{ flex: 1, marginBottom: '1rem' }}
       >
         {t('digital_signature.info_notice')}
@@ -228,7 +228,7 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
                 <Text size="sm">{certificate.fileName || 'certificado.pfx'}</Text>
                 {certificate.isClientEncrypted && (
                   <Group gap={4}>
-                    <Lock size={12} color="var(--mantine-primary-color-4)" />
+                    <LockIcon size={12} color="var(--mantine-primary-color-4)" />
                     <Text size="xs" c="var(--mantine-primary-color-4)" fw={500}>
                       {t('digital_signature.certificate_pin_protected')}
                     </Text>
@@ -239,7 +239,7 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
                 variant="subtle"
                 color="red"
                 size="xs"
-                leftSection={<Trash2 size={14} />}
+                leftSection={<TrashIcon size={14} />}
                 loading={isRemoving}
                 onClick={handleRemove}
               >
@@ -265,7 +265,7 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
                 <Alert
                   variant="light"
                   color="var(--mantine-primary-color-4)"
-                  icon={<Info size={14} />}
+                  icon={<InfoIcon size={14} />}
                   py="xs"
                   style={{ flex: 1 }}
                 >
@@ -292,7 +292,7 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
                   <Alert
                     variant="light"
                     color="orange"
-                    icon={<Info size={14} />}
+                    icon={<InfoIcon size={14} />}
                     py="xs"
                     style={{ flex: 1, marginTop: '1rem' }}
                   >
@@ -343,7 +343,7 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
                         <Alert
                           variant="light"
                           color="orange"
-                          icon={<Info size={14} />}
+                          icon={<InfoIcon size={14} />}
                           py="xs"
                           style={{ flex: 1, marginTop: '1rem' }}
                         >
@@ -365,7 +365,7 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
           </Button>
         </Portal>
       )}
-      <Alert variant="light" color="yellow" icon={<ShieldCheck size={16} />} style={{ flex: 1, marginTop: '1rem' }}>
+      <Alert variant="light" color="yellow" icon={<ShieldCheckIcon size={16} />} style={{ flex: 1, marginTop: '1rem' }}>
         {t('digital_signature.security_notice')}
       </Alert>
     </Stack>

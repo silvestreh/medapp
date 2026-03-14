@@ -6,7 +6,7 @@ import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { mutate as swrMutate } from 'swr';
-import { Bot } from 'lucide-react';
+import { RobotIcon } from '@phosphor-icons/react';
 
 import Portal from '~/components/portal';
 import { getAuthenticatedClient } from '~/utils/auth.server';
@@ -248,7 +248,7 @@ export default function SettingsAssistantRoute() {
   return (
     <>
       <FormHeader>
-        <SectionTitle icon={<Bot />}>{t('profile.tab_assistant')}</SectionTitle>
+        <SectionTitle icon={<RobotIcon />}>{t('profile.tab_assistant')}</SectionTitle>
       </FormHeader>
       <FormCard>
         <FieldRow label={`${t('llm_settings.ai_provider')}:`} variant="stacked">

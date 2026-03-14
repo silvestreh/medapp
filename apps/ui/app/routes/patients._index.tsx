@@ -2,7 +2,7 @@ import { Link } from '@remix-run/react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Button, Group } from '@mantine/core';
-import { Plus } from 'lucide-react';
+import { PlusIcon } from '@phosphor-icons/react';
 
 import { authenticatedLoader } from '~/utils/auth.server';
 import PatientSearchTable from '~/components/patient-search-table';
@@ -23,7 +23,7 @@ export default function PatientsIndex() {
       {isDesktop && (
         <Portal id="form-actions">
           <Group>
-            <Button component={Link} to="/patients/new" leftSection={<Plus size={16} />}>
+            <Button component={Link} to="/patients/new" leftSection={<PlusIcon size={16} />}>
               {t('patients.new_patient')}
             </Button>
           </Group>

@@ -2,7 +2,7 @@ import { useState, type FC } from 'react';
 import dayjs from 'dayjs';
 import { ActionIcon, Popover, Group, Button, Stack } from '@mantine/core';
 import { useClickOutside } from '@mantine/hooks';
-import { Trash, Calendar } from 'lucide-react';
+import { TrashIcon, CalendarIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
@@ -216,7 +216,7 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
     <Container className={className}>
       {slots.length === 0 && (
         <NoAppointments>
-          <Calendar size={48} color="var(--mantine-color-dimmed)" />
+          <CalendarIcon size={48} color="var(--mantine-color-dimmed)" />
           <Text variant="light">{t('appointments.no_appointments')}</Text>
         </NoAppointments>
       )}
@@ -274,7 +274,7 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
                     >
                       <Popover.Target>
                         <ActionIcon variant="subtle" onClick={handleOpenPopover(slot.appointment.id)}>
-                          <Trash size={16} />
+                          <TrashIcon size={16} />
                         </ActionIcon>
                       </Popover.Target>
                       <Popover.Dropdown ref={ref}>

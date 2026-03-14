@@ -15,7 +15,7 @@ import { styled } from '~/styled-system/jsx';
 import { css } from '~/styled-system/css';
 import { media } from '~/media';
 import type { Account } from '~/declarations';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDotsIcon } from '@phosphor-icons/react';
 
 export const links: LinksFunction = () => [];
 
@@ -113,7 +113,7 @@ export default function AppointmentsForDate() {
       {!hasTimeOff && (
         <>
           {holiday && (
-            <Alert icon={<CalendarDays size={16} />} color="yellow" variant="light" mb="md" title={holiday.title}>
+            <Alert icon={<CalendarDotsIcon size={16} />} color="yellow" variant="light" mb="md" title={holiday.title}>
               {t('appointments.holiday_warning', { name: holiday.title })}
             </Alert>
           )}

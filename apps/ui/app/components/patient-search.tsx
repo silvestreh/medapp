@@ -3,7 +3,7 @@ import { useNavigate } from '@remix-run/react';
 import { Autocomplete, Loader, Text } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 
 import { useFind } from '~/components/provider';
 import type { Patient } from '~/declarations';
@@ -164,7 +164,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
       filter={({ options }) => options}
       placeholder={resolvedPlaceholder}
       autoFocus={autoFocus}
-      leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
+      leftSection={isLoading ? <Loader size={16} /> : <MagnifyingGlassIcon size={16} />}
       maxDropdownHeight={300}
       renderOption={renderOption}
       variant={variant}

@@ -30,8 +30,9 @@
       "passwordField": "password"
     }
   },
-  "whapi": {
-    "token": "WHAPI_TOKEN"
+  "evolution": {
+    "apiUrl": "EVOLUTION_API_URL",
+    "apiKey": "EVOLUTION_API_KEY"
   },
   "uploads": {
     "dir": "/data/uploads"

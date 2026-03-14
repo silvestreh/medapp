@@ -5,7 +5,7 @@ import { useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
 import { Group, Button } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Save } from 'lucide-react';
+import { FloppyDiskIcon } from '@phosphor-icons/react';
 
 import {
   getAuthenticatedClient,
@@ -175,14 +175,14 @@ export default function NewStudy() {
       {isDesktop && (
         <Portal id="form-actions">
           <Group>
-            <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<Save size={16} />}>
+            <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<FloppyDiskIcon size={16} />}>
               {t('studies.save')}
             </Button>
           </Group>
         </Portal>
       )}
 
-      {!isDesktop && <Fab icon={<Save size={22} />} onClick={handleSave} disabled={!canSave} />}
+      {!isDesktop && <Fab icon={<FloppyDiskIcon size={22} />} onClick={handleSave} disabled={!canSave} />}
 
       <StudyMetadataForm
         mode="create"

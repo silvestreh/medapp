@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge, Button, Group, Paper, Progress, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { Camera, RotateCcw, Check, Video } from 'lucide-react';
+import { CameraIcon, ArrowCounterClockwiseIcon, CheckIcon, VideoCameraIcon } from '@phosphor-icons/react';
 import { getVideoImageData, detectMrzText } from '@athelas/kyc-utils';
 
 type AutoDetectMode = 'barcode' | 'face' | 'text' | 'none';
@@ -656,7 +656,7 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
             </div>
             <Group>
               <Button
-                leftSection={isVideoMode ? <Video size={16} /> : <Camera size={16} />}
+                leftSection={isVideoMode ? <VideoCameraIcon size={16} /> : <CameraIcon size={16} />}
                 onClick={handleCapture}
                 disabled={detectStatus === 'recording'}
               >
@@ -699,10 +699,10 @@ export function CameraCapture({ facingMode, onCapture, onCancel, label, autoDete
               />
             )}
             <Group>
-              <Button color="green" leftSection={<Check size={16} />} onClick={handleConfirm}>
+              <Button color="green" leftSection={<CheckIcon size={16} />} onClick={handleConfirm}>
                 {t('identity_verification.confirm')}
               </Button>
-              <Button variant="light" leftSection={<RotateCcw size={16} />} onClick={handleRetake}>
+              <Button variant="light" leftSection={<ArrowCounterClockwiseIcon size={16} />} onClick={handleRetake}>
                 {t('identity_verification.retake')}
               </Button>
             </Group>

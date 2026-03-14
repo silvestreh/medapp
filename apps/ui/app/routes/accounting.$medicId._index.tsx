@@ -5,7 +5,7 @@ import { Link, useLoaderData, useParams } from '@remix-run/react';
 import { BarChart } from '@mantine/charts';
 import { Badge, Button, Checkbox, Group, Menu, Paper, Stack, Text, Title, Table } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
-import { ChevronDown } from 'lucide-react';
+import { CaretDownIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
@@ -377,7 +377,7 @@ export default function AccountingDashboardPage() {
           <Group gap="sm">
             <Menu shadow="md" width={260}>
               <Menu.Target>
-                <Button variant="filled" color="gray.1" c="gray.7" fw={500} rightSection={<ChevronDown size={14} />}>
+                <Button variant="filled" color="gray.1" c="gray.7" fw={500} rightSection={<CaretDownIcon size={14} />}>
                   {selectedInsurerLabel}
                 </Button>
               </Menu.Target>

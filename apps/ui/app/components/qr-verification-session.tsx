@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Badge, Button, Group, Image, Loader, Paper, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { QrCode, RefreshCw, CheckCircle, Smartphone } from 'lucide-react';
+import { QrCodeIcon, ArrowsClockwiseIcon, CheckCircleIcon, DeviceMobileCameraIcon } from '@phosphor-icons/react';
 import QRCode from 'qrcode';
 
 import { useFeathers } from '~/components/provider';
@@ -130,7 +130,7 @@ export function QrVerificationSession({ onCompleted }: QrVerificationSessionProp
           <Text fw={600}>{t('identity_verification.qr_expired')}</Text>
           <Text size="sm" c="dimmed">{t('identity_verification.qr_expired_desc')}</Text>
           <Button
-            leftSection={<RefreshCw size={16} />}
+            leftSection={<ArrowsClockwiseIcon size={16} />}
             variant="light"
             onClick={createSession}
           >
@@ -145,7 +145,7 @@ export function QrVerificationSession({ onCompleted }: QrVerificationSessionProp
     <Paper withBorder p="xl" radius="md">
       <Stack align="center" gap="md">
         <Group gap="xs">
-          <Smartphone size={20} />
+          <DeviceMobileCameraIcon size={20} />
           <Text fw={600}>{t('identity_verification.qr_title')}</Text>
         </Group>
 
@@ -178,7 +178,7 @@ export function QrVerificationSession({ onCompleted }: QrVerificationSessionProp
         )}
 
         {session && session.status === 'completed' && (
-          <Badge color="green" variant="light" size="lg" leftSection={<CheckCircle size={14} />}>
+          <Badge color="green" variant="light" size="lg" leftSection={<CheckCircleIcon size={14} />}>
             {t('identity_verification.qr_completed')}
           </Badge>
         )}

@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Stack, Group, Text, Loader, Alert, Paper, SimpleGrid } from '@mantine/core';
 import { AreaChart, BarChart, DonutChart } from '@mantine/charts';
-import { Info } from 'lucide-react';
+import { InfoIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 
 import { authenticatedLoader } from '~/utils/auth.server';
@@ -273,7 +273,7 @@ export default function StatsIndex() {
       </Portal>
 
       {isLargeRange && (
-        <Alert icon={<Info size={16} />} color="yellow" variant="light">
+        <Alert icon={<InfoIcon size={16} />} color="yellow" variant="light">
           {t('stats.large_range_warning')}
         </Alert>
       )}

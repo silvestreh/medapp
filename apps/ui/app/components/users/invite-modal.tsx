@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Group, Modal, Select, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { showNotification } from '@mantine/notifications';
-import { UserPlus } from 'lucide-react';
+import { UserPlusIcon } from '@phosphor-icons/react';
 
 interface InviteModalProps {
   opened: boolean;
@@ -78,7 +78,7 @@ export function InviteModal({ opened, onClose, roleOptions }: InviteModalProps) 
           <Button variant="default" onClick={handleClose}>
             {t('common.cancel')}
           </Button>
-          <Button type="submit" leftSection={<UserPlus size={16} />}>
+          <Button type="submit" leftSection={<UserPlusIcon size={16} />}>
             {t('users.send_invite')}
           </Button>
         </Group>

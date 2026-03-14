@@ -5,7 +5,7 @@ import { useHotkeys } from '@mantine/hooks';
 import { Form } from '@remix-run/react';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
-import { User, Mail, Stethoscope } from 'lucide-react';
+import { UserIcon, EnvelopeIcon, StethoscopeIcon } from '@phosphor-icons/react';
 
 import Portal from '~/components/portal';
 import {
@@ -199,7 +199,7 @@ export function ProfileForm({
     >
       <input type="hidden" name="intent" value="update-profile" />
       <input type="hidden" name="payload" value={JSON.stringify(payload)} />
-      <SectionTitle id="personal-data" icon={<User />}>
+      <SectionTitle id="personal-data" icon={<UserIcon />}>
         {t('profile.personal_data')}
       </SectionTitle>
       <FormCard style={{ marginBottom: '1rem' }}>
@@ -226,7 +226,7 @@ export function ProfileForm({
         </FieldRow>
       </FormCard>
 
-      <SectionTitle id="contact-data" icon={<Mail />}>
+      <SectionTitle id="contact-data" icon={<EnvelopeIcon />}>
         {t('profile.contact_data')}
       </SectionTitle>
       <FormCard style={{ marginBottom: '1rem' }}>
@@ -252,7 +252,7 @@ export function ProfileForm({
 
       {isMedic && (
         <>
-          <SectionTitle id="professional-data" icon={<Stethoscope />}>
+          <SectionTitle id="professional-data" icon={<StethoscopeIcon />}>
             {t('profile.professional_info')}
           </SectionTitle>
           <FormCard>

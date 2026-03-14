@@ -1,5 +1,5 @@
 import { ActionIcon, Title, Text } from '@mantine/core';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeftIcon } from '@phosphor-icons/react';
 
 import { styled } from '~/styled-system/jsx';
 
@@ -33,7 +33,7 @@ export function ToolbarTitle({ title, subTitle, onBack }: ToolbarTitleProps) {
     <TitleGroup maxW={{ base: 'calc(100vw - 11rem)', md: 'none' }}>
       {onBack && (
         <ActionIcon variant="subtle" color="gray" size="lg" onClick={onBack}>
-          <ArrowLeft size={20} />
+          <ArrowLeftIcon size={20} />
         </ActionIcon>
       )}
       {!subTitle && (

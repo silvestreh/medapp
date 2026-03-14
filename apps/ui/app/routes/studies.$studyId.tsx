@@ -5,7 +5,7 @@ import { useFetcher, useLoaderData, useNavigate, useParams } from '@remix-run/re
 import { Group, Button, Tabs, Text, Loader, Modal } from '@mantine/core';
 import { useMediaQuery, useDisclosure, useHotkeys } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Printer, Save } from 'lucide-react';
+import { PrinterIcon, FloppyDiskIcon } from '@phosphor-icons/react';
 
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -246,14 +246,14 @@ export default function StudyDetail() {
       {isDesktop && (
         <Portal id="form-actions">
           <Group>
-            <Button variant="light" onClick={handlePrint} loading={isPrinting} leftSection={<Printer size={16} />}>
+            <Button variant="light" onClick={handlePrint} loading={isPrinting} leftSection={<PrinterIcon size={16} />}>
               {t('print_pdf.print')}
             </Button>
             <Button
               onClick={handleSave}
               loading={isSavingMeta}
               disabled={!isDirty || !isVerified}
-              leftSection={<Save size={16} />}
+              leftSection={<FloppyDiskIcon size={16} />}
             >
               {t('studies.save_changes')}
             </Button>
@@ -264,11 +264,11 @@ export default function StudyDetail() {
       {!isDesktop && (
         <Fab open={fabOpen} onToggle={toggleFab} onClose={closeFab}>
           <FabItem onClick={handleFabPrint} index={1}>
-            <Printer size={18} />
+            <PrinterIcon size={18} />
             {t('print_pdf.print')}
           </FabItem>
           <FabItem onClick={handleFabSave} index={0} disabled={!isDirty || !isVerified}>
-            <Save size={18} />
+            <FloppyDiskIcon size={18} />
             {t('studies.save_changes')}
           </FabItem>
         </Fab>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useForm } from '@mantine/form';
 import { Tabs, Stack, Button, ActionIcon, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash } from 'lucide-react';
+import { PlusIcon, TrashIcon } from '@phosphor-icons/react';
 
 import {
   FormContainer,
@@ -210,7 +210,7 @@ function ArrayNode({
             </Text>
             {!readOnly && items.length > (field.minItems ?? 0) && (
               <ActionIcon color="red" variant="subtle" onClick={handleRemove(index)}>
-                <Trash size={16} />
+                <TrashIcon size={16} />
               </ActionIcon>
             )}
           </ItemHeader>
@@ -233,7 +233,7 @@ function ArrayNode({
           <div />
           <Button
             variant="light"
-            leftSection={<Plus size={16} />}
+            leftSection={<PlusIcon size={16} />}
             onClick={handleAdd}
             radius="xl"
             color="gray"

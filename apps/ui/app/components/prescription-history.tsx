@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Stack, Text, Badge, Group, Anchor, Divider } from '@mantine/core';
-import { ClipboardPen, FileText } from 'lucide-react';
+import { ClipboardTextIcon, FileTextIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 
 interface PrescriptionRecord {
@@ -25,7 +25,7 @@ export function PrescriptionHistory({ prescriptions }: { prescriptions: Prescrip
     <Stack gap="xs" p="md">
       <Divider />
       <Group gap="xs">
-        <ClipboardPen size={16} />
+        <ClipboardTextIcon size={16} />
         <Text fw={600} size="sm">
           {t('recetario.history_title')}
         </Text>
@@ -33,7 +33,7 @@ export function PrescriptionHistory({ prescriptions }: { prescriptions: Prescrip
       {prescriptions.map(rx => (
         <Group key={rx.id} gap="xs" wrap="nowrap" justify="space-between" style={{ fontSize: '0.8rem' }}>
           <Group gap={4} wrap="nowrap">
-            <FileText size={14} />
+            <FileTextIcon size={14} />
             <Text size="xs" c="dimmed">
               {dayjs(rx.createdAt).format('DD/MM/YY')}
             </Text>

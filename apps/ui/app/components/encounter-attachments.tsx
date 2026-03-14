@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Stack, Text, Image, ActionIcon, Group, Anchor, Tooltip, Paper } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
-import { Download, Paperclip, X } from 'lucide-react';
+import { DownloadSimpleIcon, PaperclipIcon, XIcon } from '@phosphor-icons/react';
 
 import { useFeathers } from '~/components/provider';
 import { styled } from '~/styled-system/jsx';
@@ -54,7 +54,7 @@ export function AttachmentViewer({ attachment }: AttachmentViewerProps) {
             target="_blank"
             download={attachment.fileName}
           >
-            <Download size={16} />
+            <DownloadSimpleIcon size={16} />
           </ActionIcon>
         </Tooltip>
       </Group>
@@ -176,7 +176,7 @@ export function FloatingAttachmentsList({ attachments, onRemove }: FloatingAttac
       <Paper shadow="md" p="sm" radius="md" withBorder>
         <Stack gap="xs">
           <Group gap="xs">
-            <Paperclip size={14} />
+            <PaperclipIcon size={14} />
             <Text size="sm" fw={600}>
               {t('encounters.attachments')} ({attachments.length})
             </Text>
@@ -192,7 +192,7 @@ export function FloatingAttachmentsList({ attachments, onRemove }: FloatingAttac
                 </Text>
               </div>
               <ActionIcon size="xs" variant="subtle" color="red" onClick={() => onRemove(i)}>
-                <X size={12} />
+                <XIcon size={12} />
               </ActionIcon>
             </Group>
           ))}

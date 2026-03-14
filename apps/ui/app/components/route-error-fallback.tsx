@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { captureRemixErrorBoundaryError } from '@sentry/remix';
 import { Alert, Button, Stack, Text, Code } from '@mantine/core';
-import { TriangleAlert } from 'lucide-react';
+import { WarningIcon } from '@phosphor-icons/react';
 
 export default function RouteErrorFallback() {
   const { t } = useTranslation();
@@ -21,7 +21,7 @@ export default function RouteErrorFallback() {
   return (
     <Stack align="center" justify="center" py="xl" mih={200}>
       <Alert
-        icon={<TriangleAlert size={18} />}
+        icon={<WarningIcon size={18} />}
         title={t('common.something_went_wrong')}
         color="red"
         variant="light"

@@ -2,20 +2,7 @@ import React, { cloneElement, isValidElement, type ReactElement } from 'react';
 import { ActionIcon, Flex, Tooltip, Image, Menu, type DefaultMantineColor } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { NavLink, useLocation, useMatches, useNavigate } from '@remix-run/react';
-import {
-  Calendar,
-  User,
-  Stethoscope,
-  FlaskConical,
-  ClipboardPen,
-  Shield,
-  Languages,
-  BarChart3,
-  Calculator,
-  MessageCircle,
-  ShieldCheck,
-  type LucideProps,
-} from 'lucide-react';
+import { CalendarIcon, UserIcon, StethoscopeIcon, FlaskIcon, ClipboardTextIcon, ShieldIcon, TranslateIcon, ChartBarIcon, CalculatorIcon, ChatCircleIcon, ShieldCheckIcon, type IconProps } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
@@ -196,56 +183,56 @@ const LanguageSwitcherContainer = styled(Flex, {
 const sections: Section[] = [
   {
     labelKey: 'encounters',
-    icon: <Stethoscope />,
+    icon: <StethoscopeIcon />,
     permissions: ['encounters:create', 'encounters:find', 'encounters:get'],
     path: '/encounters',
     color: 'lime',
   },
   {
     labelKey: 'studies',
-    icon: <FlaskConical />,
+    icon: <FlaskIcon />,
     permissions: ['studies:create', 'studies:find', 'studies:get'],
     path: '/studies',
     color: 'indigo',
   },
   {
     labelKey: 'appointments',
-    icon: <Calendar />,
+    icon: <CalendarIcon />,
     permissions: ['appointments:create'],
     path: '/appointments',
     color: 'pink',
   },
   {
     labelKey: 'patients',
-    icon: <User />,
+    icon: <UserIcon />,
     permissions: ['patients:create', 'patients:find', 'patients:get'],
     path: '/patients',
     color: 'yellow',
   },
   {
     labelKey: 'prescriptions',
-    icon: <ClipboardPen />,
+    icon: <ClipboardTextIcon />,
     permissions: ['recetario:create', 'prescriptions:find'],
     path: '/prescriptions',
     color: 'teal',
   },
   {
     labelKey: 'users_roles',
-    icon: <Shield />,
+    icon: <ShieldIcon />,
     permissions: ['roles:find', 'roles:get', 'roles:patch'],
     path: '/users',
     color: 'red',
   },
   {
     labelKey: 'accounting',
-    icon: <Calculator />,
+    icon: <CalculatorIcon />,
     permissions: ['accounting:find'],
     path: '/accounting',
     color: 'indigo',
   },
   {
     labelKey: 'stats',
-    icon: <BarChart3 />,
+    icon: <ChartBarIcon />,
     permissions: ['stats:find:all'],
     path: '/stats',
     color: 'teal',
@@ -294,7 +281,7 @@ const SideNav: React.FC = () => {
                     className={isActive ? 'active' : ''}
                   >
                     {isValidElement(section.icon) &&
-                      cloneElement(section.icon as ReactElement<LucideProps>, { size: isMobile ? 18 : 22 })}
+                      cloneElement(section.icon as ReactElement<IconProps>, { size: isMobile ? 18 : 22 })}
                   </NavItem>
                 </Tooltip>
               </HasPermission>
@@ -314,7 +301,7 @@ const SideNav: React.FC = () => {
                 size="3em"
                 className={isAdminActive ? 'active' : ''}
               >
-                <ShieldCheck size={isMobile ? 18 : 22} />
+                <ShieldCheckIcon size={isMobile ? 18 : 22} />
               </NavItem>
             </Tooltip>
           );
@@ -325,7 +312,7 @@ const SideNav: React.FC = () => {
           <UserListPopover>
             <Tooltip label={t('navigation.chat', 'Chat')} position="right">
               <ActionIcon variant="subtle" size="3em">
-                <MessageCircle size={isMobile ? 18 : 22} />
+                <ChatCircleIcon size={isMobile ? 18 : 22} />
               </ActionIcon>
             </Tooltip>
           </UserListPopover>
@@ -334,7 +321,7 @@ const SideNav: React.FC = () => {
           <Menu.Target>
             <Tooltip label={t('navigation.language')} position="right">
               <ActionIcon variant="subtle" size="3em">
-                <Languages size={isMobile ? 18 : 22} />
+                <TranslateIcon size={isMobile ? 18 : 22} />
               </ActionIcon>
             </Tooltip>
           </Menu.Target>

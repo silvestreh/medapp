@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, useCallback, useEffect, useState } from 'react';
 import { Flex, Box, LoadingOverlay, Alert, CloseButton, Anchor } from '@mantine/core';
 import { Link } from '@remix-run/react';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldWarningIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { SALES_EMAIL } from '@athelas/brand';
 
@@ -116,7 +116,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
           <VerificationBanner isVerified={isVerified} />
           <TopNav />
           {!isOrgActive && (
-            <Alert color="orange" icon={<ShieldAlert size={18} />} py="sm" px="md" radius={0}>
+            <Alert color="orange" icon={<ShieldWarningIcon size={18} />} py="sm" px="md" radius={0}>
               {t(
                 'organization.inactive_banner',
                 'Your organization is not yet activated. Please contact sales to get started.'
@@ -129,7 +129,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
           {showWeakPasswordBanner && (
             <Alert
               color="orange"
-              icon={<ShieldAlert size={18} />}
+              icon={<ShieldWarningIcon size={18} />}
               py="sm"
               px="md"
               radius={0}

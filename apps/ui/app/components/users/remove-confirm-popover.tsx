@@ -3,7 +3,7 @@ import { useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { ActionIcon, Button, Group, Popover, Text, Tooltip } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
-import { X } from 'lucide-react';
+import { XIcon } from '@phosphor-icons/react';
 
 import type { MemberRow } from './types';
 
@@ -37,7 +37,7 @@ export function RemoveConfirmPopover({ member, disabled }: RemoveConfirmPopoverP
       <Popover.Target>
         <Tooltip label={t('users.remove_member')} position="left">
           <ActionIcon variant="subtle" color="red" size="sm" onClick={() => setOpened(o => !o)} disabled={disabled}>
-            <X size={14} />
+            <XIcon size={14} />
           </ActionIcon>
         </Tooltip>
       </Popover.Target>

@@ -1,6 +1,6 @@
 import { type FC, useEffect, useState, useMemo, memo } from 'react';
 import { Select, Group, Text, type SelectProps } from '@mantine/core';
-import { User, Check } from 'lucide-react';
+import { UserIcon, CheckIcon } from '@phosphor-icons/react';
 import { useParams } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 
@@ -41,7 +41,7 @@ const MedicList: FC<MedicListProps> = ({ onChange, medics = [], value }) => {
 
   const handleRenderOption: SelectProps['renderOption'] = ({ option, checked }) => (
     <Option>
-      {checked ? <Check /> : <User />}
+      {checked ? <CheckIcon /> : <UserIcon />}
       <Text ml="xs" styles={{ root: { whiteSpace: 'nowrap' } }}>
         {option.label}
       </Text>

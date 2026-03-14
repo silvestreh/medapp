@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Button, Group, NumberInput, Popover, Select, Stack } from '@mantine/core';
 import { DatePickerInput, MonthPickerInput } from '@mantine/dates';
 import { useClickOutside } from '@mantine/hooks';
-import { ChevronDown } from 'lucide-react';
+import { CaretDownIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
@@ -283,7 +283,7 @@ export function DateRangePopover({
               c={variant === 'filled' ? 'gray.7' : undefined}
               fw={500}
               onClick={handleToggle}
-              rightSection={<ChevronDown size={14} />}
+              rightSection={<CaretDownIcon size={14} />}
               fullWidth={fullWidth}
               styles={{
                 label: { flex: fullWidth ? 1 : undefined },

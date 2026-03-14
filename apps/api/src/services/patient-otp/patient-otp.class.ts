@@ -97,9 +97,26 @@ export class PatientOtp {
 
     const patient = patients[0];
     const phoneNumber = patient.contactData?.phoneNumber;
-    const rawPhone = Array.isArray(phoneNumber) ? phoneNumber[0] : phoneNumber;
+    const rawPhone = this.pickMobileNumber(phoneNumber);
 
     return { patientId: String(patient.id), phone: rawPhone || null };
+  }
+
+  /**
+   * Picks the best phone number for WhatsApp: prefers `cel:` over `tel:`.
+   * Accepts a single string or an array of prefixed phone strings.
+   */
+  private pickMobileNumber(phoneNumber: string | string[] | null | undefined): string | null {
+    if (!phoneNumber) return null;
+
+    const numbers = Array.isArray(phoneNumber) ? phoneNumber : [phoneNumber];
+    if (numbers.length === 0) return null;
+
+    // Prefer cel: (mobile) over tel: (landline)
+    const mobile = numbers.find((n) => typeof n === 'string' && n.startsWith('cel:'));
+    const picked = mobile || numbers[0];
+
+    return typeof picked === 'string' ? picked : null;
   }
 
   private maskPhone(phone: string): string {
@@ -108,8 +125,19 @@ export class PatientOtp {
     return '*'.repeat(digits.length - 4) + digits.slice(-4);
   }
 
+  private async resolveOrganizationId(slug?: string): Promise<string | null> {
+    if (!slug) return null;
+
+    const result = await this.app.service('organizations').find({
+      query: { slug, $limit: 1 },
+    } as any) as any;
+
+    const organizations = result.data || result;
+    return organizations.length ? String(organizations[0].id) : null;
+  }
+
   private async requestOtp(data: any) {
-    const { documentNumber } = data;
+    const { documentNumber, slug } = data;
 
     if (!documentNumber || typeof documentNumber !== 'string') {
       throw new BadRequest('Document number is required');
@@ -144,11 +172,17 @@ export class PatientOtp {
 
     // Send OTP via WhatsApp
     try {
-      await this.app.service('whatsapp').create({
-        type: 'text',
-        to: result.phone,
-        body: `Tu código de verificación es: ${code}\n\nExpira en 5 minutos.`,
-      });
+      const organizationId = await this.resolveOrganizationId(slug);
+      if (organizationId) {
+        await this.app.service('whatsapp').create({
+          type: 'text',
+          organizationId,
+          to: result.phone,
+          body: `Tu código de verificación es: ${code}\n\nExpira en 5 minutos.`,
+        });
+      } else {
+        console.warn('[Patient OTP] No organization slug provided, skipping WhatsApp send');
+      }
     } catch (err) {
       console.error('[Patient OTP] Failed to send WhatsApp message:', err);
     }

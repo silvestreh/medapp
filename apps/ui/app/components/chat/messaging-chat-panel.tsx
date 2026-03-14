@@ -14,7 +14,7 @@ import {
   Textarea,
 } from '@mantine/core';
 import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
-import { ArrowDownRight, Paperclip, Reply, Stethoscope, UserPlus, X } from 'lucide-react';
+import { ArrowDownRightIcon, PaperclipIcon, ArrowBendUpLeftIcon, StethoscopeIcon, UserPlusIcon, XIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 import ReactMarkdown from 'react-markdown';
@@ -632,13 +632,13 @@ export function MessagingChatPanel({
         )}
         <Group gap={4} style={{ flexShrink: 0 }}>
           <ActionIcon variant="subtle" color="white" onClick={handleToggleAddUser}>
-            <UserPlus size={16} />
+            <UserPlusIcon size={16} />
           </ActionIcon>
           <ActionIcon variant="subtle" color="white" onClick={onMinimize}>
-            <ArrowDownRight size={16} />
+            <ArrowDownRightIcon size={16} />
           </ActionIcon>
           <ActionIcon variant="subtle" color="white" onClick={onClose}>
-            <X size={16} />
+            <XIcon size={16} />
           </ActionIcon>
         </Group>
       </Group>
@@ -784,7 +784,7 @@ export function MessagingChatPanel({
                       }}
                       onClick={() => navigate(`/encounters/${msg.metadata!.patientId}`)}
                     >
-                      <Stethoscope size={14} color="var(--mantine-color-teal-6)" style={{ flexShrink: 0 }} />
+                      <StethoscopeIcon size={14} color="var(--mantine-color-teal-6)" style={{ flexShrink: 0 }} />
                       <Box>
                         <Text size="xs" fw={600} c="teal.6" lineClamp={1}>
                           {msg.metadata.patientName}
@@ -825,7 +825,7 @@ export function MessagingChatPanel({
                       transition: 'opacity 120ms',
                     }}
                   >
-                    <Reply size={18} />
+                    <ArrowBendUpLeftIcon size={18} />
                   </ActionIcon>
                 </Box>
               </Group>
@@ -868,7 +868,7 @@ export function MessagingChatPanel({
             </Text>
           </Box>
           <ActionIcon variant="subtle" color="gray" size="xs" onClick={handleCancelReply}>
-            <X size={14} />
+            <XIcon size={14} />
           </ActionIcon>
         </Group>
       )}
@@ -898,7 +898,7 @@ export function MessagingChatPanel({
               setDraftMessage('');
             }}
           >
-            <X size={14} />
+            <XIcon size={14} />
           </ActionIcon>
         </Group>
       )}
@@ -946,7 +946,7 @@ export function MessagingChatPanel({
               gap: 8,
             }}
           >
-            <Stethoscope size={16} color="var(--mantine-color-teal-6)" style={{ flexShrink: 0 }} />
+            <StethoscopeIcon size={16} color="var(--mantine-color-teal-6)" style={{ flexShrink: 0 }} />
             <Box>
               <Text size="xs" fw={600} c="teal.6" lineClamp={1}>
                 {pendingSharePatient.personalData.firstName} {pendingSharePatient.personalData.lastName}
@@ -957,7 +957,7 @@ export function MessagingChatPanel({
             </Box>
           </Box>
           <ActionIcon variant="subtle" color="gray" size="xs" onClick={handleCancelShareEncounter}>
-            <X size={14} />
+            <XIcon size={14} />
           </ActionIcon>
         </Group>
       )}
@@ -973,7 +973,7 @@ export function MessagingChatPanel({
             title={t('chat.share_encounters_tooltip')}
             onClick={handleToggleShareEncounters}
           >
-            <Paperclip size={16} />
+            <PaperclipIcon size={16} />
           </ActionIcon>
         )}
         <Textarea

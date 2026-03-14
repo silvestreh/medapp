@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { ActionIcon } from '@mantine/core';
-import { LogOut } from 'lucide-react';
+import { SignOutIcon } from '@phosphor-icons/react';
 
 import { useAccount } from '~/components/provider';
 import { useChat } from '~/components/chat/chat-provider';
@@ -25,7 +25,7 @@ const LogoutButton: React.FC = () => {
 
   return (
     <ActionIcon onClick={handleLogout} size="2.5em" variant="subtle" style={{ flexShrink: 0 }}>
-      <LogOut size={16} />
+      <SignOutIcon size={16} />
     </ActionIcon>
   );
 };

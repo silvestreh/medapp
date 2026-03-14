@@ -6,7 +6,7 @@ import { Group, Button, Alert, Text, Modal } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Save, AlertCircle, RotateCcw } from 'lucide-react';
+import { FloppyDiskIcon, WarningCircleIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import omit from 'lodash/omit';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
@@ -217,14 +217,14 @@ export default function NewPatient() {
       {isDesktop && (
         <Portal id="form-actions">
           <Group>
-            <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<Save size={16} />}>
+            <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<FloppyDiskIcon size={16} />}>
               {t('patients.save')}
             </Button>
           </Group>
         </Portal>
       )}
 
-      {!isDesktop && <Fab icon={<Save size={22} />} onClick={handleSave} disabled={!canSave} />}
+      {!isDesktop && <Fab icon={<FloppyDiskIcon size={22} />} onClick={handleSave} disabled={!canSave} />}
 
       {isLookingUp && (
         <Text size="xs" c="dimmed">
@@ -234,7 +234,7 @@ export default function NewPatient() {
 
       {patientAlreadyExists && (
         <Alert
-          icon={<AlertCircle size={16} />}
+          icon={<WarningCircleIcon size={16} />}
           color="red"
           withCloseButton
           closeButtonLabel={t('common.reset')}
@@ -246,7 +246,7 @@ export default function NewPatient() {
               variant="subtle"
               color="red"
               size="compact-sm"
-              leftSection={<RotateCcw size={14} />}
+              leftSection={<ArrowCounterClockwiseIcon size={14} />}
               onClick={handleReset}
             >
               {t('common.reset')}
@@ -257,7 +257,7 @@ export default function NewPatient() {
 
       {existingPersonalData && !patientAlreadyExists && (
         <Alert
-          icon={<AlertCircle size={16} />}
+          icon={<WarningCircleIcon size={16} />}
           color="blue"
           withCloseButton
           closeButtonLabel={t('common.reset')}
@@ -265,7 +265,7 @@ export default function NewPatient() {
         >
           <Group justify="space-between" align="center">
             <Text>{t('patients.personal_data_found')}</Text>
-            <Button variant="subtle" size="compact-sm" leftSection={<RotateCcw size={14} />} onClick={handleReset}>
+            <Button variant="subtle" size="compact-sm" leftSection={<ArrowCounterClockwiseIcon size={14} />} onClick={handleReset}>
               {t('common.reset')}
             </Button>
           </Group>

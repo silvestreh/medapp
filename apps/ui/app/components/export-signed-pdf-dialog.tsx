@@ -12,7 +12,7 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
-import { FileDown, Info } from 'lucide-react';
+import { FileArrowDownIcon, InfoIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { useFeathers } from '~/components/provider';
@@ -256,7 +256,7 @@ export function ExportSignedPdfDialog({
         )}
 
         {!hasCertificate && (
-          <Alert variant="light" color="gray" icon={<Info size={16} />}>
+          <Alert variant="light" color="gray" icon={<InfoIcon size={16} />}>
             <Text size="sm">
               {t('export_pdf.no_certificate_notice')}{' '}
               <Text component="a" href="/settings" size="sm" c="var(--mantine-primary-color-4)" td="underline">
@@ -297,7 +297,7 @@ export function ExportSignedPdfDialog({
         )}
 
         <Button
-          leftSection={<FileDown size={16} />}
+          leftSection={<FileArrowDownIcon size={16} />}
           loading={isLoading}
           disabled={!isValid}
           onClick={handleSubmit}

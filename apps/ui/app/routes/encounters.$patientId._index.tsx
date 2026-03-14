@@ -5,7 +5,7 @@ import { Link, useLoaderData, useNavigate, useRevalidator } from '@remix-run/rea
 import { useTranslation } from 'react-i18next';
 import { Group, Stack, Button, ActionIcon, Tooltip, Tabs, Text } from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
-import { X, FileDown, Printer, Plus, ClipboardPen, Bot } from 'lucide-react';
+import { XIcon, FileArrowDownIcon, PrinterIcon, PlusIcon, ClipboardTextIcon, RobotIcon } from '@phosphor-icons/react';
 
 import {
   getAuthenticatedClient,
@@ -409,7 +409,7 @@ export default function PatientEncounterDetail() {
                   <Button
                     variant="light"
                     color="green"
-                    leftSection={<ClipboardPen size={16} />}
+                    leftSection={<ClipboardTextIcon size={16} />}
                     onClick={openPrescribe}
                   >
                     {t('recetario.prescribe')}
@@ -417,20 +417,20 @@ export default function PatientEncounterDetail() {
                 </Tooltip>
               )}
               {data.isMedic && (
-                <Button variant="light" leftSection={<Printer size={16} />} onClick={openPrint}>
+                <Button variant="light" leftSection={<PrinterIcon size={16} />} onClick={openPrint}>
                   {t('print_pdf.button')}
                 </Button>
               )}
               {data.isMedic && (
-                <Button variant="light" leftSection={<FileDown size={16} />} onClick={openExport}>
+                <Button variant="light" leftSection={<FileArrowDownIcon size={16} />} onClick={openExport}>
                   {t('export_pdf.button')}
                 </Button>
               )}
-              <Button variant="light" color="violet" onClick={handleOpenChat} leftSection={<Bot size={16} />}>
+              <Button variant="light" color="violet" onClick={handleOpenChat} leftSection={<RobotIcon size={16} />}>
                 {t('ai_chat.title')}
               </Button>
               {data.isVerified && (
-                <Button component={Link} to={`/encounters/${data.patient.id}/new`} leftSection={<Plus size={16} />}>
+                <Button component={Link} to={`/encounters/${data.patient.id}/new`} leftSection={<PlusIcon size={16} />}>
                   {t('encounters.new')}
                 </Button>
               )}
@@ -557,7 +557,7 @@ export default function PatientEncounterDetail() {
 
             <Tooltip label={t('common.close')} position="left">
               <ActionIcon variant="filled" color="gray" onClick={clearSelection} pos="absolute" top={0} right={0}>
-                <X size={16} />
+                <XIcon size={16} />
               </ActionIcon>
             </Tooltip>
           </Stack>
@@ -576,25 +576,25 @@ export default function PatientEncounterDetail() {
               }}
               index={3}
             >
-              <ClipboardPen size={18} />
+              <ClipboardTextIcon size={18} />
               {t('recetario.prescribe')}
             </FabItem>
           )}
           {data.isMedic && (
             <FabItem onClick={handleFabPrint} index={2}>
-              <Printer size={18} />
+              <PrinterIcon size={18} />
               {t('print_pdf.button')}
             </FabItem>
           )}
           {data.isMedic && (
             <FabItem onClick={handleFabExport} index={1}>
-              <FileDown size={18} />
+              <FileArrowDownIcon size={18} />
               {t('export_pdf.button')}
             </FabItem>
           )}
           {data.isVerified && (
             <FabItem onClick={handleFabNewEncounter} index={0}>
-              <Plus size={18} />
+              <PlusIcon size={18} />
               {t('encounters.new')}
             </FabItem>
           )}

@@ -4,7 +4,7 @@ import { useLoaderData, Link, useFetcher } from '@remix-run/react';
 import { Button, Title, Text, Modal, Group } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { CalendarPlus, Calendar, Clock, X } from 'lucide-react';
+import { CalendarPlusIcon, CalendarIcon, ClockIcon, XIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 
@@ -262,7 +262,7 @@ export default function BookingsIndexPage() {
               : ''}
           </Text>
         </div>
-        <Button component={Link} to={`/${slug}/new-appointment`} leftSection={<CalendarPlus size={16} />}>
+        <Button component={Link} to={`/${slug}/new-appointment`} leftSection={<CalendarPlusIcon size={16} />}>
           {t('booking.new_appointment')}
         </Button>
       </Header>
@@ -270,7 +270,7 @@ export default function BookingsIndexPage() {
       {visibleBookings.length === 0 && (
         <EmptyState>
           <EmptyIcon>
-            <Calendar size={24} />
+            <CalendarIcon size={24} />
           </EmptyIcon>
           <div>
             <Text fw={500} mb={4}>{t('booking.no_appointments')}</Text>
@@ -278,7 +278,7 @@ export default function BookingsIndexPage() {
               {t('booking.choose_medic_subtitle')}
             </Text>
           </div>
-          <Button component={Link} to={`/${slug}/new-appointment`} leftSection={<CalendarPlus size={16} />}>
+          <Button component={Link} to={`/${slug}/new-appointment`} leftSection={<CalendarPlusIcon size={16} />}>
             {t('booking.new_appointment')}
           </Button>
         </EmptyState>
@@ -301,11 +301,11 @@ export default function BookingsIndexPage() {
                   <Specialty>{booking.medic.specialty}</Specialty>
                   <MetaRow>
                     <MetaItem>
-                      <Calendar size={13} />
+                      <CalendarIcon size={13} />
                       {date.format('dddd D [de] MMMM')}
                     </MetaItem>
                     <MetaItem>
-                      <Clock size={13} />
+                      <ClockIcon size={13} />
                       {date.format('HH:mm')} hs
                     </MetaItem>
                   </MetaRow>
@@ -315,7 +315,7 @@ export default function BookingsIndexPage() {
                   aria-label={t('booking.cancel_appointment')}
                   disabled={isCancelling}
                 >
-                  <X size={18} />
+                  <XIcon size={18} />
                 </CancelButton>
               </AppointmentCard>
             );

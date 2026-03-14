@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { Outlet, Form, useLocation, useRouteLoaderData } from '@remix-run/react';
 import { Container, ActionIcon, Text, Title, Stack } from '@mantine/core';
-import { LogOut } from 'lucide-react';
+import { SignOutIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { getOrganization, type OrganizationInfo } from '~/api.server';
 
@@ -43,7 +43,7 @@ export default function SlugLayout() {
       {!isAuthPage && (
         <Form method="post" action="logout" style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 100 }}>
           <ActionIcon variant="subtle" color="gray" type="submit" aria-label={t('common.logout')}>
-            <LogOut size={18} />
+            <SignOutIcon size={18} />
           </ActionIcon>
         </Form>
       )}

@@ -14,7 +14,7 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { Circle, LogOut, Pin, PinOff, Users } from 'lucide-react';
+import { CircleIcon, SignOutIcon, PushPinIcon, PushPinSlashIcon, UsersIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 import { useChat, type OrgUser, type ConversationEntry } from '~/components/chat/chat-provider';
@@ -313,7 +313,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                 <Menu.Target>
                   <UnstyledButton>
                     <Group gap={6}>
-                      <Circle size={10} fill={STATUS_COLORS[myStatus]} color={STATUS_COLORS[myStatus]} />
+                      <CircleIcon size={10} fill={STATUS_COLORS[myStatus]} color={STATUS_COLORS[myStatus]} />
                       <Text size="sm" fw={500}>
                         {t(STATUS_LABEL_KEYS[myStatus])}
                       </Text>
@@ -324,7 +324,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                   {(['online', 'away', 'dnd', 'offline'] as const).map((s, index) => (
                     <Menu.Item
                       key={`status-${s}-${index}`}
-                      leftSection={<Circle size={10} fill={STATUS_COLORS[s]} color={STATUS_COLORS[s]} />}
+                      leftSection={<CircleIcon size={10} fill={STATUS_COLORS[s]} color={STATUS_COLORS[s]} />}
                       onClick={() => handleStatusChange(s)}
                     >
                       {t(STATUS_LABEL_KEYS[s])}
@@ -335,7 +335,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
               <Group gap={4}>
                 <UnstyledButton onClick={handleToggleGroupMode}>
                   <Group gap={4}>
-                    <Users
+                    <UsersIcon
                       size={14}
                       color={groupMode ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-6)'}
                     />
@@ -350,7 +350,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                   color={pinned ? 'blue' : 'gray'}
                   onClick={handleTogglePin}
                 >
-                  {pinned ? <PinOff size={14} /> : <Pin size={14} />}
+                  {pinned ? <PushPinSlashIcon size={14} /> : <PushPinIcon size={14} />}
                 </ActionIcon>
               </Group>
             </Group>
@@ -377,7 +377,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                       <Group gap="sm" wrap="nowrap" justify="space-between">
                         <Group gap="sm" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
                           <Avatar size={36} radius="xl" color={color}>
-                            <Users size={18} />
+                            <UsersIcon size={18} />
                           </Avatar>
                           <Box style={{ flex: 1, minWidth: 0 }}>
                             <Text size="sm" fw={500} lineClamp={1}>
@@ -395,7 +395,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
                           }}
                           style={{ flexShrink: 0 }}
                         >
-                          <LogOut size={14} color="var(--mantine-color-red-6)" />
+                          <SignOutIcon size={14} color="var(--mantine-color-red-6)" />
                         </UnstyledButton>
                       </Group>
                     </UnstyledButton>

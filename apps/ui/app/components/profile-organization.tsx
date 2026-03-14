@@ -4,7 +4,7 @@ import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useFetcher, useRevalidator } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Building2, Upload } from 'lucide-react';
+import { BuildingsIcon, UploadIcon } from '@phosphor-icons/react';
 
 import { useFeathers } from '~/components/provider';
 import type { action } from '~/routes/settings.organization';
@@ -67,7 +67,7 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
   return (
     <>
       <FormHeader>
-        <SectionTitle icon={<Building2 />}>{t('profile.tab_organization')}</SectionTitle>
+        <SectionTitle icon={<BuildingsIcon />}>{t('profile.tab_organization')}</SectionTitle>
       </FormHeader>
       <FormCard>
         <FieldRow label={`${t('profile.org_name')}:`} variant="stacked">
@@ -98,7 +98,7 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
               accept="image/*"
               placeholder={orgLogoUrl ? t('profile.org_logo_change') : t('profile.org_logo_upload')}
               description={orgLogoUrl || undefined}
-              leftSection={<Upload size={16} />}
+              leftSection={<UploadIcon size={16} />}
               style={{ flex: 1 }}
               disabled={isUploading}
               onChange={async file => {

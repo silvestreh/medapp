@@ -6,7 +6,7 @@ import { Group, Button, Alert, Text, Modal } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Save, Trash2, AlertCircle } from 'lucide-react';
+import { FloppyDiskIcon, TrashIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import omit from 'lodash/omit';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
@@ -199,11 +199,11 @@ export default function PatientDetail() {
               color="red"
               onClick={openDelete}
               disabled={!canDelete}
-              leftSection={<Trash2 size={16} />}
+              leftSection={<TrashIcon size={16} />}
             >
               {t('patients.delete')}
             </Button>
-            <Button onClick={handleSave} loading={isSaving} leftSection={<Save size={16} />}>
+            <Button onClick={handleSave} loading={isSaving} leftSection={<FloppyDiskIcon size={16} />}>
               {t('patients.save')}
             </Button>
           </Group>
@@ -221,18 +221,18 @@ export default function PatientDetail() {
               boxShadow: 'inset 0 0 0 1px var(--mantine-color-red-1)',
             }}
           >
-            <Trash2 size={18} />
+            <TrashIcon size={18} />
             {t('patients.delete')}
           </FabItem>
           <FabItem onClick={handleFabSave} index={0}>
-            <Save size={18} />
+            <FloppyDiskIcon size={18} />
             {t('patients.save')}
           </FabItem>
         </Fab>
       )}
 
       {actionData?.error === 'cannot_delete' && (
-        <Alert icon={<AlertCircle size={16} />} color="red">
+        <Alert icon={<WarningCircleIcon size={16} />} color="red">
           {t('patients.cannot_delete', {
             encounters: actionData.encounterCount,
             studies: actionData.studyCount,
@@ -251,7 +251,7 @@ export default function PatientDetail() {
           <Button variant="default" onClick={closeDelete}>
             {t('common.cancel')}
           </Button>
-          <Button color="red" onClick={handleDelete} leftSection={<Trash2 size={16} />}>
+          <Button color="red" onClick={handleDelete} leftSection={<TrashIcon size={16} />}>
             {t('patients.delete')}
           </Button>
         </Group>

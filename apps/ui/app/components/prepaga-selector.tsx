@@ -12,7 +12,7 @@ import {
   Stack,
   Table,
 } from '@mantine/core';
-import { Search, X, Check } from 'lucide-react';
+import { MagnifyingGlassIcon, XIcon, CheckIcon } from '@phosphor-icons/react';
 
 import { useFind, useGet } from '~/components/provider';
 import { useTranslation } from 'react-i18next';
@@ -226,10 +226,10 @@ export function PrepagaSelector({
                 <Loader size="xs" />
               ) : value ? (
                 <ActionIcon variant="subtle" color="gray" onClick={handleClear} style={{ pointerEvents: 'all' }}>
-                  <X size={16} />
+                  <XIcon size={16} />
                 </ActionIcon>
               ) : (
-                <Search size={16} color="gray" />
+                <MagnifyingGlassIcon size={16} color="gray" />
               )
             }
             rightSectionPointerEvents={loading || value ? 'all' : 'none'}
@@ -294,7 +294,7 @@ export function PrepagaSelector({
                           <MantineText size="sm">{prepaga.denomination}</MantineText>
                         </Table.Td>
                         <Table.Td>
-                          {value === prepaga.id && <Check size={14} color="var(--mantine-primary-color-4)" />}
+                          {value === prepaga.id && <CheckIcon size={14} color="var(--mantine-primary-color-4)" />}
                         </Table.Td>
                       </TableRow>
                     ))}

@@ -27,7 +27,7 @@ import { useForm } from '@mantine/form';
 import { showNotification } from '@mantine/notifications';
 import { useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash, Search, Pencil } from 'lucide-react';
+import { PlusIcon, TrashIcon, MagnifyingGlassIcon, PencilIcon } from '@phosphor-icons/react';
 import { AsYouType, type CountryCode } from 'libphonenumber-js';
 
 import { Icd10Selector } from '~/components/icd10-selector';
@@ -158,12 +158,12 @@ function RecetarioMedicinePicker({ value, onChange }: RecetarioMedicinePickerPro
           rightSection={
             value ? (
               <ActionIcon variant="subtle" color="gray" size="sm" onClick={handleClear}>
-                <Search size={14} />
+                <MagnifyingGlassIcon size={14} />
               </ActionIcon>
             ) : isLoading ? (
               <Loader size="xs" />
             ) : (
-              <Search size={14} color="gray" />
+              <MagnifyingGlassIcon size={14} color="gray" />
             )
           }
         />
@@ -647,7 +647,7 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, medicId, i
                     <Group gap="xs">
                       <TextInput value={rxDiagnosis} readOnly variant="default" style={{ flex: 1 }} />
                       <ActionIcon variant="subtle" color="gray" onClick={() => setEditingRepeatDiagnosis(true)}>
-                        <Pencil size={16} />
+                        <PencilIcon size={16} />
                       </ActionIcon>
                     </Group>
                   ) : (
@@ -709,7 +709,7 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, medicId, i
                       </Stack>
                       {rxForm.values.medicines.length > 1 && (
                         <ActionIcon color="red" variant="subtle" mt={24} onClick={() => removeMedicine(index)}>
-                          <Trash size={16} />
+                          <TrashIcon size={16} />
                         </ActionIcon>
                       )}
                     </Group>
@@ -718,7 +718,7 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, medicId, i
                     <Button
                       variant="subtle"
                       size="xs"
-                      leftSection={<Plus size={14} />}
+                      leftSection={<PlusIcon size={14} />}
                       onClick={addMedicine}
                       style={{ alignSelf: 'flex-start' }}
                     >

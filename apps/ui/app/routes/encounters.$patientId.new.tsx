@@ -4,7 +4,7 @@ import { redirect } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { Stack, Center, Text, ActionIcon, Tooltip, Group, Box, Button } from '@mantine/core';
-import { Paperclip, Bot } from 'lucide-react';
+import { PaperclipIcon, RobotIcon } from '@phosphor-icons/react';
 
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -276,13 +276,13 @@ export default function NewEncounter() {
           />
           <Group gap="sm">
             <Box visibleFrom="lg">
-              <Button variant="light" color="violet" onClick={handleOpenChat} leftSection={<Bot size={16} />}>
+              <Button variant="light" color="violet" onClick={handleOpenChat} leftSection={<RobotIcon size={16} />}>
                 {t('ai_chat.title')}
               </Button>
             </Box>
             <Box hiddenFrom="lg">
               <ActionIcon variant="light" color="violet" onClick={handleOpenChat} size="lg" radius="xl">
-                <Bot size={20} />
+                <RobotIcon size={20} />
               </ActionIcon>
             </Box>
             <Box visibleFrom="lg">
@@ -290,7 +290,7 @@ export default function NewEncounter() {
                 variant="light"
                 onClick={openFilePicker}
                 loading={uploading}
-                leftSection={<Paperclip size={16} />}
+                leftSection={<PaperclipIcon size={16} />}
               >
                 {t('encounters.attach_file')}
               </Button>
@@ -298,7 +298,7 @@ export default function NewEncounter() {
             <Box hiddenFrom="lg">
               <Tooltip label={t('encounters.attach_file')}>
                 <ActionIcon variant="light" onClick={openFilePicker} loading={uploading}>
-                  <Paperclip size={16} />
+                  <PaperclipIcon size={16} />
                 </ActionIcon>
               </Tooltip>
             </Box>

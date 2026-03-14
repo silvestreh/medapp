@@ -4,7 +4,7 @@ import { Form, Link, useActionData } from '@remix-run/react';
 import { TextInput, PasswordInput, Button, Paper, Title, Text, Container, Divider, Anchor } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { startAuthentication, browserSupportsWebAuthn } from '@simplewebauthn/browser';
-import { KeyRound } from 'lucide-react';
+import { KeyIcon } from '@phosphor-icons/react';
 import axios from 'axios';
 
 import createFeathersClient from '~/feathers';
@@ -252,7 +252,7 @@ export default function Login() {
             <Button
               fullWidth
               variant="light"
-              leftSection={<KeyRound size={18} />}
+              leftSection={<KeyIcon size={18} />}
               onClick={handlePasskeyLogin}
               loading={isPasskeyLoading}
             >

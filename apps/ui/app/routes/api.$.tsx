@@ -53,6 +53,7 @@ const ALLOWED_PATHS = new Set([
   'prescriptions',
   'recetario',
   'whatsapp',
+  'whatsapp-instances',
   'webhooks',
   'file-uploads',
   'uploads',

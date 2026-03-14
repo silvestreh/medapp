@@ -4,7 +4,7 @@ import { useFetcher, useRevalidator, useRouteLoaderData } from '@remix-run/react
 import { Alert, Button, FileButton, Group, Image, Switch, Stack, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
-import { ClipboardPen, Pencil, TriangleAlert } from 'lucide-react';
+import { ClipboardTextIcon, PencilIcon, WarningIcon } from '@phosphor-icons/react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import type { loader as settingsLoader } from '~/routes/settings';
@@ -144,13 +144,13 @@ export default function SettingsPrescriptionsRoute() {
   return (
     <Stack gap={0}>
       <FormHeader>
-        <SectionTitle id="prescriptions-toggle" icon={<ClipboardPen />}>
+        <SectionTitle id="prescriptions-toggle" icon={<ClipboardTextIcon />}>
           {t('recetario.enabled')}
         </SectionTitle>
       </FormHeader>
       <FormCard>
         {!canEnable && (
-          <Alert icon={<TriangleAlert size={16} />} color="yellow" mb="md">
+          <Alert icon={<WarningIcon size={16} />} color="yellow" mb="md">
             {t('recetario.missing_org_fields', { fields: missingOrgFields.join(', ') })}
           </Alert>
         )}
@@ -180,7 +180,7 @@ export default function SettingsPrescriptionsRoute() {
       {parentData.isMedic && (
         <>
           <FormHeader style={{ marginTop: '2rem' }}>
-            <SectionTitle id="prescriptions-signature" icon={<ClipboardPen />}>
+            <SectionTitle id="prescriptions-signature" icon={<ClipboardTextIcon />}>
               {t('recetario.prescriber_settings')}
             </SectionTitle>
           </FormHeader>
@@ -209,7 +209,7 @@ export default function SettingsPrescriptionsRoute() {
                 <Button
                   variant="light"
                   size="xs"
-                  leftSection={<Pencil size={14} />}
+                  leftSection={<PencilIcon size={14} />}
                   onClick={() => setShowCanvas(v => !v)}
                 >
                   {t('recetario.signature_draw')}

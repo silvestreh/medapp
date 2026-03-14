@@ -44,9 +44,9 @@
     "jwt": "RECETARIO_JWT",
     "webhookSecret": "RECETARIO_WEBHOOK_SECRET"
   },
-  "whapi": {
-    "token": "WHAPI_TOKEN",
-    "apiUrl": "https://gate.whapi.cloud"
+  "evolution": {
+    "apiUrl": "EVOLUTION_API_URL",
+    "apiKey": "EVOLUTION_API_KEY"
   },
   "uploads": {
     "dir": "./public/uploads"

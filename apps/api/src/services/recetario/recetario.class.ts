@@ -387,6 +387,7 @@ export class Recetario {
     if (shareChannel === 'whatsapp') {
       if (!pdfUrl) throw new BadRequest('pdfUrl required for WhatsApp sharing');
       await this.app.service('whatsapp').create({
+        organizationId: params.organizationId,
         to: shareRecipient,
         documentUrl: pdfUrl,
         filename: 'receta.pdf',

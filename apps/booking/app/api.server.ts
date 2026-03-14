@@ -45,11 +45,12 @@ export async function getOrganization(slug: string): Promise<OrganizationInfo> {
   return result.organization;
 }
 
-export async function requestOtp(documentNumber: string) {
+export async function requestOtp(documentNumber: string, slug: string) {
   const client = createClient();
   return await client.service('patient-otp').create({
     action: 'request-otp',
     documentNumber,
+    slug,
   }) as { action: string; status: 'otp_sent' | 'not_found' | 'no_phone' | 'rate_limited'; maskedPhone?: string };
 }
 

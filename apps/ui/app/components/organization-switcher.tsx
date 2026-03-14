@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { Menu, UnstyledButton, Text, Group } from '@mantine/core';
-import { Building2, ChevronDown, Check } from 'lucide-react';
+import { BuildingsIcon, CaretDownIcon, CheckIcon } from '@phosphor-icons/react';
 
 import { styled } from '~/styled-system/jsx';
 import { useOrganization } from '~/components/provider';
@@ -58,7 +58,7 @@ const OrganizationSwitcher: React.FC = () => {
   if (organizations.length === 1) {
     return (
       <Group gap="0.5em">
-        <Building2 size={16} color="var(--mantine-color-gray-6)" />
+        <BuildingsIcon size={16} color="var(--mantine-color-gray-6)" />
         <OrgName>{currentOrg?.name}</OrgName>
       </Group>
     );
@@ -68,9 +68,9 @@ const OrganizationSwitcher: React.FC = () => {
     <Menu withArrow position="bottom-start" shadow="md">
       <Menu.Target>
         <SwitcherButton>
-          <Building2 size={16} color="var(--mantine-color-gray-6)" />
+          <BuildingsIcon size={16} color="var(--mantine-color-gray-6)" />
           <OrgName>{currentOrg?.name ?? 'Select organization'}</OrgName>
-          <ChevronDown size={14} color="var(--mantine-color-gray-5)" />
+          <CaretDownIcon size={14} color="var(--mantine-color-gray-5)" />
         </SwitcherButton>
       </Menu.Target>
       <Menu.Dropdown>
@@ -78,7 +78,7 @@ const OrganizationSwitcher: React.FC = () => {
           <Menu.Item
             key={org.id}
             onClick={handleSwitch(org.id)}
-            rightSection={org.id === currentOrganizationId ? <Check size={14} /> : null}
+            rightSection={org.id === currentOrganizationId ? <CheckIcon size={14} /> : null}
           >
             <Text size="sm" fw={org.id === currentOrganizationId ? 600 : 400}>
               {org.name}

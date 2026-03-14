@@ -1,7 +1,7 @@
 import { createContext, useContext, useCallback, type CSSProperties, type ReactNode } from 'react';
 import { Stack } from '@mantine/core';
 import { useNavigate } from '@remix-run/react';
-import { Plus } from 'lucide-react';
+import { PlusIcon } from '@phosphor-icons/react';
 
 import { styled } from '~/styled-system/jsx';
 
@@ -158,7 +158,7 @@ export function Fab(props: FabProps) {
             {children}
           </Stack>
           <FabTrigger onClick={onToggle}>
-            <Plus
+            <PlusIcon
               size={22}
               style={{
                 transition: 'transform 250ms ease',
@@ -190,7 +190,7 @@ function SingleFab({ icon, to, onClick, disabled }: SingleFabProps) {
   return (
     <FabContainer>
       <FabTrigger onClick={handleClick} style={disabled ? { opacity: 0.4, pointerEvents: 'none' } : undefined}>
-        {icon ?? <Plus size={22} />}
+        {icon ?? <PlusIcon size={22} />}
       </FabTrigger>
     </FabContainer>
   );

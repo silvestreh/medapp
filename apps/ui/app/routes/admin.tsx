@@ -2,7 +2,7 @@ import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from '@rem
 import { NavLink as RemixNavLink, Outlet, useLoaderData } from '@remix-run/react';
 import { Flex, NavLink } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, ScrollText, Building2 } from 'lucide-react';
+import { ShieldCheckIcon, ScrollIcon, BuildingsIcon } from '@phosphor-icons/react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { FormContainer } from '~/components/forms/styles';
@@ -83,7 +83,7 @@ function AdminTabs() {
         to="/admin"
         end
         label={t('admin.tab_verifications')}
-        leftSection={<ShieldCheck size={16} />}
+        leftSection={<ShieldCheckIcon size={16} />}
         variant="light"
         style={navLinkStyle}
       />
@@ -91,7 +91,7 @@ function AdminTabs() {
         component={RemixNavLink}
         to="/admin/logs"
         label={t('admin.tab_access_logs')}
-        leftSection={<ScrollText size={16} />}
+        leftSection={<ScrollIcon size={16} />}
         variant="light"
         style={navLinkStyle}
       />
@@ -99,7 +99,7 @@ function AdminTabs() {
         component={RemixNavLink}
         to="/admin/organizations"
         label={t('admin.tab_organizations')}
-        leftSection={<Building2 size={16} />}
+        leftSection={<BuildingsIcon size={16} />}
         variant="light"
         style={navLinkStyle}
       />

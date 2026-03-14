@@ -22,7 +22,7 @@ import {
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { Search, Plus, History, ChevronDown, ArrowLeft } from 'lucide-react';
+import { MagnifyingGlassIcon, PlusIcon, ClockCounterClockwiseIcon, CaretDownIcon, ArrowLeftIcon } from '@phosphor-icons/react';
 
 import { showNotification } from '@mantine/notifications';
 import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';
@@ -820,7 +820,7 @@ export default function AccountingSettingsPage() {
               placeholder={t('accounting.settings_search_insurers')}
               variant="unstyled"
               size="lg"
-              leftSection={<Search size={16} />}
+              leftSection={<MagnifyingGlassIcon size={16} />}
               onChange={event => handleSearchChange(event.currentTarget.value)}
               styles={{
                 wrapper: {
@@ -837,7 +837,7 @@ export default function AccountingSettingsPage() {
           {showAddInsurer ? (
             <Flex gap={0} pt="sm">
               <ActionIcon variant="transparent" size="input-xs" onClick={() => setShowAddInsurer(false)}>
-                <ArrowLeft size={14} />
+                <ArrowLeftIcon size={14} />
               </ActionIcon>
               <PrepagaSelector
                 autoFocus={true}
@@ -853,7 +853,7 @@ export default function AccountingSettingsPage() {
               <Button
                 variant="light"
                 size="xs"
-                leftSection={<Plus size={14} />}
+                leftSection={<PlusIcon size={14} />}
                 onClick={() => setShowAddInsurer(true)}
                 style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                 flex={1}
@@ -872,14 +872,14 @@ export default function AccountingSettingsPage() {
                         borderBottomLeftRadius: 0,
                       }}
                     >
-                      <ChevronDown size={14} />
+                      <CaretDownIcon size={14} />
                     </ActionIcon>
                   </Popover.Target>
                   <Popover.Dropdown p={0}>
                     <Button
                       variant="transparent"
                       size="xs"
-                      leftSection={<History size={14} />}
+                      leftSection={<ClockCounterClockwiseIcon size={14} />}
                       onClick={handleAddAllHistorical}
                       loading={loadingHistorical}
                       flex={1}

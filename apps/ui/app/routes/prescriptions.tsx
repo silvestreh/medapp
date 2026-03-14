@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Group, Button, Table, Badge, Text, Popover, Loader, Pagination, SegmentedControl } from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
-import { ClipboardPen, Plus, RotateCcw } from 'lucide-react';
+import { ClipboardTextIcon, PlusIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 
 import { getAuthenticatedClient, authenticatedLoader, getCurrentOrgRoleIds } from '~/utils/auth.server';
@@ -413,7 +413,7 @@ export default function PrescriptionsPage() {
           <Group gap="sm">
             <SegmentedControl value={selectedType} onChange={handleTypeChange} data={typeFilterData} size="sm" />
             <PatientSearch onChange={handlePatientSelected} onBlur={handlePatientCleared} variant="filled" />
-            <Button leftSection={<Plus size={16} />} onClick={openPrescribe} disabled={!selectedMedicId}>
+            <Button leftSection={<PlusIcon size={16} />} onClick={openPrescribe} disabled={!selectedMedicId}>
               {t('recetario.new_prescription')}
             </Button>
           </Group>
@@ -447,7 +447,7 @@ export default function PrescriptionsPage() {
 
       {status === 'success' && prescriptions.length === 0 && (
         <EmptyState>
-          <ClipboardPen size={48} color="var(--mantine-color-dimmed)" />
+          <ClipboardTextIcon size={48} color="var(--mantine-color-dimmed)" />
           <Text c="dimmed">{t('recetario.history_empty')}</Text>
         </EmptyState>
       )}
@@ -600,7 +600,7 @@ function RepeatButton({ rx, onRepeat }: { rx: any; onRepeat: (rx: any) => void }
         <Button
           variant="subtle"
           size="xs"
-          leftSection={<RotateCcw size={14} />}
+          leftSection={<ArrowCounterClockwiseIcon size={14} />}
           onClick={e => {
             e.stopPropagation();
             setOpened(true);

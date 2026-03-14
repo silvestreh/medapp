@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionIcon, Badge, Box, Button, Group, Loader, Paper, Stack, Text, Textarea, Title } from '@mantine/core';
 import { useClickOutside, useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from '@remix-run/react';
-import { Bot, ChevronDown, Copy, ExternalLink, X, ArrowDownRight } from 'lucide-react';
+import { RobotIcon, CaretDownIcon, CopyIcon, ArrowSquareOutIcon, XIcon, ArrowDownRightIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -116,7 +116,7 @@ function SuggestionCard({ item }: { item: Suggestion }) {
             }}
             style={{ flexShrink: 0 }}
           >
-            <Copy size={10} />
+            <CopyIcon size={10} />
           </ActionIcon>
         </Group>
         {typeof item.confidence === 'number' && (
@@ -146,7 +146,7 @@ function SuggestionCard({ item }: { item: Suggestion }) {
             style={{ cursor: 'pointer' }}
             onClick={() => setExpanded(true)}
           >
-            {t('ai_chat.read_more', 'Ver más')} <ChevronDown size={10} style={{ verticalAlign: 'middle' }} />
+            {t('ai_chat.read_more', 'Ver más')} <CaretDownIcon size={10} style={{ verticalAlign: 'middle' }} />
           </Text>
         )}
       </Paper>
@@ -587,17 +587,17 @@ export function EncounterChatPanel({
         style={{ borderBottom: '1px solid var(--mantine-color-gray-2)' }}
       >
         <Group gap="xs" align="center" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-          <Bot size={20} color="white" style={{ flexShrink: 0 }} />
+          <RobotIcon size={20} color="white" style={{ flexShrink: 0 }} />
           <Title size="h4" c="white" lineClamp={1}>
             {patientName}
           </Title>
         </Group>
         <Group gap={4}>
           <ActionIcon variant="subtle" color="white" onClick={onMinimize} aria-label={t('ai_chat.minimize_assistant')}>
-            <ArrowDownRight size={16} />
+            <ArrowDownRightIcon size={16} />
           </ActionIcon>
           <ActionIcon variant="subtle" color="white" onClick={onClose} aria-label={t('ai_chat.close', 'Cerrar')}>
-            <X size={16} />
+            <XIcon size={16} />
           </ActionIcon>
         </Group>
       </Group>
@@ -608,7 +608,7 @@ export function EncounterChatPanel({
             variant="subtle"
             color="gray"
             size="compact-xs"
-            rightSection={<ExternalLink size={12} />}
+            rightSection={<ArrowSquareOutIcon size={12} />}
             onClick={() => navigate(`/encounters/${patientId}`)}
             style={{ flex: 1 }}
           >

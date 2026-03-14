@@ -11,7 +11,7 @@ import {
   Group,
   Table,
 } from '@mantine/core';
-import { Search, X, Check } from 'lucide-react';
+import { MagnifyingGlassIcon, XIcon, CheckIcon } from '@phosphor-icons/react';
 
 import { useFind } from '~/components/provider';
 import { useTranslation } from 'react-i18next';
@@ -166,10 +166,10 @@ export function MedicationSelector({ value, onChange, placeholder, label, error,
                   }}
                   style={{ pointerEvents: 'all' }}
                 >
-                  <X size={16} />
+                  <XIcon size={16} />
                 </ActionIcon>
               ) : !readOnly ? (
-                <Search size={16} color="gray" />
+                <MagnifyingGlassIcon size={16} color="gray" />
               ) : null
             }
             rightSectionPointerEvents={loading || (value && !readOnly) ? 'all' : 'none'}
@@ -249,7 +249,7 @@ export function MedicationSelector({ value, onChange, placeholder, label, error,
                               <MantineText size="sm">{med.pharmaceuticalForm}</MantineText>
                             </Table.Td>
                             <Table.Td>
-                              {value === formattedMed && <Check size={14} color="var(--mantine-primary-color-4)" />}
+                              {value === formattedMed && <CheckIcon size={14} color="var(--mantine-primary-color-4)" />}
                             </Table.Td>
                           </TableRow>
                         );

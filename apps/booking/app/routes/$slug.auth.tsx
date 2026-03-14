@@ -34,7 +34,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   if (step === 'request-otp') {
     try {
-      const result = await requestOtp(documentNumber);
+      const result = await requestOtp(documentNumber, params.slug!);
 
       if (result.status === 'otp_sent') {
         return json<ActionResult>({ step: 'otp', documentNumber, maskedPhone: result.maskedPhone });

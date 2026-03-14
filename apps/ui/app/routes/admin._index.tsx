@@ -17,7 +17,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, XCircle, Eye, Loader, ScanLine, Fingerprint } from 'lucide-react';
+import { CheckCircleIcon, XCircleIcon, EyeIcon, SpinnerGapIcon, ScanIcon, FingerprintIcon } from '@phosphor-icons/react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 
@@ -171,12 +171,12 @@ export default function AdminVerifications() {
   const autoCheckBadge = useCallback(
     (match: boolean | null, label: string) => {
       if (match === null) {
-        return <Badge color="gray" variant="light" size="xs" leftSection={<Loader size={10} />}>{label}</Badge>;
+        return <Badge color="gray" variant="light" size="xs" leftSection={<SpinnerGapIcon size={10} />}>{label}</Badge>;
       }
       if (match) {
-        return <Badge color="green" variant="light" size="xs" leftSection={<CheckCircle size={10} />}>{label}</Badge>;
+        return <Badge color="green" variant="light" size="xs" leftSection={<CheckCircleIcon size={10} />}>{label}</Badge>;
       }
-      return <Badge color="red" variant="light" size="xs" leftSection={<XCircle size={10} />}>{label}</Badge>;
+      return <Badge color="red" variant="light" size="xs" leftSection={<XCircleIcon size={10} />}>{label}</Badge>;
     },
     []
   );
@@ -231,7 +231,7 @@ export default function AdminVerifications() {
                 </Table.Td>
                 <Table.Td>
                   {!v.autoCheckCompletedAt && (
-                    <Badge color="gray" variant="light" size="xs" leftSection={<Loader size={10} />}>
+                    <Badge color="gray" variant="light" size="xs" leftSection={<SpinnerGapIcon size={10} />}>
                       {t('admin.processing')}
                     </Badge>
                   )}
@@ -244,7 +244,7 @@ export default function AdminVerifications() {
                 </Table.Td>
                 <Table.Td>{new Date(v.createdAt).toLocaleDateString()}</Table.Td>
                 <Table.Td>
-                  <Button variant="subtle" size="xs" leftSection={<Eye size={14} />} onClick={() => handleView(v)}>
+                  <Button variant="subtle" size="xs" leftSection={<EyeIcon size={14} />} onClick={() => handleView(v)}>
                     {t('common.view')}
                   </Button>
                 </Table.Td>
@@ -298,7 +298,7 @@ export default function AdminVerifications() {
             {!selected.autoCheckCompletedAt && (
               <Paper withBorder p="sm" radius="md" bg="gray.0">
                 <Group gap="xs">
-                  <Loader size={16} />
+                  <SpinnerGapIcon size={16} />
                   <Text size="sm" c="dimmed">{t('admin.auto_checks_processing')}</Text>
                 </Group>
               </Paper>
@@ -309,7 +309,7 @@ export default function AdminVerifications() {
                 {/* PDF417 Barcode Results */}
                 <Paper withBorder p="sm" radius="md">
                   <Group gap="xs" mb="xs">
-                    <ScanLine size={16} />
+                    <ScanIcon size={16} />
                     <Text fw={600} size="sm">{t('admin.dni_scan_title')}</Text>
                     {selected.dniScanMatch !== null && (
                       <Badge color={selected.dniScanMatch ? 'green' : 'red'} variant="light" size="sm">
@@ -354,7 +354,7 @@ export default function AdminVerifications() {
                 {/* Face Comparison Results */}
                 <Paper withBorder p="sm" radius="md">
                   <Group gap="xs" mb="xs">
-                    <Fingerprint size={16} />
+                    <FingerprintIcon size={16} />
                     <Text fw={600} size="sm">{t('admin.face_comparison_title')}</Text>
                     {selected.faceMatch !== null && (
                       <Badge color={selected.faceMatch ? 'green' : 'red'} variant="light" size="sm">
@@ -405,7 +405,7 @@ export default function AdminVerifications() {
                       name="intent"
                       value="approve"
                       color="green"
-                      leftSection={<CheckCircle size={16} />}
+                      leftSection={<CheckCircleIcon size={16} />}
                       loading={isSubmitting}
                     >
                       {t('admin.approve')}
@@ -416,7 +416,7 @@ export default function AdminVerifications() {
                       value="reject"
                       color="red"
                       variant="outline"
-                      leftSection={<XCircle size={16} />}
+                      leftSection={<XCircleIcon size={16} />}
                       loading={isSubmitting}
                       disabled={!rejectionReason.trim()}
                     >

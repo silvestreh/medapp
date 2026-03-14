@@ -44,6 +44,7 @@ import practiceCosts from './practice-costs/practice-costs.service';
 import prescriptions from './prescriptions/prescriptions.service';
 import recetario from './recetario/recetario.service';
 import whatsapp from './whatsapp/whatsapp.service';
+import whatsappInstances from './whatsapp-instances/whatsapp-instances.service';
 import fileUploads from './file-uploads/file-uploads.service';
 import sharedEncounterAccess from './shared-encounter-access/shared-encounter-access.service';
 import accessLogs from './access-logs/access-logs.service';
@@ -98,6 +99,7 @@ export default function (app: Application): void {
   app.configure(prescriptions);
   app.configure(recetario);
   app.configure(whatsapp);
+  app.configure(whatsappInstances);
   app.configure(fileUploads);
   app.configure(sharedEncounterAccess);
   app.configure(accessLogs);

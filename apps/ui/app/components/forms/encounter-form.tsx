@@ -4,7 +4,7 @@ import { useHotkeys } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Form, useSubmit } from '@remix-run/react';
 import { useCallback, useMemo } from 'react';
-import { Save } from 'lucide-react';
+import { FloppyDiskIcon } from '@phosphor-icons/react';
 
 import { EncounterSchemaForm } from './encounter-schema-form';
 import { encounterForms } from './encounter-schemas';
@@ -142,13 +142,13 @@ export function EncounterForm({
             <Portal id="form-actions">
               <Group>
                 <Box visibleFrom="lg">
-                  <Button onClick={handleSave} disabled={isEmpty} leftSection={<Save size={16} />} color="green">
+                  <Button onClick={handleSave} disabled={isEmpty} leftSection={<FloppyDiskIcon size={16} />} color="green">
                     {t('common.save')}
                   </Button>
                 </Box>
                 <Box hiddenFrom="lg">
                   <ActionIcon onClick={handleSave} disabled={isEmpty} size="lg" radius="xl" color="green">
-                    <Save size={20} />
+                    <FloppyDiskIcon size={20} />
                   </ActionIcon>
                 </Box>
               </Group>

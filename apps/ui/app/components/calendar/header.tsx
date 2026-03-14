@@ -1,5 +1,5 @@
 import { Group, ActionIcon, Tooltip } from '@mantine/core';
-import { ChevronLeft, ChevronRight, Settings, Calendar } from 'lucide-react';
+import { CaretLeftIcon, CaretRightIcon, GearIcon, CalendarIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import startCase from 'lodash/startCase';
 import { useTranslation } from 'react-i18next';
@@ -60,12 +60,12 @@ export function Header({ date, locale, onPrevMonth, onNextMonth, onTodayClick, o
       <Group align="center" gap="sm">
         <Tooltip label={t('appointments.today')} withArrow arrowSize={8}>
           <ActionIcon onClick={onTodayClick} size="lg">
-            <Calendar size={20} />
+            <CalendarIcon size={20} />
           </ActionIcon>
         </Tooltip>
         <Tooltip label={t('common.settings')} withArrow arrowSize={8}>
           <ActionIcon onClick={onSettingsClick} size="lg">
-            <Settings size={20} />
+            <GearIcon size={20} />
           </ActionIcon>
         </Tooltip>
         <Group align="center" gap={0}>
@@ -75,7 +75,7 @@ export function Header({ date, locale, onPrevMonth, onNextMonth, onTodayClick, o
               size="lg"
               styles={{ root: { borderTopRightRadius: 0, borderBottomRightRadius: 0 } }}
             >
-              <ChevronLeft size={20} />
+              <CaretLeftIcon size={20} />
             </ActionIcon>
           </Tooltip>
           <Tooltip label={t('appointments.next_month')} withArrow arrowSize={8}>
@@ -84,7 +84,7 @@ export function Header({ date, locale, onPrevMonth, onNextMonth, onTodayClick, o
               size="lg"
               styles={{ root: { borderTopLeftRadius: 0, borderBottomLeftRadius: 0 } }}
             >
-              <ChevronRight size={20} />
+              <CaretRightIcon size={20} />
             </ActionIcon>
           </Tooltip>
         </Group>

@@ -27,6 +27,7 @@ export interface PatientFormValues {
   city: string;
   province: string;
   country: string;
+  phoneCountryCode: string;
   phoneNumber: string;
   email: string;
   medicare: string;
@@ -48,6 +49,7 @@ export const EMPTY_PATIENT_FORM_VALUES: PatientFormValues = {
   city: '',
   province: '',
   country: 'AR',
+  phoneCountryCode: '54',
   phoneNumber: '',
   email: '',
   medicare: '',
@@ -55,6 +57,45 @@ export const EMPTY_PATIENT_FORM_VALUES: PatientFormValues = {
   medicareNumber: '',
   medicarePlan: '',
 };
+
+const COUNTRY_CALLING_CODES = [
+  { value: '54', label: '🇦🇷 +54' },
+  { value: '55', label: '🇧🇷 +55' },
+  { value: '56', label: '🇨🇱 +56' },
+  { value: '57', label: '🇨🇴 +57' },
+  { value: '58', label: '🇻🇪 +58' },
+  { value: '591', label: '🇧🇴 +591' },
+  { value: '593', label: '🇪🇨 +593' },
+  { value: '595', label: '🇵🇾 +595' },
+  { value: '598', label: '🇺🇾 +598' },
+  { value: '51', label: '🇵🇪 +51' },
+  { value: '52', label: '🇲🇽 +52' },
+  { value: '1', label: '🇺🇸 +1' },
+  { value: '34', label: '🇪🇸 +34' },
+];
+
+/**
+ * Extracts the country code from a phone string like "cel:+542216412898"
+ * or "cel:542216412898". Returns { countryCode, localNumber }.
+ */
+function extractCountryCode(phone: string): { countryCode: string; localNumber: string } {
+  // Strip the tel:/cel: prefix and any + sign
+  const digits = phone.replace(/^(tel:|cel:)\+?/i, '').replace(/[^0-9]/g, '');
+
+  // Try to match known country codes (longest first to avoid ambiguity)
+  const sortedCodes = COUNTRY_CALLING_CODES
+    .map((c) => c.value)
+    .sort((a, b) => b.length - a.length);
+
+  for (const code of sortedCodes) {
+    if (digits.startsWith(code) && digits.length > code.length) {
+      return { countryCode: code, localNumber: digits.slice(code.length) };
+    }
+  }
+
+  // Default: assume the whole thing is a local number
+  return { countryCode: '54', localNumber: digits };
+}
 
 export function parsePatientToFormValues(patient: any): PatientFormValues {
   const pd = patient.personalData || {};
@@ -72,7 +113,24 @@ export function parsePatientToFormValues(patient: any): PatientFormValues {
     city: cd.city || '',
     province: cd.province || '',
     country: cd.country || 'AR',
-    phoneNumber: Array.isArray(cd.phoneNumber) ? cd.phoneNumber.join(', ') : cd.phoneNumber || '',
+    ...(() => {
+      const raw = Array.isArray(cd.phoneNumber) ? cd.phoneNumber.join(', ') : cd.phoneNumber || '';
+      // If there's a single phone number with a prefix, extract country code
+      const phones: string[] = Array.isArray(cd.phoneNumber) ? cd.phoneNumber : (cd.phoneNumber ? [cd.phoneNumber] : []);
+      // Prefer cel: for extraction
+      const primary = phones.find((p: string) => p.startsWith('cel:')) || phones[0] || '';
+      if (primary) {
+        const { countryCode, localNumber } = extractCountryCode(primary);
+        // Show all numbers as comma-separated but strip country code from the primary
+        const displayNumbers = phones.map((p: string) => {
+          const prefix = p.match(/^(tel:|cel:)/i)?.[0] || '';
+          const { localNumber: ln } = extractCountryCode(p);
+          return `${prefix}${ln}`;
+        }).join(', ');
+        return { phoneCountryCode: countryCode, phoneNumber: displayNumbers };
+      }
+      return { phoneCountryCode: '54', phoneNumber: raw };
+    })(),
     email: cd.email || '',
     medicare: patient.medicare || '',
     medicareId: patient.medicareId || '',
@@ -81,9 +139,31 @@ export function parsePatientToFormValues(patient: any): PatientFormValues {
   };
 }
 
+/**
+ * Prepends the country code to each phone number in a comma-separated string.
+ * Preserves the tel:/cel: prefix if present.
+ * e.g. "cel:2216412898, tel:42123456" with code "54" → "cel:+542216412898, tel:+5442123456"
+ */
+function prependCountryCode(phoneNumber: string, countryCode: string): string {
+  if (!phoneNumber) return '';
+  return phoneNumber
+    .split(',')
+    .map((p) => {
+      const trimmed = p.trim();
+      if (!trimmed) return '';
+      const prefixMatch = trimmed.match(/^(tel:|cel:)/i);
+      const prefix = prefixMatch?.[0] || '';
+      const digits = trimmed.replace(/^(tel:|cel:)\+?/i, '').replace(/[^0-9]/g, '');
+      if (!digits) return '';
+      return `${prefix}+${countryCode}${digits}`;
+    })
+    .filter(Boolean)
+    .join(', ');
+}
+
 export function buildFormPayload(values: PatientFormValues) {
   const { documentType, documentValue, firstName, lastName, nationality, maritalStatus, birthDate, gender } = values;
-  const { streetAddress, city, province, country, phoneNumber, email } = values;
+  const { streetAddress, city, province, country, phoneCountryCode, phoneNumber, email } = values;
   const { medicareId, medicareNumber, medicarePlan } = values;
 
   return {
@@ -106,7 +186,7 @@ export function buildFormPayload(values: PatientFormValues) {
       city: city || undefined,
       province: province || undefined,
       country: country || undefined,
-      phoneNumber: phoneNumber || undefined,
+      phoneNumber: prependCountryCode(phoneNumber, phoneCountryCode) || undefined,
       email: email || undefined,
     },
     patientFields: {
@@ -249,7 +329,21 @@ export function PatientForm({
               <StyledSelect data={countryOptions} searchable {...form.getInputProps('country')} />
             </FieldRow>
             <FieldRow label={`${t('patients.phone')}:`}>
-              <StyledTextInput placeholder={t('patients.phone')} {...form.getInputProps('phoneNumber')} />
+              <div style={{ display: 'flex', gap: '0.5rem', flex: 1, minWidth: 0 }}>
+                <StyledSelect
+                  data={COUNTRY_CALLING_CODES}
+                  searchable
+                  style={{ width: '7rem', flex: 'none' }}
+                  disabled={disabled}
+                  {...form.getInputProps('phoneCountryCode')}
+                />
+                <StyledTextInput
+                  placeholder={t('patients.phone')}
+                  style={{ flex: 1 }}
+                  disabled={disabled}
+                  {...form.getInputProps('phoneNumber')}
+                />
+              </div>
             </FieldRow>
             <FieldRow label={`${t('patients.email')}:`}>
               <StyledTextInput placeholder={t('patients.email')} {...form.getInputProps('email')} />

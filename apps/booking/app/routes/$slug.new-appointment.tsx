@@ -5,7 +5,7 @@ import { Button, TextInput, Title, Text, Radio, Modal, Stack } from '@mantine/co
 import { useDisclosure } from '@mantine/hooks';
 import { DatePicker } from '@mantine/dates';
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 
@@ -551,7 +551,7 @@ export default function BookingPage() {
 
           <TextInput
             placeholder={t('booking.search_placeholder')}
-            leftSection={<Search size={16} />}
+            leftSection={<MagnifyingGlassIcon size={16} />}
             value={search}
             onChange={handleSearchChange}
             mb="sm"

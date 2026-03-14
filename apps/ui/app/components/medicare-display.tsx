@@ -1,5 +1,5 @@
 import { Text, Tooltip, Group } from '@mantine/core';
-import { TriangleAlert } from 'lucide-react';
+import { WarningIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 import type { Patient } from '~/declarations';
@@ -30,7 +30,7 @@ export function MedicareDisplay({ patient, size = 'sm', fallback }: MedicareDisp
     return (
       <Tooltip label={t('overview.unresolved_insurer')} withArrow>
         <Group gap={4} wrap="nowrap" style={{ cursor: 'default' }}>
-          <TriangleAlert size={14} color="var(--mantine-color-yellow-6)" />
+          <WarningIcon size={14} color="var(--mantine-color-yellow-6)" />
           <Text size={size} c="dimmed">
             {medicare}
           </Text>

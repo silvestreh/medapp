@@ -17,7 +17,7 @@ import { useClickOutside } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
 import { Form, useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Check, InfoIcon, KeyRound, Lock, Pencil, ShieldCheck, Trash2, X } from 'lucide-react';
+import { CheckIcon, InfoIcon, KeyIcon, LockIcon, PencilIcon, ShieldCheckIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { startRegistration } from '@simplewebauthn/browser';
 
 import { useFeathers } from '~/components/provider';
@@ -141,7 +141,7 @@ function PasskeyRow({ passkey, onRemove, onRename }: PasskeyRowProps) {
     <FieldRow>
       <Group gap="sm" wrap="nowrap" className={css({ flex: 1, justifyContent: 'space-between' })}>
         <Group gap="sm" wrap="nowrap" className={css({ flex: 1, minWidth: 0 })}>
-          <KeyRound size={18} style={{ flexShrink: 0 }} />
+          <KeyIcon size={18} style={{ flexShrink: 0 }} />
           <div className={css({ flex: 1, minWidth: 0 })}>
             {!editing && (
               <Group gap={4} wrap="nowrap">
@@ -155,7 +155,7 @@ function PasskeyRow({ passkey, onRemove, onRename }: PasskeyRowProps) {
                   onClick={handleStartEditing}
                   aria-label={t('common.edit')}
                 >
-                  <Pencil size={14} />
+                  <PencilIcon size={14} />
                 </ActionIcon>
               </Group>
             )}
@@ -169,10 +169,10 @@ function PasskeyRow({ passkey, onRemove, onRename }: PasskeyRowProps) {
                   className={css({ flex: 1 })}
                 />
                 <ActionIcon variant="subtle" color="teal" size="sm" onClick={handleConfirm}>
-                  <Check size={16} />
+                  <CheckIcon size={16} />
                 </ActionIcon>
                 <ActionIcon variant="subtle" color="gray" size="sm" onClick={handleCancel}>
-                  <X size={16} />
+                  <XIcon size={16} />
                 </ActionIcon>
               </Group>
             )}
@@ -189,7 +189,7 @@ function PasskeyRow({ passkey, onRemove, onRename }: PasskeyRowProps) {
               onClick={handleOpenConfirm}
               aria-label={t('profile.passkeys_remove')}
             >
-              <Trash2 size={16} />
+              <TrashIcon size={16} />
             </ActionIcon>
           </Popover.Target>
           <Popover.Dropdown ref={popoverRef}>
@@ -386,7 +386,7 @@ export function ProfileSecurity({
   return (
     <>
       <FormHeader>
-        <SectionTitle id="two-factor" icon={<ShieldCheck />}>
+        <SectionTitle id="two-factor" icon={<ShieldCheckIcon />}>
           {t('profile.setup_2fa_title')}
         </SectionTitle>
       </FormHeader>
@@ -463,7 +463,7 @@ export function ProfileSecurity({
       </Modal>
 
       <FormHeader>
-        <SectionTitle id="passkeys" icon={<KeyRound />} style={{ marginTop: '2rem' }}>
+        <SectionTitle id="passkeys" icon={<KeyIcon />} style={{ marginTop: '2rem' }}>
           {t('profile.passkeys_title')}
         </SectionTitle>
       </FormHeader>
@@ -491,13 +491,13 @@ export function ProfileSecurity({
       </PasswordFormContainer>
 
       <FormActions>
-        <Button leftSection={<KeyRound size={16} />} onClick={handleAddPasskey} loading={isRegisteringPasskey}>
+        <Button leftSection={<KeyIcon size={16} />} onClick={handleAddPasskey} loading={isRegisteringPasskey}>
           {t('profile.passkeys_add')}
         </Button>
       </FormActions>
 
       <FormHeader>
-        <SectionTitle id="change-password" icon={<Lock />} style={{ marginTop: '2rem' }}>
+        <SectionTitle id="change-password" icon={<LockIcon />} style={{ marginTop: '2rem' }}>
           {t('profile.change_password')}
         </SectionTitle>
       </FormHeader>

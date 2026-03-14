@@ -3,7 +3,7 @@ import { ActionIcon, Avatar, Box, Text, Tooltip } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { animated, useSpring, useSprings } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
-import { Bot, X } from 'lucide-react';
+import { RobotIcon, XIcon } from '@phosphor-icons/react';
 import { lighten } from 'polished';
 
 import { useLocation } from '@remix-run/react';
@@ -473,7 +473,7 @@ export function ChatHeadsContainer() {
               }}
               className="chat-head-close"
             >
-              <X size={10} />
+              <XIcon size={10} />
             </ActionIcon>
             {(() => {
               const unread = unreadCounts.get(chat.patientId) ?? 0;
@@ -519,7 +519,7 @@ export function ChatHeadsContainer() {
                   justifyContent: 'center',
                 }}
               >
-                <Bot size={12} color="white" />
+                <RobotIcon size={12} color="white" />
               </Box>
             )}
           </animated.div>

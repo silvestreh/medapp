@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { Avatar, Group, Image, Menu, UnstyledButton, Text } from '@mantine/core';
 import { Link, useLocation } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { Building2, ChevronDown, Check, LogOut, User } from 'lucide-react';
+import { BuildingsIcon, CaretDownIcon, CheckIcon, SignOutIcon, UserIcon } from '@phosphor-icons/react';
 
 import { styled } from '~/styled-system/jsx';
 import { useAccount, useOrganization } from '~/components/provider';
@@ -137,14 +137,14 @@ export default function TopNav() {
             <Avatar size={32} radius="xl" color={avatarColor}>
               {initials}
             </Avatar>
-            <ChevronDown size={14} color="var(--mantine-color-gray-5)" />
+            <CaretDownIcon size={14} color="var(--mantine-color-gray-5)" />
           </TriggerButton>
         </Menu.Target>
 
         <Menu.Dropdown>
           {!hasMultipleOrgs && currentOrg && (
             <>
-              <Menu.Item leftSection={<Building2 size={14} />} disabled style={{ opacity: 1 }}>
+              <Menu.Item leftSection={<BuildingsIcon size={14} />} disabled style={{ opacity: 1 }}>
                 <Text size="sm" fw={500}>
                   {currentOrg.name}
                 </Text>
@@ -159,7 +159,7 @@ export default function TopNav() {
               {organizations.map(org => (
                 <Menu.Item
                   key={org.id}
-                  rightSection={org.id === currentOrganizationId ? <Check size={14} /> : null}
+                  rightSection={org.id === currentOrganizationId ? <CheckIcon size={14} /> : null}
                   onClick={handleSwitch(org.id)}
                 >
                   <Text size="sm" fw={org.id === currentOrganizationId ? 600 : 400}>
@@ -171,13 +171,13 @@ export default function TopNav() {
             </>
           )}
 
-          <Menu.Item leftSection={<User size={14} />} component={Link} to="/settings">
+          <Menu.Item leftSection={<UserIcon size={14} />} component={Link} to="/settings">
             {t('navigation.settings')}
           </Menu.Item>
 
           <Menu.Divider />
 
-          <Menu.Item leftSection={<LogOut size={14} />} color="red" onClick={handleLogout}>
+          <Menu.Item leftSection={<SignOutIcon size={14} />} color="red" onClick={handleLogout}>
             {t('navigation.logout')}
           </Menu.Item>
         </Menu.Dropdown>

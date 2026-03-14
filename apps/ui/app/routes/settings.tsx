@@ -2,7 +2,16 @@ import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from '@rem
 import { NavLink as RemixNavLink, Outlet, useLoaderData, useRouteLoaderData } from '@remix-run/react';
 import { Flex, NavLink } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { User, Shield, PenTool, Building2, FileText, Bot, CreditCard } from 'lucide-react';
+import {
+  UserIcon,
+  ShieldIcon,
+  PenNibIcon,
+  BuildingsIcon,
+  FileTextIcon,
+  RobotIcon,
+  CreditCardIcon,
+  WhatsappLogoIcon,
+} from '@phosphor-icons/react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
@@ -279,7 +288,7 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
         to="/settings"
         end
         label={t('profile.tab_profile')}
-        leftSection={<User size={16} />}
+        leftSection={<UserIcon size={16} />}
         variant="light"
         style={navLinkStyle}
       />
@@ -287,7 +296,7 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
         component={RemixNavLink}
         to="/settings/security"
         label={t('profile.tab_security')}
-        leftSection={<Shield size={16} />}
+        leftSection={<ShieldIcon size={16} />}
         variant="light"
         style={navLinkStyle}
       />
@@ -296,7 +305,7 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
           component={RemixNavLink}
           to="/settings/id-verification"
           label={t('profile.tab_id_verification')}
-          leftSection={<CreditCard size={16} />}
+          leftSection={<CreditCardIcon size={16} />}
           variant="light"
           style={navLinkStyle}
         />
@@ -306,7 +315,7 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
           component={RemixNavLink}
           to="/settings/signature"
           label={t('profile.tab_signature')}
-          leftSection={<PenTool size={16} />}
+          leftSection={<PenNibIcon size={16} />}
           variant="light"
           style={navLinkStyle}
         />
@@ -316,7 +325,17 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
           component={RemixNavLink}
           to="/settings/organization"
           label={t('profile.tab_organization')}
-          leftSection={<Building2 size={16} />}
+          leftSection={<BuildingsIcon size={16} />}
+          variant="light"
+          style={navLinkStyle}
+        />
+      )}
+      {isOrgOwner && (
+        <NavLink
+          component={RemixNavLink}
+          to="/settings/whatsapp"
+          label={t('profile.tab_whatsapp')}
+          leftSection={<WhatsappLogoIcon size={16} />}
           variant="light"
           style={navLinkStyle}
         />
@@ -326,7 +345,7 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
           component={RemixNavLink}
           to="/settings/prescriptions"
           label={t('profile.tab_prescriptions')}
-          leftSection={<FileText size={16} />}
+          leftSection={<FileTextIcon size={16} />}
           variant="light"
           style={navLinkStyle}
         />
@@ -336,7 +355,7 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
           component={RemixNavLink}
           to="/settings/assistant"
           label={t('profile.tab_assistant')}
-          leftSection={<Bot size={16} />}
+          leftSection={<RobotIcon size={16} />}
           variant="light"
           style={navLinkStyle}
         />

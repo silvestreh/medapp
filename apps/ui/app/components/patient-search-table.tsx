@@ -2,7 +2,7 @@ import { useState, useMemo, type FC, type ReactNode, useEffect, useRef } from 'r
 import { Table, TextInput, Stack, Loader, Text as BaseText, Pagination, Group, Button } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { Search, User } from 'lucide-react';
+import { MagnifyingGlassIcon, UserIcon } from '@phosphor-icons/react';
 import { useNavigate, useSearchParams } from '@remix-run/react';
 import get from 'lodash/get';
 
@@ -196,7 +196,7 @@ const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounte
           placeholder={t('patients.search_placeholder')}
           value={inputValue}
           onChange={event => setInputValue(event.currentTarget.value)}
-          leftSection={isLoading ? <Loader size={16} /> : <Search size={16} />}
+          leftSection={isLoading ? <Loader size={16} /> : <MagnifyingGlassIcon size={16} />}
           variant="unstyled"
           size="lg"
           flex={1}
@@ -254,9 +254,9 @@ const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounte
                 <Table.Td colSpan={columns.length}>
                   <EmptyState>
                     {inputValue && !isLoading ? (
-                      <User size={48} color="var(--mantine-color-dimmed)" />
+                      <UserIcon size={48} color="var(--mantine-color-dimmed)" />
                     ) : (
-                      <Search size={48} color="var(--mantine-color-dimmed)" />
+                      <MagnifyingGlassIcon size={48} color="var(--mantine-color-dimmed)" />
                     )}
                     <BaseText c="dimmed" ta="center">
                       {inputValue && !isLoading ? t('patients.no_results') : t('patients.search_prompt')}
