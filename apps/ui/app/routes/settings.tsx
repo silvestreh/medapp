@@ -21,6 +21,7 @@ import { styled } from '~/styled-system/jsx';
 
 type MdSettingsProfile = {
   id: string;
+  title: string | null;
   medicalSpecialty: string | null;
   nationalLicenseNumber: string | null;
   stateLicense: string | null;
@@ -104,6 +105,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       if (settings && typeof settings === 'object' && settings !== null && 'id' in settings) {
         const s = settings as {
           id: string;
+          title?: string | null;
           medicalSpecialty?: string | null;
           nationalLicenseNumber?: string | null;
           stateLicense?: string | null;
@@ -115,6 +117,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         };
         mdSettingsRecord = {
           id: s.id,
+          title: s.title ?? null,
           medicalSpecialty: s.medicalSpecialty ?? null,
           nationalLicenseNumber: s.nationalLicenseNumber ?? null,
           stateLicense: s.stateLicense ?? null,
@@ -134,6 +137,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         if (first) {
           mdSettingsRecord = {
             id: first.id,
+            title: (first as any).title ?? null,
             medicalSpecialty: first.medicalSpecialty ?? null,
             nationalLicenseNumber: first.nationalLicenseNumber ?? null,
             stateLicense: first.stateLicense ?? null,
