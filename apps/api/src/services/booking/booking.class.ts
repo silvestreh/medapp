@@ -1,9 +1,13 @@
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { BadRequest } from '@feathersjs/errors';
 import type { Application } from '../../declarations';
 
 dayjs.extend(isSameOrBefore);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const WEEKDAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
 
@@ -205,8 +209,8 @@ export class Booking {
     const slots: AnonymizedSlot[] = [];
 
     if (dayStart && dayEnd) {
-      const startTime = dayjs(targetDate.format('YYYY-MM-DD') + 'T' + dayStart);
-      const endTime = dayjs(targetDate.format('YYYY-MM-DD') + 'T' + dayEnd);
+      const startTime = dayjs.tz(targetDate.format('YYYY-MM-DD') + 'T' + dayStart, 'America/Argentina/Buenos_Aires');
+      const endTime = dayjs.tz(targetDate.format('YYYY-MM-DD') + 'T' + dayEnd, 'America/Argentina/Buenos_Aires');
 
       if (startTime.isValid() && endTime.isValid() && !startTime.isAfter(endTime)) {
         let current = startTime;

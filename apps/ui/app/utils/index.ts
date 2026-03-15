@@ -2,6 +2,8 @@ import dayjs, { Dayjs } from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import localeData from 'dayjs/plugin/localeData';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import 'dayjs/locale/es';
 import 'dayjs/locale/en';
 
@@ -10,6 +12,8 @@ import type { Slot, Account } from '~/declarations';
 dayjs.extend(isSameOrBefore);
 dayjs.extend(localeData);
 dayjs.extend(customParseFormat);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const MONGO_OBJECT_ID_RE = /^[a-f\d]{24}$/i;
 const UUID_RE = /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i;
@@ -126,8 +130,8 @@ export function generateEmptySlots(date: Dayjs, medic: Account | null): Slot[] {
     return [];
   }
 
-  const startTime = dayjs(date.format('YYYY-MM-DD') + 'T' + startValue);
-  const endTime = dayjs(date.format('YYYY-MM-DD') + 'T' + endValue);
+  const startTime = dayjs.tz(date.format('YYYY-MM-DD') + 'T' + startValue, 'America/Argentina/Buenos_Aires');
+  const endTime = dayjs.tz(date.format('YYYY-MM-DD') + 'T' + endValue, 'America/Argentina/Buenos_Aires');
 
   if (!startTime.isValid() || !endTime.isValid() || startTime.isAfter(endTime)) {
     return [];
