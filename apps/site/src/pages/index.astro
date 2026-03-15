@@ -1,0 +1,30 @@
+---
+import Layout from '../layouts/layout.astro';
+import Nav from '../components/nav.astro';
+import Hero from '../components/hero.astro';
+import Features from '../components/features.astro';
+import HowItWorks from '../components/how-it-works.astro';
+import Security from '../components/security.astro';
+import Testimonial from '../components/testimonial.astro';
+import Metrics from '../components/metrics.astro';
+import Pricing from '../components/pricing.astro';
+import CTA from '../components/cta.astro';
+import Footer from '../components/footer.astro';
+
+const showPricing = import.meta.env.PRICING === 'true';
+---
+
+<Layout>
+  <Nav showPricing={showPricing} />
+  <main>
+    <Hero />
+    <Features />
+    <HowItWorks />
+    <Security />
+    <Testimonial />
+    <Metrics />
+    {showPricing && <Pricing />}
+    <CTA />
+  </main>
+  <Footer />
+</Layout>

@@ -1,0 +1,114 @@
+---
+import { content } from '../content/es';
+import Icon from './icon.astro';
+
+const { features } = content;
+---
+
+<section id="funcionalidades" class="features">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="badge">{features.badge}</span>
+      <h2 class="section-headline">{features.headline}</h2>
+    </div>
+
+    <div class="cards-grid">
+      {features.items.map((item) => (
+        <div class="card fade-in">
+          <div class="card-icon">
+            <Icon name={item.icon} size={24} />
+          </div>
+          <h3 class="card-title">{item.title}</h3>
+          <p class="card-desc">{item.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .features {
+    padding: 5rem 0;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .badge {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-teal);
+    margin-bottom: 1rem;
+  }
+
+  .section-headline {
+    font-family: var(--font-serif);
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--color-black);
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--color-bg);
+    border-radius: 16px;
+    padding: 3rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--color-teal);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-title {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    color: var(--color-black);
+  }
+
+  .card-desc {
+    font-size: 16px;
+    line-height: 1.625;
+    color: var(--color-muted);
+  }
+
+  @media (max-width: 1024px) {
+    .cards-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .cards-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .card {
+      padding: 2rem 1.5rem;
+    }
+  }
+</style>

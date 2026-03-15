@@ -1,0 +1,132 @@
+---
+import { content } from '../content/es';
+import Icon from './icon.astro';
+
+const { security } = content;
+---
+
+<section id="seguridad" class="security">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="badge">{security.badge}</span>
+      <h2 class="section-headline">{security.headline}</h2>
+      <p class="section-sub">{security.subheadline}</p>
+    </div>
+
+    <div class="security-grid">
+      {security.items.map((item) => (
+        <div class="security-item fade-in">
+          <div class="item-icon">
+            <Icon name={item.icon} size={22} />
+          </div>
+          <div class="item-content">
+            <h3 class="item-title">{item.title}</h3>
+            <p class="item-desc">{item.description}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .security {
+    padding: 5rem 0;
+    background: var(--color-bg);
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .badge {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-teal);
+    margin-bottom: 1rem;
+  }
+
+  .section-headline {
+    font-family: var(--font-serif);
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--color-black);
+    white-space: pre-line;
+  }
+
+  .section-sub {
+    margin-top: 1rem;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--color-muted-dark);
+  }
+
+  .security-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  .security-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--color-white);
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+  }
+
+  .item-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--color-teal);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 10px;
+  }
+
+  .item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .item-title {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--color-black);
+  }
+
+  .item-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  @media (max-width: 1024px) {
+    .security-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .security-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

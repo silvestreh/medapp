@@ -1,0 +1,27 @@
+---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+interface Props {
+  name: string;
+  size?: number;
+  weight?: 'regular' | 'bold' | 'light' | 'fill';
+  class?: string;
+}
+
+const { name, size = 32, weight = 'regular', class: className } = Astro.props;
+
+const iconPath = resolve(
+  `node_modules/@phosphor-icons/core/assets/${weight}/${name}.svg`
+);
+const raw = readFileSync(iconPath, 'utf-8');
+
+// Replace width/height attributes and add our own
+const svg = raw
+  .replace(/width="[^"]*"/, `width="${size}"`)
+  .replace(/height="[^"]*"/, `height="${size}"`)
+  .replace('<svg', `<svg class="${className ?? ''}"`)
+  .replace(/fill="[^"]*"/g, 'fill="currentColor"');
+---
+
+<Fragment set:html={svg} />

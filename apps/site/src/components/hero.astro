@@ -1,0 +1,212 @@
+---
+import { content } from '../content/es';
+
+const { hero } = content;
+---
+
+<section class="hero">
+  <div class="blob blob-left" aria-hidden="true"></div>
+  <div class="blob blob-right" aria-hidden="true"></div>
+  <div class="blob blob-bottom" aria-hidden="true"></div>
+
+  <div class="hero-content container">
+    <span class="badge">{hero.badge}</span>
+    <h1 class="headline">{hero.headline}</h1>
+    <p class="subheadline">{hero.subheadline}</p>
+    <div class="cta-row">
+      <a href={hero.ctaHref} class="btn-primary">{hero.cta}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding: 6rem 0 5rem;
+    text-align: center;
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .blob-left {
+    width: 650px;
+    height: 650px;
+    background: var(--color-teal);
+    top: -200px;
+    left: -250px;
+    opacity: 0.2;
+    animation:
+      morph-1 12s ease-in-out infinite,
+      hue-1 24s ease-in-out infinite;
+  }
+
+  .blob-right {
+    width: 550px;
+    height: 550px;
+    background: var(--color-teal);
+    top: -100px;
+    right: -200px;
+    opacity: 0.18;
+    animation:
+      morph-2 15s ease-in-out infinite,
+      hue-2 24s ease-in-out infinite;
+  }
+
+  .blob-bottom {
+    width: 500px;
+    height: 500px;
+    background: var(--color-teal);
+    bottom: -250px;
+    left: 50%;
+    opacity: 0.14;
+    animation:
+      morph-3 13s ease-in-out infinite,
+      hue-3 24s ease-in-out infinite;
+  }
+
+  @keyframes morph-1 {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.25, 1.1); }
+    50%  { transform: scale(1.1, 1.3); }
+    75%  { transform: scale(0.95, 1.15); }
+    100% { transform: scale(1, 1); }
+  }
+
+  @keyframes morph-2 {
+    0%   { transform: scale(1, 1); }
+    25%  { transform: scale(1.1, 1.25); }
+    50%  { transform: scale(1.3, 0.95); }
+    75%  { transform: scale(1.15, 1.1); }
+    100% { transform: scale(1, 1); }
+  }
+
+  @keyframes morph-3 {
+    0%   { transform: translateX(-50%) scale(1, 1); }
+    25%  { transform: translateX(-50%) scale(1.2, 1.05); }
+    50%  { transform: translateX(-50%) scale(0.95, 1.25); }
+    75%  { transform: translateX(-50%) scale(1.15, 0.95); }
+    100% { transform: translateX(-50%) scale(1, 1); }
+  }
+
+  /* Three colors offset by 1/3 of the cycle so they never match */
+  @keyframes hue-1 {
+    0%, 100% { background: #68C6D8; }  /* teal */
+    33%      { background: #8B9CF7; }  /* soft indigo */
+    66%      { background: #7DD4AA; }  /* mint */
+  }
+
+  @keyframes hue-2 {
+    0%, 100% { background: #7DD4AA; }  /* mint */
+    33%      { background: #68C6D8; }  /* teal */
+    66%      { background: #8B9CF7; }  /* soft indigo */
+  }
+
+  @keyframes hue-3 {
+    0%, 100% { background: #8B9CF7; }  /* soft indigo */
+    33%      { background: #7DD4AA; }  /* mint */
+    66%      { background: #68C6D8; }  /* teal */
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob-left, .blob-right, .blob-bottom {
+      animation: none;
+    }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .badge {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .headline {
+    font-family: var(--font-serif);
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--color-black);
+    white-space: pre-line;
+    max-width: 873px;
+  }
+
+  .subheadline {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--color-muted-dark);
+    max-width: 560px;
+  }
+
+  .cta-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    padding: 14px 32px;
+    background: var(--color-teal);
+    color: var(--color-white);
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 100px;
+    transition: opacity 0.2s;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.85;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    padding: 14px 32px;
+    background: transparent;
+    color: var(--color-black);
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 100px;
+    border: 1px solid var(--color-border);
+    transition: border-color 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--color-muted);
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding: 3rem 0;
+    }
+
+    .cta-row {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .btn-primary, .btn-secondary {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

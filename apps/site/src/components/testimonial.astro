@@ -1,0 +1,58 @@
+---
+import { content } from '../content/es';
+
+const { testimonial } = content;
+---
+
+<section class="testimonial">
+  <div class="container fade-in">
+    <blockquote class="quote">{testimonial.quote}</blockquote>
+    <div class="attribution">
+      <span class="author">{testimonial.author}</span>
+      <span class="role">{testimonial.role}</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .testimonial {
+    padding: 5rem 0;
+    background: linear-gradient(135deg, #1a3a40, #1a2e33);
+    color: var(--color-white);
+  }
+
+  .testimonial .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2rem;
+  }
+
+  .quote {
+    font-family: var(--font-serif);
+    font-size: clamp(24px, 3.5vw, 36px);
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.45;
+    max-width: 800px;
+    color: var(--color-white);
+  }
+
+  .attribution {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .author {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-white);
+  }
+
+  .role {
+    font-size: 14px;
+    color: rgba(250, 250, 248, 0.6);
+  }
+</style>

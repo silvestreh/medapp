@@ -1,0 +1,201 @@
+---
+import { content } from '../content/es';
+
+interface Props {
+  showPricing?: boolean;
+}
+
+const { showPricing = false } = Astro.props;
+const { nav } = content;
+const links = showPricing ? nav.links : nav.links.filter((l) => l.href !== '#precios');
+---
+
+<header class="nav">
+  <div class="nav-inner container">
+    <a href="/" class="logo">
+      <img src="/logo.webp" alt="Athelas" class="logo-icon" width="36" height="36" />
+      <span class="logo-text">{nav.logo}</span>
+    </a>
+
+    <nav class="nav-links" id="nav-links">
+      {links.map((link) => (
+        <a href={link.href} class="nav-link">{link.label}</a>
+      ))}
+    </nav>
+
+    <div class="nav-actions">
+      <a href={nav.loginHref} class="login-link">{nav.login}</a>
+      <a href={nav.ctaHref} class="cta-button">{nav.cta}</a>
+    </div>
+
+    <button class="hamburger" id="hamburger" aria-label="Abrir menú" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>
+
+<script>
+  const hamburger = document.getElementById('hamburger')!;
+  const navLinks = document.getElementById('nav-links')!;
+
+  hamburger.addEventListener('click', () => {
+    const isOpen = navLinks.classList.toggle('open');
+    hamburger.classList.toggle('open', isOpen);
+    hamburger.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  // Close menu on anchor click
+  navLinks.querySelectorAll('a').forEach((a) =>
+    a.addEventListener('click', () => {
+      navLinks.classList.remove('open');
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+    })
+  );
+</script>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250, 250, 248, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 78px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .logo-text {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 34px;
+    color: var(--color-black);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+  }
+
+  .nav-link {
+    font-size: 15px;
+    color: var(--color-muted);
+    transition: color 0.2s;
+  }
+
+  .nav-link:hover {
+    color: var(--color-black);
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .login-link {
+    font-size: 15px;
+    color: var(--color-black);
+    transition: color 0.2s;
+  }
+
+  .login-link:hover {
+    color: var(--color-teal);
+  }
+
+  .cta-button {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-white);
+    background: var(--color-teal);
+    border-radius: 100px;
+    padding: 10px 24px;
+    transition: opacity 0.2s;
+  }
+
+  .cta-button:hover {
+    opacity: 0.85;
+  }
+
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .hamburger span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--color-black);
+    border-radius: 2px;
+    transition: transform 0.3s, opacity 0.3s;
+  }
+
+  .hamburger.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .hamburger.open span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  @media (max-width: 768px) {
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: 78px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      background: var(--color-white);
+      padding: 1.5rem 2rem;
+      gap: 1.5rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .nav-links.open {
+      display: flex;
+    }
+
+    .nav-actions {
+      display: none;
+    }
+
+    .hamburger {
+      display: flex;
+    }
+  }
+</style>
