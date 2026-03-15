@@ -16,6 +16,7 @@ interface MedicData {
   firstName: string;
   lastName: string;
   specialty: string;
+  title: string;
   isActive?: boolean;
 }
 
@@ -164,6 +165,7 @@ export class Booking {
           firstName: user.personalData?.firstName || '',
           lastName: user.personalData?.lastName || '',
           specialty: user.settings?.medicalSpecialty || '',
+          title: user.settings?.title || (user.personalData?.gender === 'female' ? 'Dra.' : 'Dr.'),
           isActive: user.settings?.isVerified,
         };
       }),

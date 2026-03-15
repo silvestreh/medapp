@@ -821,6 +821,7 @@ export const es = {
     city: 'Ciudad',
     province: 'Provincia',
     country: 'País',
+    title: 'Título',
     medical_specialty: 'Especialidad médica',
     national_license_number: 'Número de matrícula nacional',
     state_license: 'Jurisdicción (matrícula)',

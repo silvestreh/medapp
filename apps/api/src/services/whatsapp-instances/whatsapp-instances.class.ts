@@ -66,16 +66,16 @@ export class WhatsAppInstances {
     const { action } = data;
 
     switch (action) {
-      case 'create-instance':
-        return this.createInstance(params!);
-      case 'get-qrcode':
-        return this.getQrCode(params!);
-      case 'check-status':
-        return this.checkStatus(params!);
-      case 'disconnect':
-        return this.disconnect(params!);
-      default:
-        throw new BadRequest(`Unknown action: ${action}`);
+    case 'create-instance':
+      return this.createInstance(params!);
+    case 'get-qrcode':
+      return this.getQrCode(params!);
+    case 'check-status':
+      return this.checkStatus(params!);
+    case 'disconnect':
+      return this.disconnect(params!);
+    default:
+      throw new BadRequest(`Unknown action: ${action}`);
     }
   }
 

@@ -15,6 +15,7 @@ import { getPdfTranslations, translateLabel } from '@athelas/translations';
 
 export interface PdfDoctorInfo {
   fullName: string;
+  title: string;
   specialty: string | null;
   nationalLicenseNumber: string | null;
   stateLicense: string | null;
@@ -34,6 +35,7 @@ export interface PdfEncounter {
   id: string;
   date: string;
   doctorName: string;
+  doctorTitle: string;
   data: Record<string, any>;
 }
 
@@ -47,6 +49,7 @@ export interface PdfStudy {
   date: string;
   protocol: number;
   doctorName: string;
+  doctorTitle: string;
   referringDoctor: string | null;
   results: PdfStudyResult[];
 }
@@ -475,7 +478,7 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
           <Text style={styles.encounterDate}>
             {dayjs(encounter.date).format('DD/MM/YYYY')}
           </Text>
-          <Text style={styles.encounterDoctor}>Dr. {encounter.doctorName}</Text>
+          <Text style={styles.encounterDoctor}>{encounter.doctorTitle} {encounter.doctorName}</Text>
         </View>
         {sections.map((section, i) => (
           <View key={i} style={styles.formSection}>
@@ -513,7 +516,7 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
 
     const doctorLine = study.referringDoctor
       ? `${t.referringDoctor} ${study.referringDoctor}`
-      : `Dr. ${study.doctorName}`;
+      : `${study.doctorTitle} ${study.doctorName}`;
 
     const hasAnyReference = resultSections.some((s) =>
       s.lines.some((l) => l.reference)
@@ -559,7 +562,7 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
         <View style={styles.header}>
           <Text style={styles.orgName}>{organizationName}</Text>
           <Text style={styles.doctorInfo}>
-            Dr. {doctor.fullName}
+            {doctor.title} {doctor.fullName}
             {licenseLines.length > 0 ? ` — ${licenseLines.join(' | ')}` : ''}
           </Text>
         </View>

@@ -610,7 +610,7 @@ export default function BookingPage() {
             {t('booking.date_and_time')}
           </Title>
           <Subtitle>
-            Dra. {selectedMedic.lastName.toUpperCase()}, {selectedMedic.firstName} &middot;{' '}
+            {selectedMedic.title} {selectedMedic.lastName.toUpperCase()}, {selectedMedic.firstName} &middot;{' '}
             {selectedMedic.specialty}
           </Subtitle>
 

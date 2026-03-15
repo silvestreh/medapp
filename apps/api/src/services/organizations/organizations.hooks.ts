@@ -2,6 +2,7 @@ import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import restrictToOrgOwner from './hooks/restrict-to-org-owner';
+import { disallow } from 'feathers-hooks-common';
 import { protectIsActive } from './hooks/protect-is-active';
 import registerHealthCenter from './hooks/register-health-center';
 
@@ -20,8 +21,7 @@ export default {
       protectIsActive(),
     ],
     remove: [
-      verifyOrganizationMembership(),
-      restrictToOrgOwner(),
+      disallow('external'),
     ],
   },
 

@@ -291,7 +291,8 @@ export class Profile {
         } as any);
         const list = Array.isArray(existing) ? existing : [];
         const record = list[0];
-        const patchPayload = {
+        const RECETARIO_TITLES: Record<string, string> = { 'Dr.': 'Dr', 'Dra.': 'Dra' };
+        const patchPayload: Record<string, any> = {
           medicalSpecialty: mdSettingsPayload.medicalSpecialty ?? undefined,
           nationalLicenseNumber: mdSettingsPayload.nationalLicenseNumber ?? undefined,
           stateLicense: mdSettingsPayload.stateLicense ?? undefined,
@@ -300,6 +301,10 @@ export class Profile {
           recetarioProvince: mdSettingsPayload.recetarioProvince ?? undefined,
           signatureImage: mdSettingsPayload.signatureImage ?? undefined,
         };
+        if (mdSettingsPayload.title != null) {
+          patchPayload.title = mdSettingsPayload.title;
+          patchPayload.recetarioTitle = RECETARIO_TITLES[mdSettingsPayload.title] ?? 'Dr';
+        }
         if (record?.id) {
           await this.app.service('md-settings').patch(record.id, patchPayload, internalParams as any);
         } else {

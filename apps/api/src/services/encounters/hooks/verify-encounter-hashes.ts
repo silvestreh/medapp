@@ -56,7 +56,7 @@ export const verifyEncounterHashes = (): Hook => {
       if (encounter.previousEncounterId) {
         const sequelize = context.app.get('sequelizeClient');
         const results = await sequelize.query(
-          `SELECT hash FROM encounters WHERE id = :id LIMIT 1`,
+          'SELECT hash FROM encounters WHERE id = :id LIMIT 1',
           {
             replacements: { id: encounter.previousEncounterId },
             type: QueryTypes.SELECT

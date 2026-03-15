@@ -9,7 +9,7 @@ import { ClipboardTextIcon, PencilIcon, WarningIcon } from '@phosphor-icons/reac
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import type { loader as settingsLoader } from '~/routes/settings';
 import { SignatureCanvas } from '~/components/signature-canvas';
-import { FormCard, FieldRow, StyledSelect, SectionTitle, FormHeader } from '~/components/forms/styles';
+import { FormCard, FieldRow, SectionTitle, FormHeader } from '~/components/forms/styles';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
@@ -38,13 +38,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
 
     if (intent === 'update-recetario-profile') {
-      const recetarioTitle = String(formData.get('recetarioTitle') || '');
       const recetarioProvince = String(formData.get('recetarioProvince') || '');
       const signatureImage = String(formData.get('signatureImage') || '');
       await client.service('profile').create({
         action: 'update-profile',
         mdSettings: {
-          recetarioTitle: recetarioTitle || undefined,
           recetarioProvince: recetarioProvince || undefined,
           signatureImage: signatureImage || undefined,
         },
@@ -72,11 +70,6 @@ export default function SettingsPrescriptionsRoute() {
     ? String(currentOrg.settings.recetario.healthCenterId)
     : '';
 
-  const gender = (parentData?.user as any)?.personalData?.gender as string | null | undefined;
-  const canInferTitle = gender === 'male' || gender === 'female';
-  const inferredTitle = gender === 'male' ? 'Dr' : gender === 'female' ? 'Dra' : null;
-  const [recetarioTitle, setRecetarioTitle] = useState(mdSettings?.recetarioTitle ?? inferredTitle ?? '');
-  const effectiveTitle = canInferTitle ? (inferredTitle as string) : recetarioTitle;
   const recetarioProvince = mdSettings?.stateLicense || '';
   const [signatureBase64, setSignatureBase64] = useState<string>(mdSettings?.signatureImage ?? '');
   const [showCanvas, setShowCanvas] = useState(false);
@@ -120,13 +113,12 @@ export default function SettingsPrescriptionsRoute() {
     fetcher.submit(
       {
         intent: 'update-recetario-profile',
-        recetarioTitle: effectiveTitle,
         recetarioProvince,
         signatureImage: signatureBase64,
       },
       { method: 'post' }
     );
-  }, [fetcher, effectiveTitle, recetarioProvince, signatureBase64]);
+  }, [fetcher, recetarioProvince, signatureBase64]);
 
   const handleSignatureUpload = useCallback((file: File | null) => {
     if (!file) return;
@@ -185,18 +177,6 @@ export default function SettingsPrescriptionsRoute() {
             </SectionTitle>
           </FormHeader>
           <FormCard>
-            {!canInferTitle && (
-              <FieldRow label={`${t('recetario.title_label')}:`} variant="stacked">
-                <StyledSelect
-                  data={[
-                    { value: 'Dr', label: t('recetario.title_dr') },
-                    { value: 'Dra', label: t('recetario.title_dra') },
-                  ]}
-                  value={recetarioTitle}
-                  onChange={val => setRecetarioTitle(val ?? '')}
-                />
-              </FieldRow>
-            )}
             <FieldRow label={`${t('recetario.signature_label')}:`} variant="stacked">
               <Group gap="sm">
                 <FileButton onChange={handleSignatureUpload} accept="image/png,image/jpeg">

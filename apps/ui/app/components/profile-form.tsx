@@ -40,6 +40,7 @@ type ContactDataLike =
   | undefined;
 type MdSettingsLike =
   | {
+      title?: string | null;
       medicalSpecialty?: string | null;
       nationalLicenseNumber?: string | null;
       stateLicense?: string | null;
@@ -74,6 +75,7 @@ function getInitialProfileValues(
     city: cd?.city ?? '',
     province: cd?.province ?? '',
     country: cd?.country ?? '',
+    title: mdSettings?.title ?? '',
     medicalSpecialty: mdSettings?.medicalSpecialty
       ? mdSettings.medicalSpecialty
           .split(',')
@@ -188,6 +190,7 @@ export function ProfileForm({
       ...(isMedic
         ? {
             mdSettings: {
+              title: values.title || undefined,
               medicalSpecialty: values.medicalSpecialty.length > 0 ? values.medicalSpecialty.join(', ') : undefined,
               nationalLicenseNumber: values.nationalLicenseNumber || undefined,
               stateLicense: values.stateLicense || undefined,
@@ -277,6 +280,16 @@ export function ProfileForm({
             {t('profile.professional_info')}
           </SectionTitle>
           <FormCard>
+            <FieldRow label={`${t('profile.title')}:`} variant="stacked">
+              <StyledSelect
+                data={[
+                  { value: 'Dr.', label: 'Dr.' },
+                  { value: 'Dra.', label: 'Dra.' },
+                  { value: 'Lic.', label: 'Lic.' },
+                ]}
+                {...profileForm.getInputProps('title')}
+              />
+            </FieldRow>
             <FieldRow label={`${t('profile.medical_specialty')}:`} variant="stacked">
               <StyledTagsInput data={specialtyOptions} {...profileForm.getInputProps('medicalSpecialty')} />
             </FieldRow>

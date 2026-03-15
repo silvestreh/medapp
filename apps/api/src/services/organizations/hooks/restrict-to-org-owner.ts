@@ -9,8 +9,8 @@ const restrictToOrgOwner = (): Hook => async (context: HookContext): Promise<Hoo
   if (params.isSuperAdmin) return context;
 
   const orgRoleIds: string[] = params.orgRoleIds || [];
-  if (!orgRoleIds.includes('owner')) {
-    throw new Forbidden('Only the organization owner can perform this action');
+  if (!orgRoleIds.includes('owner') && !orgRoleIds.includes('admin')) {
+    throw new Forbidden('Only organization owners and admins can perform this action');
   }
 
   return context;

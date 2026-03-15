@@ -125,6 +125,10 @@ export default function (app: Application): typeof Model {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     recetarioTitle: {
       type: DataTypes.STRING,
       allowNull: true,

@@ -125,13 +125,17 @@ export class SignedExports {
     const uniqueMedicIds = [...new Set(allMedicIds)];
 
     const doctorNames: Record<string, string> = {};
+    const doctorTitles: Record<string, string> = {};
     for (const medicId of uniqueMedicIds) {
       try {
         const medicUser = await this.app.service('users').get(medicId, internal());
         const pd = (medicUser as any).personalData || {};
         doctorNames[medicId] = [pd.firstName, pd.lastName].filter(Boolean).join(' ') || (medicUser as any).username || t.unknown;
+        const medicMdSettings = (medicUser as any).settings;
+        doctorTitles[medicId] = medicMdSettings?.title || (pd.gender === 'female' ? 'Dra.' : 'Dr.');
       } catch {
         doctorNames[medicId] = t.unknown;
+        doctorTitles[medicId] = 'Dr.';
       }
     }
 
@@ -139,6 +143,7 @@ export class SignedExports {
       id: enc.id,
       date: enc.date,
       doctorName: doctorNames[enc.medicId] || t.unknown,
+      doctorTitle: doctorTitles[enc.medicId] || 'Dr.',
       data: typeof enc.data === 'string' ? JSON.parse(enc.data) : (enc.data || {}),
     }));
 
@@ -147,6 +152,7 @@ export class SignedExports {
       date: study.date,
       protocol: study.protocol,
       doctorName: doctorNames[study.medicId] || t.unknown,
+      doctorTitle: doctorTitles[study.medicId] || 'Dr.',
       referringDoctor: study.referringDoctor || null,
       results: (study.results || []).map((r: any) => ({
         type: r.type,
@@ -160,6 +166,7 @@ export class SignedExports {
       organizationName,
       doctor: {
         fullName: [personalData.firstName, personalData.lastName].filter(Boolean).join(' ') || (doctorUser as any).username || '',
+        title: mdSettings?.title || (personalData.gender === 'female' ? 'Dra.' : 'Dr.'),
         specialty: mdSettings?.medicalSpecialty || null,
         nationalLicenseNumber: mdSettings?.nationalLicenseNumber || null,
         stateLicense: mdSettings?.stateLicense || null,

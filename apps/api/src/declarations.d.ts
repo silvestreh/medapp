@@ -201,6 +201,7 @@ export interface MdSettings {
   saturdayEnd: string | null;
   sundayStart: string | null;
   sundayEnd: string | null;
+  title: string | null;
   recetarioTitle: string | null;
   recetarioProvince: string | null;
   signatureImage: string | null;

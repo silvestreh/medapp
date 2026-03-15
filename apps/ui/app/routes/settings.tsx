@@ -224,6 +224,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }
     }
 
+    const canManageOrg =
+      currentMembership?.roleIds?.includes('owner') || currentMembership?.roleIds?.includes('admin') || false;
     let isOrgOwner = false;
     let currentOrg: {
       id: string;
@@ -235,7 +237,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       email?: string | null;
       logoUrl?: string | null;
     } | null = null;
-    if (currentMembership?.roleIds?.includes('owner')) {
+    if (canManageOrg) {
       isOrgOwner = true;
       try {
         const org = await client.service('organizations').get(currentMembership.id);

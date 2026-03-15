@@ -26,6 +26,7 @@ export interface MedicData {
   firstName: string;
   lastName: string;
   specialty: string;
+  title: string;
 }
 
 export interface AnonymizedSlot {

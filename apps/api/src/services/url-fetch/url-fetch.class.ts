@@ -40,6 +40,7 @@ export class UrlFetch {
     this.app = app;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async create(data: { url: string }, params?: Params): Promise<{
     url: string;
     fileName: string;

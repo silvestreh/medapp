@@ -818,6 +818,7 @@ export const en: typeof es = {
     city: 'City',
     province: 'Province',
     country: 'Country',
+    title: 'Title',
     medical_specialty: 'Medical specialty',
     national_license_number: 'National license number',
     state_license: 'State / Province (license)',

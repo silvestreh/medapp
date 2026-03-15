@@ -226,7 +226,7 @@ describe('\'encounters\' service', () => {
       const tamperedData = JSON.stringify({ notes: { values: { text: 'TAMPERED!' } } });
       const encryptionKey = process.env.ENCRYPTION_KEY;
       await sequelizeClient.query(
-        `UPDATE encounters SET data = PGP_SYM_ENCRYPT(:data, :key) WHERE id = :id`,
+        'UPDATE encounters SET data = PGP_SYM_ENCRYPT(:data, :key) WHERE id = :id',
         {
           replacements: { data: tamperedData, key: encryptionKey, id: created.id }
         }

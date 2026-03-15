@@ -86,7 +86,7 @@ describe('\'encounter-chain-verification\' service', () => {
       medicareNumber: `00003-${s}`
     });
 
-    const enc1 = await app.service('encounters').create({
+    await app.service('encounters').create({
       data: { notes: { values: { text: 'Chain 1' } } },
       date: new Date('2025-02-01'),
       medicId: medic.id,
@@ -110,7 +110,7 @@ describe('\'encounter-chain-verification\' service', () => {
     // Tamper with enc2's data
     const tamperedData = JSON.stringify({ notes: { values: { text: 'HACKED' } } });
     await sequelizeClient.query(
-      `UPDATE encounters SET data = PGP_SYM_ENCRYPT(:data, :key) WHERE id = :id`,
+      'UPDATE encounters SET data = PGP_SYM_ENCRYPT(:data, :key) WHERE id = :id',
       {
         replacements: { data: tamperedData, key: encryptionKey, id: enc2.id }
       }

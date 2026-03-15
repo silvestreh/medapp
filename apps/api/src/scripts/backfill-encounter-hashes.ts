@@ -59,7 +59,7 @@ async function main() {
   let patientsProcessed = 0;
   let encountersUpdated = 0;
 
-  for (const [patientId, patientEncounters] of byPatient) {
+  for (const [, patientEncounters] of byPatient) {
     // Sort by date ASC, id ASC
     patientEncounters.sort((a: any, b: any) => {
       const dateCompare = new Date(a.date).getTime() - new Date(b.date).getTime();

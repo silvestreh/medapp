@@ -62,9 +62,17 @@ describe('\'url-fetch\' service', () => {
   it('disallows find, get, update, patch, remove via MethodNotAllowed', async () => {
     const service = app.service('url-fetch');
 
-    for (const method of ['find', 'get', 'update', 'patch', 'remove'] as const) {
+    const calls: Array<[string, any[]]> = [
+      ['find', []],
+      ['get', ['test']],
+      ['update', ['test', {}]],
+      ['patch', ['test', {}]],
+      ['remove', ['test']],
+    ];
+
+    for (const [method, args] of calls) {
       try {
-        await (service as any)[method]('test');
+        await (service as any)[method](...args);
         assert.fail(`${method} should have thrown`);
       } catch (err: any) {
         assert.strictEqual(err.code, 405, `${method} should return 405`);
