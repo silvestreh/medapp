@@ -6,11 +6,13 @@
     "dev": "astro dev --port 5180",
     "build": "astro build",
     "preview": "astro preview",
+    "start": "sirv dist --host 0.0.0.0 --port ${PORT:-8080} --single",
     "clean": "rm -rf dist .astro"
   },
   "dependencies": {
     "@phosphor-icons/core": "^2.1.1",
-    "astro": "^5.7.0"
+    "astro": "^5.7.0",
+    "sirv-cli": "^3.0.1"
   },
   "engines": {
     "node": ">=20.0.0"
