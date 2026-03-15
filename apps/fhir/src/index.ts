@@ -5,7 +5,7 @@ import { createSequelize } from './sequelize';
 import { defineModels } from './models';
 import { createApp } from './app';
 
-const PORT = parseInt(process.env.FHIR_PORT || '3040', 10);
+const PORT = parseInt(process.env.PORT || process.env.FHIR_PORT || '3040', 10);
 
 async function main() {
   const sequelize = createSequelize();

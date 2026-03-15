@@ -29,6 +29,6 @@ RUN pnpm --filter athelas-fhir build
 
 WORKDIR /app/apps/fhir
 
-EXPOSE 3040
+EXPOSE ${PORT:-3040}
 
 CMD ["node", "lib/index.js"]
