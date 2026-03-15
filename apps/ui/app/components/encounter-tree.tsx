@@ -1,5 +1,6 @@
 import { type FC, useCallback, useMemo } from 'react';
-import { Accordion, Text, Stack } from '@mantine/core';
+import { Accordion, Text, Stack, Tooltip } from '@mantine/core';
+import { ShieldWarning } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import groupBy from 'lodash/groupBy';
 import mapValues from 'lodash/mapValues';
@@ -299,6 +300,16 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                 >
                                   <EncounterDateText>
                                     {formatInLocale(encounter.date, 'dddd D, HH:mm', locale)}
+                                    {encounter.tampered && (
+                                      <Tooltip label={t('encounters.tampered_warning')}>
+                                        <ShieldWarning
+                                          size={16}
+                                          weight="fill"
+                                          color="var(--mantine-color-red-6)"
+                                          style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }}
+                                        />
+                                      </Tooltip>
+                                    )}
                                   </EncounterDateText>
                                   {encounter.data &&
                                     Object.keys(encounter.data)

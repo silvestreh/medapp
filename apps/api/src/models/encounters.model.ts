@@ -52,6 +52,18 @@ export default function (app: Application): typeof Model {
     data: {
       type: DataTypes.BLOB,
       allowNull: true
+    },
+    hash: {
+      type: DataTypes.STRING(64),
+      allowNull: true
+    },
+    previousEncounterId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'encounters',
+        key: 'id'
+      }
     }
   }, {
     encryptedFields: ['data'],

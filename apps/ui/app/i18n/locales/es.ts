@@ -528,6 +528,7 @@ export const es = {
     file_type_dicom: 'Archivo DICOM',
     file_type_file: 'Archivo',
     attach_file: 'Adjuntar archivo',
+    tampered_warning: 'No se pudo verificar la integridad de esta consulta',
   },
   patients: {
     title: 'Pacientes',

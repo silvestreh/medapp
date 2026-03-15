@@ -169,6 +169,9 @@ export interface Encounter {
   data: {
     [key: string]: any;
   } | string;
+  hash?: string;
+  previousEncounterId?: Id | null;
+  tampered?: boolean;
 }
 
 export interface MdSettings {

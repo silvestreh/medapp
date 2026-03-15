@@ -16,6 +16,9 @@ import { checkEncounterPermissions } from './hooks/check-encounter-permissions';
 import { applySharedAccess } from './hooks/apply-shared-access';
 import { markSharedEncounters } from './hooks/mark-shared-encounters';
 import { logAccess } from '../../hooks/log-access';
+import { computeEncounterHashHook } from './hooks/compute-encounter-hash';
+import { releaseEncounterLock } from './hooks/release-encounter-lock';
+import { verifyEncounterHashes } from './hooks/verify-encounter-hashes';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -37,6 +40,7 @@ export default {
     create: [
       requireVerifiedLicense(),
       validateEncounterData(),
+      computeEncounterHashHook(),
       sanitizeEncryptedData('data'),
       logAccess({ resource: 'encounters' })
     ],
@@ -51,15 +55,18 @@ export default {
       parseDecryptedAttributes('data'),
       omitForDeleted({ service: 'patients', fkey: 'patientId' }),
       markSharedEncounters(),
+      verifyEncounterHashes(),
       logAccess({ resource: 'encounters' })
     ],
     get: [
       parseDecryptedAttributes('data'),
       omitForDeleted({ service: 'patients', fkey: 'patientId' }),
       markSharedEncounters(),
+      verifyEncounterHashes(),
       logAccess({ resource: 'encounters' })
     ],
     create: [
+      releaseEncounterLock(),
       setCost('encounter'),
       logAccess({ resource: 'encounters'})
     ],
@@ -72,7 +79,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [releaseEncounterLock()],
     update: [],
     patch: [],
     remove: []

@@ -58,7 +58,7 @@ export const EMPTY_PATIENT_FORM_VALUES: PatientFormValues = {
   medicarePlan: '',
 };
 
-const COUNTRY_CALLING_CODES = [
+export const COUNTRY_CALLING_CODES = [
   { value: '54', label: '🇦🇷 +54' },
   { value: '55', label: '🇧🇷 +55' },
   { value: '56', label: '🇨🇱 +56' },
@@ -78,7 +78,7 @@ const COUNTRY_CALLING_CODES = [
  * Extracts the country code from a phone string like "cel:+542216412898"
  * or "cel:542216412898". Returns { countryCode, localNumber }.
  */
-function extractCountryCode(phone: string): { countryCode: string; localNumber: string } {
+export function extractCountryCode(phone: string): { countryCode: string; localNumber: string } {
   // Strip the tel:/cel: prefix and any + sign
   const digits = phone.replace(/^(tel:|cel:)\+?/i, '').replace(/[^0-9]/g, '');
 
@@ -144,7 +144,7 @@ export function parsePatientToFormValues(patient: any): PatientFormValues {
  * Preserves the tel:/cel: prefix if present.
  * e.g. "cel:2216412898, tel:42123456" with code "54" → "cel:+542216412898, tel:+5442123456"
  */
-function prependCountryCode(phoneNumber: string, countryCode: string): string {
+export function prependCountryCode(phoneNumber: string, countryCode: string): string {
   if (!phoneNumber) return '';
   return phoneNumber
     .split(',')

@@ -16,6 +16,11 @@ import {
   StyledTextInput,
   SectionTitle,
 } from '~/components/forms/styles';
+import {
+  COUNTRY_CALLING_CODES,
+  extractCountryCode,
+  prependCountryCode,
+} from '~/components/forms/patient-form';
 import medicalSpecialties from '~/medical-specialties.json';
 
 const specialtyOptions = medicalSpecialties.map(s => s.nombre);
@@ -52,15 +57,19 @@ function getInitialProfileValues(
 ) {
   const pd = user?.personalData;
   const cd = user?.contactData;
-  const phone =
+  const rawPhone =
     cd?.phoneNumber == null ? '' : Array.isArray(cd.phoneNumber) ? cd.phoneNumber.join(', ') : String(cd.phoneNumber);
+  const { countryCode, localNumber } = rawPhone
+    ? extractCountryCode(rawPhone)
+    : { countryCode: '54', localNumber: '' };
   return {
     firstName: pd?.firstName ?? '',
     lastName: pd?.lastName ?? '',
     documentType: pd?.documentType ?? '',
     documentValue: pd?.documentValue ?? '',
     email: cd?.email ?? '',
-    phone,
+    phoneCountryCode: countryCode,
+    phoneNumber: localNumber,
     streetAddress: cd?.streetAddress ?? '',
     city: cd?.city ?? '',
     province: cd?.province ?? '',
@@ -170,7 +179,7 @@ export function ProfileForm({
       },
       contactData: {
         email: values.email || undefined,
-        phoneNumber: values.phone || undefined,
+        phoneNumber: prependCountryCode(values.phoneNumber, values.phoneCountryCode) || undefined,
         streetAddress: values.streetAddress || undefined,
         city: values.city || undefined,
         province: values.province || undefined,
@@ -234,7 +243,19 @@ export function ProfileForm({
           <StyledTextInput type="email" {...profileForm.getInputProps('email')} />
         </FieldRow>
         <FieldRow label={`${t('profile.phone')}:`} variant="stacked">
-          <StyledTextInput {...profileForm.getInputProps('phone')} />
+          <div style={{ display: 'flex', gap: '0.5rem', flex: 1, minWidth: 0 }}>
+            <StyledSelect
+              data={COUNTRY_CALLING_CODES}
+              searchable
+              style={{ width: '7rem', flex: 'none' }}
+              {...profileForm.getInputProps('phoneCountryCode')}
+            />
+            <StyledTextInput
+              placeholder={t('profile.phone')}
+              style={{ flex: 1 }}
+              {...profileForm.getInputProps('phoneNumber')}
+            />
+          </div>
         </FieldRow>
         <FieldRow label={`${t('profile.street_address')}:`} variant="stacked">
           <StyledTextInput {...profileForm.getInputProps('streetAddress')} />

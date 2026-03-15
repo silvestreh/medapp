@@ -527,6 +527,7 @@ export const en: typeof es = {
     file_type_dicom: 'DICOM File',
     file_type_file: 'File',
     attach_file: 'Attach file',
+    tampered_warning: 'The integrity of this encounter could not be verified',
   },
   patients: {
     title: 'Patients',
