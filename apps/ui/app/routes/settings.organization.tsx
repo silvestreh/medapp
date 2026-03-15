@@ -25,6 +25,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const phone = String(formData.get('phone') || '');
       const email = String(formData.get('email') || '');
       const logoUrl = String(formData.get('logoUrl') || '');
+      const refesId = String(formData.get('refesId') || '');
 
       const org = await client.service('organizations').get(orgId);
       const settings = { ...((org as any)?.settings || {}) };
@@ -35,6 +36,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         email: email || undefined,
         logoUrl: logoUrl || undefined,
       };
+      settings.refesId = refesId || undefined;
 
       await client.service('organizations').patch(orgId, { name, settings });
       return json({ ok: true, intent });

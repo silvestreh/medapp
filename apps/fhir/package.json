@@ -1,0 +1,46 @@
+{
+  "name": "athelas-fhir",
+  "description": "FHIR R4 Wrapper API for HL7 Argentina interoperability",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "shx rm -rf lib/ && tsc",
+    "dev": "ts-node-dev --no-notify src/",
+    "start": "node lib/",
+    "test": "NODE_ENV=test mocha",
+    "lint": "eslint src/. --config .eslintrc.json --ext .ts --fix"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@athelas/encounter-schemas": "workspace:*",
+    "@athelas/encryption": "workspace:*",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "pg": "^8.13.1",
+    "sequelize": "^6.37.5",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@medplum/fhirtypes": "^4.3.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.23",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/lodash": "^4.17.13",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.10.0",
+    "@types/supertest": "^7.2.0",
+    "@types/uuid": "^10.0.0",
+    "mocha": "^10.8.2",
+    "shx": "^0.3.4",
+    "supertest": "^7.2.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3"
+  }
+}

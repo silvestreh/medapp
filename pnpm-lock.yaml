@@ -311,7 +311,7 @@ importers:
     devDependencies:
       '@pandacss/dev':
         specifier: ^1.8.1
-        version: 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)
+        version: 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)
       '@remix-run/dev':
         specifier: ^2.16.5
         version: 2.16.8(@remix-run/react@2.16.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(@remix-run/serve@2.16.8(typescript@5.9.3))(@types/node@25.2.3)(jiti@2.6.1)(less@2.7.1)(lightningcss@1.31.1)(sugarss@4.0.1(postcss@8.5.6))(terser@5.42.0)(ts-node@10.9.2(@swc/core@1.11.31(@swc/helpers@0.5.19))(@types/node@25.2.3)(typescript@5.9.3))(tsx@4.21.0)(typescript@5.9.3)(vite@6.3.5(@types/node@25.2.3)(jiti@2.6.1)(less@2.7.1)(lightningcss@1.31.1)(sugarss@4.0.1(postcss@8.5.6))(terser@5.42.0)(tsx@4.21.0)(yaml@2.8.0))(yaml@2.8.0)
@@ -426,6 +426,88 @@ importers:
         version: 5.9.3
 
   apps/face-compare: {}
+
+  apps/fhir:
+    dependencies:
+      '@athelas/encounter-schemas':
+        specifier: workspace:*
+        version: link:../../packages/encounter-schemas
+      '@athelas/encryption':
+        specifier: workspace:*
+        version: link:../../packages/encryption
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.5
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.5.0
+      express:
+        specifier: ^4.21.0
+        version: 4.21.2
+      express-rate-limit:
+        specifier: ^7.5.1
+        version: 7.5.1(express@4.21.2)
+      helmet:
+        specifier: ^5.1.1
+        version: 5.1.1
+      jsonwebtoken:
+        specifier: ^9.0.2
+        version: 9.0.3
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.23
+      pg:
+        specifier: ^8.13.1
+        version: 8.16.0
+      sequelize:
+        specifier: ^6.37.5
+        version: 6.37.7(pg@8.16.0)
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
+    devDependencies:
+      '@medplum/fhirtypes':
+        specifier: ^4.3.1
+        version: 4.5.2
+      '@types/cors':
+        specifier: ^2.8.17
+        version: 2.8.19
+      '@types/express':
+        specifier: ^4.17.23
+        version: 4.17.23
+      '@types/jsonwebtoken':
+        specifier: ^9.0.7
+        version: 9.0.10
+      '@types/lodash':
+        specifier: ^4.17.13
+        version: 4.17.17
+      '@types/mocha':
+        specifier: ^10.0.10
+        version: 10.0.10
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.19.13
+      '@types/supertest':
+        specifier: ^7.2.0
+        version: 7.2.0
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
+      mocha:
+        specifier: ^10.8.2
+        version: 10.8.2
+      shx:
+        specifier: ^0.3.4
+        version: 0.3.4
+      supertest:
+        specifier: ^7.2.2
+        version: 7.2.2
+      ts-node-dev:
+        specifier: ^2.0.0
+        version: 2.0.0(@swc/core@1.11.31(@swc/helpers@0.5.19))(@types/node@22.19.13)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
 
   apps/kyc:
     dependencies:
@@ -782,7 +864,7 @@ importers:
     devDependencies:
       '@pandacss/dev':
         specifier: ^1.8.1
-        version: 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)
+        version: 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)
       '@remix-run/dev':
         specifier: ^2.16.5
         version: 2.16.8(@remix-run/react@2.16.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3))(@remix-run/serve@2.16.8(typescript@5.8.3))(@types/node@25.2.3)(jiti@2.6.1)(less@2.7.1)(lightningcss@1.31.1)(sugarss@4.0.1(postcss@8.5.5))(terser@5.42.0)(ts-node@10.9.2(@swc/core@1.11.31(@swc/helpers@0.5.19))(@types/node@25.2.3)(typescript@5.8.3))(tsx@4.21.0)(typescript@5.8.3)(vite@6.3.5(@types/node@25.2.3)(jiti@2.6.1)(less@2.7.1)(lightningcss@1.31.1)(sugarss@4.0.1(postcss@8.5.5))(terser@5.42.0)(tsx@4.21.0)(yaml@2.8.0))(yaml@2.8.0)
@@ -2069,6 +2151,10 @@ packages:
   '@mediapipe/tasks-vision@0.10.32':
     resolution: {integrity: sha512-3tiAZnmKloYnRXYoO3dKltTUGnqeCwzC4lV03uY0vCsE+aveJTyEVQyZHOlQGQNsjK+gRHzkf9q08C99Qm2K0Q==}
 
+  '@medplum/fhirtypes@4.5.2':
+    resolution: {integrity: sha512-qngMVtP1enmIfNifXtHxSyLy6p5gmCd0FHm3Xg2sBRuDLPYkCHs0T6vWTp/nWwSmd+jHnxqAITK7ibyCqwCR8g==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+
   '@modelcontextprotocol/sdk@1.26.0':
     resolution: {integrity: sha512-Y5RmPncpiDtTXDbLKswIJzTqu2hyBKxTNsgKqKclDbhIgg1wgtf1fRuvxgTnRfcnxtvvgbIEcqUOzZrJ6iSReg==}
     engines: {node: '>=18'}
@@ -2151,6 +2237,10 @@ packages:
 
   '@napi-rs/wasm-runtime@0.2.11':
     resolution: {integrity: sha512-9DPkXtvHydrcOsopiYpUgPHpmj0HWZKMUnL2dZqpvC42lsratuBG06V5ipyno0fUek5VlFsNQ+AcFATSrJXgMA==}
+
+  '@noble/hashes@1.8.0':
+    resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -2615,6 +2705,9 @@ packages:
 
   '@pandacss/types@1.8.1':
     resolution: {integrity: sha512-5hNn6PsbmSWdHmfETGTGW+gpFmzf0xdKlzbFHIIKHZK+zicCtHIg6iMahZsf9wvYiBu0LAKwgdKR+kDMya5N8w==}
+
+  '@paralleldrive/cuid2@2.3.1':
+    resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
 
   '@parcel/watcher-android-arm64@2.5.6':
     resolution: {integrity: sha512-YQxSS34tPF/6ZG7r/Ih9xy+kP/WwediEUsqmtf0cuCV5TPPKw/PQHRhueUo6JdeFJaqV3pyjm0GdYjZotbRt/A==}
@@ -3857,6 +3950,9 @@ packages:
   '@types/superagent@8.1.9':
     resolution: {integrity: sha512-pTVjI73witn+9ILmoJdajHGW2jkSaOzhiFYF1Rd3EQ94kymLqB9PjD9ISg7WaALC7+dCHT0FGe9T2LktLq/3GQ==}
 
+  '@types/supertest@7.2.0':
+    resolution: {integrity: sha512-uh2Lv57xvggst6lCqNdFAmDSvoMG7M/HDtX4iUCquxQ5EGPtaPM5PL5Hmi7LCvOG8db7YaCPNJEeoI8s/WzIQw==}
+
   '@types/tedious@4.0.14':
     resolution: {integrity: sha512-KHPsfX/FoVbUGbyYvk1q9MMQHLPeRZhRJZdO45Q4YjvFkv4hMNghCWTvy7rdKessBsmtz4euWCWAB6/tVpI1Iw==}
 
@@ -3874,6 +3970,9 @@ packages:
 
   '@types/use-sync-external-store@0.0.6':
     resolution: {integrity: sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg==}
+
+  '@types/uuid@10.0.0':
+    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
 
   '@types/validator@13.15.1':
     resolution: {integrity: sha512-9gG6ogYcoI2mCMLdcO0NYI0AYrbxIjv0MDmy/5Ywo6CpWWrqYayc+mmgxRsCgtcGJm9BSbXkMsmxGah1iGHAAQ==}
@@ -4814,6 +4913,9 @@ packages:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
 
+  cookiejar@2.1.4:
+    resolution: {integrity: sha512-LDx6oHrK+PhzLKJU9j5S7/Y3jM/mUHvD/DeI1WQmJn652iPC5Y4TBzC9l+5OMOXlyTTA+SmVUPm0HQUwpD5Jqw==}
+
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
 
@@ -5109,6 +5211,9 @@ packages:
 
   devtools-protocol@0.0.1566079:
     resolution: {integrity: sha512-MJfAEA1UfVhSs7fbSQOG4czavUp1ajfg6prlAN0+cmfa2zNjaIbvq8VneP7do1WAQQIvgNJWSMeP6UyI90gIlQ==}
+
+  dezalgo@1.0.4:
+    resolution: {integrity: sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig==}
 
   dfa@1.2.0:
     resolution: {integrity: sha512-ED3jP8saaweFTjeGX8HQPjeC1YYyZs98jGNZx6IiBvxW7JG5v492kamAQB3m2wop07CvU/RQmzcKr6bgcC5D/Q==}
@@ -5556,6 +5661,12 @@ packages:
     resolution: {integrity: sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==}
     engines: {node: '>=6'}
 
+  express-rate-limit@7.5.1:
+    resolution: {integrity: sha512-7iN8iPMDzOMHPUYllBEsQdWVB6fPDMPqwjBaFrgr4Jgr/+okjvzAy+UHlYYL/Vs0OsOrMkwS6PJDkFlJwoxUnw==}
+    engines: {node: '>= 16'}
+    peerDependencies:
+      express: '>= 4.11'
+
   express-rate-limit@8.2.1:
     resolution: {integrity: sha512-PCZEIEIxqwhzw4KF0n7QF4QqruVTcF73O5kFKUnGOyjbCCgizBBiFaYpd/fnBLUMPw/BWw9OsiN7GgrNYr7j6g==}
     engines: {node: '>= 16'}
@@ -5613,6 +5724,9 @@ packages:
 
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
+
+  fast-safe-stringify@2.1.1:
+    resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
 
   fast-uri@3.0.6:
     resolution: {integrity: sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw==}
@@ -5715,9 +5829,17 @@ packages:
     resolution: {integrity: sha512-qsITQPfmvMOSAdeyZ+12I1c+CKSstAFAwu+97zrnWAbIr5u8wfsExUzCesVLC8NgHuRUqNN4Zy6UPWUTRGslcA==}
     engines: {node: '>= 6'}
 
+  form-data@4.0.5:
+    resolution: {integrity: sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w==}
+    engines: {node: '>= 6'}
+
   format@0.2.2:
     resolution: {integrity: sha512-wzsgA6WOq+09wrU1tsJ09udeR/YZRaeArL9e1wPbFg3GG2yDnC2ldKpxs4xunpFF9DgqCqOIra3bc1HWrJ37Ww==}
     engines: {node: '>=0.4.x'}
+
+  formidable@3.5.4:
+    resolution: {integrity: sha512-YikH+7CUTOtP44ZTnUhR7Ic2UASBPOqmaRkRKxRbywPTe5VxF7RRCck4af9wutiZ/QKM5nME9Bie2fFaPz5Gug==}
+    engines: {node: '>=14.0.0'}
 
   forwarded-parse@2.1.2:
     resolution: {integrity: sha512-alTFZZQDKMporBH77856pXgzhEzaUVmLCDk+egLgIgHst3Tpndzz8MnKe+GzRJRfvVdn69HhpW7cmXzvtLvJAw==}
@@ -7126,6 +7248,11 @@ packages:
   mime@1.6.0:
     resolution: {integrity: sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==}
     engines: {node: '>=4'}
+    hasBin: true
+
+  mime@2.6.0:
+    resolution: {integrity: sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==}
+    engines: {node: '>=4.0.0'}
     hasBin: true
 
   mimic-fn@2.1.0:
@@ -8816,6 +8943,14 @@ packages:
     peerDependencies:
       postcss: ^8.3.3
 
+  superagent@10.3.0:
+    resolution: {integrity: sha512-B+4Ik7ROgVKrQsXTV0Jwp2u+PXYLSlqtDAhYnkkD+zn3yg8s/zjA2MeGayPoY/KICrbitwneDHrjSotxKL+0XQ==}
+    engines: {node: '>=14.18.0'}
+
+  supertest@7.2.2:
+    resolution: {integrity: sha512-oK8WG9diS3DlhdUkcFn4tkNIiIbBx9lI2ClF8K+b2/m8Eyv47LSawxUzZQSNKUrVb2KsqeTDCcjAAVPYaSLVTA==}
+    engines: {node: '>=14.18.0'}
+
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
@@ -10391,7 +10526,9 @@ snapshots:
 
   '@eslint/js@8.57.1': {}
 
-  '@exodus/bytes@1.14.1':
+  '@exodus/bytes@1.14.1(@noble/hashes@1.8.0)':
+    optionalDependencies:
+      '@noble/hashes': 1.8.0
     optional: true
 
   '@faker-js/faker@10.3.0': {}
@@ -10438,7 +10575,7 @@ snapshots:
       '@feathersjs/feathers': 4.5.17
       bcryptjs: 2.4.3
       debug: 4.4.1
-      lodash: 4.17.21
+      lodash: 4.17.23
     transitivePeerDependencies:
       - supports-color
 
@@ -10452,7 +10589,7 @@ snapshots:
       express-session: 1.18.1
       grant: 4.7.0
       grant-profile: 0.0.11(grant@4.7.0)
-      lodash: 4.17.21
+      lodash: 4.17.23
     transitivePeerDependencies:
       - supports-color
 
@@ -10842,6 +10979,8 @@ snapshots:
 
   '@mediapipe/tasks-vision@0.10.32': {}
 
+  '@medplum/fhirtypes@4.5.2': {}
+
   '@modelcontextprotocol/sdk@1.26.0(zod@4.3.6)':
     dependencies:
       '@hono/node-server': 1.19.9(hono@4.11.9)
@@ -10917,6 +11056,8 @@ snapshots:
       '@emnapi/runtime': 1.4.3
       '@tybys/wasm-util': 0.9.0
     optional: true
+
+  '@noble/hashes@1.8.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -11407,7 +11548,7 @@ snapshots:
       '@types/shimmer': 1.2.0
       import-in-the-middle: 1.14.2
       require-in-the-middle: 7.5.2
-      semver: 7.7.2
+      semver: 7.7.4
       shimmer: 1.2.1
     transitivePeerDependencies:
       - supports-color
@@ -11493,14 +11634,14 @@ snapshots:
       postcss-selector-parser: 7.1.1
       ts-pattern: 5.9.0
 
-  '@pandacss/dev@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)':
+  '@pandacss/dev@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)':
     dependencies:
       '@clack/prompts': 0.11.0
       '@pandacss/config': 1.8.1
       '@pandacss/logger': 1.8.1
-      '@pandacss/mcp': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)
-      '@pandacss/node': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)
-      '@pandacss/postcss': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)
+      '@pandacss/mcp': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)
+      '@pandacss/node': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)
+      '@pandacss/postcss': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)
       '@pandacss/preset-base': 1.8.1
       '@pandacss/preset-panda': 1.8.1
       '@pandacss/shared': 1.8.1
@@ -11513,14 +11654,14 @@ snapshots:
       - supports-color
       - typescript
 
-  '@pandacss/dev@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)':
+  '@pandacss/dev@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)':
     dependencies:
       '@clack/prompts': 0.11.0
       '@pandacss/config': 1.8.1
       '@pandacss/logger': 1.8.1
-      '@pandacss/mcp': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)
-      '@pandacss/node': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)
-      '@pandacss/postcss': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)
+      '@pandacss/mcp': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)
+      '@pandacss/node': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)
+      '@pandacss/postcss': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)
       '@pandacss/preset-base': 1.8.1
       '@pandacss/preset-panda': 1.8.1
       '@pandacss/shared': 1.8.1
@@ -11533,19 +11674,19 @@ snapshots:
       - supports-color
       - typescript
 
-  '@pandacss/extractor@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)':
+  '@pandacss/extractor@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)':
     dependencies:
       '@pandacss/shared': 1.8.1
-      ts-evaluator: 1.2.0(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)
+      ts-evaluator: 1.2.0(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)
       ts-morph: 27.0.2
     transitivePeerDependencies:
       - jsdom
       - typescript
 
-  '@pandacss/extractor@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)':
+  '@pandacss/extractor@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)':
     dependencies:
       '@pandacss/shared': 1.8.1
-      ts-evaluator: 1.2.0(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)
+      ts-evaluator: 1.2.0(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)
       ts-morph: 27.0.2
     transitivePeerDependencies:
       - jsdom
@@ -11572,12 +11713,12 @@ snapshots:
       '@pandacss/types': 1.8.1
       kleur: 4.1.5
 
-  '@pandacss/mcp@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)':
+  '@pandacss/mcp@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)':
     dependencies:
       '@clack/prompts': 0.11.0
       '@modelcontextprotocol/sdk': 1.26.0(zod@4.3.6)
       '@pandacss/logger': 1.8.1
-      '@pandacss/node': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)
+      '@pandacss/node': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)
       '@pandacss/token-dictionary': 1.8.1
       '@pandacss/types': 1.8.1
       zod: 4.3.6
@@ -11587,12 +11728,12 @@ snapshots:
       - supports-color
       - typescript
 
-  '@pandacss/mcp@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)':
+  '@pandacss/mcp@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)':
     dependencies:
       '@clack/prompts': 0.11.0
       '@modelcontextprotocol/sdk': 1.26.0(zod@4.3.6)
       '@pandacss/logger': 1.8.1
-      '@pandacss/node': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)
+      '@pandacss/node': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)
       '@pandacss/token-dictionary': 1.8.1
       '@pandacss/types': 1.8.1
       zod: 4.3.6
@@ -11602,13 +11743,13 @@ snapshots:
       - supports-color
       - typescript
 
-  '@pandacss/node@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)':
+  '@pandacss/node@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)':
     dependencies:
       '@pandacss/config': 1.8.1
       '@pandacss/core': 1.8.1
       '@pandacss/generator': 1.8.1
       '@pandacss/logger': 1.8.1
-      '@pandacss/parser': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)
+      '@pandacss/parser': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)
       '@pandacss/reporter': 1.8.1
       '@pandacss/shared': 1.8.1
       '@pandacss/token-dictionary': 1.8.1
@@ -11637,13 +11778,13 @@ snapshots:
       - jsdom
       - typescript
 
-  '@pandacss/node@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)':
+  '@pandacss/node@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)':
     dependencies:
       '@pandacss/config': 1.8.1
       '@pandacss/core': 1.8.1
       '@pandacss/generator': 1.8.1
       '@pandacss/logger': 1.8.1
-      '@pandacss/parser': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)
+      '@pandacss/parser': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)
       '@pandacss/reporter': 1.8.1
       '@pandacss/shared': 1.8.1
       '@pandacss/token-dictionary': 1.8.1
@@ -11672,11 +11813,11 @@ snapshots:
       - jsdom
       - typescript
 
-  '@pandacss/parser@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)':
+  '@pandacss/parser@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)':
     dependencies:
       '@pandacss/config': 1.8.1
       '@pandacss/core': 1.8.1
-      '@pandacss/extractor': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)
+      '@pandacss/extractor': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)
       '@pandacss/logger': 1.8.1
       '@pandacss/shared': 1.8.1
       '@pandacss/types': 1.8.1
@@ -11688,11 +11829,11 @@ snapshots:
       - jsdom
       - typescript
 
-  '@pandacss/parser@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)':
+  '@pandacss/parser@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)':
     dependencies:
       '@pandacss/config': 1.8.1
       '@pandacss/core': 1.8.1
-      '@pandacss/extractor': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)
+      '@pandacss/extractor': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)
       '@pandacss/logger': 1.8.1
       '@pandacss/shared': 1.8.1
       '@pandacss/types': 1.8.1
@@ -11704,17 +11845,17 @@ snapshots:
       - jsdom
       - typescript
 
-  '@pandacss/postcss@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)':
+  '@pandacss/postcss@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)':
     dependencies:
-      '@pandacss/node': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3)
+      '@pandacss/node': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3)
       postcss: 8.5.6
     transitivePeerDependencies:
       - jsdom
       - typescript
 
-  '@pandacss/postcss@1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)':
+  '@pandacss/postcss@1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)':
     dependencies:
-      '@pandacss/node': 1.8.1(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3)
+      '@pandacss/node': 1.8.1(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3)
       postcss: 8.5.6
     transitivePeerDependencies:
       - jsdom
@@ -11749,6 +11890,10 @@ snapshots:
       ts-pattern: 5.9.0
 
   '@pandacss/types@1.8.1': {}
+
+  '@paralleldrive/cuid2@2.3.1':
+    dependencies:
+      '@noble/hashes': 1.8.0
 
   '@parcel/watcher-android-arm64@2.5.6':
     optional: true
@@ -12062,7 +12207,7 @@ snapshots:
       gunzip-maybe: 1.4.2
       jsesc: 3.0.2
       json5: 2.2.3
-      lodash: 4.17.21
+      lodash: 4.17.23
       lodash.debounce: 4.0.8
       minimatch: 9.0.5
       ora: 5.4.1
@@ -12144,7 +12289,7 @@ snapshots:
       gunzip-maybe: 1.4.2
       jsesc: 3.0.2
       json5: 2.2.3
-      lodash: 4.17.21
+      lodash: 4.17.23
       lodash.debounce: 4.0.8
       minimatch: 9.0.5
       ora: 5.4.1
@@ -13353,6 +13498,11 @@ snapshots:
       '@types/node': 22.19.13
       form-data: 4.0.3
 
+  '@types/supertest@7.2.0':
+    dependencies:
+      '@types/methods': 1.1.4
+      '@types/superagent': 8.1.9
+
   '@types/tedious@4.0.14':
     dependencies:
       '@types/node': 22.19.13
@@ -13367,6 +13517,8 @@ snapshots:
   '@types/unist@3.0.3': {}
 
   '@types/use-sync-external-store@0.0.6': {}
+
+  '@types/uuid@10.0.0': {}
 
   '@types/validator@13.15.1': {}
 
@@ -13501,7 +13653,7 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.3
-      semver: 7.7.2
+      semver: 7.7.4
       ts-api-utils: 1.4.3(typescript@5.8.3)
     optionalDependencies:
       typescript: 5.8.3
@@ -13533,7 +13685,7 @@ snapshots:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.8.3)
       eslint: 8.57.1
-      semver: 7.7.2
+      semver: 7.7.4
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -14464,6 +14616,8 @@ snapshots:
 
   cookie@0.7.2: {}
 
+  cookiejar@2.1.4: {}
+
   core-util-is@1.0.3: {}
 
   cors@2.8.5:
@@ -14584,10 +14738,10 @@ snapshots:
 
   data-uri-to-buffer@6.0.2: {}
 
-  data-urls@7.0.0:
+  data-urls@7.0.0(@noble/hashes@1.8.0):
     dependencies:
       whatwg-mimetype: 5.0.0
-      whatwg-url: 16.0.1
+      whatwg-url: 16.0.1(@noble/hashes@1.8.0)
     transitivePeerDependencies:
       - '@noble/hashes'
     optional: true
@@ -14712,6 +14866,11 @@ snapshots:
       dequal: 2.0.3
 
   devtools-protocol@0.0.1566079: {}
+
+  dezalgo@1.0.4:
+    dependencies:
+      asap: 2.0.6
+      wrappy: 1.0.2
 
   dfa@1.2.0: {}
 
@@ -15398,6 +15557,10 @@ snapshots:
 
   expand-template@2.0.3: {}
 
+  express-rate-limit@7.5.1(express@4.21.2):
+    dependencies:
+      express: 4.21.2
+
   express-rate-limit@8.2.1(express@5.2.1):
     dependencies:
       express: 5.2.1
@@ -15525,6 +15688,8 @@ snapshots:
   fast-json-stable-stringify@2.1.0: {}
 
   fast-levenshtein@2.0.6: {}
+
+  fast-safe-stringify@2.1.1: {}
 
   fast-uri@3.0.6: {}
 
@@ -15663,7 +15828,21 @@ snapshots:
       hasown: 2.0.2
       mime-types: 2.1.35
 
+  form-data@4.0.5:
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      es-set-tostringtag: 2.1.0
+      hasown: 2.0.2
+      mime-types: 2.1.35
+
   format@0.2.2: {}
+
+  formidable@3.5.4:
+    dependencies:
+      '@paralleldrive/cuid2': 2.3.1
+      dezalgo: 1.0.4
+      once: 1.4.0
 
   forwarded-parse@2.1.2: {}
 
@@ -15971,9 +16150,9 @@ snapshots:
 
   hsl-to-rgb-for-reals@1.1.1: {}
 
-  html-encoding-sniffer@6.0.0:
+  html-encoding-sniffer@6.0.0(@noble/hashes@1.8.0):
     dependencies:
-      '@exodus/bytes': 1.14.1
+      '@exodus/bytes': 1.14.1(@noble/hashes@1.8.0)
     transitivePeerDependencies:
       - '@noble/hashes'
     optional: true
@@ -16170,7 +16349,7 @@ snapshots:
 
   is-bun-module@2.0.0:
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.4
 
   is-callable@1.2.7: {}
 
@@ -16395,16 +16574,16 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jsdom@28.1.0(canvas@3.2.1):
+  jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1):
     dependencies:
       '@acemir/cssom': 0.9.31
       '@asamuzakjp/dom-selector': 6.8.1
       '@bramus/specificity': 2.4.2
-      '@exodus/bytes': 1.14.1
+      '@exodus/bytes': 1.14.1(@noble/hashes@1.8.0)
       cssstyle: 6.1.0
-      data-urls: 7.0.0
+      data-urls: 7.0.0(@noble/hashes@1.8.0)
       decimal.js: 10.6.0
-      html-encoding-sniffer: 6.0.0
+      html-encoding-sniffer: 6.0.0(@noble/hashes@1.8.0)
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
       is-potential-custom-element-name: 1.0.1
@@ -16416,7 +16595,7 @@ snapshots:
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
-      whatwg-url: 16.0.1
+      whatwg-url: 16.0.1(@noble/hashes@1.8.0)
       xml-name-validator: 5.0.0
     optionalDependencies:
       canvas: 3.2.1
@@ -17480,6 +17659,8 @@ snapshots:
       mime-db: 1.54.0
 
   mime@1.6.0: {}
+
+  mime@2.6.0: {}
 
   mimic-fn@2.1.0: {}
 
@@ -18629,7 +18810,7 @@ snapshots:
       dom-helpers: 5.2.1
       globalize: 0.1.1
       invariant: 2.2.4
-      lodash: 4.17.21
+      lodash: 4.17.23
       lodash-es: 4.17.21
       luxon: 3.6.1
       memoize-one: 6.0.0
@@ -18810,7 +18991,7 @@ snapshots:
     dependencies:
       clsx: 2.1.1
       eventemitter3: 4.0.7
-      lodash: 4.17.21
+      lodash: 4.17.23
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-is: 18.3.1
@@ -19560,6 +19741,28 @@ snapshots:
     dependencies:
       postcss: 8.5.6
 
+  superagent@10.3.0:
+    dependencies:
+      component-emitter: 1.3.1
+      cookiejar: 2.1.4
+      debug: 4.4.3(supports-color@8.1.1)
+      fast-safe-stringify: 2.1.1
+      form-data: 4.0.5
+      formidable: 3.5.4
+      methods: 1.1.2
+      mime: 2.6.0
+      qs: 6.15.0
+    transitivePeerDependencies:
+      - supports-color
+
+  supertest@7.2.2:
+    dependencies:
+      cookie-signature: 1.2.2
+      methods: 1.1.2
+      superagent: 10.3.0
+    transitivePeerDependencies:
+      - supports-color
+
   supports-color@7.2.0:
     dependencies:
       has-flag: 4.0.0
@@ -19746,23 +19949,23 @@ snapshots:
     dependencies:
       typescript: 5.8.3
 
-  ts-evaluator@1.2.0(jsdom@28.1.0(canvas@3.2.1))(typescript@5.8.3):
+  ts-evaluator@1.2.0(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.8.3):
     dependencies:
       ansi-colors: 4.1.3
       crosspath: 2.0.0
       object-path: 0.11.8
       typescript: 5.8.3
     optionalDependencies:
-      jsdom: 28.1.0(canvas@3.2.1)
+      jsdom: 28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1)
 
-  ts-evaluator@1.2.0(jsdom@28.1.0(canvas@3.2.1))(typescript@5.9.3):
+  ts-evaluator@1.2.0(jsdom@28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1))(typescript@5.9.3):
     dependencies:
       ansi-colors: 4.1.3
       crosspath: 2.0.0
       object-path: 0.11.8
       typescript: 5.9.3
     optionalDependencies:
-      jsdom: 28.1.0(canvas@3.2.1)
+      jsdom: 28.1.0(@noble/hashes@1.8.0)(canvas@3.2.1)
 
   ts-morph@27.0.2:
     dependencies:
@@ -20550,9 +20753,9 @@ snapshots:
   whatwg-mimetype@5.0.0:
     optional: true
 
-  whatwg-url@16.0.1:
+  whatwg-url@16.0.1(@noble/hashes@1.8.0):
     dependencies:
-      '@exodus/bytes': 1.14.1
+      '@exodus/bytes': 1.14.1(@noble/hashes@1.8.0)
       tr46: 6.0.0
       webidl-conversions: 8.0.1
     transitivePeerDependencies:

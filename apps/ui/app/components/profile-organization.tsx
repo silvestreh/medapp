@@ -27,6 +27,7 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
   const [orgPhone, setOrgPhone] = useState(currentOrg.settings?.healthCenter?.phone || '');
   const [orgEmail, setOrgEmail] = useState(currentOrg.settings?.healthCenter?.email || '');
   const [orgLogoUrl, setOrgLogoUrl] = useState(currentOrg.settings?.healthCenter?.logoUrl || '');
+  const [orgRefesId, setOrgRefesId] = useState(currentOrg.settings?.refesId || '');
 
   const lastHandledData = useRef(orgFetcher.data);
 
@@ -57,10 +58,11 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
         phone: orgPhone,
         email: orgEmail,
         logoUrl: orgLogoUrl,
+        refesId: orgRefesId,
       },
       { method: 'post' }
     );
-  }, [currentOrg.id, orgName, orgAddress, orgPhone, orgEmail, orgLogoUrl, orgFetcher]);
+  }, [currentOrg.id, orgName, orgAddress, orgPhone, orgEmail, orgLogoUrl, orgRefesId, orgFetcher]);
 
   useHotkeys([['mod+S', handleSaveOrg]], []);
 
@@ -89,6 +91,17 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
           <StyledTextInput
             value={orgEmail}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgEmail(e.currentTarget.value)}
+          />
+        </FieldRow>
+        <FieldRow label={`${t('profile.org_refes_id', 'REFES ID')}:`} variant="stacked">
+          <StyledTextInput
+            value={orgRefesId}
+            placeholder="Ej: 10001234"
+            description={t(
+              'profile.org_refes_id_description',
+              'Identificador del Registro Federal de Establecimientos de Salud (REFES)'
+            )}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgRefesId(e.currentTarget.value)}
           />
         </FieldRow>
         <FieldRow label={`${t('profile.org_logo')}:`} variant="stacked">
@@ -132,6 +145,7 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
                         phone: orgPhone,
                         email: orgEmail,
                         logoUrl: url,
+                        refesId: orgRefesId,
                       },
                       { method: 'post' }
                     );
@@ -164,7 +178,8 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
                   orgAddress === (currentOrg.settings?.healthCenter?.address || '') &&
                   orgPhone === (currentOrg.settings?.healthCenter?.phone || '') &&
                   orgEmail === (currentOrg.settings?.healthCenter?.email || '') &&
-                  orgLogoUrl === (currentOrg.settings?.healthCenter?.logoUrl || ''))
+                  orgLogoUrl === (currentOrg.settings?.healthCenter?.logoUrl || '') &&
+                  orgRefesId === (currentOrg.settings?.refesId || ''))
               }
             >
               {t('common.save')}
