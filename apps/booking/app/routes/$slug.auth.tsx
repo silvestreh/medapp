@@ -1,11 +1,12 @@
 import { useEffect, useCallback, useState } from 'react';
 import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { useActionData, useNavigation, Form } from '@remix-run/react';
-import { Card, Title, TextInput, Button, PinInput, Stack, Text, Anchor } from '@mantine/core';
+import { useActionData, useNavigation, useRouteLoaderData, Form } from '@remix-run/react';
+import { Card, Title, TextInput, Button, PinInput, Stack, Text, Anchor, Image } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { requestOtp, verifyOtp } from '~/api.server';
 import { getPatientToken, setPatientToken } from '~/session.server';
+import type { SlugLoaderData } from './$slug';
 
 export const meta: MetaFunction = ({ matches }) => {
   const slugData = matches.find(m => m.id === 'routes/$slug')?.data as { organization?: { name: string } } | undefined;
@@ -91,6 +92,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 export default function AuthPage() {
   const { t } = useTranslation();
   const actionData = useActionData<typeof action>();
+  const slugData = useRouteLoaderData<SlugLoaderData>('routes/$slug');
+  const logoUrl = slugData?.organization?.logoUrl;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   const [otp, setOtp] = useState('');
@@ -112,9 +115,13 @@ export default function AuthPage() {
   }, []);
 
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder>
-      <Stack gap="md">
-        <Title order={3} ta="center">{t('auth.title')}</Title>
+    <Stack gap="md">
+      {logoUrl && (
+        <Image src={logoUrl} alt={t('auth.title')} h={128} w="auto" mx="auto" fit="contain" radius="md" />
+      )}
+      <Card shadow="sm" padding="lg" radius="md" withBorder>
+        <Stack gap="md">
+          <Title order={3} ta="center">{t('auth.title')}</Title>
 
         {currentStep === 'document' && (
           <Form method="post">
@@ -159,7 +166,8 @@ export default function AuthPage() {
             </Stack>
           </Form>
         )}
-      </Stack>
-    </Card>
+        </Stack>
+      </Card>
+    </Stack>
   );
 }
