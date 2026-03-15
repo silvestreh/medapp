@@ -7,7 +7,7 @@ import type { SessionToken } from './session';
 
 // pnpm module isolation prevents the auth-client's declare module augmentation
 // from merging into Application, so we replicate it locally
-type AuthenticatedApp = Application & {
+export type AuthenticatedApp = Application & {
   authenticate: AuthenticationClient['authenticate'];
   reAuthenticate: AuthenticationClient['reAuthenticate'];
   logout: AuthenticationClient['logout'];
@@ -28,12 +28,13 @@ interface ClientOptions {
 const createFeathersClient = (
   baseURLOrOptions?: string | ClientOptions,
   accessToken?: SessionToken,
-  organizationId?: string,
+  organizationId?: string
 ) => {
   // Support both legacy positional args and options object
-  const opts: ClientOptions = typeof baseURLOrOptions === 'object' && baseURLOrOptions !== null
-    ? baseURLOrOptions
-    : { baseURL: baseURLOrOptions, accessToken, organizationId };
+  const opts: ClientOptions =
+    typeof baseURLOrOptions === 'object' && baseURLOrOptions !== null
+      ? baseURLOrOptions
+      : { baseURL: baseURLOrOptions, accessToken, organizationId };
 
   const resolvedURL = opts.baseURL ?? BROWSER_PROXY_URL;
   const client = feathers() as AuthenticatedApp;
@@ -46,7 +47,7 @@ const createFeathersClient = (
     client.organizationId = id;
   };
 
-  axiosInstance.interceptors.request.use((config) => {
+  axiosInstance.interceptors.request.use(config => {
     if (client.organizationId) {
       config.headers['organization-id'] = client.organizationId;
     }
@@ -58,8 +59,8 @@ const createFeathersClient = (
     return config;
   });
 
-  client.configure(restClient.axios(axiosInstance));
-  client.configure(auth({ storageKey: 'feathers-jwt' }));
+  (client as any).configure(restClient.axios(axiosInstance));
+  (client as any).configure(auth({ storageKey: 'feathers-jwt' }));
 
   if (accessToken) {
     client.authenticate({ strategy: 'jwt', accessToken }).catch(() => {

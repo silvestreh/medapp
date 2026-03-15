@@ -82,11 +82,35 @@ const Title = styled('h1', {
 });
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
-  const { user } = await getAuthenticatedClient(request);
+  const { client, user } = await getAuthenticatedClient(request);
   const orgId = await getCurrentOrganizationId(request);
   const orgRoleIds = getCurrentOrgRoleIds(user, orgId);
   const isVerified = isMedicVerified(user, orgRoleIds);
-  return json({ isVerified });
+
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get('page') || '1', 10);
+  const q = url.searchParams.get('q') || '';
+
+  const now = dayjs();
+  const sixMonthsAgo = now.subtract(6, 'month');
+
+  const query: Record<string, unknown> = {
+    $sort: { createdAt: -1 },
+    $limit: PAGE_SIZE,
+    $skip: (page - 1) * PAGE_SIZE,
+    date: {
+      $gte: sixMonthsAgo.format('YYYY-MM-DD'),
+      $lt: now.add(1, 'day').format('YYYY-MM-DD'),
+    },
+  };
+
+  if (q) {
+    query.q = q;
+  }
+
+  const studies = await client.service('studies').find({ query });
+
+  return json({ isVerified, initialStudies: studies });
 });
 
 interface PaginatedResponse {
@@ -100,7 +124,7 @@ const PAGE_SIZE = 15;
 
 export default function StudiesIndex() {
   const { t } = useTranslation();
-  const { isVerified } = useLoaderData<typeof loader>();
+  const { isVerified, initialStudies } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('q') || '';
   const [inputValue, setInputValue] = useState(initialSearch);
@@ -305,7 +329,10 @@ export default function StudiesIndex() {
   }, [debouncedInputValue, page, activeRange, selectedInsurerId, selectedStudyType]);
 
   const { response, isLoading } = useFind('studies', query);
-  const { data: studies = [], total = 0 } = response as PaginatedResponse;
+  const findResult = response as PaginatedResponse;
+  // useFind returns { data: [] } as fallback before SWR resolves; real responses have `total`
+  const hasFetched = 'total' in findResult;
+  const { data: studies = [], total = 0 } = hasFetched ? findResult : (initialStudies as PaginatedResponse);
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const studyItems = toStudyItems(studies);
 

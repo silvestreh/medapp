@@ -244,7 +244,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     if (canManageOrg) {
       isOrgOwner = true;
       try {
-        const org = await client.service('organizations').get(currentMembership.id);
+        const org = await client.service('organizations').get(currentMembership?.id as string);
+
         currentOrg = {
           id: org.id,
           name: org.name,
@@ -257,9 +258,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         };
       } catch {
         currentOrg = {
-          id: currentMembership.id,
-          name: currentMembership.name,
-          slug: currentMembership.slug,
+          id: currentMembership?.id as string,
+          name: currentMembership?.name as string,
+          slug: currentMembership?.slug as string,
           settings: {},
         };
       }

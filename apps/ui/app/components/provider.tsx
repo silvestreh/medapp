@@ -1,18 +1,26 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type PropsWithChildren,
+} from 'react';
 import { useNavigate } from '@remix-run/react';
 import * as Sentry from '@sentry/remix';
-import type { Application, Params, ServiceMethods } from '@feathersjs/feathers';
+import type { Params, ServiceMethods } from '@feathersjs/feathers';
 import omit from 'lodash/omit';
 import useSWR, { SWRConfig, type SWRConfiguration, mutate } from 'swr';
 import sift from 'sift';
 
 import type { Account, UserOrganization } from '~/declarations';
-import createFeathersClient from '~/feathers';
+import createFeathersClient, { AuthenticatedApp } from '~/feathers';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
 interface FeathersContextType {
-  client: Application | null;
+  client: AuthenticatedApp | null;
   initialUser?: Account | null;
   currentOrganizationId?: string;
   setCurrentOrganizationId: (id: string) => void;
@@ -46,7 +54,7 @@ export const FeathersProvider: React.FC<FeathersProviderProps> = ({
   initialOrganizationId,
   swrConfig = { dedupingInterval: 2000 },
 }) => {
-  const [feathersClient, setFeathersClient] = useState<Application | null>(null);
+  const [feathersClient, setFeathersClient] = useState<AuthenticatedApp | null>(null);
   const [currentOrganizationId, setCurrentOrgId] = useState<string | undefined>(initialOrganizationId);
 
   useEffect(() => {
@@ -60,34 +68,39 @@ export const FeathersProvider: React.FC<FeathersProviderProps> = ({
 
   useEffect(() => {
     if (initialUser) {
-      Sentry.setUser({ id: initialUser.id, email: initialUser.email });
+      Sentry.setUser({ id: initialUser.id, email: initialUser.personalData?.email });
     } else {
       Sentry.setUser(null);
     }
   }, [initialUser]);
 
-  const setCurrentOrganizationId = useCallback((id: string) => {
-    setCurrentOrgId(id);
-    if (feathersClient) {
-      (feathersClient as any).setOrganizationId(id);
-    }
-  }, [feathersClient]);
+  const setCurrentOrganizationId = useCallback(
+    (id: string) => {
+      setCurrentOrgId(id);
+      if (feathersClient) {
+        (feathersClient as any).setOrganizationId(id);
+      }
+    },
+    [feathersClient]
+  );
 
   return (
     <SWRConfig value={swrConfig}>
-      <FeathersContext.Provider value={{
-        client: feathersClient,
-        initialUser,
-        currentOrganizationId,
-        setCurrentOrganizationId
-      }}>
+      <FeathersContext.Provider
+        value={{
+          client: feathersClient,
+          initialUser,
+          currentOrganizationId,
+          setCurrentOrganizationId,
+        }}
+      >
         {children}
       </FeathersContext.Provider>
     </SWRConfig>
   );
 };
 
-export const useFeathers = (): Application => {
+export const useFeathers = (): AuthenticatedApp => {
   const context = useContext(FeathersContext);
 
   if (!context) {
@@ -166,7 +179,7 @@ export const useOrganization = (): UseOrganizationReturn => {
 
 const fetcher = (
   [serviceName, method, ...args]: [string, keyof ServiceMethods<any>, ...any[]],
-  feathersClient: Application
+  feathersClient: AuthenticatedApp
 ) => {
   const service = feathersClient.service(serviceName);
 
@@ -196,7 +209,7 @@ export const useFind = (
     error,
     mutate: swrMutate,
   } = useSWR(
-    stableParams.enabled !== false
+    feathersClient && stableParams.enabled !== false
       ? [serviceName, 'find' as keyof ServiceMethods<any>, { query: stableQuery, ...stableParams }]
       : null,
     args => fetcher(args, feathersClient)
@@ -292,7 +305,9 @@ export const useGet = (serviceName: string, id: string, params?: Params & { enab
     error,
     mutate: swrMutate,
   } = useSWR(
-    params?.enabled !== false && id ? [serviceName, 'get' as keyof ServiceMethods<any>, id, params] : null,
+    feathersClient && params?.enabled !== false && id
+      ? [serviceName, 'get' as keyof ServiceMethods<any>, id, params]
+      : null,
     args => fetcher(args, feathersClient)
   );
 
