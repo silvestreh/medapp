@@ -5,6 +5,7 @@ import restrictToOrgOwner from './hooks/restrict-to-org-owner';
 import { disallow } from 'feathers-hooks-common';
 import { protectIsActive } from './hooks/protect-is-active';
 import registerHealthCenter from './hooks/register-health-center';
+import { logConfigChange } from './hooks/log-config-change';
 
 const { authenticate } = authentication.hooks;
 
@@ -31,7 +32,7 @@ export default {
     get: [],
     create: [],
     update: [],
-    patch: [registerHealthCenter()],
+    patch: [registerHealthCenter(), logConfigChange()],
     remove: []
   },
 

@@ -8,6 +8,11 @@ export const applySharedAccess = (): Hook => {
       return context;
     }
 
+    // BTG bypasses normal permission scoping — all patient encounters are accessible
+    if (params.btgAccess) {
+      return context;
+    }
+
     // checkEncounterPermissions already set medicId in the query for find.
     // We need to broaden it to also include encounters shared with this user.
     const grants = await app.service('shared-encounter-access').find({

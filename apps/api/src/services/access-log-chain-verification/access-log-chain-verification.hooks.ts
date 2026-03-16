@@ -2,18 +2,13 @@ import { Hook, HookContext, HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { disallow, iff, isProvider } from 'feathers-hooks-common';
 import { Forbidden } from '@feathersjs/errors';
-import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
-import { populateRefesId } from './hooks/populate-refes-id';
-import { computeAccessLogHashHook } from './hooks/compute-access-log-hash';
-import { releaseAccessLogLock } from './hooks/release-access-log-lock';
-// Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
 
 const requireSuperAdmin = (): Hook => {
   return async (context: HookContext): Promise<HookContext> => {
     if (!context.params.isSuperAdmin) {
-      throw new Forbidden('Only super admins can access logs');
+      throw new Forbidden('Only super admins can verify access log chains');
     }
     return context;
   };
@@ -21,10 +16,10 @@ const requireSuperAdmin = (): Hook => {
 
 export default {
   before: {
-    all: [iff(isProvider('external'), authenticate('jwt'), verifyOrganizationMembership())],
+    all: [iff(isProvider('external'), authenticate('jwt'))],
     find: [iff(isProvider('external'), requireSuperAdmin())],
-    get: [iff(isProvider('external'), requireSuperAdmin())],
-    create: [disallow('external'), populateRefesId(), computeAccessLogHashHook()],
+    get: [disallow('external')],
+    create: [disallow('external')],
     update: [disallow('external')],
     patch: [disallow('external')],
     remove: [disallow('external')],
@@ -34,7 +29,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [releaseAccessLogLock()],
+    create: [],
     update: [],
     patch: [],
     remove: [],
@@ -44,7 +39,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [releaseAccessLogLock()],
+    create: [],
     update: [],
     patch: [],
     remove: [],

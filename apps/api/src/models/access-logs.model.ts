@@ -11,7 +11,7 @@ export default function (app: Application): typeof Model {
     },
     userId: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'users',
         key: 'id'
@@ -26,20 +26,44 @@ export default function (app: Application): typeof Model {
       }
     },
     resource: {
-      type: DataTypes.ENUM('encounters', 'studies', 'prescriptions'),
+      type: DataTypes.ENUM('encounters', 'studies', 'prescriptions', 'shared-access', 'authentication', 'access-control', 'configuration', 'system', 'user-management'),
       allowNull: false,
     },
     patientId: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'patients',
         key: 'id'
       }
     },
     action: {
-      type: DataTypes.ENUM('read', 'write', 'export'),
+      type: DataTypes.ENUM('read', 'write', 'export', 'grant', 'login', 'logout', 'deny', 'execute'),
       allowNull: false,
+    },
+    purpose: {
+      type: DataTypes.ENUM('treatment', 'billing', 'emergency', 'operations', 'share'),
+      allowNull: false,
+      defaultValue: 'treatment',
+    },
+    refesId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Government identifier for the organization (from organizations.settings.refesId)'
+    },
+    hash: {
+      type: DataTypes.STRING(64),
+      allowNull: true,
+      comment: 'SHA-256 hash for tamper-evident chain'
+    },
+    previousLogId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      references: {
+        model: 'access_logs',
+        key: 'id'
+      },
+      comment: 'Previous log entry in the per-organization hash chain'
     },
     ip: {
       type: DataTypes.STRING,
@@ -57,6 +81,8 @@ export default function (app: Application): typeof Model {
       { fields: ['resource'] },
       { fields: ['patientId'] },
       { fields: ['createdAt'] },
+      { fields: ['organizationId', 'createdAt'] },
+      { fields: ['purpose'] },
     ]
   });
 

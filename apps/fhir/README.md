@@ -113,6 +113,30 @@ Example:
 GET /Condition?patient=<patient-id>
 ```
 
+### AuditEvent
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/AuditEvent` | Search audit events. Supports `patient`, `agent`, `date` (with FHIR prefixes: `ge`, `le`, `eq`), `type`. |
+| `GET` | `/AuditEvent/:id` | Read a single audit event by ID. |
+
+Events include: clinical data access (encounters, studies, prescriptions), emergency access (BTG), sharing events, authentication (login/logout/failure), access control decisions (denied requests), configuration changes, system events (startup/shutdown), and role management.
+
+Example — search by patient:
+```
+GET /AuditEvent?patient=<patient-id>
+```
+
+Example — search by date range:
+```
+GET /AuditEvent?date=ge2025-01-01&date=le2025-12-31
+```
+
+Example — search by agent (practitioner):
+```
+GET /AuditEvent?agent=<user-id>
+```
+
 ### Documents
 
 | Method | Path | Description |

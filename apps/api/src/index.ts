@@ -16,12 +16,40 @@ server.on('listening', () => {
   logger.info('Feathers application started on http://%s:%d', app.get('host'), port);
   scheduleAppointmentCleanup(app);
   scheduleLicenseRevalidation(app);
+
+  app.service('access-logs').create({
+    userId: null,
+    organizationId: null,
+    resource: 'system',
+    patientId: null,
+    action: 'execute',
+    purpose: 'operations',
+    ip: null,
+    metadata: { event: 'startup', port, host: app.get('host') },
+  }).catch(() => {});
 });
 
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Server closed');
-    process.exit(0);
+
+  app.service('access-logs').create({
+    userId: null,
+    organizationId: null,
+    resource: 'system',
+    patientId: null,
+    action: 'execute',
+    purpose: 'operations',
+    ip: null,
+    metadata: { event: 'shutdown', reason: 'SIGTERM' },
+  }).then(() => {
+    server.close(() => {
+      logger.info('Server closed');
+      process.exit(0);
+    });
+  }).catch(() => {
+    server.close(() => {
+      logger.info('Server closed');
+      process.exit(0);
+    });
   });
 });

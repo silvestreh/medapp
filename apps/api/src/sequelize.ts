@@ -84,6 +84,31 @@ export default function (app: Application): void {
         // Table might not exist yet on first run, that's fine
       }
 
+      // Add new ENUM values and alter columns that sync({ alter }) can't handle
+      try {
+        await sequelize.query(`DO $$ BEGIN
+          IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_access_logs_resource') THEN
+            BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'shared-access'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'authentication'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'access-control'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'configuration'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'system'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'user-management'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+          END IF;
+          IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_access_logs_action') THEN
+            BEGIN ALTER TYPE "enum_access_logs_action" ADD VALUE IF NOT EXISTS 'grant'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_action" ADD VALUE IF NOT EXISTS 'login'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_action" ADD VALUE IF NOT EXISTS 'logout'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_action" ADD VALUE IF NOT EXISTS 'deny'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_action" ADD VALUE IF NOT EXISTS 'execute'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+          END IF;
+        END $$`);
+        await sequelize.query('ALTER TABLE "access_logs" ALTER COLUMN "patientId" DROP NOT NULL');
+        await sequelize.query('ALTER TABLE "access_logs" ALTER COLUMN "userId" DROP NOT NULL');
+      } catch (e) { // eslint-disable-line @typescript-eslint/no-unused-vars
+        // Table might not exist yet on first run, that's fine
+      }
+
       await sequelize.sync({ alter: !isProduction });
 
       // Re-add generated columns after sync

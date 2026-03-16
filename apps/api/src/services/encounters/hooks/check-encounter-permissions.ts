@@ -8,6 +8,30 @@ export const checkEncounterPermissions = (): Hook => {
   return async (context: HookContext): Promise<HookContext> => {
     const { method, params } = context;
 
+    // Break the Glass: allow a medic to access ALL encounters for a patient
+    const btgFlag = params.query?.btg;
+    if (btgFlag === true || btgFlag === 'true') {
+      if (params.provider === undefined || !params.user) {
+        // Internal calls don't need BTG
+        delete params.query!.btg;
+        return context;
+      }
+
+      const orgRoleIds: string[] = params.orgRoleIds || [];
+      if (!orgRoleIds.includes('medic')) {
+        throw new Forbidden('Only medics can use Break the Glass emergency access');
+      }
+
+      // Strip btg from query so Sequelize doesn't try to filter by it
+      delete params.query!.btg;
+
+      // Signal downstream hooks to skip normal permission scoping
+      params.btgAccess = true;
+      params.accessPurpose = 'emergency';
+
+      return context;
+    }
+
     if (method !== 'get') {
       await baseCheck(context);
       return context;

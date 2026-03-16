@@ -144,6 +144,37 @@ describe('\'shared-encounter-access\' service', () => {
     }
   });
 
+  it('logs sharing events with purpose=share and grantedMedicId', async () => {
+    const grant: any = await app.service('shared-encounter-access').create({
+      grantingMedicId: medicA.id,
+      grantedMedicId: medicB.id,
+      patientId: patient.id,
+      organizationId: org.id,
+    });
+
+    // Wait a moment for fire-and-forget log to be written
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    const logs = await app.service('access-logs').find({
+      query: {
+        userId: medicA.id,
+        patientId: patient.id,
+        purpose: 'share',
+        resource: 'shared-access',
+      },
+      paginate: false,
+    } as any) as any[];
+
+    assert.ok(logs.length >= 1, 'Found at least one share access log');
+    const shareLog = logs.find((l: any) => l.metadata?.grantedMedicId === medicB.id);
+    assert.ok(shareLog, 'Share log has the grantedMedicId in metadata');
+    assert.strictEqual(shareLog.action, 'grant');
+    assert.strictEqual(shareLog.purpose, 'share');
+    assert.strictEqual(shareLog.resource, 'shared-access');
+
+    await app.service('shared-encounter-access').remove(grant.id);
+  });
+
   it('can remove a grant', async () => {
     const grant: any = await app.service('shared-encounter-access').create({
       grantingMedicId: medicA.id,

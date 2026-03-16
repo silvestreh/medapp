@@ -6,6 +6,7 @@ import { Application } from './declarations';
 import { TwoFactorLocalStrategy } from './two-factor-local-strategy';
 import { PatientOtpStrategy } from './patient-otp-strategy';
 import syncRecetarioUserId from './hooks/sync-recetario-user-id';
+import { logAuthSuccess, logAuthFailure } from './hooks/log-auth-event';
 
 declare module './declarations' {
   interface ServiceTypes {
@@ -25,7 +26,10 @@ export default function(app: Application): void {
 
   app.service('authentication').hooks({
     after: {
-      create: [syncRecetarioUserId()],
+      create: [syncRecetarioUserId(), logAuthSuccess()],
+    },
+    error: {
+      create: [logAuthFailure()],
     },
   });
 }

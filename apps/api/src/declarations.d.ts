@@ -257,13 +257,21 @@ export interface OrganizationPatient {
   patientId: Id;
 }
 
+export type AccessLogResource = 'encounters' | 'studies' | 'prescriptions' | 'shared-access' | 'authentication' | 'access-control' | 'configuration' | 'system' | 'user-management';
+export type AccessAction = 'read' | 'write' | 'export' | 'grant' | 'login' | 'logout' | 'deny' | 'execute';
+export type AccessPurpose = 'treatment' | 'billing' | 'emergency' | 'operations' | 'share';
+
 export interface AccessLog {
   id: Id;
-  userId: Id;
+  userId: Id | null;
   organizationId: Id | null;
-  resource: 'encounters' | 'studies' | 'prescriptions';
-  patientId: Id;
-  action: 'read' | 'write' | 'export';
+  resource: AccessLogResource;
+  patientId: Id | null;
+  action: AccessAction;
+  purpose: AccessPurpose;
+  refesId: string | null;
+  hash: string | null;
+  previousLogId: Id | null;
   ip: string | null;
   metadata: Record<string, any> | null;
   createdAt?: Date;

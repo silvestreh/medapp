@@ -53,6 +53,8 @@ import identityVerifications from './identity-verifications/identity-verificatio
 import patientOtp from './patient-otp/patient-otp.service';
 import booking from './booking/booking.service';
 import encounterChainVerification from './encounter-chain-verification/encounter-chain-verification.service';
+import accessLogChainVerification from './access-log-chain-verification/access-log-chain-verification.service';
+import logout from './logout/logout.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -110,4 +112,6 @@ export default function (app: Application): void {
   app.configure(patientOtp);
   app.configure(booking);
   app.configure(encounterChainVerification);
+  app.configure(accessLogChainVerification);
+  app.configure(logout);
 }

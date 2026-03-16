@@ -9,6 +9,7 @@ import { setGrantingMedic } from './hooks/set-granting-medic';
 import { scopeToMedic } from './hooks/scope-to-medic';
 import { authorizeGrantRemoval } from './hooks/authorize-grant-removal';
 import { validateGrantedIsMedic } from './hooks/validate-granted-is-medic';
+import { logShareAccess } from './hooks/log-share-access';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -36,7 +37,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [logShareAccess()],
     update: [],
     patch: [],
     remove: []

@@ -22,6 +22,7 @@ export interface Models {
   prescriptions: ModelStatic<Model>;
   icd_10: ModelStatic<Model>;
   medications: ModelStatic<Model>;
+  access_logs: ModelStatic<Model>;
 }
 
 export function defineModels(sequelize: Sequelize): Models {
@@ -155,6 +156,23 @@ export function defineModels(sequelize: Sequelize): Models {
     gtin: { type: DataTypes.STRING, allowNull: true },
   });
 
+  const access_logs = sequelize.define('access_logs', {
+    id: { type: DataTypes.STRING, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+    userId: { type: DataTypes.STRING, allowNull: false },
+    organizationId: { type: DataTypes.STRING, allowNull: true },
+    resource: { type: DataTypes.STRING, allowNull: false },
+    patientId: { type: DataTypes.STRING, allowNull: true },
+    action: { type: DataTypes.STRING, allowNull: false },
+    purpose: { type: DataTypes.STRING, allowNull: false, defaultValue: 'treatment' },
+    refesId: { type: DataTypes.STRING, allowNull: true },
+    hash: { type: DataTypes.STRING(64), allowNull: true },
+    previousLogId: { type: DataTypes.STRING, allowNull: true },
+    ip: { type: DataTypes.STRING, allowNull: true },
+    metadata: { type: DataTypes.JSONB, allowNull: true },
+  }, {
+    updatedAt: false,
+  });
+
   // Associations (read-only, no constraints)
   patients.belongsToMany(personal_data, {
     through: { model: patient_personal_data, unique: true },
@@ -218,5 +236,6 @@ export function defineModels(sequelize: Sequelize): Models {
     prescriptions,
     icd_10,
     medications,
+    access_logs,
   };
 }

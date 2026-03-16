@@ -114,4 +114,204 @@ describe('\'access-logs\' service', () => {
 
     assert.ok(results.length >= 2, 'Found encounter log entries');
   });
+
+  // --- New tests for purpose, refesId, hash chain ---
+
+  it('defaults purpose to treatment', async () => {
+    const log: any = await app.service('access-logs').create({
+      userId: user.id,
+      organizationId: org.id,
+      resource: 'encounters',
+      patientId: patient.id,
+      action: 'read',
+      ip: '127.0.0.1',
+    });
+
+    assert.strictEqual(log.purpose, 'treatment');
+  });
+
+  it('accepts explicit purpose values', async () => {
+    const log: any = await app.service('access-logs').create({
+      userId: user.id,
+      organizationId: org.id,
+      resource: 'encounters',
+      patientId: patient.id,
+      action: 'read',
+      purpose: 'emergency',
+      ip: '127.0.0.1',
+    });
+
+    assert.strictEqual(log.purpose, 'emergency');
+  });
+
+  it('accepts shared-access resource with grant action', async () => {
+    const log: any = await app.service('access-logs').create({
+      userId: user.id,
+      organizationId: org.id,
+      resource: 'shared-access',
+      patientId: patient.id,
+      action: 'grant',
+      purpose: 'share',
+      ip: null,
+      metadata: { grantedMedicId: 'some-other-medic-id' },
+    });
+
+    assert.ok(log.id);
+    assert.strictEqual(log.resource, 'shared-access');
+    assert.strictEqual(log.action, 'grant');
+    assert.strictEqual(log.purpose, 'share');
+    assert.strictEqual(log.metadata.grantedMedicId, 'some-other-medic-id');
+  });
+
+  it('allows null patientId for non-patient events', async () => {
+    const log: any = await app.service('access-logs').create({
+      userId: user.id,
+      organizationId: org.id,
+      resource: 'encounters',
+      patientId: null,
+      action: 'read',
+      ip: null,
+    });
+
+    assert.ok(log.id);
+    assert.strictEqual(log.patientId, null);
+  });
+
+  describe('hash chain', () => {
+    let chainOrg: any;
+    let chainUser: any;
+    let chainPatient: any;
+
+    before(async () => {
+      chainOrg = await createTestOrganization();
+      chainUser = await createTestUser({
+        username: `test.chain.${Date.now()}`,
+        password: 'SuperSecret1',
+        roleIds: ['medic'],
+        organizationId: chainOrg.id,
+      });
+      chainPatient = await app.service('patients').create({
+        medicare: `CHAIN_TEST_${Date.now()}`,
+        medicareNumber: '11223344',
+      });
+    });
+
+    it('computes hash and previousLogId on creation', async () => {
+      const log1: any = await app.service('access-logs').create({
+        userId: chainUser.id,
+        organizationId: chainOrg.id,
+        resource: 'encounters',
+        patientId: chainPatient.id,
+        action: 'read',
+        ip: null,
+      });
+
+      assert.ok(log1.hash, 'First log has a hash');
+      assert.strictEqual(log1.hash.length, 64, 'Hash is SHA-256 hex (64 chars)');
+      assert.strictEqual(log1.previousLogId, null, 'First log has no previous');
+
+      const log2: any = await app.service('access-logs').create({
+        userId: chainUser.id,
+        organizationId: chainOrg.id,
+        resource: 'studies',
+        patientId: chainPatient.id,
+        action: 'read',
+        ip: null,
+      });
+
+      assert.ok(log2.hash, 'Second log has a hash');
+      assert.strictEqual(log2.previousLogId, log1.id, 'Second log chains to first');
+      assert.notStrictEqual(log2.hash, log1.hash, 'Hashes are different');
+
+      const log3: any = await app.service('access-logs').create({
+        userId: chainUser.id,
+        organizationId: chainOrg.id,
+        resource: 'prescriptions',
+        patientId: chainPatient.id,
+        action: 'write',
+        ip: null,
+      });
+
+      assert.ok(log3.hash, 'Third log has a hash');
+      assert.strictEqual(log3.previousLogId, log2.id, 'Third log chains to second');
+    });
+
+    it('chains are independent per organization', async () => {
+      const otherOrg = await createTestOrganization();
+      const otherUser = await createTestUser({
+        username: `test.chain.other.${Date.now()}`,
+        password: 'SuperSecret1',
+        roleIds: ['medic'],
+        organizationId: otherOrg.id,
+      });
+
+      const logOther: any = await app.service('access-logs').create({
+        userId: otherUser.id,
+        organizationId: otherOrg.id,
+        resource: 'encounters',
+        patientId: chainPatient.id,
+        action: 'read',
+        ip: null,
+      });
+
+      // First log in a different org should have no previousLogId
+      assert.ok(logOther.hash, 'Has a hash');
+      assert.strictEqual(logOther.previousLogId, null, 'No previous in this org chain');
+    });
+
+    it('skips hash chain for logs without organizationId', async () => {
+      const log: any = await app.service('access-logs').create({
+        userId: chainUser.id,
+        organizationId: null,
+        resource: 'encounters',
+        patientId: chainPatient.id,
+        action: 'read',
+        ip: null,
+      });
+
+      assert.strictEqual(log.hash, null, 'No hash for org-less logs');
+      assert.strictEqual(log.previousLogId, null, 'No chain for org-less logs');
+    });
+  });
+
+  describe('refesId population', () => {
+    it('populates refesId from organization settings', async () => {
+      const refesOrg = await createTestOrganization();
+      // Set refesId in settings via internal update
+      await app.service('organizations').patch(refesOrg.id, {
+        settings: { refesId: 'GOV-12345' },
+      } as any);
+
+      const refesUser = await createTestUser({
+        username: `test.refes.${Date.now()}`,
+        password: 'SuperSecret1',
+        roleIds: ['medic'],
+        organizationId: refesOrg.id,
+      });
+
+      const log: any = await app.service('access-logs').create({
+        userId: refesUser.id,
+        organizationId: refesOrg.id,
+        resource: 'encounters',
+        patientId: patient.id,
+        action: 'read',
+        ip: null,
+      });
+
+      assert.strictEqual(log.refesId, 'GOV-12345');
+    });
+
+    it('leaves refesId null when org has no refesId in settings', async () => {
+      const log: any = await app.service('access-logs').create({
+        userId: user.id,
+        organizationId: org.id,
+        resource: 'encounters',
+        patientId: patient.id,
+        action: 'read',
+        ip: null,
+      });
+
+      assert.strictEqual(log.refesId, null);
+    });
+  });
 });

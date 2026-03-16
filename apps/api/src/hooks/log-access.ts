@@ -1,12 +1,11 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
 import { UAParser } from 'ua-parser-js';
-
-type ResourceType = 'encounters' | 'studies' | 'prescriptions';
-type AccessAction = 'read' | 'write' | 'export';
+import type { AccessLogResource, AccessAction, AccessPurpose } from '../declarations';
 
 interface LogAccessOptions {
-  resource: ResourceType;
+  resource: AccessLogResource;
   action?: AccessAction;
+  purpose?: AccessPurpose;
   /** Extract patientId from the context. Defaults to context.data.patientId or result.patientId */
   getPatientId?: (context: HookContext) => string | undefined;
   /** Extract extra metadata to store alongside the log entry */
@@ -20,7 +19,22 @@ function resolveAction(context: HookContext, override?: AccessAction): AccessAct
   return 'write';
 }
 
-function getClientIp(context: HookContext): string | null {
+function resolvePurpose(context: HookContext, override?: AccessPurpose): AccessPurpose {
+  // Explicit override from options (e.g. share logging)
+  if (override) return override;
+
+  // Set by upstream hooks (e.g. BTG sets params.accessPurpose = 'emergency')
+  if (context.params.accessPurpose) return context.params.accessPurpose;
+
+  // Auto-detect from user roles
+  const orgRoleIds: string[] = context.params.orgRoleIds || [];
+  if (orgRoleIds.includes('accounting')) return 'billing';
+  if (orgRoleIds.includes('admin') || orgRoleIds.includes('owner')) return 'operations';
+
+  return 'treatment';
+}
+
+export function getClientIp(context: HookContext): string | null {
   const headers = context.params?.headers;
   if (headers) {
     const forwarded = headers['x-forwarded-for'];
@@ -37,7 +51,7 @@ function getClientIp(context: HookContext): string | null {
   return null;
 }
 
-function getClientInfo(context: HookContext): Record<string, any> | null {
+export function getClientInfo(context: HookContext): Record<string, any> | null {
   const ua = context.params?.headers?.['user-agent'];
   if (!ua) return null;
 
@@ -85,6 +99,7 @@ export const logAccess = (options: LogAccessOptions): Hook => {
     if (!patientId) return context;
 
     const action = resolveAction(context, options.action);
+    const purpose = resolvePurpose(context, options.purpose);
     const ip = getClientIp(context);
     const customMetadata = options.getMetadata ? options.getMetadata(context) : undefined;
     const clientInfo = getClientInfo(context);
@@ -100,6 +115,7 @@ export const logAccess = (options: LogAccessOptions): Hook => {
       resource: options.resource,
       patientId: String(patientId),
       action,
+      purpose,
       ip,
       ...(metadata ? { metadata } : {}),
     }).catch(() => { /* best-effort */ });

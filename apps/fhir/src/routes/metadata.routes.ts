@@ -134,6 +134,19 @@ router.get('/metadata', (_req, res) => {
             { code: 'search-type' },
           ],
         },
+        {
+          type: 'AuditEvent',
+          interaction: [
+            { code: 'read' },
+            { code: 'search-type' },
+          ],
+          searchParam: [
+            { name: 'patient', type: 'reference' },
+            { name: 'agent', type: 'reference' },
+            { name: 'date', type: 'date' },
+            { name: 'type', type: 'token' },
+          ],
+        },
       ],
     }],
   };

@@ -16,6 +16,7 @@ import { createPatientSummaryRoutes } from './routes/patient-summary.routes';
 import { createDocumentReferenceRoutes } from './routes/document-reference.routes';
 import { createBinaryRoutes } from './routes/binary.routes';
 import { createConsentRoutes } from './routes/consent.routes';
+import { createAuditEventRoutes } from './routes/audit-event.routes';
 import { createOperationOutcome } from './utils/fhir-helpers';
 
 export function createApp(models: Models): express.Application {
@@ -50,6 +51,7 @@ export function createApp(models: Models): express.Application {
   app.use(createDocumentReferenceRoutes(models));
   app.use(createBinaryRoutes(models));
   app.use(createConsentRoutes());
+  app.use(createAuditEventRoutes(models));
 
   // 404
   app.use((_req: Request, res: Response) => {

@@ -3,6 +3,7 @@
 import { HookContext } from '@feathersjs/feathers';
 import Sentry from './sentry';
 import { setOrganizationContext } from './hooks/set-organization-context';
+import { logAccessDenial } from './hooks/log-access-denial';
 
 export default {
   before: {
@@ -56,9 +57,15 @@ export default {
 
   error: {
     all: [
+      logAccessDenial(),
       (ctx: HookContext) => {
         if (ctx.error) {
-          const isExpectedError = ctx.error.code === 401;
+          const isLegacyNotFound =
+            ctx.error.code === 404 &&
+            typeof ctx.id === 'string' &&
+            ctx.id.length > 36;
+
+          const isExpectedError = ctx.error.code === 401 || isLegacyNotFound;
 
           if (!isExpectedError) {
             if (ctx.params.user) {

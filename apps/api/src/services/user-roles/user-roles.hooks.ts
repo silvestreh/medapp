@@ -4,6 +4,7 @@ import { authenticate } from '@feathersjs/authentication';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { authorizeOrgManagement } from '../../hooks/authorize-org-management';
+import { logRoleChange } from './hooks/log-role-change';
 
 const scopeToOrganization = () => async (context: any) => {
   if (!context.params.provider || !context.params.organizationId) return context;
@@ -51,10 +52,10 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [logRoleChange('assign')],
     update: [],
     patch: [],
-    remove: []
+    remove: [logRoleChange('revoke')]
   },
 
   error: {
