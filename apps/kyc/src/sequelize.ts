@@ -54,7 +54,13 @@ export default function (app: Application): void {
 
     app.set(
       'sequelizeSync',
-      ensureDatabase.then(() => sequelize.sync({ alter: !isProduction }))
+      ensureDatabase
+        .then(() => sequelize.sync({ alter: !isProduction }))
+        .then(() => console.log('[sequelize] sync complete'))
+        .catch((err: any) => {
+          console.error('[sequelize] sync FAILED:', err.message);
+          process.exit(1);
+        })
     );
 
     return result;
