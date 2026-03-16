@@ -1,23 +1,18 @@
 import { useCallback, useState } from 'react';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useActionData, useLoaderData, useNavigation, useRevalidator, Form } from '@remix-run/react';
-import {
-  Badge,
-  Button,
-  Group,
-  Image,
-  Modal,
-  Paper,
-  Stack,
-  Table,
-  Text,
-  Textarea,
-  Title,
-} from '@mantine/core';
+import { Alert, Badge, Button, Group, Image, Modal, Paper, Stack, Table, Text, Textarea, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
-import { CheckCircleIcon, XCircleIcon, EyeIcon, SpinnerGapIcon, ScanIcon, FingerprintIcon } from '@phosphor-icons/react';
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  EyeIcon,
+  SpinnerGapIcon,
+  ScanIcon,
+  FingerprintIcon,
+  WarningIcon,
+} from '@phosphor-icons/react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 
@@ -68,17 +63,23 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const statusFilter = url.searchParams.get('status') || 'pending';
 
-  const response = await client.service('identity-verifications' as any).find({
-    query: {
-      status: statusFilter,
-      $sort: { createdAt: -1 },
-      $limit: 50,
-    },
-  });
+  try {
+    const response = await client.service('identity-verifications' as any).find({
+      query: {
+        status: statusFilter,
+        $sort: { createdAt: -1 },
+        $limit: 50,
+      },
+    });
 
-  const verifications = Array.isArray(response) ? response : (response as any)?.data || [];
+    const verifications = Array.isArray(response) ? response : (response as any)?.data || [];
 
-  return json({ verifications, statusFilter });
+    return json({ verifications, statusFilter, error: null });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('[admin.verifications] loader error:', message);
+    return json({ verifications: [], statusFilter, error: message });
+  }
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -121,7 +122,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminVerifications() {
-  const { verifications, statusFilter } = useLoaderData<typeof loader>();
+  const { verifications, statusFilter, error } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const revalidator = useRevalidator();
@@ -168,25 +169,34 @@ export default function AdminVerifications() {
     return '-';
   };
 
-  const autoCheckBadge = useCallback(
-    (match: boolean | null, label: string) => {
-      if (match === null) {
-        return <Badge color="gray" variant="light" size="xs" leftSection={<SpinnerGapIcon size={10} />}>{label}</Badge>;
-      }
-      if (match) {
-        return <Badge color="green" variant="light" size="xs" leftSection={<CheckCircleIcon size={10} />}>{label}</Badge>;
-      }
-      return <Badge color="red" variant="light" size="xs" leftSection={<XCircleIcon size={10} />}>{label}</Badge>;
-    },
-    []
-  );
+  const autoCheckBadge = useCallback((match: boolean | null, label: string) => {
+    if (match === null) {
+      return (
+        <Badge color="gray" variant="light" size="xs" leftSection={<SpinnerGapIcon size={10} />}>
+          {label}
+        </Badge>
+      );
+    }
+    if (match) {
+      return (
+        <Badge color="green" variant="light" size="xs" leftSection={<CheckCircleIcon size={10} />}>
+          {label}
+        </Badge>
+      );
+    }
+    return (
+      <Badge color="red" variant="light" size="xs" leftSection={<XCircleIcon size={10} />}>
+        {label}
+      </Badge>
+    );
+  }, []);
 
   return (
     <Stack gap="lg">
       <Group justify="space-between" align="center">
         <Title order={3}>{t('admin.verifications_title')}</Title>
         <Group gap="xs">
-          {['pending', 'verified', 'rejected'].map((s) => (
+          {['pending', 'verified', 'rejected'].map(s => (
             <Button
               key={s}
               component="a"
@@ -195,13 +205,19 @@ export default function AdminVerifications() {
               color={statusColors[s]}
               size="xs"
             >
-              {t(`admin.status_${s}`)}
+              {t(`admin.status_${s as 'pending' | 'verified' | 'rejected'}`)}
             </Button>
           ))}
         </Group>
       </Group>
 
-      {verifications.length === 0 && (
+      {error && (
+        <Alert icon={<WarningIcon size={16} />} color="red" variant="light" title={t('common.something_went_wrong')}>
+          <Text size="sm">{error}</Text>
+        </Alert>
+      )}
+
+      {!error && verifications.length === 0 && (
         <Text c="dimmed" ta="center" py="xl">
           {t('admin.no_verifications')}
         </Text>
@@ -299,7 +315,9 @@ export default function AdminVerifications() {
               <Paper withBorder p="sm" radius="md" bg="gray.0">
                 <Group gap="xs">
                   <SpinnerGapIcon size={16} />
-                  <Text size="sm" c="dimmed">{t('admin.auto_checks_processing')}</Text>
+                  <Text size="sm" c="dimmed">
+                    {t('admin.auto_checks_processing')}
+                  </Text>
                 </Group>
               </Paper>
             )}
@@ -310,7 +328,9 @@ export default function AdminVerifications() {
                 <Paper withBorder p="sm" radius="md">
                   <Group gap="xs" mb="xs">
                     <ScanIcon size={16} />
-                    <Text fw={600} size="sm">{t('admin.dni_scan_title')}</Text>
+                    <Text fw={600} size="sm">
+                      {t('admin.dni_scan_title')}
+                    </Text>
                     {selected.dniScanMatch !== null && (
                       <Badge color={selected.dniScanMatch ? 'green' : 'red'} variant="light" size="sm">
                         {selected.dniScanMatch ? t('admin.match') : t('admin.mismatch')}
@@ -321,33 +341,69 @@ export default function AdminVerifications() {
                     <Table withRowBorders={false} horizontalSpacing={4} verticalSpacing={2}>
                       <Table.Tbody>
                         <Table.Tr>
-                          <Table.Td><Text size="xs" c="dimmed">{t('admin.dni_number')}</Text></Table.Td>
-                          <Table.Td><Text size="xs">{selected.dniScanData.dniNumber}</Text></Table.Td>
+                          <Table.Td>
+                            <Text size="xs" c="dimmed">
+                              {t('admin.dni_number')}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td>
+                            <Text size="xs">{selected.dniScanData.dniNumber}</Text>
+                          </Table.Td>
                         </Table.Tr>
                         <Table.Tr>
-                          <Table.Td><Text size="xs" c="dimmed">{t('admin.dni_name')}</Text></Table.Td>
-                          <Table.Td><Text size="xs">{selected.dniScanData.lastName}, {selected.dniScanData.firstName}</Text></Table.Td>
+                          <Table.Td>
+                            <Text size="xs" c="dimmed">
+                              {t('admin.dni_name')}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td>
+                            <Text size="xs">
+                              {selected.dniScanData.lastName}, {selected.dniScanData.firstName}
+                            </Text>
+                          </Table.Td>
                         </Table.Tr>
                         <Table.Tr>
-                          <Table.Td><Text size="xs" c="dimmed">{t('admin.dni_birth_date')}</Text></Table.Td>
-                          <Table.Td><Text size="xs">{selected.dniScanData.birthDate}</Text></Table.Td>
+                          <Table.Td>
+                            <Text size="xs" c="dimmed">
+                              {t('admin.dni_birth_date')}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td>
+                            <Text size="xs">{selected.dniScanData.birthDate}</Text>
+                          </Table.Td>
                         </Table.Tr>
                         <Table.Tr>
-                          <Table.Td><Text size="xs" c="dimmed">{t('admin.dni_gender')}</Text></Table.Td>
-                          <Table.Td><Text size="xs">{selected.dniScanData.gender}</Text></Table.Td>
+                          <Table.Td>
+                            <Text size="xs" c="dimmed">
+                              {t('admin.dni_gender')}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td>
+                            <Text size="xs">{selected.dniScanData.gender}</Text>
+                          </Table.Td>
                         </Table.Tr>
                         <Table.Tr>
-                          <Table.Td><Text size="xs" c="dimmed">{t('admin.dni_tramite')}</Text></Table.Td>
-                          <Table.Td><Text size="xs">{selected.dniScanData.tramiteNumber}</Text></Table.Td>
+                          <Table.Td>
+                            <Text size="xs" c="dimmed">
+                              {t('admin.dni_tramite')}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td>
+                            <Text size="xs">{selected.dniScanData.tramiteNumber}</Text>
+                          </Table.Td>
                         </Table.Tr>
                       </Table.Tbody>
                     </Table>
                   )}
                   {selected.dniScanErrors && (
-                    <Text size="xs" c="red" mt="xs">{selected.dniScanErrors}</Text>
+                    <Text size="xs" c="red" mt="xs">
+                      {selected.dniScanErrors}
+                    </Text>
                   )}
                   {!selected.dniScanData && !selected.dniScanErrors && (
-                    <Text size="xs" c="dimmed">{t('admin.no_data')}</Text>
+                    <Text size="xs" c="dimmed">
+                      {t('admin.no_data')}
+                    </Text>
                   )}
                 </Paper>
 
@@ -355,7 +411,9 @@ export default function AdminVerifications() {
                 <Paper withBorder p="sm" radius="md">
                   <Group gap="xs" mb="xs">
                     <FingerprintIcon size={16} />
-                    <Text fw={600} size="sm">{t('admin.face_comparison_title')}</Text>
+                    <Text fw={600} size="sm">
+                      {t('admin.face_comparison_title')}
+                    </Text>
                     {selected.faceMatch !== null && (
                       <Badge color={selected.faceMatch ? 'green' : 'red'} variant="light" size="sm">
                         {selected.faceMatch ? t('admin.match') : t('admin.mismatch')}
@@ -364,14 +422,21 @@ export default function AdminVerifications() {
                   </Group>
                   {selected.faceMatchConfidence !== null && (
                     <Text size="sm">
-                      {t('admin.face_similarity')}: <Text span fw={600}>{selected.faceMatchConfidence}</Text>
+                      {t('admin.face_similarity')}:{' '}
+                      <Text span fw={600}>
+                        {selected.faceMatchConfidence}
+                      </Text>
                     </Text>
                   )}
                   {selected.faceMatchError && (
-                    <Text size="xs" c="red" mt="xs">{selected.faceMatchError}</Text>
+                    <Text size="xs" c="red" mt="xs">
+                      {selected.faceMatchError}
+                    </Text>
                   )}
                   {selected.faceMatchConfidence === null && !selected.faceMatchError && (
-                    <Text size="xs" c="dimmed">{t('admin.no_data')}</Text>
+                    <Text size="xs" c="dimmed">
+                      {t('admin.no_data')}
+                    </Text>
                   )}
                 </Paper>
               </Stack>
@@ -385,7 +450,7 @@ export default function AdminVerifications() {
                     label={t('admin.notes_label')}
                     placeholder={t('admin.notes_placeholder')}
                     value={notes}
-                    onChange={(e) => setNotes(e.currentTarget.value)}
+                    onChange={e => setNotes(e.currentTarget.value)}
                     name="notes"
                     autosize
                     minRows={2}
@@ -394,7 +459,7 @@ export default function AdminVerifications() {
                     label={t('admin.rejection_reason_label')}
                     placeholder={t('admin.rejection_reason_placeholder')}
                     value={rejectionReason}
-                    onChange={(e) => setRejectionReason(e.currentTarget.value)}
+                    onChange={e => setRejectionReason(e.currentTarget.value)}
                     name="rejectionReason"
                     autosize
                     minRows={2}
