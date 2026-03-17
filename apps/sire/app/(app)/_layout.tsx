@@ -7,9 +7,6 @@ import {
   configureNotificationHandler,
   setupAndroidChannel,
   setupNotificationCategories,
-  requestPermissions,
-  getNotificationsEnabled,
-  setNotificationsEnabled,
   getExpoPushToken,
 } from '../../src/notifications';
 
@@ -24,15 +21,6 @@ export default function AppLayout() {
       await setupAndroidChannel();
       await setupNotificationCategories();
 
-      const alreadyEnabled = await getNotificationsEnabled();
-      if (!alreadyEnabled) {
-        const granted = await requestPermissions();
-        if (granted) {
-          await setNotificationsEnabled(true);
-        }
-      }
-
-      // Register push token with the API
       const pushToken = await getExpoPushToken();
       if (pushToken) {
         try {
@@ -66,6 +54,7 @@ export default function AppLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
+      <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
       <Stack.Screen name="history" />
       <Stack.Screen
         name="settings"
