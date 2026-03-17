@@ -2,10 +2,10 @@ export const content = {
   nav: {
     logo: 'Athelas',
     links: [
-      { label: 'Funcionalidades', href: '#funcionalidades' },
-      { label: 'Cómo funciona', href: '#como-funciona' },
-      { label: 'Seguridad', href: '#seguridad' },
-      { label: 'Precios', href: '#precios' },
+      { label: 'Funcionalidades', href: '/#funcionalidades' },
+      { label: 'Cómo funciona', href: '/#como-funciona' },
+      { label: 'Seguridad', href: '/#seguridad' },
+      { label: 'Precios', href: '/#precios' },
     ],
     login: 'Iniciar sesión',
     loginHref: 'https://app.athel.as/',
@@ -206,9 +206,9 @@ export const content = {
       {
         title: 'Producto',
         links: [
-          { label: 'Funcionalidades', href: '#funcionalidades' },
-          { label: 'Precios', href: '#precios' },
-          { label: 'Integraciones', href: '#' },
+          { label: 'Funcionalidades', href: '/#funcionalidades' },
+          { label: 'Cómo funciona', href: '/#como-funciona' },
+          { label: 'Precios', href: '/#precios' },
         ],
       },
       {
@@ -222,9 +222,9 @@ export const content = {
       {
         title: 'Legal',
         links: [
-          { label: 'Privacidad', href: '#' },
-          { label: 'Términos', href: '#' },
-          { label: 'Ley 25.506', href: '#' },
+          { label: 'Privacidad', href: '/privacidad' },
+          { label: 'Términos', href: '/terminos' },
+          { label: 'Ley 25.506', href: 'https://servicios.infoleg.gob.ar/infolegInternet/anexos/70000-74999/70749/norma.htm' },
         ],
       },
     ],

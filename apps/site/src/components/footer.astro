@@ -1,7 +1,16 @@
 ---
 import { content } from '../content/es';
 
+interface Props {
+  showPricing?: boolean;
+}
+
+const { showPricing = false } = Astro.props;
 const { nav, footer } = content;
+const columns = footer.columns.map((col) => ({
+  ...col,
+  links: showPricing ? col.links : col.links.filter((l) => l.href !== '/#precios'),
+}));
 ---
 
 <footer class="footer">
@@ -13,7 +22,7 @@ const { nav, footer } = content;
       </div>
 
       <div class="footer-columns">
-        {footer.columns.map((col) => (
+        {columns.map((col) => (
           <div class="footer-col">
             <span class="col-title">{col.title}</span>
             {col.links.map((link) => (

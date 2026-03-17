@@ -26,5 +26,5 @@ const showPricing = import.meta.env.PRICING === 'true';
     {showPricing && <Pricing />}
     <CTA />
   </main>
-  <Footer />
+  <Footer showPricing={showPricing} />
 </Layout>

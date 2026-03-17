@@ -1,0 +1,242 @@
+---
+import Layout from '../layouts/layout.astro';
+import Nav from '../components/nav.astro';
+import Footer from '../components/footer.astro';
+---
+
+<Layout
+  title="Política de Privacidad — Athelas"
+  description="Cómo Athelas protege tu información personal y datos de salud. Nunca compartimos, vendemos ni cedemos datos personales a terceros."
+>
+  <Nav />
+  <main class="container legal">
+    <h1>Política de Privacidad</h1>
+    <p class="updated">Última actualización: 17 de marzo de 2026</p>
+
+    <section>
+      <h2>Resumen</h2>
+      <p>
+        Athelas es una plataforma de software clínico. Tu privacidad no es negociable.
+        <strong>Nunca compartimos, vendemos ni cedemos tu información personal a terceros. Punto.</strong>
+      </p>
+    </section>
+
+    <section>
+      <h2>1. Qué datos recopilamos</h2>
+      <p>Recopilamos únicamente los datos necesarios para brindarte el servicio:</p>
+      <ul>
+        <li><strong>Datos de cuenta:</strong> nombre, correo electrónico y matrícula profesional (para profesionales de la salud).</li>
+        <li><strong>Datos clínicos:</strong> historias clínicas, recetas, notas de consulta y documentos firmados digitalmente que vos o tu equipo médico crean dentro de la plataforma.</li>
+        <li><strong>Datos de pacientes:</strong> nombre, documento de identidad, datos de contacto e información de salud ingresada por los profesionales tratantes.</li>
+        <li><strong>Datos técnicos:</strong> dirección IP, tipo de navegador y registros de acceso, exclusivamente para seguridad y auditoría.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. Qué hacemos con tus datos</h2>
+      <p>Usamos tus datos exclusivamente para:</p>
+      <ul>
+        <li>Operar y mejorar la plataforma Athelas.</li>
+        <li>Verificar identidad y matrícula profesional.</li>
+        <li>Generar y firmar digitalmente documentos clínicos.</li>
+        <li>Enviar notificaciones operativas (turnos, recetas, recordatorios).</li>
+        <li>Mantener registros de auditoría según lo exige la normativa.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Qué NO hacemos con tus datos</h2>
+      <ul>
+        <li>No vendemos datos personales ni de salud. Nunca lo hicimos y nunca lo haremos.</li>
+        <li>No compartimos datos con terceros con fines comerciales, publicitarios o de marketing.</li>
+        <li>No usamos datos de salud para entrenar modelos de inteligencia artificial de propósito general.</li>
+        <li>No mostramos publicidad ni permitimos que terceros accedan a la información de la plataforma.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. Protección de datos de salud</h2>
+      <p>
+        Los datos de salud tienen protección especial bajo la legislación argentina.
+        Cumplimos con:
+      </p>
+      <ul>
+        <li><strong>Ley 25.326</strong> — Protección de Datos Personales: los datos de salud son datos sensibles y reciben el máximo nivel de protección.</li>
+        <li><strong>Ley 26.529</strong> — Derechos del Paciente: garantizamos la confidencialidad de la historia clínica y el acceso del paciente a su información.</li>
+        <li><strong>Ley 25.506</strong> — Firma Digital: los documentos firmados digitalmente tienen la misma validez legal que los firmados de puño y letra.</li>
+      </ul>
+      <p>
+        Los datos clínicos están cifrados con AES-256 en reposo y en tránsito.
+        Cada registro médico forma parte de una cadena de integridad verificable con hash SHA-256.
+        El acceso está controlado por rol y registrado en logs de auditoría inmutables.
+      </p>
+    </section>
+
+    <section>
+      <h2>5. Seguridad</h2>
+      <p>Protegemos tu información con:</p>
+      <ul>
+        <li>Cifrado AES-256 a nivel de campo para datos sensibles.</li>
+        <li>Cifrado AES-256-GCM para archivos, con verificación de integridad.</li>
+        <li>Autenticación multifactor (2FA) con TOTP y WebAuthn.</li>
+        <li>Control de acceso granular por rol, organización y campo.</li>
+        <li>Registros de auditoría inmutables con identificación de dispositivo.</li>
+        <li>Verificación de identidad con documento y selfie para profesionales.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. Retención de datos</h2>
+      <p>
+        Las historias clínicas se conservan por el plazo mínimo de <strong>10 años</strong> desde la última actuación,
+        según lo establece la Ley 26.529 y su reglamentación.
+        Los datos de cuenta se conservan mientras la relación comercial esté activa.
+        Podés solicitar la eliminación de tus datos personales no clínicos en cualquier momento.
+      </p>
+    </section>
+
+    <section>
+      <h2>7. Tus derechos</h2>
+      <p>Tenés derecho a:</p>
+      <ul>
+        <li><strong>Acceder</strong> a tus datos personales y obtener una copia.</li>
+        <li><strong>Rectificar</strong> datos inexactos o incompletos.</li>
+        <li><strong>Suprimir</strong> datos personales no sujetos a obligación legal de conservación.</li>
+        <li><strong>Oponerte</strong> al tratamiento de tus datos en determinadas circunstancias.</li>
+      </ul>
+      <p>
+        Para ejercer estos derechos, escribinos a
+        <a href="mailto:privacidad@athel.as">privacidad@athel.as</a>.
+      </p>
+    </section>
+
+    <section>
+      <h2>8. Asistente clínico con IA</h2>
+      <p>
+        Nuestro asistente de IA opera exclusivamente con datos anonimizados.
+        Nunca accede a información identificable del paciente.
+        No usamos datos clínicos para entrenar modelos externos.
+        El procesamiento de IA se realiza en infraestructura propia y segura.
+      </p>
+    </section>
+
+    <section>
+      <h2>9. Cookies y seguimiento</h2>
+      <p>
+        Utilizamos únicamente cookies esenciales para el funcionamiento de la plataforma
+        (sesión, autenticación, preferencias). No utilizamos cookies de seguimiento,
+        analytics de terceros ni píxeles de rastreo.
+      </p>
+    </section>
+
+    <section>
+      <h2>10. Cambios a esta política</h2>
+      <p>
+        Si modificamos esta política, te lo notificaremos por correo electrónico y
+        publicaremos la versión actualizada en esta página con la nueva fecha de vigencia.
+      </p>
+    </section>
+
+    <section>
+      <h2>Contacto</h2>
+      <p>
+        Si tenés dudas sobre esta política o sobre cómo tratamos tus datos, escribinos a
+        <a href="mailto:privacidad@athel.as">privacidad@athel.as</a>.
+      </p>
+    </section>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .legal {
+    padding-top: 6rem;
+    padding-bottom: 4rem;
+    max-width: 780px;
+  }
+
+  h1 {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-black);
+    margin-bottom: 0.5rem;
+  }
+
+  .updated {
+    font-size: 14px;
+    color: var(--color-muted);
+    margin-bottom: 3rem;
+  }
+
+  section {
+    margin-bottom: 2.5rem;
+  }
+
+  h2 {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-black);
+    margin-bottom: 0.75rem;
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--color-body);
+    margin-bottom: 0.75rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  li {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--color-body);
+    padding-left: 1.25rem;
+    position: relative;
+  }
+
+  li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-teal);
+  }
+
+  a {
+    color: var(--color-teal);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  a:hover {
+    opacity: 0.8;
+  }
+
+  @media (max-width: 768px) {
+    .legal {
+      padding-top: 4rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+    }
+  }
+</style>
