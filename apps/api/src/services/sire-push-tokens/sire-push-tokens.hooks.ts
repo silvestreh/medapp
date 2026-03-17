@@ -1,11 +1,12 @@
 import { HooksObject } from '@feathersjs/feathers';
 import authenticatePatient from '../../hooks/authenticate-patient';
+import mockTestUser from '../../hooks/mock-test-user';
 
 const authHook = authenticatePatient(['https://sire.athel.as']);
 
 export default {
   before: {
-    all: [authHook],
+    all: [authHook, mockTestUser('sire-push-tokens')],
     find: [],
     get: [],
     create: [],

@@ -8,9 +8,8 @@ import { BlurView } from 'expo-blur';
 const Card = tw.View`
   flex-row
   items-center
-  rounded-xl
+  rounded-2xl
   p-4
-  mb-2
   justify-between
   bg-cyan-400/10
   border
@@ -45,7 +44,7 @@ interface NextControlCardProps {
 
 export function NextControlCard({ nextControlDate }: NextControlCardProps) {
   return (
-    <BlurView intensity={100} style={tw`absolute bottom-8 left-0 right-0 mx-4 rounded-lg overflow-hidden`}>
+    <BlurView intensity={100} style={tw`absolute bottom-8 left-0 right-0 mx-4 rounded-2xl overflow-hidden`}>
       <Card>
         <IconBox><CalendarCheck size={22} color="#265D6A" /></IconBox>
         <View style={{ flex: 1 }}>

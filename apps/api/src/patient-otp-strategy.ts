@@ -1,5 +1,6 @@
 import { AuthenticationBaseStrategy, AuthenticationResult } from '@feathersjs/authentication';
 import { NotAuthenticated, BadRequest } from '@feathersjs/errors';
+import { isTestDocument, TEST_PATIENT_ID, TEST_ORGANIZATION_ID } from './test-user';
 
 const MAX_VERIFY_ATTEMPTS = 5;
 
@@ -46,6 +47,23 @@ export class PatientOtpStrategy extends AuthenticationBaseStrategy {
     }
 
     otpService.pendingOtps.delete(documentNumber);
+
+    // Test user for app store review — no DB lookups, long-lived token, no refresh token stored
+    if (isTestDocument(documentNumber)) {
+      const authService = this.app!.service('authentication') as any;
+      const config = this.app!.get('sireAuthentication');
+      const accessToken = await authService.createAccessToken(
+        { sub: TEST_PATIENT_ID, type: 'patient', organizationId: TEST_ORGANIZATION_ID },
+        { audience: config.audience, expiresIn: '30d' },
+      );
+
+      return {
+        accessToken,
+        refreshToken: 'test-refresh-token',
+        authentication: { strategy: this.name },
+        patient: { id: TEST_PATIENT_ID, organizationId: TEST_ORGANIZATION_ID, name: 'Usuario de Prueba' },
+      };
+    }
 
     // Resolve organization ID from slug
     const orgResult = await this.app!.service('organizations').find({

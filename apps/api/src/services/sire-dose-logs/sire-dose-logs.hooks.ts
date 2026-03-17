@@ -1,12 +1,13 @@
 import { HooksObject } from '@feathersjs/feathers';
 import authenticateProviderOrPatient from '../../hooks/authenticate-provider-or-patient';
 import scopeToPatient from '../../hooks/scope-to-patient';
+import mockTestUser from '../../hooks/mock-test-user';
 
 const authHook = authenticateProviderOrPatient(['https://sire.athel.as']);
 
 export default {
   before: {
-    all: [authHook],
+    all: [authHook, mockTestUser('sire-dose-logs')],
     find: [scopeToPatient()],
     get: [scopeToPatient()],
     create: [scopeToPatient()],

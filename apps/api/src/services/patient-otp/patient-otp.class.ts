@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { BadRequest } from '@feathersjs/errors';
 import type { Application } from '../../declarations';
+import { TEST_OTP_CODE, TEST_PATIENT_ID, isTestDocument } from '../../test-user';
 
 type PatientOtpAction = 'request-otp' | 'get-organization' | 'list-organizations';
 
@@ -143,6 +144,17 @@ export class PatientOtp {
 
     if (!documentNumber || typeof documentNumber !== 'string') {
       throw new BadRequest('Document number is required');
+    }
+
+    // Test user for app store review — fixed OTP, no DB, no WhatsApp
+    if (isTestDocument(documentNumber)) {
+      this.pendingOtps.set(documentNumber, {
+        code: TEST_OTP_CODE,
+        patientId: TEST_PATIENT_ID,
+        expiresAt: Date.now() + OTP_TTL_MS,
+        attempts: 0,
+      });
+      return { action: 'request-otp', status: 'otp_sent', maskedPhone: '******1234' };
     }
 
     this.cleanupExpired();
