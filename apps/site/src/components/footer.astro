@@ -26,7 +26,7 @@ const columns = footer.columns.map((col) => ({
           <div class="footer-col">
             <span class="col-title">{col.title}</span>
             {col.links.map((link) => (
-              <a href={link.href} class="col-link">{link.label}</a>
+              <a href={link.href} class="col-link" {...(link.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{link.label}</a>
             ))}
           </div>
         ))}
