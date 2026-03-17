@@ -3,28 +3,25 @@ import { View } from 'react-native';
 import tw from 'styledwind-native';
 import dayjs from 'dayjs';
 import { CalendarCheck, CaretRight } from 'phosphor-react-native';
+import { BlurView } from 'expo-blur';
 
 const Card = tw.View`
   flex-row
   items-center
-  bg-[#53B3C6]
   rounded-xl
   p-4
   mb-2
   justify-between
-  mx-4
-  absolute
-  bottom-0
-  left-0
-  right-0
-  safe:mb
+  bg-cyan-400/10
+  border
+  border-cyan-400/10
 `;
 
 const IconBox = tw.View`
   w-11
   h-11
   rounded-xl
-  bg-white/20
+  bg-white/40
   items-center
   justify-center
   mr-3
@@ -33,12 +30,12 @@ const IconBox = tw.View`
 const Title = tw.Text`
   text-sm
   font-bold
-  text-white
+  text-cyan-950
 `;
 
 const DateLabel = tw.Text`
   text-[13px]
-  text-white/80
+  text-cyan-800
   mt-0.5
 `;
 
@@ -48,13 +45,15 @@ interface NextControlCardProps {
 
 export function NextControlCard({ nextControlDate }: NextControlCardProps) {
   return (
-    <Card>
-      <IconBox><CalendarCheck size={22} color="#fff" /></IconBox>
-      <View style={{ flex: 1 }}>
-        <Title>Próxima cita</Title>
-        <DateLabel>{dayjs(nextControlDate).format('dddd D [de] MMMM')}</DateLabel>
-      </View>
-      <CaretRight size={24} color="#fff" />
-    </Card>
+    <BlurView intensity={100} style={tw`absolute bottom-8 left-0 right-0 mx-4 rounded-lg overflow-hidden`}>
+      <Card>
+        <IconBox><CalendarCheck size={22} color="#265D6A" /></IconBox>
+        <View style={{ flex: 1 }}>
+          <Title>Próxima cita</Title>
+          <DateLabel>{dayjs(nextControlDate).format('dddd D [de] MMMM')}</DateLabel>
+        </View>
+        <CaretRight size={24} color="#265D6A" />
+      </Card>
+    </BlurView>
   );
 }

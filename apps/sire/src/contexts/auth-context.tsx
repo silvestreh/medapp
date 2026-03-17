@@ -10,6 +10,7 @@ import {
   requestOtp as authRequestOtp,
   verifyOtp as authVerifyOtp,
 } from '../api/auth';
+import { getExpoPushToken } from '../notifications';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -64,11 +65,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    try {
+      const pushToken = await getExpoPushToken();
+      if (pushToken) {
+        await apiClient.service('sire-push-tokens').create({
+          action: 'unregister',
+          token: pushToken,
+        });
+      }
+    } catch { /* best effort */ }
     await authLogout();
     setAccessToken(null);
     setPatient(null);
     setIsAuthenticated(false);
-  }, []);
+  }, [apiClient]);
 
   const value = useMemo(
     () => ({ isAuthenticated, isLoading, patient, apiClient, login, requestOtp, logout }),

@@ -60,6 +60,7 @@ import sireTreatments from './sire-treatments/sire-treatments.service';
 import sireReadings from './sire-readings/sire-readings.service';
 import sireDoseSchedules from './sire-dose-schedules/sire-dose-schedules.service';
 import sireDoseLogs from './sire-dose-logs/sire-dose-logs.service';
+import sirePushTokens from './sire-push-tokens/sire-push-tokens.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -124,4 +125,5 @@ export default function (app: Application): void {
   app.configure(sireReadings);
   app.configure(sireDoseSchedules);
   app.configure(sireDoseLogs);
+  app.configure(sirePushTokens);
 }

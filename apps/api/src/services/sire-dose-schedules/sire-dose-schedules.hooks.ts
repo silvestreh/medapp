@@ -3,6 +3,17 @@ import authenticateProviderOrPatient from '../../hooks/authenticate-provider-or-
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { blockSuperAdmin } from '../../hooks/block-super-admin';
+import sendSirePush from '../../hooks/send-sire-push';
+
+const pushOnScheduleChange = sendSirePush({
+  getPatientId: async (context) => {
+    const treatment = await context.app.service('sire-treatments').get(context.result.treatmentId);
+    return String((treatment as any).patientId);
+  },
+  getTitle: () => 'Nuevo esquema de dosis',
+  getBody: () => 'Tu médico actualizó tu esquema de dosis. Revisá los cambios.',
+  getData: (context) => ({ type: 'schedule-update', treatmentId: context.result.treatmentId }),
+});
 
 const authHook = authenticateProviderOrPatient(['https://sire.athel.as']);
 
@@ -33,9 +44,9 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [pushOnScheduleChange],
     update: [],
-    patch: [],
+    patch: [pushOnScheduleChange],
     remove: []
   },
 

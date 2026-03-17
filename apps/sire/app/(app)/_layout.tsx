@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Stack, Redirect } from 'expo-router';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Platform } from 'react-native';
 import tw from 'styledwind-native';
 import { useAuth } from '../../src/contexts/auth-context';
 import {
@@ -10,12 +10,13 @@ import {
   requestPermissions,
   getNotificationsEnabled,
   setNotificationsEnabled,
+  getExpoPushToken,
 } from '../../src/notifications';
 
 const LoadingView = tw.View`flex-1 items-center justify-center`;
 
 export default function AppLayout() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, apiClient } = useAuth();
 
   useEffect(() => {
     async function initNotifications() {
@@ -30,11 +31,25 @@ export default function AppLayout() {
           await setNotificationsEnabled(true);
         }
       }
+
+      // Register push token with the API
+      const pushToken = await getExpoPushToken();
+      if (pushToken) {
+        try {
+          await apiClient.service('sire-push-tokens').create({
+            action: 'register',
+            token: pushToken,
+            platform: Platform.OS,
+          });
+        } catch (err) {
+          console.warn('Failed to register push token:', err);
+        }
+      }
     }
     if (isAuthenticated) {
       initNotifications();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, apiClient]);
 
   if (isLoading) {
     return (

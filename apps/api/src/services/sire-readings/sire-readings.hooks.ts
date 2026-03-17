@@ -4,6 +4,14 @@ import scopeToPatient from '../../hooks/scope-to-patient';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { blockSuperAdmin } from '../../hooks/block-super-admin';
+import sendSirePush from '../../hooks/send-sire-push';
+
+const pushOnNewReading = sendSirePush({
+  getPatientId: async (context) => String(context.result.patientId),
+  getTitle: () => 'Nuevo control registrado',
+  getBody: (context) => `Se registró un nuevo valor de INR: ${context.result.inr}`,
+  getData: (context) => ({ type: 'new-reading', treatmentId: context.result.treatmentId }),
+});
 
 const authHook = authenticateProviderOrPatient(['https://sire.athel.as']);
 
@@ -34,7 +42,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [pushOnNewReading],
     update: [],
     patch: [],
     remove: []

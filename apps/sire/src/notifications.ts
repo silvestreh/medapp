@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
@@ -181,4 +182,19 @@ export async function setupAndroidChannel(): Promise<void> {
     sound: 'default',
     vibrationPattern: [0, 250, 250, 250],
   });
+}
+
+// -- Push token --
+
+export async function getExpoPushToken(): Promise<string | null> {
+  try {
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const tokenData = await Notifications.getExpoPushTokenAsync(
+      projectId ? { projectId } : undefined,
+    );
+    return tokenData.data;
+  } catch (err) {
+    console.warn('Failed to get Expo push token:', err);
+    return null;
+  }
 }

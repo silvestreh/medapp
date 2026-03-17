@@ -3,7 +3,7 @@ import { View, Pressable, Switch, Platform } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import tw from 'styledwind-native';
 import { router } from 'expo-router';
-import { Bell, Clock, ListDashes, SignOut } from 'phosphor-react-native';
+import { Bell, Clock, ListDashes, Pill, SignOut } from 'phosphor-react-native';
 import { useAuth } from '../../src/contexts/auth-context';
 import { BottomSheet } from '../../src/components/bottom-sheet';
 import {
@@ -24,11 +24,18 @@ const IconBox = tw.View`w-10 h-10 rounded-xl items-center justify-center mr-3`;
 const RowTitle = tw.Text`text-base font-semibold text-gray-900`;
 const RowSubtitle = tw.Text`text-sm text-gray-400`;
 const LogoutText = tw.Text`text-base font-semibold text-red-500`;
-const TimeText = tw.Text`text-base font-semibold text-[#52A8B9]`;
+const TimeText = tw.Text`text-base font-semibold text-white`;
+const SelectedTimeText = tw.Text`text-base font-semibold text-cyan-500`;
+const TimePickerButton = tw.TouchableOpacity`
+  items-center
+  p-2
+  bg-cyan-500
+  rounded-full
+`;
 
 export default function SettingsScreen() {
   const { logout, apiClient, patient } = useAuth();
-  const { simpleMode, toggleSimpleMode } = usePreferences();
+  const { simpleMode, doseReminders, toggleSimpleMode, toggleDoseReminders } = usePreferences();
 
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [hour, setHour] = useState(9);
@@ -110,6 +117,10 @@ export default function SettingsScreen() {
     setShowTimePicker(false);
   }, []);
 
+  const handleToggleDoseReminders = useCallback(() => {
+    toggleDoseReminders(apiClient);
+  }, [toggleDoseReminders, apiClient]);
+
   const handleLogout = useCallback(async () => {
     await logout();
     router.replace('/(auth)/login');
@@ -157,7 +168,7 @@ export default function SettingsScreen() {
               <RowTitle>Hora del recordatorio</RowTitle>
               <RowSubtitle>Te notificaremos todos los días a esta hora</RowSubtitle>
             </View>
-            <TimeText>{timeLabel}</TimeText>
+            <SelectedTimeText>{timeLabel}</SelectedTimeText>
           </Row>
         </Pressable>
       )}
@@ -173,12 +184,28 @@ export default function SettingsScreen() {
             locale="es-AR"
           />
           {Platform.OS === 'ios' && (
-            <Pressable onPress={handleDismissTimePicker} style={tw`items-center pt-2`}>
+            <TimePickerButton onPress={handleDismissTimePicker} activeOpacity={0.8}>
               <TimeText>Listo</TimeText>
-            </Pressable>
+            </TimePickerButton>
           )}
         </View>
       )}
+
+      <Row>
+        <IconBox style={tw`bg-green-100`}>
+          <Pill size={20} color="#22C55E" />
+        </IconBox>
+        <View style={tw`flex-1`}>
+          <RowTitle>Recordar tomar dosis</RowTitle>
+          <RowSubtitle>Notificaciones si no registraste tu dosis</RowSubtitle>
+        </View>
+        <Switch
+          value={doseReminders}
+          onValueChange={handleToggleDoseReminders}
+          trackColor={{ false: '#E0E0E0', true: '#69C6D8' }}
+          thumbColor="#fff"
+        />
+      </Row>
 
       <Row>
         <IconBox style={tw`bg-blue-100`}>

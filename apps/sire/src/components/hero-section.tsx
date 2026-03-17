@@ -93,8 +93,7 @@ const WeekRow = tw.View`
   flex-row
   mt-5
   mx-4
-  bg-black/10
-  rounded-xl
+  gap-2
   overflow-hidden
 `;
 
@@ -106,25 +105,31 @@ const DayCell = tw.View<DayCellProps>`
   flex-1
   items-center
   py-2.5
+  rounded-lg
+  bg-white/20
 
-  ${({ isToday }) => isToday && tw`bg-[#4199AB] rounded-xl`}
+  ${({ isToday }) => isToday && tw`
+    bg-white
+  `}
 `;
 
 const DayLabelText = tw.Text<DayCellProps>`
-  text-[11px]
+  text-xs
   font-semibold
   text-white/65
   mb-0.5
 
-  ${({ isToday }) => isToday && tw`text-white`}
+  ${({ isToday }) => isToday && tw`
+    text-cyan-600
+  `}
 `;
 
 const DayDoseText = tw.Text<DayCellProps>`
-  text-[15px]
+  text-lg
   font-bold
   text-white/80
 
-  ${({ isToday }) => isToday && tw`text-white`}
+  ${({ isToday }) => isToday && tw`text-cyan-600`}
 `;
 
 // -- Simple mode (grandma mode) --

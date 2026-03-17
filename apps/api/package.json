@@ -79,6 +79,7 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",
     "escape-html": "^1.0.3",
+    "expo-server-sdk": "^6.1.0",
     "express-rate-limit": "^8.2.1",
     "face-api.js": "^0.22.2",
     "feathers-hooks-common": "^6.1.5",

@@ -468,6 +468,15 @@ export interface SireDoseLog {
   expectedDose: number | null;
 }
 
+export interface SirePushToken {
+  id: Id;
+  patientId: Id;
+  token: string;
+  deviceName: string | null;
+  platform: 'ios' | 'android' | null;
+  doseReminders: boolean;
+}
+
 export interface EncounterAiChatMessage {
   id: Id;
   organizationId: Id;
