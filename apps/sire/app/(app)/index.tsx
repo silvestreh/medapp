@@ -11,7 +11,7 @@ import { LabValues } from '../../src/components/lab-values';
 import { ReadingHistory } from '../../src/components/reading-history';
 import { NextControlCard } from '../../src/components/next-control-card';
 import { useNotifications } from '../../src/hooks/use-notifications';
-import { getSimpleMode } from '../../src/preferences';
+import { usePreferences } from '../../src/contexts/preferences-context';
 import type { SireTreatment, SireReading, SireDoseSchedule, SireDoseLog } from '../../src/types';
 
 dayjs.locale('es');
@@ -30,7 +30,7 @@ export default function DashboardScreen() {
   const [doseSchedule, setDoseSchedule] = useState<SireDoseSchedule | null>(null);
   const [todayLog, setTodayLog] = useState<SireDoseLog | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [simpleMode, setSimpleMode] = useState(false);
+  const { simpleMode } = usePreferences();
 
   const todayIndex = useMemo(() => {
     const jsDay = dayjs().day();
@@ -70,15 +70,11 @@ export default function DashboardScreen() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Load simple mode preference on mount
-  useEffect(() => { getSimpleMode().then(setSimpleMode); }, []);
-
   const appState = useRef(AppState.currentState);
   useEffect(() => {
     const sub = AppState.addEventListener('change', (next) => {
       if (appState.current.match(/inactive|background/) && next === 'active') {
         loadData();
-        getSimpleMode().then(setSimpleMode);
       }
       appState.current = next;
     });
@@ -123,8 +119,8 @@ export default function DashboardScreen() {
 
   const greeting = useMemo(() => {
     const h = dayjs().hour();
-    if (h < 12) return 'Buen día';
-    if (h < 19) return 'Buenas tardes';
+    if (h < 12 && h >= 5) return 'Buen día';
+    if (h < 19 && h >= 12) return 'Buenas tardes';
     return 'Buenas noches';
   }, []);
 
@@ -138,16 +134,18 @@ export default function DashboardScreen() {
         />
       </View>
       {simpleMode && (
-        <HeroSection
-          treatment={treatment}
-          doseSchedule={doseSchedule}
-          todayDose={todayDose}
-          todayLog={todayLog}
-          todayIndex={todayIndex}
-          simpleMode
-          onTaken={handleTaken}
-          onNotTaken={handleNotTaken}
-        />
+        <ScrollView style={tw`flex-1 bg-teal-400`} contentContainerStyle={{ flexGrow: 1 }}>
+          <HeroSection
+            treatment={treatment}
+            doseSchedule={doseSchedule}
+            todayDose={todayDose}
+            todayLog={todayLog}
+            todayIndex={todayIndex}
+            simpleMode
+            onTaken={handleTaken}
+            onNotTaken={handleNotTaken}
+          />
+        </ScrollView>
       )}
 
       {!simpleMode && (

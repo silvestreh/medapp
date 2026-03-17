@@ -15,7 +15,7 @@ import {
   cancelAllDoseReminders,
   scheduleDoseReminders,
 } from '../../src/notifications';
-import { getSimpleMode, setSimpleMode } from '../../src/preferences';
+import { usePreferences } from '../../src/contexts/preferences-context';
 import type { SireTreatment, SireDoseSchedule } from '../../src/types';
 
 const Title = tw.Text`text-lg font-bold text-gray-900 mb-4 px-6`;
@@ -28,27 +28,25 @@ const TimeText = tw.Text`text-base font-semibold text-[#52A8B9]`;
 
 export default function SettingsScreen() {
   const { logout, apiClient, patient } = useAuth();
+  const { simpleMode, toggleSimpleMode } = usePreferences();
 
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [hour, setHour] = useState(9);
   const [minute, setMinute] = useState(0);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [simpleMode, setSimpleModeState] = useState(false);
   const [treatment, setTreatment] = useState<SireTreatment | null>(null);
   const [doseSchedule, setDoseSchedule] = useState<SireDoseSchedule | null>(null);
 
   // Load preferences and current treatment data
   useEffect(() => {
     async function load() {
-      const [enabled, time, simple] = await Promise.all([
+      const [enabled, time] = await Promise.all([
         getNotificationsEnabled(),
         getReminderTime(),
-        getSimpleMode(),
       ]);
       setNotifEnabled(enabled);
       setHour(time.hour);
       setMinute(time.minute);
-      setSimpleModeState(simple);
 
       if (patient && apiClient) {
         try {
@@ -111,12 +109,6 @@ export default function SettingsScreen() {
   const handleDismissTimePicker = useCallback(() => {
     setShowTimePicker(false);
   }, []);
-
-  const handleToggleSimpleMode = useCallback(async () => {
-    const next = !simpleMode;
-    setSimpleModeState(next);
-    await setSimpleMode(next);
-  }, [simpleMode]);
 
   const handleLogout = useCallback(async () => {
     await logout();
@@ -198,7 +190,7 @@ export default function SettingsScreen() {
         </View>
         <Switch
           value={simpleMode}
-          onValueChange={handleToggleSimpleMode}
+          onValueChange={toggleSimpleMode}
           trackColor={{ false: '#E0E0E0', true: '#69C6D8' }}
           thumbColor="#fff"
         />
