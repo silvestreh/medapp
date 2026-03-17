@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import {
   View,
+  ScrollView,
   Pressable,
   Animated,
   PanResponder,
@@ -103,11 +104,14 @@ export function BottomSheet({ children, onDismiss }: BottomSheetProps) {
       </Animated.View>
 
       <Animated.View
-        style={[styles.sheet, { transform: [{ translateY }] }]}
-        {...panResponder.panHandlers}
+        style={[styles.sheet, { transform: [{ translateY }], maxHeight: SCREEN_HEIGHT * 0.85 }]}
       >
-        <Handle />
-        {children}
+        <View {...panResponder.panHandlers}>
+          <Handle />
+        </View>
+        <ScrollView bounces={false} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+          {children}
+        </ScrollView>
       </Animated.View>
     </View>
   );
@@ -129,6 +133,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingBottom: 40,
   },
 });

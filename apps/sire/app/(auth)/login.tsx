@@ -23,19 +23,31 @@ const FormArea = tw.View`flex-1 bg-white rounded-t-3xl px-6 pt-8`;
 const Title = tw.Text`text-xl font-bold text-gray-900 mb-2`;
 const Description = tw.Text`text-sm text-gray-500 mb-6 leading-5`;
 const Label = tw.Text`text-xs font-semibold text-gray-400 mb-2 tracking-wider`;
-const Input = tw.TextInput`border border-gray-200 rounded-xl px-4 py-3.5 text-base text-gray-900 mb-4`;
+const Input = tw.TextInput`border border-gray-200 rounded-xl px-4 text-base text-gray-900 mb-4 leading-0 py-4`;
 const ErrorText = tw.Text`text-red-500 text-sm mb-2`;
 const HelpLink = tw.Text`text-center text-[#53B3C6] mt-4 text-sm`;
 const Terms = tw.Text`text-center text-gray-400 text-xs mt-6 leading-4`;
 
-const OrgChipText = tw.Text<{ selected?: boolean }>`
-  text-sm font-medium
-  ${(p) => p.selected ? 'text-white' : 'text-gray-600'}
+type OrgChipTextProps = {
+  selected?: boolean;
+};
+
+const OrgChipText = tw.Text<OrgChipTextProps>`
+  text-sm
+  font-medium
+
+  ${(p) => p.selected ? tw`text-white` : tw`text-gray-600`}
 `;
 
-const BtnText = tw.Text<{ disabled?: boolean }>`
-  text-base font-semibold
-  ${(p) => p.disabled ? 'text-gray-400' : 'text-white'}
+type BtnTextProps = {
+  disabled?: boolean;
+};
+
+const BtnText = tw.Text<BtnTextProps>`
+  text-base
+  font-semibold
+
+  ${(p) => p.disabled ? tw`text-gray-400` : tw`text-white`}
 `;
 
 export default function LoginScreen() {
@@ -134,7 +146,9 @@ export default function LoginScreen() {
             value={documentNumber}
             onChangeText={setDocumentNumber}
             placeholder="Ej: 12.345.678"
-            keyboardType="number-pad"
+            keyboardType="numeric"
+            returnKeyType="done"
+            onSubmitEditing={handleContinue}
             placeholderTextColor="#aaa"
           />
 

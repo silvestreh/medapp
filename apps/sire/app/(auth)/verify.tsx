@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import tw from 'styledwind-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeft } from 'phosphor-react-native';
+
 import { useAuth } from '../../src/contexts/auth-context';
 
 const CODE_LENGTH = 6;
@@ -34,9 +36,15 @@ const CountdownValue = tw.Text`text-sm text-[#53B3C6] font-semibold`;
 
 const ErrorText = tw.Text`text-red-500 text-sm mb-2 text-center`;
 
-const BtnText = tw.Text<{ disabled?: boolean }>`
-  text-base font-semibold
-  ${(p) => p.disabled ? 'text-gray-400' : 'text-white'}
+type BtnTextProps = {
+  disabled?: boolean;
+};
+
+const BtnText = tw.Text<BtnTextProps>`
+  text-base
+  font-semibold
+
+  ${(p) => p.disabled ? tw`text-gray-400` : tw`text-white`}
 `;
 
 const ExpiryBox = tw.View`flex-row justify-center items-center mt-6 p-3 bg-gray-50 rounded-lg`;
@@ -123,13 +131,19 @@ export default function VerifyScreen() {
     }
   }, [countdown, requestOtp, params]);
 
+  useEffect(() => {
+    if (code.join('').length === CODE_LENGTH && !loading) {
+      handleVerify();
+    }
+  }, [code, loading, handleVerify]);
+
   const isDisabled = loading || code.join('').length !== CODE_LENGTH;
 
   return (
     <KeyboardAvoidingView style={tw`flex-1 bg-[#69C6D8]`} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <HeaderArea>
         <Pressable onPress={() => router.back()} style={tw`absolute top-12 left-3 w-10 h-10 items-center justify-center`}>
-          <BackArrow>‹</BackArrow>
+          <ArrowLeft size={24} color="#fff" />
         </Pressable>
         <IconCircle>
           <IconEmoji>✉</IconEmoji>
@@ -156,7 +170,7 @@ export default function VerifyScreen() {
               maxLength={index === 0 ? CODE_LENGTH : 1}
               textContentType="oneTimeCode"
               autoFocus={index === 0}
-              style={tw`w-12 h-14 border-2 rounded-xl text-center text-xl font-bold text-gray-900 ${code[index] ? 'border-[#69C6D8] bg-[#EEF9FB]' : 'border-gray-200 bg-white'}`}
+              style={tw`w-12 h-14 border-2 rounded-xl text-center text-xl font-bold text-gray-900 leading-0 ${code[index] ? 'border-[#69C6D8] bg-[#EEF9FB]' : 'border-gray-200 bg-white'}`}
             />
           ))}
         </View>

@@ -1,8 +1,8 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
-import { View, Pressable, Switch, Platform } from 'react-native';
+import { View, TouchableOpacity, Switch, Platform, ActivityIndicator } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import tw from 'styledwind-native';
-import { router } from 'expo-router';
+
 import { Bell, Clock, ListDashes, Pill, SignOut } from 'phosphor-react-native';
 import { useAuth } from '../../src/contexts/auth-context';
 import { BottomSheet } from '../../src/components/bottom-sheet';
@@ -79,7 +79,7 @@ export default function SettingsScreen() {
 
   const reschedule = useCallback(async (h: number, m: number) => {
     if (!treatment || !doseSchedule) return;
-    await scheduleDoseReminders(doseSchedule.schedule, treatment.medication, h, m);
+    await scheduleDoseReminders(doseSchedule.schedule as unknown as Record<string, number | null>, treatment.medication, h, m);
   }, [treatment, doseSchedule]);
 
   const handleToggle = useCallback(async () => {
@@ -121,9 +121,16 @@ export default function SettingsScreen() {
     toggleDoseReminders(apiClient);
   }, [toggleDoseReminders, apiClient]);
 
+  const [loggingOut, setLoggingOut] = useState(false);
+
   const handleLogout = useCallback(async () => {
-    await logout();
-    router.replace('/(auth)/login');
+    setLoggingOut(true);
+    try {
+      await logout();
+    } catch (err) {
+      console.error('[Settings] logout failed:', err);
+      setLoggingOut(false);
+    }
   }, [logout]);
 
   const timeLabel = useMemo(() => {
@@ -159,7 +166,7 @@ export default function SettingsScreen() {
       </Row>
 
       {notifEnabled && (
-        <Pressable onPress={handleShowTimePicker}>
+        <TouchableOpacity onPress={handleShowTimePicker}>
           <Row>
             <IconBox style={tw`bg-teal-100`}>
               <Clock size={20} color="#52A8B9" />
@@ -170,7 +177,7 @@ export default function SettingsScreen() {
             </View>
             <SelectedTimeText>{timeLabel}</SelectedTimeText>
           </Row>
-        </Pressable>
+        </TouchableOpacity>
       )}
 
       {showTimePicker && (
@@ -224,12 +231,17 @@ export default function SettingsScreen() {
       </Row>
 
       <View style={tw`border-t border-gray-100 pt-4 px-6`}>
-        <Pressable onPress={handleLogout} style={tw`flex-row items-center`}>
-          <IconBox style={tw`bg-red-100`}>
-            <SignOut size={20} color="#EF4444" />
-          </IconBox>
-          <LogoutText>Cerrar sesión</LogoutText>
-        </Pressable>
+        <TouchableOpacity onPress={handleLogout} disabled={loggingOut} style={tw`flex-row items-center`}>
+          {loggingOut && (
+            <ActivityIndicator size="small" color="#EF4444" style={tw`mr-3`} />
+          )}
+          {!loggingOut && (
+            <IconBox style={tw`bg-red-100`}>
+              <SignOut size={20} color="#EF4444" />
+            </IconBox>
+          )}
+          <LogoutText>{loggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}</LogoutText>
+        </TouchableOpacity>
       </View>
     </BottomSheet>
   );

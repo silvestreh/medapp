@@ -189,9 +189,14 @@ export async function setupAndroidChannel(): Promise<void> {
 export async function getExpoPushToken(): Promise<string | null> {
   try {
     const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-    const tokenData = await Notifications.getExpoPushTokenAsync(
-      projectId ? { projectId } : undefined,
-    );
+    const tokenData = await Promise.race([
+      Notifications.getExpoPushTokenAsync(
+        projectId ? { projectId } : undefined,
+      ),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Push token request timed out')), 5000),
+      ),
+    ]);
     return tokenData.data;
   } catch (err) {
     console.warn('Failed to get Expo push token:', err);

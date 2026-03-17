@@ -17,8 +17,8 @@ interface RateLimitEntry {
 }
 
 const OTP_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_OTP_REQUESTS = 3;
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+const MAX_OTP_REQUESTS = 5;
 
 export class PatientOtp {
   app: Application;

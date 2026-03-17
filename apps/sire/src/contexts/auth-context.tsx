@@ -65,19 +65,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    console.log('[Auth] logout: starting');
     try {
+      console.log('[Auth] logout: getting push token...');
       const pushToken = await getExpoPushToken();
+      console.log('[Auth] logout: push token =', pushToken);
       if (pushToken) {
+        console.log('[Auth] logout: unregistering push token...');
         await apiClient.service('sire-push-tokens').create({
           action: 'unregister',
           token: pushToken,
         });
+        console.log('[Auth] logout: push token unregistered');
       }
-    } catch { /* best effort */ }
+    } catch (err) {
+      console.warn('[Auth] logout: push token cleanup failed:', err);
+    }
+    console.log('[Auth] logout: clearing auth state...');
     await authLogout();
     setAccessToken(null);
     setPatient(null);
     setIsAuthenticated(false);
+    console.log('[Auth] logout: done');
   }, [apiClient]);
 
   const value = useMemo(
