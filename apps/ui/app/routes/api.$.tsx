@@ -19,6 +19,7 @@ const ALLOWED_PATHS = new Set([
   'user-contact-data',
   'patient-personal-data',
   'patient-contact-data',
+  'patient-otp',
   'roles',
   'studies',
   'study-results',
