@@ -71,6 +71,7 @@ export const en: typeof es = {
     stats: 'Statistics',
     accounting: 'Accounting',
     prescriptions: 'Prescriptions',
+    sire: 'Anticoagulation',
   },
   navigation: {
     encounters: 'Encounters',

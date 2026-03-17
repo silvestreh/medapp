@@ -70,6 +70,7 @@ export const es = {
     stats: 'Estadísticas',
     accounting: 'Contabilidad',
     prescriptions: 'Recetas',
+    sire: 'Anticoagulación',
   },
   navigation: {
     encounters: 'Encuentros',
