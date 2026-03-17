@@ -1,8 +1,8 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { Link, useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
-import { Group, Button, Alert, Text, Modal } from '@mantine/core';
+import { Link, Outlet, useFetcher, useLoaderData, useLocation, useNavigate } from '@remix-run/react';
+import { Group, Button, Alert, Text, Modal, Skeleton, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,7 @@ import {
 } from '~/components/forms/patient-form';
 import { getPageTitle } from '~/utils/meta';
 import { media } from '~/media';
+import { RouteDrawer } from '~/components/route-drawer';
 import { Fab, FabItem } from '~/components/fab';
 import { ToolbarTitle } from '~/components/toolbar-title';
 import { useUnsavedGuard } from '~/hooks/use-unsaved-guard';
@@ -117,9 +118,29 @@ export default function PatientDetail() {
   const fetcher = useFetcher();
   const { patient } = useLoaderData<typeof loader>() as { patient: any };
   const isDesktop = useMediaQuery(media.md);
+  const isTablet = useMediaQuery(media.lg);
+  const location = useLocation();
+  const hasSireChild = location.pathname.endsWith('/sire');
+  const [sireDrawerOpen, setSireDrawerOpen] = useState(false);
   const [deleteOpened, { open: openDelete, close: closeDelete }] = useDisclosure(false);
 
   const handleBack = useCallback(() => navigate('/patients'), [navigate]);
+
+  useEffect(() => {
+    if (hasSireChild) {
+      setSireDrawerOpen(true);
+    }
+  }, [hasSireChild]);
+
+  const handleSireDrawerClose = useCallback(() => {
+    setSireDrawerOpen(false);
+  }, []);
+
+  const handleSireDrawerExited = useCallback(() => {
+    if (hasSireChild) {
+      navigate(`/patients/${patient.id}`, { preventScrollReset: isTablet });
+    }
+  }, [hasSireChild, navigate, patient.id, isTablet]);
 
   const form = useForm<PatientFormValues>({
     initialValues: parsePatientToFormValues(patient),
@@ -195,6 +216,14 @@ export default function PatientDetail() {
         <Portal id="form-actions">
           <Group>
             <Button
+              component={Link}
+              to={`/patients/${patient.id}/sire`}
+              variant="light"
+              leftSection={<DropIcon size={16} />}
+            >
+              Anticoagulación
+            </Button>
+            <Button
               variant="outline"
               color="red"
               onClick={openDelete}
@@ -242,18 +271,27 @@ export default function PatientDetail() {
 
       {actionData?.success && <Alert color="green">{t('patients.saved_successfully')}</Alert>}
 
-      <Group>
-        <Button
-          component={Link}
-          to={`/patients/${patient.id}/sire`}
-          variant="light"
-          leftSection={<DropIcon size={16} />}
-        >
-          Anticoagulación
-        </Button>
-      </Group>
-
       <PatientForm form={form} readOnlyDocument />
+
+      {isTablet && (hasSireChild || sireDrawerOpen) && (
+        <RouteDrawer
+          opened={sireDrawerOpen}
+          onClose={handleSireDrawerClose}
+          onExited={handleSireDrawerExited}
+          position="right"
+          size="lg"
+          title="Anticoagulación"
+          skeleton={
+            <Stack gap="md" p="md">
+              <Skeleton h={80} />
+              <Skeleton h={200} />
+            </Stack>
+          }
+        >
+          <Outlet />
+        </RouteDrawer>
+      )}
+      {(!isTablet || !hasSireChild) && <Outlet />}
 
       {/* Delete confirmation modal */}
       <Modal opened={deleteOpened} onClose={closeDelete} title={t('patients.delete_confirm_title')}>
