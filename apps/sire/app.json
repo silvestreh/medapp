@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Athelas Sírë",
+    "slug": "athelas-sire",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "sire",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#69C6D8"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.athelas.sire"
+    },
+    "android": {
+      "package": "com.athelas.sire",
+      "adaptiveIcon": {
+        "backgroundColor": "#69C6D8",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "sounds": [],
+          "defaultChannel": "dose-reminders",
+          "enableBackgroundRemoteNotifications": false
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}

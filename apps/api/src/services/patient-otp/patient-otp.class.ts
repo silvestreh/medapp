@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { BadRequest } from '@feathersjs/errors';
 import type { Application } from '../../declarations';
 
-type PatientOtpAction = 'request-otp' | 'get-organization';
+type PatientOtpAction = 'request-otp' | 'get-organization' | 'list-organizations';
 
 export interface PendingOtp {
   code: string;
@@ -41,6 +41,8 @@ export class PatientOtp {
       return this.requestOtp(data);
     case 'get-organization':
       return this.getOrganization(data);
+    case 'list-organizations':
+      return this.listOrganizations();
     default:
       throw new BadRequest('Unsupported action');
     }
@@ -190,6 +192,23 @@ export class PatientOtp {
     console.log(`[Patient OTP] Code for document ${documentNumber}: ${code}`);
 
     return { action: 'request-otp', status: 'otp_sent', maskedPhone: this.maskPhone(result.phone) };
+  }
+
+  private async listOrganizations() {
+    const result = await this.app.service('organizations').find({
+      query: { isActive: true, $limit: 50 },
+    } as any) as any;
+
+    const organizations = result.data || result;
+
+    return {
+      action: 'list-organizations',
+      organizations: organizations.map((org: any) => ({
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+      })),
+    };
   }
 
   private async getOrganization(data: any) {

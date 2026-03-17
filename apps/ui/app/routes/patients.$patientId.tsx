@@ -1,12 +1,12 @@
 import { useCallback, useEffect } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
+import { Link, useFetcher, useLoaderData, useNavigate } from '@remix-run/react';
 import { Group, Button, Alert, Text, Modal } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { FloppyDiskIcon, TrashIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import { FloppyDiskIcon, TrashIcon, WarningCircleIcon, DropIcon } from '@phosphor-icons/react';
 import omit from 'lodash/omit';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
@@ -241,6 +241,17 @@ export default function PatientDetail() {
       )}
 
       {actionData?.success && <Alert color="green">{t('patients.saved_successfully')}</Alert>}
+
+      <Group>
+        <Button
+          component={Link}
+          to={`/patients/${patient.id}/sire`}
+          variant="light"
+          leftSection={<DropIcon size={16} />}
+        >
+          Anticoagulación
+        </Button>
+      </Group>
 
       <PatientForm form={form} readOnlyDocument />
 

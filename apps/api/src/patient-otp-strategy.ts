@@ -5,7 +5,7 @@ const MAX_VERIFY_ATTEMPTS = 5;
 
 export class PatientOtpStrategy extends AuthenticationBaseStrategy {
   async authenticate(data: any): Promise<AuthenticationResult> {
-    const { documentNumber, code, slug } = data;
+    const { documentNumber, code, slug, app: clientApp } = data;
 
     if (!documentNumber || typeof documentNumber !== 'string') {
       throw new BadRequest('Document number is required');
@@ -57,7 +57,35 @@ export class PatientOtpStrategy extends AuthenticationBaseStrategy {
     }
     const organizationId = String(organizations[0].id);
 
-    // Create a patient-scoped JWT with distinct audience
+    // For sire app: short-lived access token + refresh token + patient name
+    if (clientApp === 'sire') {
+      const refreshTokenService = this.app!.service('patient-refresh-tokens') as any;
+      const { accessToken, refreshToken } = await refreshTokenService.generateTokenPair(
+        pending.patientId,
+        organizationId,
+      );
+
+      // Fetch patient name to include in response
+      let patientName = '';
+      try {
+        const patientRecord = await this.app!.service('patients').get(pending.patientId) as any;
+        const pd = patientRecord.personalData;
+        if (pd) {
+          patientName = `${pd.firstName || ''} ${pd.lastName || ''}`.trim();
+        }
+      } catch {
+        // Name not available
+      }
+
+      return {
+        accessToken,
+        refreshToken,
+        authentication: { strategy: this.name },
+        patient: { id: pending.patientId, organizationId, name: patientName },
+      };
+    }
+
+    // Default: booking app behavior — 1-day access token, no refresh token
     const authService = this.app!.service('authentication') as any;
     const config = this.app!.get('patientAuthentication');
     const accessToken = await authService.createAccessToken(

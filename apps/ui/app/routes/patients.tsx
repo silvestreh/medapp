@@ -1,5 +1,6 @@
 import { type MetaFunction } from '@remix-run/node';
 import { Outlet } from '@remix-run/react';
+import '@mantine/dates/styles.css';
 
 import { authenticatedLoader } from '~/utils/auth.server';
 import { getPageTitle } from '~/utils/meta';

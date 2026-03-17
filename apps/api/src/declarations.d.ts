@@ -395,6 +395,79 @@ export interface IdentityVerification {
   updatedAt?: Date;
 }
 
+export interface PatientRefreshToken {
+  id: Id;
+  patientId: Id;
+  organizationId: Id;
+  tokenHash: string;
+  family: string;
+  audience: string;
+  expiresAt: Date;
+  revokedAt: Date | null;
+}
+
+export type SireTreatmentStatus = 'active' | 'paused' | 'completed';
+export type SireReadingSource = 'provider' | 'patient' | 'lab';
+
+export interface WeeklySchedule {
+  monday: number | null;
+  tuesday: number | null;
+  wednesday: number | null;
+  thursday: number | null;
+  friday: number | null;
+  saturday: number | null;
+  sunday: number | null;
+}
+
+export interface SireTreatment {
+  id: Id;
+  patientId: Id;
+  organizationId: Id;
+  medicId: Id;
+  medication: string;
+  tabletDoseMg: number;
+  indication: string | null;
+  targetInrMin: number;
+  targetInrMax: number;
+  startDate: string;
+  endDate: string | null;
+  nextControlDate: string | null;
+  status: SireTreatmentStatus;
+  notes: string | null;
+}
+
+export interface SireReading {
+  id: Id;
+  treatmentId: Id;
+  patientId: Id;
+  organizationId: Id;
+  date: string;
+  inr: number;
+  quick: number | null;
+  percentage: number | null;
+  source: SireReadingSource;
+}
+
+export interface SireDoseSchedule {
+  id: Id;
+  treatmentId: Id;
+  readingId: Id | null;
+  startDate: string;
+  endDate: string | null;
+  schedule: WeeklySchedule;
+  notes: string | null;
+  createdById: Id;
+}
+
+export interface SireDoseLog {
+  id: Id;
+  treatmentId: Id;
+  patientId: Id;
+  date: string;
+  taken: boolean;
+  expectedDose: number | null;
+}
+
 export interface EncounterAiChatMessage {
   id: Id;
   organizationId: Id;

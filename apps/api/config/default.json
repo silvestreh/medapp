@@ -9,6 +9,11 @@
   "patientAuthentication": {
     "audience": "https://booking.athel.as"
   },
+  "sireAuthentication": {
+    "audience": "https://sire.athel.as",
+    "accessTokenExpiresIn": "1h",
+    "refreshTokenExpiresIn": "90d"
+  },
   "authentication": {
     "entity": "user",
     "service": "users",
