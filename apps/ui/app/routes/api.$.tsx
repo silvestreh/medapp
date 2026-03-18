@@ -62,6 +62,12 @@ const ALLOWED_PATHS = new Set([
   'shared-encounter-access',
   'access-logs',
   'identity-verifications',
+  'sire-treatments',
+  'sire-readings',
+  'sire-dose-schedules',
+  'sire-dose-logs',
+  'sire-push-tokens',
+  'patient-refresh-tokens',
 ]);
 
 function getFirstSegment(request: Request): string {
