@@ -1,8 +1,16 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, FileInput, Group, PasswordInput, SegmentedControl, Text, Stack } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
-import { SignatureIcon, TrashIcon, UploadIcon, InfoIcon, ShieldCheckIcon, LockIcon, KeyIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
+import {
+  SignatureIcon,
+  TrashIcon,
+  UploadIcon,
+  InfoIcon,
+  ShieldCheckIcon,
+  LockIcon,
+  KeyIcon,
+} from '@phosphor-icons/react';
 
 import Portal from '~/components/portal';
 import { useFeathers } from '~/components/provider';
@@ -204,14 +212,9 @@ export function ProfileDigitalSignature({ certificate, onCertificateChange }: Pr
       <FormHeader>
         <SectionTitle icon={<SignatureIcon />}>{t('digital_signature.title')}</SectionTitle>
       </FormHeader>
-      <Alert
-        variant="light"
-        color="var(--mantine-primary-color-4)"
-        icon={<InfoIcon size={16} />}
-        style={{ flex: 1, marginBottom: '1rem' }}
-      >
+      <Text c="dimmed" size="sm" mb="md">
         {t('digital_signature.info_notice')}
-      </Alert>
+      </Text>
       <FormCard>
         {error && (
           <FieldRow label="" variant="stacked">

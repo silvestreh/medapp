@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouteLoaderData } from '@remix-run/react';
-import { Button, Card, Group, Image, Stack, Text, Title } from '@mantine/core';
+import { Button, Group, Image, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { WhatsappLogoIcon, PlugsConnectedIcon, ArrowsClockwiseIcon } from '@phosphor-icons/react';
 
 import { useFeathers } from '~/components/provider';
+import { FormCard, SectionTitle, FormHeader } from '~/components/forms/styles';
 import type { loader as settingsLoader } from '~/routes/settings';
 
 type ConnectionState = 'idle' | 'connecting' | 'connected' | 'error';
@@ -135,30 +136,29 @@ export default function WhatsAppSettingsRoute() {
   if (!parentData?.isOrgOwner || !parentData.currentOrg) return null;
 
   return (
-    <Stack gap="lg" maw={600}>
-      <Group gap="sm">
-        <WhatsappLogoIcon size={24} />
-        <Title order={3}>{t('profile.whatsapp_title')}</Title>
-      </Group>
+    <>
+      <FormHeader>
+        <SectionTitle icon={<WhatsappLogoIcon />}>{t('profile.whatsapp_title')}</SectionTitle>
+      </FormHeader>
 
-      <Text c="dimmed" size="sm">
+      <Text c="dimmed" size="sm" mb="md">
         {t('profile.whatsapp_description')}
       </Text>
 
       {state === 'idle' && (
-        <Card withBorder padding="lg">
-          <Stack align="center" gap="md">
+        <FormCard>
+          <Stack align="center" gap="md" p="lg">
             <Text ta="center">{t('profile.whatsapp_not_connected')}</Text>
             <Button onClick={handleConnect} loading={loading} leftSection={<WhatsappLogoIcon size={16} />}>
               {t('profile.whatsapp_connect')}
             </Button>
           </Stack>
-        </Card>
+        </FormCard>
       )}
 
       {state === 'connecting' && (
-        <Card withBorder padding="lg">
-          <Stack align="center" gap="md">
+        <FormCard>
+          <Stack align="center" gap="md" p="lg">
             <Text fw={500}>{t('profile.whatsapp_scan_qr')}</Text>
             <Text size="sm" c="dimmed" ta="center">
               {t('profile.whatsapp_scan_instructions')}
@@ -186,12 +186,12 @@ export default function WhatsAppSettingsRoute() {
               </Button>
             )}
           </Stack>
-        </Card>
+        </FormCard>
       )}
 
       {state === 'connected' && (
-        <Card withBorder padding="lg">
-          <Stack gap="md">
+        <FormCard>
+          <Stack gap="md" p="lg">
             <Group>
               <div
                 style={{
@@ -223,19 +223,19 @@ export default function WhatsAppSettingsRoute() {
               {t('profile.whatsapp_disconnect')}
             </Button>
           </Stack>
-        </Card>
+        </FormCard>
       )}
 
       {state === 'error' && (
-        <Card withBorder padding="lg">
-          <Stack align="center" gap="md">
+        <FormCard>
+          <Stack align="center" gap="md" p="lg">
             <Text c="red">{t('profile.whatsapp_error')}</Text>
             <Button onClick={handleConnect} loading={loading}>
               {t('profile.whatsapp_retry')}
             </Button>
           </Stack>
-        </Card>
+        </FormCard>
       )}
-    </Stack>
+    </>
   );
 }
