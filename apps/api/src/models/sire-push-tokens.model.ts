@@ -31,11 +31,6 @@ export default function (app: Application): typeof Model {
       type: DataTypes.ENUM('ios', 'android'),
       allowNull: true
     },
-    doseReminders: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true
-    }
   }, {
     hooks: {
       beforeCount(options: any): HookReturn {

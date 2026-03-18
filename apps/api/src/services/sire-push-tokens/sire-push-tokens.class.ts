@@ -9,7 +9,7 @@ export class SirePushTokens {
     this.app = app;
   }
 
-  async create(data: { action: string; token?: string; deviceName?: string; platform?: string; doseReminders?: boolean }, params?: any) {
+  async create(data: { action: string; token?: string; deviceName?: string; platform?: string }, params?: any) {
     const { action } = data;
 
     switch (action) {
@@ -17,8 +17,6 @@ export class SirePushTokens {
       return this.register(data, params);
     case 'unregister':
       return this.unregister(data, params);
-    case 'set-dose-reminders':
-      return this.setDoseReminders(data, params);
     default:
       throw new BadRequest('Unsupported action');
     }
@@ -83,26 +81,4 @@ export class SirePushTokens {
     return { action: 'unregister', status: 'ok' };
   }
 
-  private async setDoseReminders(data: { doseReminders?: boolean }, params: any) {
-    const { doseReminders } = data;
-
-    if (typeof doseReminders !== 'boolean') {
-      throw new BadRequest('doseReminders must be a boolean');
-    }
-
-    const patient = params?.patient;
-    if (!patient) {
-      throw new BadRequest('Patient context is required');
-    }
-
-    const sequelize = this.app.get('sequelizeClient');
-    const PushTokenModel = sequelize.models.sire_push_tokens;
-
-    await PushTokenModel.update(
-      { doseReminders },
-      { where: { patientId: patient.id } },
-    );
-
-    return { action: 'set-dose-reminders', status: 'ok', doseReminders };
-  }
 }

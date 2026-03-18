@@ -32,7 +32,7 @@ export default function (app: Application): typeof Model {
     },
     taken: {
       type: DataTypes.BOOLEAN,
-      allowNull: false
+      allowNull: true
     },
     expectedDose: {
       type: DataTypes.FLOAT,

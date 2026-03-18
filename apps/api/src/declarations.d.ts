@@ -464,7 +464,7 @@ export interface SireDoseLog {
   treatmentId: Id;
   patientId: Id;
   date: string;
-  taken: boolean;
+  taken: boolean | null;
   expectedDose: number | null;
 }
 
@@ -474,7 +474,6 @@ export interface SirePushToken {
   token: string;
   deviceName: string | null;
   platform: 'ios' | 'android' | null;
-  doseReminders: boolean;
 }
 
 export interface EncounterAiChatMessage {

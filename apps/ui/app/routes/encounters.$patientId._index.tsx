@@ -227,6 +227,35 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     }
   }
 
+  // Fetch active SIRE treatment + dose data
+  let sireData: any = null;
+  try {
+    const treatmentsResult = await client.service('sire-treatments').find({
+      query: { patientId, status: 'active', $sort: { createdAt: -1 }, $limit: 1 },
+    });
+    const treatments = (treatmentsResult as any).data || treatmentsResult;
+    if (treatments.length > 0) {
+      const treatment = treatments[0];
+      const [schedulesResult, doseLogsResult] = await Promise.all([
+        client.service('sire-dose-schedules').find({
+          query: { treatmentId: treatment.id, $sort: { startDate: -1 }, $limit: 1 },
+        }),
+        client.service('sire-dose-logs').find({
+          query: { treatmentId: treatment.id, patientId, $sort: { date: -1 }, $limit: 200 },
+        }),
+      ]);
+      const schedules = (schedulesResult as any).data || schedulesResult;
+      const doseLogs = (doseLogsResult as any).data || doseLogsResult;
+      sireData = {
+        treatment,
+        schedule: schedules[0] || null,
+        doseLogs,
+      };
+    }
+  } catch {
+    // sire services may not exist
+  }
+
   let prescriptions: any[] = [];
   let recetarioReady = false;
   if (isMedic && isVerified) {
@@ -258,6 +287,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     isCertificateEncrypted,
     prescriptions,
     recetarioReady,
+    sireData,
   };
 });
 
@@ -562,7 +592,7 @@ export default function PatientEncounterDetail() {
             </Tooltip>
           </Stack>
         ) : (
-          <PatientOverview patient={data.patient} encounters={data.encounters} />
+          <PatientOverview patient={data.patient} encounters={data.encounters} sireData={data.sireData} />
         )}
       </Content>
 

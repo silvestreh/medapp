@@ -1,4 +1,6 @@
-import { Text, Stack } from '@mantine/core';
+import { useMemo, useCallback } from 'react';
+import { Text, Stack, SimpleGrid, Indicator } from '@mantine/core';
+import { Calendar } from '@mantine/dates';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 
@@ -7,9 +9,32 @@ import { styled } from '~/styled-system/jsx';
 import { StyledTitle, FormCard, FieldRow, FormHeader } from '~/components/forms/styles';
 import { MedicareDisplay } from '~/components/medicare-display';
 
+interface SireData {
+  treatment: {
+    id: string;
+    medication: string;
+    tabletDoseMg: number;
+    targetInrMin: number;
+    targetInrMax: number;
+    startDate: string;
+    nextControlDate: string | null;
+  };
+  schedule: {
+    startDate: string;
+    endDate: string | null;
+    schedule: Record<string, number | null>;
+  } | null;
+  doseLogs: Array<{
+    date: string;
+    taken: boolean | null;
+    expectedDose: number | null;
+  }>;
+}
+
 interface PatientOverviewProps {
   patient: Patient;
   encounters: any[];
+  sireData?: SireData | null;
 }
 
 const Section = styled('div', {
@@ -17,6 +42,37 @@ const Section = styled('div', {
     marginBottom: '1.5rem',
   },
 });
+
+const DayCell = styled('div', {
+  base: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '1.25rem',
+  },
+});
+
+const SireLayout = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+
+    lg: {
+      flexDirection: 'row',
+    },
+  },
+});
+
+const CalendarContainer = styled('div', {
+  base: {
+    padding: '1rem',
+    borderRight: '1px solid var(--mantine-color-gray-2)',
+  },
+});
+
+const WEEKDAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 function getAge(birthDate: string | Date | null | undefined): number | null {
   if (!birthDate) return null;
@@ -44,12 +100,58 @@ function getLastEvolution(encounters: any[]): string | null {
   return null;
 }
 
-export function PatientOverview({ patient, encounters }: PatientOverviewProps) {
+function formatDose(dose: number | null): string {
+  if (dose == null) return '—';
+  if (dose === 0) return '0';
+  if (dose === 0.25) return '¼';
+  if (dose === 0.5) return '½';
+  if (dose === 0.75) return '¾';
+  if (dose === 1) return '1';
+  if (dose === 1.5) return '1½';
+  return String(dose);
+}
+
+export function PatientOverview({ patient, encounters, sireData }: PatientOverviewProps) {
   const { t } = useTranslation();
   const birthDate = (patient.personalData as any).birthDate;
   const age = getAge(birthDate);
   const formattedBirth = formatBirthDate(birthDate);
   const lastEvolution = getLastEvolution(encounters);
+
+  const doseLogMap = useMemo(() => {
+    if (!sireData?.doseLogs) return new Map<string, boolean | null>();
+    const map = new Map<string, boolean | null>();
+    for (const log of sireData.doseLogs) {
+      map.set(log.date, log.taken);
+    }
+    return map;
+  }, [sireData?.doseLogs]);
+
+  const calendarMinDate = sireData?.treatment.startDate;
+  const calendarMaxDate = sireData?.treatment.nextControlDate ?? dayjs().format('YYYY-MM-DD');
+  const today = dayjs().format('YYYY-MM-DD');
+
+  const renderDay = useCallback(
+    (dateStr: string) => {
+      const day = dayjs(dateStr).date();
+
+      // Only show indicators within the treatment window and up to today
+      const inRange = calendarMinDate && dateStr >= calendarMinDate && dateStr <= today && dateStr <= calendarMaxDate;
+      if (!inRange) {
+        return <DayCell>{day}</DayCell>;
+      }
+
+      const taken = doseLogMap.get(dateStr);
+      const isTaken = taken === true;
+
+      return (
+        <Indicator color={isTaken ? 'green' : 'red'} size={8} offset={-2}>
+          <DayCell>{day}</DayCell>
+        </Indicator>
+      );
+    },
+    [doseLogMap, calendarMinDate, calendarMaxDate, today]
+  );
 
   return (
     <Stack gap="xl">
@@ -132,6 +234,69 @@ export function PatientOverview({ patient, encounters }: PatientOverviewProps) {
           </FieldRow>
         </FormCard>
       </Section>
+
+      {sireData && (
+        <Section>
+          <FormHeader>
+            <StyledTitle order={1} mb="md">
+              Anticoagulación
+            </StyledTitle>
+          </FormHeader>
+
+          <FormCard>
+            <SireLayout>
+              <CalendarContainer>
+                <Calendar
+                  defaultDate={calendarMaxDate ?? new Date()}
+                  minDate={calendarMinDate}
+                  maxDate={calendarMaxDate ?? dayjs().format('YYYY-MM-DD')}
+                  renderDay={renderDay}
+                  highlightToday
+                  size="sm"
+                  weekendDays={[]}
+                  static
+                  styles={{
+                    day: { position: 'relative', cursor: 'default' },
+                  }}
+                />
+              </CalendarContainer>
+
+              <Stack gap={0} style={{ flex: 1 }}>
+                <FieldRow label="Medicación" variant="stacked">
+                  <Text>
+                    {sireData.treatment.medication} ({sireData.treatment.tabletDoseMg} mg)
+                  </Text>
+                </FieldRow>
+                <FieldRow label="INR objetivo" variant="stacked">
+                  <Text>
+                    Min: {sireData.treatment.targetInrMin} / Max: {sireData.treatment.targetInrMax}
+                  </Text>
+                </FieldRow>
+                <FieldRow label="Inicio" variant="stacked">
+                  <Text>{dayjs(sireData.treatment.startDate).format('DD/MM/YYYY')}</Text>
+                </FieldRow>
+
+                {sireData.schedule && (
+                  <FieldRow style={{ marginTop: 'auto' }}>
+                    <SimpleGrid cols={7} spacing="xs" style={{ width: '100%' }}>
+                      {WEEKDAY_KEYS.map((key, i) => (
+                        <Stack key={key} gap={2} align="center">
+                          <Text size="xs" c="dimmed" fw={500}>
+                            {WEEKDAY_LABELS[i]}
+                          </Text>
+                          <Text size="sm" fw={600}>
+                            {formatDose(sireData.schedule!.schedule[key] ?? null)}
+                          </Text>
+                        </Stack>
+                      ))}
+                    </SimpleGrid>
+                  </FieldRow>
+                )}
+              </Stack>
+            </SireLayout>
+          </FormCard>
+        </Section>
+      )}
     </Stack>
   );
 }

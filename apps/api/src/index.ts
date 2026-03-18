@@ -3,7 +3,7 @@ import Sentry from './sentry';
 import app from './app';
 import { scheduleAppointmentCleanup } from './cron/cleanup-appointments';
 import { scheduleLicenseRevalidation } from './cron/license-revalidation';
-import { scheduleDoseReminderPush } from './cron/dose-reminder-push';
+
 
 const port = app.get('port');
 const server = app.listen(port);
@@ -17,7 +17,7 @@ server.on('listening', () => {
   logger.info('Feathers application started on http://%s:%d', app.get('host'), port);
   scheduleAppointmentCleanup(app);
   scheduleLicenseRevalidation(app);
-  scheduleDoseReminderPush(app);
+
 
   app.service('access-logs').create({
     userId: null,
