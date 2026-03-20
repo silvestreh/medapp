@@ -11,7 +11,7 @@ describe('Configuration and role change logging', () => {
     org = await createTestOrganization();
     owner = await createTestUser({
       username: `test.config.owner.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['owner'],
       organizationId: org.id,
     });
@@ -53,7 +53,7 @@ describe('Configuration and role change logging', () => {
   it('logs user role assignments', async () => {
     const newUser = await createTestUser({
       username: `test.role.assign.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: [],
       organizationId: org.id,
     });
@@ -96,7 +96,7 @@ describe('Configuration and role change logging', () => {
   it('logs user role revocations', async () => {
     const revokeUser = await createTestUser({
       username: `test.role.revoke.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

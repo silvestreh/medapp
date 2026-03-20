@@ -24,6 +24,7 @@ import { useFeathers } from '~/components/provider';
 import { css } from '~/styled-system/css';
 import { FieldRow, StyledPasswordInput, StyledTextInput, SectionTitle, FormHeader } from '~/components/forms/styles';
 import { styled } from '~/styled-system/jsx';
+import { PasswordChecklist } from '~/components/password-checklist';
 
 const FormActions = styled('div', {
   base: {
@@ -259,6 +260,8 @@ export function ProfileSecurity({
   const [setupModalClosed, setSetupModalClosed] = useState(false);
   const [setupPayload, setSetupPayload] = useState<TwoFactorSetupPayload | null>(null);
   const [isRegisteringPasskey, setIsRegisteringPasskey] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [isNewPasswordValid, setIsNewPasswordValid] = useState(false);
 
   const hasSetupResult = actionData?.ok && actionData.intent === 'setup-2fa';
   const setupResult: TwoFactorSetupPayload | null =
@@ -295,6 +298,7 @@ export function ProfileSecurity({
   useEffect(() => {
     if (hasPasswordSuccess) {
       showNotification({ color: 'teal', message: t('profile.password_success') });
+      setNewPassword('');
     }
   }, [hasPasswordSuccess, t]);
 
@@ -382,6 +386,10 @@ export function ProfileSecurity({
     },
     [feathersClient, fetcher, t]
   );
+
+  const handleNewPasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewPassword(e.currentTarget.value);
+  }, []);
 
   return (
     <>
@@ -518,8 +526,15 @@ export function ProfileSecurity({
             <StyledPasswordInput name="currentPassword" required placeholder={t('profile.current_password')} />
           </FieldRow>
           <FieldRow label={`${t('profile.new_password')}:`} variant="stacked">
-            <StyledPasswordInput name="newPassword" required placeholder={t('profile.new_password')} />
+            <StyledPasswordInput
+              name="newPassword"
+              required
+              placeholder={t('profile.new_password')}
+              value={newPassword}
+              onChange={handleNewPasswordChange}
+            />
           </FieldRow>
+          <PasswordChecklist password={newPassword} onValidityChange={setIsNewPasswordValid} />
           {twoFactorEnabled && (
             <FieldRow label={`${t('profile.two_factor_code')}:`} variant="stacked">
               <StyledTextInput name="twoFactorCode" placeholder="123456" required />
@@ -527,7 +542,7 @@ export function ProfileSecurity({
           )}
         </PasswordFormContainer>
         {showFormActions && (
-          <Button type="submit" form="profile-change-password-form" ml="auto">
+          <Button type="submit" form="profile-change-password-form" ml="auto" disabled={!isNewPasswordValid}>
             {t('profile.update_password')}
           </Button>
         )}

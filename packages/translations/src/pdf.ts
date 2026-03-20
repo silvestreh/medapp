@@ -27,6 +27,11 @@ export interface PdfStrings {
   pdfSentTo: string;
   comments: string;
   conclusion: string;
+  attachments: string;
+  attachmentLabel: string;
+  encounter: string;
+  study: string;
+  seeAppendedPages: string;
 }
 
 const es: PdfStrings = {
@@ -56,6 +61,11 @@ const es: PdfStrings = {
   pdfSentTo: 'PDF enviado a',
   comments: 'Comentarios',
   conclusion: 'Conclusión',
+  attachments: 'Adjuntos',
+  attachmentLabel: 'Adjunto',
+  encounter: 'Consulta',
+  study: 'Estudio',
+  seeAppendedPages: 'Ver páginas adjuntas al final',
 };
 
 const en: PdfStrings = {
@@ -85,6 +95,11 @@ const en: PdfStrings = {
   pdfSentTo: 'PDF sent to',
   comments: 'Comments',
   conclusion: 'Conclusion',
+  attachments: 'Attachments',
+  attachmentLabel: 'Attachment',
+  encounter: 'Encounter',
+  study: 'Study',
+  seeAppendedPages: 'See appended pages at end',
 };
 
 const pdfTranslations: Record<PdfLocale, PdfStrings> = { es, en };

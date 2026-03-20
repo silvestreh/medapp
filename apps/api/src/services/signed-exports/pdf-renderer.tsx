@@ -31,12 +31,27 @@ export interface PdfPatientInfo {
   medicarePlan: string | null;
 }
 
+export interface PdfImageAttachment {
+  fileName: string;
+  mimeType: string;
+  buffer: Buffer;
+}
+
+export interface PdfAttachmentMergeInfo {
+  encounterId: string;
+  encounterDate: string;
+  fileName: string;
+  buffer: Buffer;
+}
+
 export interface PdfEncounter {
   id: string;
   date: string;
   doctorName: string;
   doctorTitle: string;
   data: Record<string, any>;
+  imageAttachments?: PdfImageAttachment[];
+  pdfAttachmentNames?: string[];
 }
 
 export interface PdfStudyResult {
@@ -277,8 +292,47 @@ async function loadReactPdf() {
   return _reactPdf;
 }
 
+// --- Timeline entry types ---
+
+interface TimelineEntryBase {
+  date: string;
+  doctorLabel: string;
+}
+
+interface EncounterEntry extends TimelineEntryBase {
+  type: 'encounter';
+  sections: FormSectionData[];
+}
+
+interface StudyEntry extends TimelineEntryBase {
+  type: 'study';
+  protocol: number;
+  referringDoctor: string | null;
+  resultSections: FormSectionData[];
+  hasAnyReference: boolean;
+}
+
+interface ImageAttachmentEntry extends TimelineEntryBase {
+  type: 'image-attachment';
+  attachment: PdfImageAttachment;
+}
+
+interface PdfAttachmentEntry extends TimelineEntryBase {
+  type: 'pdf-attachment';
+  fileName: string;
+}
+
+type TimelineEntry = EncounterEntry | StudyEntry | ImageAttachmentEntry | PdfAttachmentEntry;
+
+const TIMELINE_COLORS: Record<TimelineEntry['type'], { dot: string; bg: string; text: string }> = {
+  encounter:          { dot: '#2563eb', bg: '#eff6ff', text: '#1e40af' },
+  study:              { dot: '#16a34a', bg: '#f0fdf4', text: '#166534' },
+  'image-attachment': { dot: '#d97706', bg: '#fffbeb', text: '#92400e' },
+  'pdf-attachment':   { dot: '#d97706', bg: '#fffbeb', text: '#92400e' },
+};
+
 export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promise<Buffer> {
-  const { Document, Page, Text, View, StyleSheet, renderToBuffer } = await loadReactPdf();
+  const { Document, Page, Text, View, Image, StyleSheet, renderToBuffer } = await loadReactPdf();
 
   const t = getPdfTranslations(options.locale);
 
@@ -306,16 +360,6 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
       color: '#4b5563',
       lineHeight: 1.4,
     },
-    sectionTitle: {
-      fontSize: 12,
-      fontFamily: 'Helvetica-Bold',
-      color: '#2563eb',
-      marginTop: 16,
-      marginBottom: 8,
-      paddingBottom: 4,
-      borderBottomWidth: 1,
-      borderBottomColor: '#e5e7eb',
-    },
     patientBlock: {
       backgroundColor: '#f9fafb',
       padding: 10,
@@ -335,49 +379,81 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
       flex: 1,
       color: '#1a1a1a',
     },
+    sectionTitle: {
+      fontSize: 12,
+      fontFamily: 'Helvetica-Bold',
+      color: '#2563eb',
+      marginTop: 16,
+      marginBottom: 8,
+      paddingBottom: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: '#e5e7eb',
+    },
     dateRange: {
       fontSize: 10,
       color: '#6b7280',
-      marginBottom: 12,
+      marginBottom: 16,
       fontStyle: 'italic',
     },
-    encounterCard: {
-      marginBottom: 14,
-      borderWidth: 1,
-      borderColor: '#e5e7eb',
-      borderRadius: 4,
-      overflow: 'hidden',
+    // --- Timeline styles ---
+    timelineRow: {
+      flexDirection: 'row',
     },
-    encounterHeader: {
-      backgroundColor: '#eff6ff',
-      padding: 8,
+    timelineGutter: {
+      width: 20,
+      alignItems: 'center',
+    },
+    timelineConnector: {
+      width: 2,
+      backgroundColor: '#d1d5db',
+    },
+    timelineContent: {
+      flex: 1,
+      paddingLeft: 10,
+    },
+    entryHeader: {
+      padding: 6,
+      borderRadius: 3,
       flexDirection: 'row',
       justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 6,
     },
-    encounterDate: {
+    entryDateLabel: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    entryDate: {
       fontFamily: 'Helvetica-Bold',
-      fontSize: 10,
-      color: '#1e40af',
-    },
-    encounterDoctor: {
       fontSize: 9,
-      color: '#4b5563',
     },
+    entryTypeLabel: {
+      fontSize: 7,
+      fontFamily: 'Helvetica-Bold',
+      marginLeft: 6,
+      paddingHorizontal: 4,
+      paddingVertical: 1,
+      borderRadius: 2,
+      color: '#ffffff',
+    },
+    entryDoctor: {
+      fontSize: 8,
+      color: '#6b7280',
+    },
+    // --- Shared content styles ---
     formSection: {
-      padding: 8,
-      borderTopWidth: 1,
-      borderTopColor: '#f3f4f6',
+      paddingBottom: 4,
     },
     formTitle: {
       fontFamily: 'Helvetica-Bold',
-      fontSize: 10,
+      fontSize: 9,
       color: '#374151',
-      marginBottom: 4,
+      marginBottom: 3,
     },
     fieldRow: {
       flexDirection: 'row',
       marginBottom: 2,
-      paddingLeft: 8,
+      paddingLeft: 4,
     },
     fieldLabel: {
       fontFamily: 'Helvetica-Bold',
@@ -396,6 +472,24 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
       color: '#9ca3af',
       textAlign: 'right',
     },
+    // --- Attachment styles ---
+    attachmentImage: {
+      maxWidth: '100%',
+      maxHeight: 400,
+      objectFit: 'contain' as any,
+      marginBottom: 4,
+    },
+    attachmentFileName: {
+      fontSize: 8,
+      color: '#9ca3af',
+    },
+    pdfAttachmentNote: {
+      fontSize: 8,
+      color: '#6b7280',
+      fontStyle: 'italic',
+      marginTop: 2,
+    },
+    // --- Footer / signature ---
     signatureBlock: {
       marginTop: 30,
       paddingTop: 12,
@@ -426,6 +520,8 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
     },
   });
 
+  // --- Helper components ---
+
   function RenderedLines({ lines, showReference }: { lines: PdfLine[]; showReference?: boolean }) {
     return (
       <>
@@ -449,101 +545,131 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
     );
   }
 
-  function EncounterBlock({ encounter }: { encounter: PdfEncounter }) {
-    const encounterData = typeof encounter.data === 'string'
-      ? JSON.parse(encounter.data)
-      : encounter.data;
+  function typeLabel(entry: TimelineEntry): string {
+    switch (entry.type) {
+      case 'encounter': return t.encounter;
+      case 'study': return t.study;
+      case 'image-attachment':
+      case 'pdf-attachment': return t.attachmentLabel;
+    }
+  }
 
+  function EntryContent({ entry }: { entry: TimelineEntry }) {
+    switch (entry.type) {
+      case 'encounter':
+        return (
+          <>
+            {entry.sections.map((section, i) => (
+              <View key={i} style={styles.formSection}>
+                <Text style={styles.formTitle}>{section.label}</Text>
+                <RenderedLines lines={section.lines} />
+              </View>
+            ))}
+          </>
+        );
+      case 'study':
+        return (
+          <>
+            {entry.resultSections.map((section, i) => (
+              <View key={i} style={styles.formSection}>
+                <Text style={styles.formTitle}>{section.label}</Text>
+                <RenderedLines lines={section.lines} showReference={entry.hasAnyReference} />
+              </View>
+            ))}
+          </>
+        );
+      case 'image-attachment':
+        return (
+          <View wrap={false}>
+            <Image
+              src={{ data: entry.attachment.buffer, format: entry.attachment.mimeType === 'image/jpeg' ? 'jpg' : 'png' }}
+              style={styles.attachmentImage}
+            />
+            <Text style={styles.attachmentFileName}>{entry.attachment.fileName}</Text>
+          </View>
+        );
+      case 'pdf-attachment':
+        return (
+          <View>
+            <Text style={{ fontSize: 9, color: '#1a1a1a' }}>{entry.fileName}</Text>
+            <Text style={styles.pdfAttachmentNote}>{t.seeAppendedPages}</Text>
+          </View>
+        );
+    }
+  }
+
+  // --- Build chronological timeline ---
+
+  const { organizationName, doctor, patient, encounters, studies, startDate, endDate, isSigned } = options;
+
+  const timelineEntries: TimelineEntry[] = [];
+
+  for (const enc of encounters) {
+    const encounterData = typeof enc.data === 'string' ? JSON.parse(enc.data) : enc.data;
     const sections: FormSectionData[] = [];
 
     for (const formKey of FORM_KEY_ORDER) {
       const formData = encounterData[formKey];
       if (!formData) continue;
-
       const formDef = encounterForms[formKey];
       if (!formDef) continue;
-
       const formValues = formDef.adapter.fromLegacy(formData);
       const lines = extractFormLines(formDef.schema, formValues, t, options.locale);
       if (lines.length === 0) continue;
-
       sections.push({ label: translateLabel(options.locale, formDef.schema.label), lines });
     }
 
-    if (sections.length === 0) return null;
+    const doctorLabel = `${enc.doctorTitle} ${enc.doctorName}`;
 
-    return (
-      <View style={styles.encounterCard} wrap={false}>
-        <View style={styles.encounterHeader}>
-          <Text style={styles.encounterDate}>
-            {dayjs(encounter.date).format('DD/MM/YYYY')}
-          </Text>
-          <Text style={styles.encounterDoctor}>{encounter.doctorTitle} {encounter.doctorName}</Text>
-        </View>
-        {sections.map((section, i) => (
-          <View key={i} style={styles.formSection}>
-            <Text style={styles.formTitle}>{section.label}</Text>
-            <RenderedLines lines={section.lines} />
-          </View>
-        ))}
-      </View>
-    );
+    if (sections.length > 0) {
+      timelineEntries.push({ type: 'encounter', date: enc.date, doctorLabel, sections });
+    }
+
+    for (const img of enc.imageAttachments || []) {
+      timelineEntries.push({ type: 'image-attachment', date: enc.date, doctorLabel, attachment: img });
+    }
+
+    for (const name of enc.pdfAttachmentNames || []) {
+      timelineEntries.push({ type: 'pdf-attachment', date: enc.date, doctorLabel, fileName: name });
+    }
   }
 
-  function StudyBlock({ study }: { study: PdfStudy }) {
+  for (const study of studies) {
     const resultSections: FormSectionData[] = [];
-
     for (const result of study.results) {
       const schema = studySchemas[result.type];
       if (!schema) continue;
-
       const data = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
       const lines = extractStudyLines(schema, data, options.patientGender, options.locale);
-
-      if (data.comments) {
-        lines.push({ kind: 'field', label: t.comments, value: String(data.comments) });
-      }
-      if (data.conclusion) {
-        lines.push({ kind: 'field', label: t.conclusion, value: String(data.conclusion) });
-      }
-
+      if (data.comments) lines.push({ kind: 'field', label: t.comments, value: String(data.comments) });
+      if (data.conclusion) lines.push({ kind: 'field', label: t.conclusion, value: String(data.conclusion) });
       if (lines.length === 0) continue;
-
       resultSections.push({ label: translateLabel(options.locale, schema.label), lines });
     }
 
-    if (resultSections.length === 0) return null;
+    if (resultSections.length === 0) continue;
 
-    const doctorLine = study.referringDoctor
+    const doctorLabel = study.referringDoctor
       ? `${t.referringDoctor} ${study.referringDoctor}`
       : `${study.doctorTitle} ${study.doctorName}`;
 
-    const hasAnyReference = resultSections.some((s) =>
-      s.lines.some((l) => l.reference)
-    );
+    const hasAnyReference = resultSections.some((s) => s.lines.some((l) => l.reference));
 
-    return (
-      <View style={styles.encounterCard}>
-        <View style={[styles.encounterHeader, { backgroundColor: '#f0fdf4' }]} wrap={false}>
-          <Text style={[styles.encounterDate, { color: '#166534' }]}>
-            {dayjs(study.date).format('DD/MM/YYYY')} — {t.protocol} #{study.protocol}
-          </Text>
-          <Text style={styles.encounterDoctor}>{doctorLine}</Text>
-        </View>
-        {resultSections.map((section, i) => (
-          <View key={i} style={styles.formSection} wrap={false}>
-            <Text style={styles.formTitle}>{section.label}</Text>
-            <RenderedLines lines={section.lines} showReference={hasAnyReference} />
-          </View>
-        ))}
-      </View>
-    );
+    timelineEntries.push({
+      type: 'study',
+      date: study.date,
+      doctorLabel,
+      protocol: study.protocol,
+      referringDoctor: study.referringDoctor,
+      resultSections,
+      hasAnyReference,
+    });
   }
 
-  const { organizationName, doctor, patient, encounters, studies, startDate, endDate, isSigned } = options;
+  // Sort chronologically (stable sort preserves encounter→attachment order for same date)
+  timelineEntries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const hasEncounters = encounters.length > 0;
-  const hasStudies = studies.length > 0;
+  const hasEntries = timelineEntries.length > 0;
 
   const dateRangeText = startDate && endDate
     ? `${t.periodRange} ${dayjs(startDate).format('DD/MM/YYYY')} ${t.periodTo} ${dayjs(endDate).format('DD/MM/YYYY')}`
@@ -598,38 +724,64 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
 
         <Text style={styles.dateRange}>{dateRangeText}</Text>
 
-        {hasEncounters && (
-          <>
-            <Text style={styles.sectionTitle}>{t.encounters}</Text>
-            {encounters.map((encounter) => (
-              <EncounterBlock key={encounter.id} encounter={encounter} />
-            ))}
-          </>
-        )}
+        {hasEntries && timelineEntries.map((entry, i) => {
+          const colors = TIMELINE_COLORS[entry.type];
+          const isFirst = i === 0;
+          const isLast = i === timelineEntries.length - 1;
 
-        {hasStudies && (
-          <>
-            <Text style={styles.sectionTitle}>{t.studies}</Text>
-            {studies.map((study) => (
-              <StudyBlock key={study.id} study={study} />
-            ))}
-          </>
-        )}
+          return (
+            <View key={i} style={styles.timelineRow}>
+              {/* Timeline gutter: connector line + dot */}
+              <View style={styles.timelineGutter}>
+                {!isFirst && (
+                  <View style={[styles.timelineConnector, { height: 6 }]} />
+                )}
+                <View style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: colors.dot,
+                }} />
+                {!isLast && (
+                  <View style={[styles.timelineConnector, { flex: 1 }]} />
+                )}
+              </View>
 
-        {!hasEncounters && !hasStudies && (
+              {/* Entry content */}
+              <View style={[styles.timelineContent, { paddingBottom: isLast ? 0 : 14 }]}>
+                {/* Entry header */}
+                <View style={[styles.entryHeader, { backgroundColor: colors.bg }]} wrap={false}>
+                  <View style={styles.entryDateLabel}>
+                    <Text style={[styles.entryDate, { color: colors.text }]}>
+                      {dayjs(entry.date).format('DD/MM/YYYY')}
+                      {entry.type === 'study' ? ` — ${t.protocol} #${entry.protocol}` : ''}
+                    </Text>
+                    <Text style={[styles.entryTypeLabel, { backgroundColor: colors.dot }]}>
+                      {typeLabel(entry)}
+                    </Text>
+                  </View>
+                  <Text style={styles.entryDoctor}>{entry.doctorLabel}</Text>
+                </View>
+
+                {/* Entry body */}
+                <EntryContent entry={entry} />
+              </View>
+            </View>
+          );
+        })}
+
+        {!hasEntries && (
           <Text style={styles.emptyNote}>{t.noRecords}</Text>
         )}
 
         {isSigned && (
           <View style={styles.signatureBlock}>
-            <>
-              <Text style={styles.signatureText}>
-                {t.signedBy} {doctor.fullName}
-              </Text>
-              {doctor.nationalLicenseNumber && (
-                <Text style={styles.signatureText}>M.N. {doctor.nationalLicenseNumber}</Text>
-              )}
-            </>
+            <Text style={styles.signatureText}>
+              {t.signedBy} {doctor.fullName}
+            </Text>
+            {doctor.nationalLicenseNumber && (
+              <Text style={styles.signatureText}>M.N. {doctor.nationalLicenseNumber}</Text>
+            )}
           </View>
         )}
 

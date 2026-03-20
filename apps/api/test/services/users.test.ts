@@ -18,7 +18,7 @@ describe('\'users\' service', () => {
     it('creates contact data and association when contactData is provided', async () => {
       const userData: Partial<User> = {
         username: 'test5',
-        password: 'Password123',
+        password: 'Password123!',
         contactData: {
           streetAddress: '123 Test St',
           city: 'Test City',
@@ -53,7 +53,7 @@ describe('\'users\' service', () => {
     it('skips contact data creation when contactData is not provided', async () => {
       const userData = {
         username: 'test2',
-        password: 'Password123',
+        password: 'Password123!',
       };
 
       user = await service.create(userData);
@@ -72,7 +72,7 @@ describe('\'users\' service', () => {
     it('creates personal data and association when personalData is provided', async () => {
       const userData = {
         username: 'test3',
-        password: 'Password123',
+        password: 'Password123!',
         personalData: {
           firstName: 'Test',
           lastName: 'User',
@@ -101,7 +101,7 @@ describe('\'users\' service', () => {
     it('skips personal data creation when personalData is not provided', async () => {
       const userData = {
         username: 'test4',
-        password: 'Password123',
+        password: 'Password123!',
       };
 
       user = await service.create(userData);

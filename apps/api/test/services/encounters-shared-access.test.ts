@@ -25,14 +25,14 @@ describe('encounters shared access', () => {
 
     medicA = await createTestUser({
       username: `test.shared.enc.a.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });
 
     medicB = await createTestUser({
       username: `test.shared.enc.b.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

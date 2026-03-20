@@ -11,7 +11,7 @@ describe('\'document-signatures\' service', () => {
     org = await createTestOrganization();
     medic = await createTestUser({
       username: `docsig.medic.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

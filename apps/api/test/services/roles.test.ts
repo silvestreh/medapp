@@ -20,7 +20,7 @@ describe('\'roles\' service', () => {
 
     medicUser = await createTestUser({
       username: 'test.medic',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });
@@ -32,7 +32,7 @@ describe('\'roles\' service', () => {
 
     receptionistUser = await createTestUser({
       username: 'test.receptionist',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['receptionist'],
       organizationId: org.id,
     });
@@ -51,7 +51,7 @@ describe('\'roles\' service', () => {
 
     await createTestUser({
       username: 'limited.user',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['limited-patch'],
       organizationId: org.id,
     });
@@ -72,7 +72,7 @@ describe('\'roles\' service', () => {
       await client.authenticate({
         strategy: 'local',
         username: medicUser.username,
-        password: 'SuperSecret1'
+        password: 'SuperSecret1!'
       });
 
       encounter = await client.service('encounters').create({
@@ -94,7 +94,7 @@ describe('\'roles\' service', () => {
       await client.authenticate({
         strategy: 'local',
         username: receptionistUser.username,
-        password: 'SuperSecret1'
+        password: 'SuperSecret1!'
       });
 
       try {
@@ -122,7 +122,7 @@ describe('\'roles\' service', () => {
 
       const anotherMedic = await createTestUser({
         username: 'another.medic',
-        password: 'SuperSecret1',
+        password: 'SuperSecret1!',
         roleIds: ['medic'],
         organizationId: org.id,
       });
@@ -135,7 +135,7 @@ describe('\'roles\' service', () => {
       await client.authenticate({
         strategy: 'local',
         username: anotherMedic.username,
-        password: 'SuperSecret1'
+        password: 'SuperSecret1!'
       });
 
       // Try to read encounter created by first medic
@@ -152,7 +152,7 @@ describe('\'roles\' service', () => {
       await client.authenticate({
         strategy: 'local',
         username: 'limited.user',
-        password: 'SuperSecret1'
+        password: 'SuperSecret1!'
       });
 
       await client.service('patients').patch(patient.id, {
@@ -163,7 +163,7 @@ describe('\'roles\' service', () => {
       await client.authenticate({
         strategy: 'local',
         username: medicUser.username,
-        password: 'SuperSecret1'
+        password: 'SuperSecret1!'
       });
 
       const updatedPatient = await client.service('patients').get(patient.id);
@@ -174,7 +174,7 @@ describe('\'roles\' service', () => {
       await client.authenticate({
         strategy: 'local',
         username: 'limited.user',
-        password: 'SuperSecret1'
+        password: 'SuperSecret1!'
       });
 
       await client.service('patients').patch(patient.id, {
@@ -185,7 +185,7 @@ describe('\'roles\' service', () => {
       await client.authenticate({
         strategy: 'local',
         username: medicUser.username,
-        password: 'SuperSecret1'
+        password: 'SuperSecret1!'
       });
 
       const ignoredUpdate = await client.service('patients').get(patient.id);

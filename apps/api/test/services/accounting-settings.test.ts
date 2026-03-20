@@ -22,7 +22,7 @@ describe('\'accounting-settings\' service', () => {
     } else {
       medic = await app.service('users').create({
         username: 'test.medic.acct-settings',
-        password: 'SuperSecret1',
+        password: 'SuperSecret1!',
       } as any);
     }
   });
@@ -79,7 +79,7 @@ describe('\'accounting-settings\' service', () => {
   it('defaults insurerPrices to empty object', async () => {
     const other = await app.service('users').create({
       username: `test.medic.acct-default-${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
     } as any);
 
     const settings = await app.service('accounting-settings').create({

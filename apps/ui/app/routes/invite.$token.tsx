@@ -7,6 +7,7 @@ import { WarningCircleIcon, CheckIcon } from '@phosphor-icons/react';
 
 import createFeathersClient from '~/feathers';
 import { getSession, commitSession } from '~/session';
+import { PasswordChecklist } from '~/components/password-checklist';
 
 type InviteData = {
   id: string;
@@ -127,9 +128,15 @@ export default function InviteAcceptPage() {
   const actionData = useActionData<typeof action>();
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
+  const [password, setPassword] = useState('');
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
 
   const handleSubmit = useCallback(() => {
     setSubmitting(true);
+  }, []);
+
+  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.currentTarget.value);
   }, []);
 
   if (!invite || error === 'not_found') {
@@ -198,21 +205,30 @@ export default function InviteAcceptPage() {
                 name="password"
                 placeholder={t('invite.password_placeholder')}
                 required
-                mb="md"
+                value={password}
+                onChange={handlePasswordChange}
+                mb="xs"
               />
+              <PasswordChecklist password={password} onValidityChange={setIsPasswordValid} />
               <PasswordInput
                 label={t('invite.confirm_password')}
                 name="confirmPassword"
                 placeholder={t('invite.confirm_password_placeholder')}
                 required
                 mb="xl"
+                mt="md"
               />
             </>
           )}
 
           {!showPasswordForm && <Text mb="xl">{t('invite.accept_description')}</Text>}
 
-          <Button type="submit" fullWidth loading={submitting}>
+          <Button
+            type="submit"
+            fullWidth
+            loading={submitting}
+            disabled={showPasswordForm ? !isPasswordValid : false}
+          >
             {showPasswordForm ? t('invite.set_password_and_join') : t('invite.accept')}
           </Button>
         </Form>

@@ -12,7 +12,7 @@ describe('send-sire-push hook', () => {
     org = await createTestOrganization({ slug: `sire-hook-${Date.now()}` });
     user = await createTestUser({
       username: `hook.medic.${Date.now()}@test.com`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

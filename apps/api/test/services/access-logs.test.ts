@@ -11,7 +11,7 @@ describe('\'access-logs\' service', () => {
     org = await createTestOrganization();
     user = await createTestUser({
       username: `test.access.logs.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });
@@ -186,7 +186,7 @@ describe('\'access-logs\' service', () => {
       chainOrg = await createTestOrganization();
       chainUser = await createTestUser({
         username: `test.chain.${Date.now()}`,
-        password: 'SuperSecret1',
+        password: 'SuperSecret1!',
         roleIds: ['medic'],
         organizationId: chainOrg.id,
       });
@@ -240,7 +240,7 @@ describe('\'access-logs\' service', () => {
       const otherOrg = await createTestOrganization();
       const otherUser = await createTestUser({
         username: `test.chain.other.${Date.now()}`,
-        password: 'SuperSecret1',
+        password: 'SuperSecret1!',
         roleIds: ['medic'],
         organizationId: otherOrg.id,
       });
@@ -284,7 +284,7 @@ describe('\'access-logs\' service', () => {
 
       const refesUser = await createTestUser({
         username: `test.refes.${Date.now()}`,
-        password: 'SuperSecret1',
+        password: 'SuperSecret1!',
         roleIds: ['medic'],
         organizationId: refesOrg.id,
       });

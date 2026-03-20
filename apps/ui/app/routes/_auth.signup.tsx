@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import { redirect, type ActionFunction, type LoaderFunctionArgs } from '@remix-run/node';
 import { Form, useLoaderData } from '@remix-run/react';
 import { TextInput, PasswordInput, Button, Paper, Title, Container } from '@mantine/core';
@@ -5,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import createFeathersClient from '~/feathers';
 import { getSession, commitSession } from '~/session';
+import { PasswordChecklist } from '~/components/password-checklist';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get('Cookie'));
@@ -68,6 +70,12 @@ export const action: ActionFunction = async ({ request }) => {
 export default function Login() {
   const { error } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
+  const [password, setPassword] = useState('');
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+
+  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.currentTarget.value);
+  }, []);
 
   return (
     <Container size={420} my={40}>
@@ -96,12 +104,15 @@ export default function Login() {
             name="password"
             placeholder={t('auth.password_placeholder')}
             required
-            mb="xl"
+            value={password}
+            onChange={handlePasswordChange}
+            mb="xs"
           />
+          <PasswordChecklist password={password} onValidityChange={setIsPasswordValid} />
 
           {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{t('auth.invalid_credentials')}</div>}
 
-          <Button type="submit" fullWidth>
+          <Button type="submit" fullWidth disabled={!isPasswordValid} mt="md">
             {t('auth.sign_up')}
           </Button>
         </Form>

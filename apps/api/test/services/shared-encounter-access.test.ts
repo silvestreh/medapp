@@ -14,21 +14,21 @@ describe('\'shared-encounter-access\' service', () => {
 
     medicA = await createTestUser({
       username: `test.medic.share.a.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });
 
     medicB = await createTestUser({
       username: `test.medic.share.b.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });
 
     nonMedicUser = await createTestUser({
       username: `test.receptionist.share.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['receptionist'],
       organizationId: org.id,
     });

@@ -11,7 +11,7 @@ describe('\'encounter-chain-verification\' service', () => {
     const org = await createTestOrganization();
     medic = await createTestUser({
       username: `test.medic.chain.verify.${suffix}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

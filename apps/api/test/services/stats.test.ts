@@ -55,7 +55,7 @@ describe('\'stats\' service', () => {
 
     labOwner = await app.service('users').create({
       username: `stats.labowner.${uniqueSuffix}`,
-      password: 'Password123',
+      password: 'Password123!',
     } as any);
 
     await app.service('organization-users').create({
@@ -71,7 +71,7 @@ describe('\'stats\' service', () => {
 
     medic = await app.service('users').create({
       username: `stats.medic.${uniqueSuffix}`,
-      password: 'Password123',
+      password: 'Password123!',
     } as any);
 
     await app.service('organization-users').create({
@@ -372,7 +372,7 @@ describe('\'stats\' service', () => {
     await client.authenticate({
       strategy: 'local',
       username: `stats.labowner.${uniqueSuffix}`,
-      password: 'Password123',
+      password: 'Password123!',
     });
 
     const result: any = await client.service('stats').find({
@@ -390,7 +390,7 @@ describe('\'stats\' service', () => {
     await client.authenticate({
       strategy: 'local',
       username: `stats.medic.${uniqueSuffix}`,
-      password: 'Password123',
+      password: 'Password123!',
     });
 
     try {

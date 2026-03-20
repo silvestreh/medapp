@@ -178,10 +178,10 @@ export async function processUsers({
 
     const roles = [baseRole];
     if (userId === JUANCA_ID) {
-      roles.push('owner', 'lab-owner');
+      roles.push('owner', 'lab-owner', 'prescriber');
     }
     if (user.username?.toLowerCase() === 'jeniferos') {
-      roles.push('accounting', 'lab-tech');
+      roles.push('accounting', 'lab-tech', 'admin', 'prescriber');
     }
 
     seedUsers.push({

@@ -1,6 +1,7 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
 import { BadRequest, NotFound } from '@feathersjs/errors';
 import * as local from '@feathersjs/authentication-local';
+import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from '../../../utils/validate-password';
 
 const { hashPassword } = local.hooks;
 
@@ -29,6 +30,10 @@ const handleAcceptAction = (): Hook => async (context: HookContext): Promise<Hoo
   }
 
   if (data.password) {
+    if (!isPasswordValid(data.password)) {
+      throw new BadRequest(PASSWORD_POLICY_MESSAGE);
+    }
+
     context.data = { password: data.password };
     await hashPassword('password')(context);
     const hashedPassword = context.data.password;

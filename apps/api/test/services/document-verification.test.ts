@@ -25,7 +25,7 @@ describe('\'document-verification\' service', () => {
 
     medic = await app.service('users').create({
       username: `verify.test.medic.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       personalData: {
         firstName: 'Verify',
         lastName: 'Doctor',

@@ -15,7 +15,7 @@ describe('\'referring-doctors\' service', () => {
 
     medic = await app.service('users').create({
       username: 'refdoc.medic',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       personalData: {
         firstName: 'Carlos',
         lastName: 'Gomez',

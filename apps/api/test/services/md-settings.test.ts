@@ -9,7 +9,7 @@ describe('\'md-settings\' service', () => {
     const org = await createTestOrganization();
     user = await createTestUser({
       username: 'test.medic.md.settings.accounting',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

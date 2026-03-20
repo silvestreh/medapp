@@ -7,7 +7,7 @@ describe('Access control denial logging', () => {
     const org = await createTestOrganization();
     const user = await createTestUser({
       username: `test.denial.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

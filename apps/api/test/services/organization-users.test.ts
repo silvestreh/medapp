@@ -14,7 +14,7 @@ describe('\'organization-users\' service', () => {
 
     user = await app.service('users').create({
       username: 'org.member.test',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
     });
   });
 
@@ -37,7 +37,7 @@ describe('\'organization-users\' service', () => {
   it('creates membership without role field', async () => {
     const anotherUser = await app.service('users').create({
       username: 'org.default.role',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
     });
 
     const membership: any = await app.service('organization-users').create({
@@ -53,7 +53,7 @@ describe('\'organization-users\' service', () => {
   it('enforces unique organization-user pair', async () => {
     const uniqueUser = await app.service('users').create({
       username: 'org.unique.pair',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
     });
 
     await app.service('organization-users').create({

@@ -13,7 +13,7 @@ describe('authentication', () => {
   describe('local strategy', () => {
     const userInfo = {
       username: 'someone@example.com',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
     };
 
     before(async () => {

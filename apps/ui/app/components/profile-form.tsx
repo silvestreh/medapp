@@ -280,7 +280,7 @@ export function ProfileForm({
             {t('profile.professional_info')}
           </SectionTitle>
           <FormCard>
-            <FieldRow label={`${t('profile.title')}:`} variant="stacked">
+            <FieldRow label={`${t('profile.professional_title')}:`} variant="stacked">
               <StyledSelect
                 data={[
                   { value: 'Dr.', label: 'Dr.' },

@@ -10,7 +10,7 @@ describe('Authentication event logging', () => {
     org = await createTestOrganization();
     user = await createTestUser({
       username: `test.auth.log.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });
@@ -20,7 +20,7 @@ describe('Authentication event logging', () => {
     await app.service('authentication').create({
       strategy: 'local',
       username: user.username,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
     }, { provider: 'rest' });
 
     // Wait for fire-and-forget log
@@ -46,7 +46,7 @@ describe('Authentication event logging', () => {
       await app.service('authentication').create({
         strategy: 'local',
         username: user.username,
-        password: 'WrongPassword123',
+        password: 'WrongPassword123!',
       }, { provider: 'rest' });
     } catch {
       // Expected to fail
@@ -79,7 +79,7 @@ describe('Authentication event logging', () => {
     const authResult = await app.service('authentication').create({
       strategy: 'local',
       username: user.username,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
     }, { provider: 'rest' });
 
     await (app as any).service('logout').create({}, {

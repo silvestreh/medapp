@@ -1,5 +1,4 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
-import { Forbidden } from '@feathersjs/errors';
 
 /**
  * If the request is from a patient token, scope queries to their own data.

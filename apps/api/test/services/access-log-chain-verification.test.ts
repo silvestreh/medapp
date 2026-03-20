@@ -13,7 +13,7 @@ describe('\'access-log-chain-verification\' service', () => {
     org = await createTestOrganization();
     user = await createTestUser({
       username: `test.chain.verify.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });
@@ -45,7 +45,7 @@ describe('\'access-log-chain-verification\' service', () => {
     const chainOrg = await createTestOrganization();
     const chainUser = await createTestUser({
       username: `test.chain.valid.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: chainOrg.id,
     });
@@ -93,7 +93,7 @@ describe('\'access-log-chain-verification\' service', () => {
     const tamperOrg = await createTestOrganization();
     const tamperUser = await createTestUser({
       username: `test.chain.tamper.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: tamperOrg.id,
     });

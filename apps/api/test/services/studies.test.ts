@@ -18,7 +18,7 @@ describe('\'studies\' service', () => {
     const org = await createTestOrganization();
     medic = await createTestUser({
       username: 'medic1',
-      password: 'Password123',
+      password: 'Password123!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

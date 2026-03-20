@@ -10,7 +10,7 @@ describe('\'time-off-events\' service', () => {
     const org = await createTestOrganization();
     medic = await createTestUser({
       username: 'timeoff.medic',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

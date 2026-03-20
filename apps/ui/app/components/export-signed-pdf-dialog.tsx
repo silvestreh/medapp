@@ -179,6 +179,7 @@ export function ExportSignedPdfDialog({
     client,
     patientId,
     resolvedRange,
+    content,
     signDigitally,
     encryptionPin,
     certificatePassword,

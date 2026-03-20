@@ -12,7 +12,7 @@ describe('\'sire-dose-schedules\' service', () => {
     org = await createTestOrganization({ slug: `sire-dose-${Date.now()}` });
     user = await createTestUser({
       username: `dose.medic.${Date.now()}@test.com`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

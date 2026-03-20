@@ -15,21 +15,21 @@ describe('Break the Glass (BTG) emergency access', () => {
 
     medicA = await createTestUser({
       username: `test.btg.medic.a.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });
 
     medicB = await createTestUser({
       username: `test.btg.medic.b.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });
 
     accountant = await createTestUser({
       username: `test.btg.accounting.${Date.now()}`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['accounting'],
       organizationId: org.id,
     });

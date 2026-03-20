@@ -48,7 +48,7 @@ describe('\'organizations\' service', () => {
 
     const owner: any = await app.service('users').create({
       username: 'org.owner.patch',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
     });
 
     await app.service('organization-users').create({
@@ -78,7 +78,7 @@ describe('\'organizations\' service', () => {
 
     const member: any = await app.service('users').create({
       username: 'org.member.patch',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
     });
 
     await app.service('organization-users').create({

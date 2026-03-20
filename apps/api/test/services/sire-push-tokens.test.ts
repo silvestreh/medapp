@@ -10,7 +10,7 @@ describe('\'sire-push-tokens\' service', () => {
     org = await createTestOrganization({ slug: `sire-push-${Date.now()}` });
     await createTestUser({
       username: `push.medic.${Date.now()}@test.com`,
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });

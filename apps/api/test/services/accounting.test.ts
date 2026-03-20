@@ -25,7 +25,7 @@ describe('\'accounting\' service', () => {
     } else {
       medic = await app.service('users').create({
         username: 'test.medic.accounting',
-        password: 'SuperSecret1',
+        password: 'SuperSecret1!',
       } as any);
     }
 
