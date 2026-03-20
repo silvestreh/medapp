@@ -107,9 +107,7 @@ export function GifPicker({ searchTerm, onSelect, onClose }: GifPickerProps) {
     >
       <Group gap="xs" px="md" py={4} justify="space-between">
         <Text size="xs" fw={600} c="dimmed">
-          {debouncedTerm.trim()
-            ? t('chat.gif_results_for', { term: debouncedTerm.trim() })
-            : t('chat.gif_trending')}
+          {debouncedTerm.trim() ? t('chat.gif_results_for', { term: debouncedTerm.trim() }) : t('chat.gif_trending')}
         </Text>
         <ActionIcon variant="subtle" color="gray" size="xs" onClick={onClose}>
           <XIcon size={14} />
@@ -137,7 +135,7 @@ export function GifPicker({ searchTerm, onSelect, onClose }: GifPickerProps) {
 
         {!isLoading && !error && results.length > 0 && (
           <SimpleGrid cols={3} spacing={4}>
-            {results.map((gif) => (
+            {results.map(gif => (
               <Box
                 key={gif.id}
                 onClick={() => handleSelect(gif)}

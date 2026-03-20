@@ -51,72 +51,72 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   const intent = payload.intent;
 
   switch (intent) {
-  case 'create-treatment':
-    await client.service('sire-treatments').create({
-      ...payload.data,
-      patientId,
-      organizationId,
-      medicId: user.id,
-    });
-    return json({ ok: true });
-
-  case 'patch-treatment':
-    await client.service('sire-treatments').patch(payload.id, payload.data);
-    return json({ ok: true });
-
-  case 'save-control': {
-    const { reading, schedule, nextControlDate, treatmentId } = payload;
-
-    // Create or patch reading
-    let readingId = reading.id;
-    if (reading.id) {
-      const { id, ...readingData } = reading;
-      await client.service('sire-readings').patch(id, readingData);
-    } else {
-      const created = await client.service('sire-readings').create({
-        ...reading,
+    case 'create-treatment':
+      await client.service('sire-treatments').create({
+        ...payload.data,
         patientId,
         organizationId,
+        medicId: user.id,
       });
-      readingId = (created as any).id;
-    }
+      return json({ ok: true });
 
-    // Create or patch schedule, linked to the reading
-    if (schedule) {
-      if (schedule.id) {
-        const { id, ...scheduleData } = schedule;
-        await client.service('sire-dose-schedules').patch(id, {
-          schedule: scheduleData.schedule,
-          notes: scheduleData.notes,
-          startDate: scheduleData.startDate,
-        });
+    case 'patch-treatment':
+      await client.service('sire-treatments').patch(payload.id, payload.data);
+      return json({ ok: true });
+
+    case 'save-control': {
+      const { reading, schedule, nextControlDate, treatmentId } = payload;
+
+      // Create or patch reading
+      let readingId = reading.id;
+      if (reading.id) {
+        const { id, ...readingData } = reading;
+        await client.service('sire-readings').patch(id, readingData);
       } else {
-        await client.service('sire-dose-schedules').create({
-          ...schedule,
-          readingId,
-          createdById: user.id,
+        const created = await client.service('sire-readings').create({
+          ...reading,
+          patientId,
+          organizationId,
         });
+        readingId = (created as any).id;
       }
+
+      // Create or patch schedule, linked to the reading
+      if (schedule) {
+        if (schedule.id) {
+          const { id, ...scheduleData } = schedule;
+          await client.service('sire-dose-schedules').patch(id, {
+            schedule: scheduleData.schedule,
+            notes: scheduleData.notes,
+            startDate: scheduleData.startDate,
+          });
+        } else {
+          await client.service('sire-dose-schedules').create({
+            ...schedule,
+            readingId,
+            createdById: user.id,
+          });
+        }
+      }
+
+      // Update next control date on treatment
+      if (treatmentId) {
+        await client.service('sire-treatments').patch(treatmentId, { nextControlDate });
+      }
+
+      return json({ ok: true });
     }
 
-    // Update next control date on treatment
-    if (treatmentId) {
-      await client.service('sire-treatments').patch(treatmentId, { nextControlDate });
-    }
+    case 'delete-reading':
+      await client.service('sire-readings').remove(payload.id);
+      return json({ ok: true });
 
-    return json({ ok: true });
-  }
+    case 'delete-schedule':
+      await client.service('sire-dose-schedules').remove(payload.id);
+      return json({ ok: true });
 
-  case 'delete-reading':
-    await client.service('sire-readings').remove(payload.id);
-    return json({ ok: true });
-
-  case 'delete-schedule':
-    await client.service('sire-dose-schedules').remove(payload.id);
-    return json({ ok: true });
-
-  default:
-    return json({ error: 'Unknown intent' }, { status: 400 });
+    default:
+      return json({ error: 'Unknown intent' }, { status: 400 });
   }
 };
 
@@ -146,52 +146,46 @@ export default function SireManagement() {
     return (treatments as any[]).find((tr: any) => tr.status === 'active') || null;
   }, [treatments]);
 
-  const findScheduleForReading = useCallback((reading: any) => {
-    return (schedules as any[]).find((s: any) => s.readingId === reading.id) || null;
-  }, [schedules]);
+  const findScheduleForReading = useCallback(
+    (reading: any) => {
+      return (schedules as any[]).find((s: any) => s.readingId === reading.id) || null;
+    },
+    [schedules]
+  );
 
   const handleBackToList = useCallback(() => {
     setView('list');
     setEditingReading(null);
   }, []);
 
-  const handleSubmitTreatment = useCallback((data: Record<string, any>) => {
-    const intent = activeTreatment ? 'patch-treatment' : 'create-treatment';
-    const payload = activeTreatment
-      ? { intent, id: activeTreatment.id, data }
-      : { intent, data };
-    fetcher.submit(
-      { data: JSON.stringify(payload) },
-      { method: 'post' },
-    );
-    setView('list');
-  }, [fetcher, activeTreatment]);
+  const handleSubmitTreatment = useCallback(
+    (data: Record<string, any>) => {
+      const intent = activeTreatment ? 'patch-treatment' : 'create-treatment';
+      const payload = activeTreatment ? { intent, id: activeTreatment.id, data } : { intent, data };
+      fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
+      setView('list');
+    },
+    [fetcher, activeTreatment]
+  );
 
-  const handleSubmitControl = useCallback((data: {
-    reading: Record<string, any>;
-    schedule: Record<string, any> | null;
-    nextControlDate: string | null;
-  }) => {
-    fetcher.submit(
-      { data: JSON.stringify({ intent: 'save-control', ...data, treatmentId: activeTreatment?.id }) },
-      { method: 'post' },
-    );
-    setView('list');
-    setEditingReading(null);
-  }, [fetcher, activeTreatment]);
+  const handleSubmitControl = useCallback(
+    (data: { reading: Record<string, any>; schedule: Record<string, any> | null; nextControlDate: string | null }) => {
+      fetcher.submit(
+        { data: JSON.stringify({ intent: 'save-control', ...data, treatmentId: activeTreatment?.id }) },
+        { method: 'post' }
+      );
+      setView('list');
+      setEditingReading(null);
+    },
+    [fetcher, activeTreatment]
+  );
 
   const handleDeleteReading = useCallback(() => {
     if (!editingReading?.id) return;
     const schedule = findScheduleForReading(editingReading);
-    fetcher.submit(
-      { data: JSON.stringify({ intent: 'delete-reading', id: editingReading.id }) },
-      { method: 'post' },
-    );
+    fetcher.submit({ data: JSON.stringify({ intent: 'delete-reading', id: editingReading.id }) }, { method: 'post' });
     if (schedule) {
-      fetcher.submit(
-        { data: JSON.stringify({ intent: 'delete-schedule', id: schedule.id }) },
-        { method: 'post' },
-      );
+      fetcher.submit({ data: JSON.stringify({ intent: 'delete-schedule', id: schedule.id }) }, { method: 'post' });
     }
     setView('list');
     setEditingReading(null);
@@ -219,9 +213,7 @@ export default function SireManagement() {
           <ActionIcon variant="subtle" onClick={handleBackToList}>
             <ArrowLeftIcon size={18} />
           </ActionIcon>
-          <Title order={4}>
-            {activeTreatment ? 'Editar tratamiento' : 'Nuevo tratamiento'}
-          </Title>
+          <Title order={4}>{activeTreatment ? 'Editar tratamiento' : 'Nuevo tratamiento'}</Title>
         </Group>
         <SireTreatmentForm
           patientId={String((treatments as any[])[0]?.patientId || '')}
@@ -240,9 +232,7 @@ export default function SireManagement() {
           <ActionIcon variant="subtle" onClick={handleBackToList}>
             <ArrowLeftIcon size={18} />
           </ActionIcon>
-          <Title order={4}>
-            {editingReading ? 'Editar control' : 'Nuevo control'}
-          </Title>
+          <Title order={4}>{editingReading ? 'Editar control' : 'Nuevo control'}</Title>
         </Group>
         {activeTreatment && (
           <SireControlForm
@@ -279,23 +269,33 @@ export default function SireManagement() {
           <Stack gap="xs">
             <Group>
               <PillIcon size={20} />
-              <Text fw={600}>{activeTreatment.medication} {activeTreatment.tabletDoseMg} mg</Text>
-              <Badge color="green" variant="light">Activo</Badge>
+              <Text fw={600}>
+                {activeTreatment.medication} {activeTreatment.tabletDoseMg} mg
+              </Text>
+              <Badge color="green" variant="light">
+                Activo
+              </Badge>
             </Group>
             <Text size="sm" c="dimmed">
               RIN objetivo: {activeTreatment.targetInrMin} – {activeTreatment.targetInrMax}
             </Text>
             {activeTreatment.indication && (
-              <Text size="sm" c="dimmed">Indicación: {activeTreatment.indication}</Text>
+              <Text size="sm" c="dimmed">
+                Indicación: {activeTreatment.indication}
+              </Text>
             )}
             {activeTreatment.nextControlDate && (
-              <Text size="sm" c="dimmed">Próximo control: {activeTreatment.nextControlDate}</Text>
+              <Text size="sm" c="dimmed">
+                Próximo control: {activeTreatment.nextControlDate}
+              </Text>
             )}
           </Stack>
         )}
 
         {!activeTreatment && (
-          <Text c="dimmed" size="sm">No hay tratamiento activo configurado.</Text>
+          <Text c="dimmed" size="sm">
+            No hay tratamiento activo configurado.
+          </Text>
         )}
       </Section>
 
@@ -304,12 +304,7 @@ export default function SireManagement() {
         <Group justify="space-between" mb="md">
           <Title order={4}>Controles</Title>
           {activeTreatment && (
-            <Button
-              leftSection={<PlusIcon size={16} />}
-              size="xs"
-              variant="light"
-              onClick={handleOpenNewControl}
-            >
+            <Button leftSection={<PlusIcon size={16} />} size="xs" variant="light" onClick={handleOpenNewControl}>
               Nuevo control
             </Button>
           )}
@@ -335,20 +330,28 @@ export default function SireManagement() {
                 const schedule = findScheduleForReading(reading);
                 const doseLabel = schedule
                   ? ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-                    .map((d) => schedule.schedule[d] ?? '—')
-                    .join(' / ')
+                      .map(d => schedule.schedule[d] ?? '—')
+                      .join(' / ')
                   : '—';
 
                 return (
-                  <Table.Tr key={reading.id} style={{ cursor: 'pointer' }} onClick={() => handleOpenEditControl(reading)}>
+                  <Table.Tr
+                    key={reading.id}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => handleOpenEditControl(reading)}
+                  >
                     <Table.Td>{reading.date}</Table.Td>
                     <Table.Td>{reading.percentage ?? '—'}</Table.Td>
                     <Table.Td fw={700}>{reading.inr}</Table.Td>
                     <Table.Td>
-                      <Badge color={status.color} variant="light">{status.label}</Badge>
+                      <Badge color={status.color} variant="light">
+                        {status.label}
+                      </Badge>
                     </Table.Td>
                     <Table.Td>
-                      <Text size="xs" c="dimmed" lineClamp={1}>{doseLabel}</Text>
+                      <Text size="xs" c="dimmed" lineClamp={1}>
+                        {doseLabel}
+                      </Text>
                     </Table.Td>
                     <Table.Td>
                       <ActionIcon variant="subtle" size="sm">
@@ -363,7 +366,9 @@ export default function SireManagement() {
         )}
 
         {(readings as any[]).length === 0 && (
-          <Text c="dimmed" size="sm">No hay controles registrados.</Text>
+          <Text c="dimmed" size="sm">
+            No hay controles registrados.
+          </Text>
         )}
       </Section>
     </Stack>

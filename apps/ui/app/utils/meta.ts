@@ -8,7 +8,7 @@ type RootLoaderData = { locale?: string };
  * Extracts the locale from the root loader data available in MetaFunction matches.
  */
 function getLocale(matches: Parameters<MetaFunction>[0]['matches']): keyof typeof resources {
-  const rootMatch = matches.find((m) => m.id === 'root');
+  const rootMatch = matches.find(m => m.id === 'root');
   const data = rootMatch?.data as RootLoaderData | undefined;
   const locale = data?.locale ?? 'es';
   return locale as keyof typeof resources;

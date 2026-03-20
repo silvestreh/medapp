@@ -57,8 +57,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     await client.service('studies').create(payload);
   } catch (error: any) {
     const isUniqueViolation =
-      error.code === 409 || error.name === 'Conflict' ||
-      (error.code === 400 && error.message === 'Validation error');
+      error.code === 409 || error.name === 'Conflict' || (error.code === 400 && error.message === 'Validation error');
     if (isUniqueViolation) {
       // Duplicate submission — study already created, redirect normally
     } else {
@@ -175,7 +174,12 @@ export default function NewStudy() {
       {isDesktop && (
         <Portal id="form-actions">
           <Group>
-            <Button onClick={handleSave} disabled={!canSave} loading={isSaving} leftSection={<FloppyDiskIcon size={16} />}>
+            <Button
+              onClick={handleSave}
+              disabled={!canSave}
+              loading={isSaving}
+              leftSection={<FloppyDiskIcon size={16} />}
+            >
               {t('studies.save')}
             </Button>
           </Group>

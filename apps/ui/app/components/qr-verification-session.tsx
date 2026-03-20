@@ -97,16 +97,16 @@ export function QrVerificationSession({ onCompleted }: QrVerificationSessionProp
     };
   }, [createSession]);
 
-  const uploadedCount = session
-    ? [session.idFrontUrl, session.idBackUrl, session.selfieUrl].filter(Boolean).length
-    : 0;
+  const uploadedCount = session ? [session.idFrontUrl, session.idBackUrl, session.selfieUrl].filter(Boolean).length : 0;
 
   if (loading) {
     return (
       <Paper withBorder p="xl" radius="md">
         <Stack align="center" gap="sm">
           <Loader size="md" />
-          <Text size="sm" c="dimmed">{t('identity_verification.qr_loading')}</Text>
+          <Text size="sm" c="dimmed">
+            {t('identity_verification.qr_loading')}
+          </Text>
         </Stack>
       </Paper>
     );
@@ -128,12 +128,10 @@ export function QrVerificationSession({ onCompleted }: QrVerificationSessionProp
       <Paper withBorder p="xl" radius="md">
         <Stack align="center" gap="sm">
           <Text fw={600}>{t('identity_verification.qr_expired')}</Text>
-          <Text size="sm" c="dimmed">{t('identity_verification.qr_expired_desc')}</Text>
-          <Button
-            leftSection={<ArrowsClockwiseIcon size={16} />}
-            variant="light"
-            onClick={createSession}
-          >
+          <Text size="sm" c="dimmed">
+            {t('identity_verification.qr_expired_desc')}
+          </Text>
+          <Button leftSection={<ArrowsClockwiseIcon size={16} />} variant="light" onClick={createSession}>
             {t('identity_verification.qr_refresh')}
           </Button>
         </Stack>
@@ -153,9 +151,7 @@ export function QrVerificationSession({ onCompleted }: QrVerificationSessionProp
           {t('identity_verification.qr_instructions')}
         </Text>
 
-        {qrDataUrl && (
-          <Image src={qrDataUrl} alt="QR Code" w={280} h={280} />
-        )}
+        {qrDataUrl && <Image src={qrDataUrl} alt="QR Code" w={280} h={280} />}
 
         {session && session.status === 'waiting' && (
           <Badge color="gray" variant="light" size="lg">

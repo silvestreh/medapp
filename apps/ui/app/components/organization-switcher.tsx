@@ -44,12 +44,15 @@ const OrganizationSwitcher: React.FC = () => {
     [organizations, currentOrganizationId]
   );
 
-  const handleSwitch = useCallback((id: string) => () => {
-    if (id !== currentOrganizationId) {
-      trackAction('Switched organization', { organizationId: id });
-      switchOrganization(id);
-    }
-  }, [currentOrganizationId, switchOrganization]);
+  const handleSwitch = useCallback(
+    (id: string) => () => {
+      if (id !== currentOrganizationId) {
+        trackAction('Switched organization', { organizationId: id });
+        switchOrganization(id);
+      }
+    },
+    [currentOrganizationId, switchOrganization]
+  );
 
   if (organizations.length === 0) {
     return null;
@@ -83,7 +86,9 @@ const OrganizationSwitcher: React.FC = () => {
             <Text size="sm" fw={org.id === currentOrganizationId ? 600 : 400}>
               {org.name}
             </Text>
-            <Text size="xs" c="dimmed">{org.roleIds.join(', ')}</Text>
+            <Text size="xs" c="dimmed">
+              {org.roleIds.join(', ')}
+            </Text>
           </Menu.Item>
         ))}
       </Menu.Dropdown>

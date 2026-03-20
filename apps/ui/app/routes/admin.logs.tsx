@@ -69,7 +69,7 @@ export default function AdminLogs() {
             { value: 'prescriptions', label: t('admin.resource_prescriptions') },
           ]}
           value={searchParams.get('resource')}
-          onChange={(v) => handleFilterChange('resource', v)}
+          onChange={v => handleFilterChange('resource', v)}
           clearable
           size="xs"
         />
@@ -81,7 +81,7 @@ export default function AdminLogs() {
             { value: 'export', label: t('admin.action_export') },
           ]}
           value={searchParams.get('action')}
-          onChange={(v) => handleFilterChange('action', v)}
+          onChange={v => handleFilterChange('action', v)}
           clearable
           size="xs"
         />

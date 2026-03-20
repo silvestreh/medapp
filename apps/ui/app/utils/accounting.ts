@@ -170,7 +170,7 @@ export function calculateEmergencyPracticeCost(value: unknown): number {
 export function resolveStudyCost(
   selectedStudies: string[],
   insurerPracticePrices: Record<string, PricingConfig> | undefined,
-  emergency?: boolean,
+  emergency?: boolean
 ) {
   if (!insurerPracticePrices) {
     return 0;
@@ -178,9 +178,5 @@ export function resolveStudyCost(
 
   const costFn = emergency ? calculateEmergencyPracticeCost : calculatePracticeCost;
 
-  return Number(
-    selectedStudies
-      .reduce((acc, key) => acc + costFn(insurerPracticePrices[key]), 0)
-      .toFixed(2)
-  );
+  return Number(selectedStudies.reduce((acc, key) => acc + costFn(insurerPracticePrices[key]), 0).toFixed(2));
 }

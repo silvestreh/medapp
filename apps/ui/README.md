@@ -56,7 +56,7 @@ The app will be available at `http://localhost:5173`.
 ## Scripts
 
 | Script              | Description                                        |
-|---------------------|----------------------------------------------------|
+| ------------------- | -------------------------------------------------- |
 | `pnpm dev`          | Start the Vite dev server                          |
 | `pnpm start`        | Run the production server (requires a build first) |
 | `pnpm prepare`      | Generate PandaCSS code                             |
@@ -77,12 +77,12 @@ The app will be available at `http://localhost:5173`.
 
 Set these environment variables on your Railway UI service:
 
-| Variable         | Example                                                  |
-|------------------|----------------------------------------------------------|
-| `SESSION_SECRET` | *(output of `openssl rand -base64 32`)*                  |
-| `API_URL`        | `https://api.example.com` (your Railway API service URL) |
-| `NODE_ENV`       | `production`                                             |
-| `VITE_SENTRY_DSN`| `https://xxx@xxx.ingest.de.sentry.io/xxx`                |
+| Variable          | Example                                                  |
+| ----------------- | -------------------------------------------------------- |
+| `SESSION_SECRET`  | _(output of `openssl rand -base64 32`)_                  |
+| `API_URL`         | `https://api.example.com` (your Railway API service URL) |
+| `NODE_ENV`        | `production`                                             |
+| `VITE_SENTRY_DSN` | `https://xxx@xxx.ingest.de.sentry.io/xxx`                |
 
 The `railway.toml` in this directory handles build and start commands automatically.
 

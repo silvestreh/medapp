@@ -21,14 +21,31 @@ const ALL_EMOJIS: EmojiEntry[] = Object.values(emojiData.emojis).map(e => ({
 
 // Common emojis shown when query is empty (just `:` typed)
 const POPULAR_IDS = [
-  'thumbsup', 'heart', 'smile', 'laughing', 'cry', 'fire', 'tada',
-  'eyes', 'thinking', 'clap', 'pray', 'muscle', '100', 'rocket',
-  'wave', 'ok_hand', 'v', 'star', 'sparkles', 'wink',
+  'thumbsup',
+  'heart',
+  'smile',
+  'laughing',
+  'cry',
+  'fire',
+  'tada',
+  'eyes',
+  'thinking',
+  'clap',
+  'pray',
+  'muscle',
+  '100',
+  'rocket',
+  'wave',
+  'ok_hand',
+  'v',
+  'star',
+  'sparkles',
+  'wink',
 ];
 
-const POPULAR_EMOJIS = POPULAR_IDS
-  .map(id => ALL_EMOJIS.find(e => e.id === id))
-  .filter((e): e is EmojiEntry => e !== undefined);
+const POPULAR_EMOJIS = POPULAR_IDS.map(id => ALL_EMOJIS.find(e => e.id === id)).filter(
+  (e): e is EmojiEntry => e !== undefined
+);
 
 function searchEmojis(query: string, limit = 30): EmojiEntry[] {
   if (!query) return POPULAR_EMOJIS.slice(0, limit);
@@ -39,11 +56,7 @@ function searchEmojis(query: string, limit = 30): EmojiEntry[] {
   for (const emoji of ALL_EMOJIS) {
     if (results.length >= limit) break;
 
-    if (
-      emoji.id.includes(q) ||
-      emoji.name.toLowerCase().includes(q) ||
-      emoji.keywords.some(k => k.includes(q))
-    ) {
+    if (emoji.id.includes(q) || emoji.name.toLowerCase().includes(q) || emoji.keywords.some(k => k.includes(q))) {
       results.push(emoji);
     }
   }
@@ -95,7 +108,7 @@ export function EmojiInlineSuggest({ query, selectedIndex, onSelect }: EmojiInli
       >
         <Box style={{ display: 'flex', gap: 2, whiteSpace: 'nowrap' }}>
           {results.map((emoji, idx) => {
-            const isSelected = idx === (selectedIndex % results.length);
+            const isSelected = idx === selectedIndex % results.length;
             return (
               <Box
                 key={emoji.id}
@@ -105,16 +118,16 @@ export function EmojiInlineSuggest({ query, selectedIndex, onSelect }: EmojiInli
                   cursor: 'pointer',
                   padding: '4px 6px',
                   borderRadius: 6,
-                  backgroundColor: isSelected
-                    ? 'var(--mantine-color-blue-1)'
-                    : 'transparent',
+                  backgroundColor: isSelected ? 'var(--mantine-color-blue-1)' : 'transparent',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 4,
                   flexShrink: 0,
                 }}
               >
-                <Text size="lg" lh={1}>{emoji.native}</Text>
+                <Text size="lg" lh={1}>
+                  {emoji.native}
+                </Text>
                 <Text size="xs" c="dimmed" style={{ maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   :{emoji.id}:
                 </Text>

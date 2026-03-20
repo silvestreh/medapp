@@ -28,13 +28,7 @@ export function RouteDrawer({
   const onExited = onExitedProp || hook.onExited;
 
   return (
-    <Drawer
-      opened={opened}
-      onClose={onClose}
-      keepMounted
-      transitionProps={{ onExited }}
-      {...rest}
-    >
+    <Drawer opened={opened} onClose={onClose} keepMounted transitionProps={{ onExited }} {...rest}>
       {hook.isLoading && skeleton ? skeleton : children}
     </Drawer>
   );

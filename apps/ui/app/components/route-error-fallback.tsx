@@ -29,9 +29,7 @@ export default function RouteErrorFallback() {
         w="100%"
       >
         <Stack gap="sm">
-          <Text size="sm">
-            {is404 ? t('common.error_not_found') : t('common.error_unexpected')}
-          </Text>
+          <Text size="sm">{is404 ? t('common.error_not_found') : t('common.error_unexpected')}</Text>
 
           {process.env.NODE_ENV !== 'production' && error && (
             <Code block style={{ whiteSpace: 'pre-wrap', maxHeight: 200, overflow: 'auto' }}>

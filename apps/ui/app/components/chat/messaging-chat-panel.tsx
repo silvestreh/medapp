@@ -17,7 +17,18 @@ import {
 } from '@mantine/core';
 import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { ArrowBendUpLeftIcon, ArrowDownRightIcon, CopyIcon, ImageIcon, PaperclipIcon, PencilSimpleIcon, StethoscopeIcon, TrashIcon, UserPlusIcon, XIcon } from '@phosphor-icons/react';
+import {
+  ArrowBendUpLeftIcon,
+  ArrowDownRightIcon,
+  CopyIcon,
+  ImageIcon,
+  PaperclipIcon,
+  PencilSimpleIcon,
+  StethoscopeIcon,
+  TrashIcon,
+  UserPlusIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 import ReactMarkdown from 'react-markdown';
@@ -85,9 +96,7 @@ interface SlashCommand {
   template: string;
 }
 
-const SLASH_COMMANDS: SlashCommand[] = [
-  { name: 'giphy', template: '/giphy ' },
-];
+const SLASH_COMMANDS: SlashCommand[] = [{ name: 'giphy', template: '/giphy ' }];
 
 // Matches emoji characters (including modifiers, ZWJ sequences, flags, etc.)
 const EMOJI_REGEX = /[\p{Emoji_Presentation}\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu;
@@ -429,7 +438,7 @@ export function MessagingChatPanel({
       } catch (err: any) {
         notifications.show({ message: err.message || t('common.error_unexpected'), color: 'red' });
         // Let the URL remain as text — don't block the user
-        setDraftMessage(prev => prev ? `${prev} ${url}` : url);
+        setDraftMessage(prev => (prev ? `${prev} ${url}` : url));
       } finally {
         setIsUploading(false);
       }
@@ -588,7 +597,7 @@ export function MessagingChatPanel({
 
     const handleRemoved = (message: Message) => {
       if (message.conversationId !== conversationId) return;
-      setMessages(prev => prev.map(m => m.id === message.id ? { ...m, deleted: true } : m));
+      setMessages(prev => prev.map(m => (m.id === message.id ? { ...m, deleted: true } : m)));
     };
 
     const service = chatClient.service('messages');
@@ -611,8 +620,7 @@ export function MessagingChatPanel({
     const container = messagesContainerRef.current;
     if (!container) return;
     const threshold = 100; // px from bottom
-    isNearBottomRef.current =
-      container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
+    isNearBottomRef.current = container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
     if (isNearBottomRef.current) {
       setNewMessageCount(0);
     }
@@ -928,7 +936,21 @@ export function MessagingChatPanel({
       if (isGiphyActive) return;
       handleSend();
     },
-    [handleSend, editingMessageId, draftMessage, messages, user?.id, isGiphyActive, showSlashMenu, slashCommandFilter, slashMenuIndex, handleSlashCommandSelect, emojiInlineQuery, emojiInlineIndex, handleEmojiInlineSelect]
+    [
+      handleSend,
+      editingMessageId,
+      draftMessage,
+      messages,
+      user?.id,
+      isGiphyActive,
+      showSlashMenu,
+      slashCommandFilter,
+      slashMenuIndex,
+      handleSlashCommandSelect,
+      emojiInlineQuery,
+      emojiInlineIndex,
+      handleEmojiInlineSelect,
+    ]
   );
 
   // Add user autocomplete data
@@ -1023,13 +1045,11 @@ export function MessagingChatPanel({
       // If message has no text content, delete the whole message
       if (!msg.content.trim()) {
         await chatClient.service('messages').remove(msg.id);
-        setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, deleted: true } : m));
+        setMessages(prev => prev.map(m => (m.id === msg.id ? { ...m, deleted: true } : m)));
       } else {
         // Otherwise just remove the attachment metadata
         await chatClient.service('messages').patch(msg.id, { metadata: null });
-        setMessages(prev =>
-          prev.map(m => m.id === msg.id ? { ...m, metadata: null } : m)
-        );
+        setMessages(prev => prev.map(m => (m.id === msg.id ? { ...m, metadata: null } : m)));
       }
     } catch {
       notifications.show({ message: t('common.error_unexpected'), color: 'red' });
@@ -1046,7 +1066,7 @@ export function MessagingChatPanel({
         await deleteAttachmentFiles(msg.metadata.attachments);
       }
       await chatClient.service('messages').remove(msg.id);
-      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, deleted: true } : m));
+      setMessages(prev => prev.map(m => (m.id === msg.id ? { ...m, deleted: true } : m)));
     } catch {
       notifications.show({ message: t('common.error_unexpected'), color: 'red' });
     }
@@ -1149,7 +1169,8 @@ export function MessagingChatPanel({
   const handlePanelClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     // Don't steal focus from interactive elements
-    if (target.closest('a, button, input, textarea, select, [role="button"], [role="option"], [data-interactive]')) return;
+    if (target.closest('a, button, input, textarea, select, [role="button"], [role="option"], [data-interactive]'))
+      return;
     textareaRef.current?.focus();
   }, []);
 
@@ -1157,72 +1178,72 @@ export function MessagingChatPanel({
 
   return (
     <>
-    <Paper
-      withBorder
-      radius="md"
-      onClick={handlePanelClick}
-      style={{
-        width: 'min(380px, calc(100vw - 6rem))',
-        height: 'min(60vh, 560px)',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.075), 0 8px 32px rgba(0,0,0,0.075), 0 24px 48px rgba(0,0,0,0.075)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        backgroundColor: 'white',
-      }}
-    >
-      {/* Header */}
-      <Group
-        justify="space-between"
-        align="center"
-        px="md"
-        py="sm"
-        bg={`${accentColor}.5`}
-        style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}
+      <Paper
+        withBorder
+        radius="md"
+        onClick={handlePanelClick}
+        style={{
+          width: 'min(380px, calc(100vw - 6rem))',
+          height: 'min(60vh, 560px)',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.075), 0 8px 32px rgba(0,0,0,0.075), 0 24px 48px rgba(0,0,0,0.075)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          backgroundColor: 'white',
+        }}
       >
-        {isGroup && participants ? (
-          <ParticipantAvatars
-            participants={participants}
-            currentUserId={user?.id ?? ''}
-            accentColor={accentColor}
-            groupLabel={t('chat.group_label')}
-          />
-        ) : (
-          <Text fw={600} c="white" lineClamp={1} style={{ flex: 1, minWidth: 0 }}>
-            {recipientName}
-          </Text>
-        )}
-        <Group gap={4} style={{ flexShrink: 0 }}>
-          <ActionIcon variant="subtle" color="white" onClick={handleToggleAddUser}>
-            <UserPlusIcon size={16} />
-          </ActionIcon>
-          <ActionIcon variant="subtle" color="white" onClick={onMinimize}>
-            <ArrowDownRightIcon size={16} />
-          </ActionIcon>
-          <ActionIcon variant="subtle" color="white" onClick={onClose}>
-            <XIcon size={16} />
-          </ActionIcon>
+        {/* Header */}
+        <Group
+          justify="space-between"
+          align="center"
+          px="md"
+          py="sm"
+          bg={`${accentColor}.5`}
+          style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}
+        >
+          {isGroup && participants ? (
+            <ParticipantAvatars
+              participants={participants}
+              currentUserId={user?.id ?? ''}
+              accentColor={accentColor}
+              groupLabel={t('chat.group_label')}
+            />
+          ) : (
+            <Text fw={600} c="white" lineClamp={1} style={{ flex: 1, minWidth: 0 }}>
+              {recipientName}
+            </Text>
+          )}
+          <Group gap={4} style={{ flexShrink: 0 }}>
+            <ActionIcon variant="subtle" color="white" onClick={handleToggleAddUser}>
+              <UserPlusIcon size={16} />
+            </ActionIcon>
+            <ActionIcon variant="subtle" color="white" onClick={onMinimize}>
+              <ArrowDownRightIcon size={16} />
+            </ActionIcon>
+            <ActionIcon variant="subtle" color="white" onClick={onClose}>
+              <XIcon size={16} />
+            </ActionIcon>
+          </Group>
         </Group>
-      </Group>
 
-      {/* Add user autocomplete */}
-      {showAddUser && (
-        <Box px="md" py="xs" style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}>
-          <Autocomplete
-            ref={addUserInputRef}
-            placeholder={t('chat.add_user_placeholder')}
-            value={addUserQuery}
-            onChange={setAddUserQuery}
-            onOptionSubmit={handleAddUser}
-            data={addUserOptions.map(o => o.value)}
-            size="xs"
-            comboboxProps={{ withinPortal: true, zIndex: 1400 }}
-          />
-        </Box>
-      )}
+        {/* Add user autocomplete */}
+        {showAddUser && (
+          <Box px="md" py="xs" style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}>
+            <Autocomplete
+              ref={addUserInputRef}
+              placeholder={t('chat.add_user_placeholder')}
+              value={addUserQuery}
+              onChange={setAddUserQuery}
+              onOptionSubmit={handleAddUser}
+              data={addUserOptions.map(o => o.value)}
+              size="xs"
+              comboboxProps={{ withinPortal: true, zIndex: 1400 }}
+            />
+          </Box>
+        )}
 
-      {/* Hover-to-reveal reply button + highlight flash */}
-      <style>{`
+        {/* Hover-to-reveal reply button + highlight flash */}
+        <style>{`
         .chat-msg-row:hover .chat-msg-reply-btn { opacity: 1 !important; }
         .chat-msg-row p { margin: 0; }
         .chat-msg-row pre { margin: 4px 0; padding: 6px 8px; border-radius: 4px; background: rgba(0,0,0,0.05); overflow-x: auto; }
@@ -1234,633 +1255,593 @@ export function MessagingChatPanel({
         .chat-msg-highlight-fade { box-shadow: inset 0 0 0 40rem transparent; }
       `}</style>
 
-      {/* Messages */}
-      <Box style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <Stack
-        ref={messagesContainerRef}
-        gap="xs"
-        px="md"
-        pb="sm"
-        onScroll={handleScroll}
-        style={{
-          overflowY: 'auto',
-          flex: 1,
-          borderBottom: '1px solid var(--mantine-color-gray-2)',
-        }}
-      >
-        {isLoadingOlder && (
-          <Group justify="center" pt="xs">
-            <Loader size="xs" />
-          </Group>
-        )}
-        <Box style={{ marginTop: 'auto' }} />
-        {isLoading && (
-          <Group justify="center" py="md">
-            <Loader size="sm" />
-          </Group>
-        )}
-        {messages.map(msg => {
-          if (msg.type === 'system') {
-            return (
-              <Text key={msg.id} size="xs" c="dimmed" ta="center" py={4} fs="italic">
-                {msg.content}
+        {/* Messages */}
+        <Box style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <Stack
+            ref={messagesContainerRef}
+            gap="xs"
+            px="md"
+            pb="sm"
+            onScroll={handleScroll}
+            style={{
+              overflowY: 'auto',
+              flex: 1,
+              borderBottom: '1px solid var(--mantine-color-gray-2)',
+            }}
+          >
+            {isLoadingOlder && (
+              <Group justify="center" pt="xs">
+                <Loader size="xs" />
+              </Group>
+            )}
+            <Box style={{ marginTop: 'auto' }} />
+            {isLoading && (
+              <Group justify="center" py="md">
+                <Loader size="sm" />
+              </Group>
+            )}
+            {messages.map(msg => {
+              if (msg.type === 'system') {
+                return (
+                  <Text key={msg.id} size="xs" c="dimmed" ta="center" py={4} fs="italic">
+                    {msg.content}
+                  </Text>
+                );
+              }
+
+              if (msg.deleted) {
+                const isMe = msg.senderId === user?.id;
+                return (
+                  <Text key={msg.id} size="xs" c="dimmed" fs="italic" py={2} ta={isMe ? 'right' : 'left'}>
+                    {t('chat.message_deleted')}
+                  </Text>
+                );
+              }
+
+              const isMe = msg.senderId === user?.id;
+              const sender = senderNames.get(msg.senderId);
+              const quotedSender = msg.replyTo ? senderNames.get(msg.replyTo.senderId) : null;
+
+              return (
+                <Box
+                  key={msg.id}
+                  className="chat-msg-row"
+                  onContextMenu={e => handleContextMenu(e, msg)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: isMe ? 'flex-end' : 'flex-start',
+                    position: 'relative',
+                  }}
+                >
+                  <Group
+                    gap={6}
+                    align="flex-end"
+                    style={{ maxWidth: '85%', flexDirection: isMe ? 'row-reverse' : 'row' }}
+                  >
+                    {!isMe && (
+                      <Avatar size={28} radius="xl" color={sender?.color || 'gray'} style={{ flexShrink: 0 }}>
+                        <Text size="xs">{sender?.initials || '?'}</Text>
+                      </Avatar>
+                    )}
+                    <Box style={{ position: 'relative' }}>
+                      {!isMe && (
+                        <Text size="xs" c="dimmed" mb={2}>
+                          {sender?.name || msg.senderId}
+                        </Text>
+                      )}
+                      {/* Quoted message */}
+                      {msg.replyTo && (
+                        <Box
+                          px="sm"
+                          py={4}
+                          mb={2}
+                          style={{
+                            borderLeft: `3px solid var(--mantine-color-${quotedSender?.color || 'gray'}-4)`,
+                            borderRadius: '0 8px 8px 0',
+                            backgroundColor: 'var(--mantine-color-gray-1)',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => {
+                            const el = messagesContainerRef.current?.querySelector(
+                              `[data-msg-id="${msg.replyTo!.id}"]`
+                            );
+                            if (el) {
+                              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              el.classList.add('chat-msg-highlight');
+                              el.classList.remove('chat-msg-highlight-fade');
+                              setTimeout(() => {
+                                el.classList.add('chat-msg-highlight-fade');
+                                setTimeout(() => {
+                                  el.classList.remove('chat-msg-highlight', 'chat-msg-highlight-fade');
+                                }, 300);
+                              }, 1200);
+                            }
+                          }}
+                        >
+                          <Text size="xs" fw={600} c={`${quotedSender?.color || 'gray'}.6`}>
+                            {quotedSender?.name || msg.replyTo.senderId}
+                          </Text>
+                          <Text size="xs" c="dimmed" lineClamp={2}>
+                            {msg.replyTo.content}
+                          </Text>
+                        </Box>
+                      )}
+                      {/* Shared encounter access */}
+                      {msg.metadata?.type === 'shared-encounter-access' && (
+                        <Box
+                          px="sm"
+                          py={4}
+                          mb={2}
+                          style={{
+                            borderLeft: '3px solid var(--mantine-color-teal-4)',
+                            borderRadius: '0 8px 8px 0',
+                            backgroundColor: 'var(--mantine-color-gray-1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => navigate(`/encounters/${(msg.metadata as SharedEncounterMetadata).patientId}`)}
+                        >
+                          <StethoscopeIcon size={14} color="var(--mantine-color-teal-6)" style={{ flexShrink: 0 }} />
+                          <Box>
+                            <Text size="xs" fw={600} c="teal.6" lineClamp={1}>
+                              {(msg.metadata as SharedEncounterMetadata).patientName}
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                              {t('chat.medical_record')}
+                            </Text>
+                          </Box>
+                        </Box>
+                      )}
+                      {/* Image attachments */}
+                      {msg.metadata?.type === 'attachments' && (
+                        <Stack gap={4} mb={4}>
+                          {msg.metadata.attachments.map((att, idx) => (
+                            <Image
+                              key={idx}
+                              src={att.url}
+                              alt={att.fileName}
+                              radius="md"
+                              maw={240}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleOpenLightbox(att.url)}
+                            />
+                          ))}
+                        </Stack>
+                      )}
+                      {msg.content.trim() && (
+                        <Paper
+                          px="sm"
+                          py={6}
+                          radius="md"
+                          bg={isMe ? `${accentColor}.0` : 'gray.0'}
+                          style={{
+                            wordBreak: 'break-word',
+                            fontSize: isEmojiOnly(msg.content) ? '2rem' : '0.875rem',
+                            lineHeight: isEmojiOnly(msg.content) ? 1.3 : 1.5,
+                          }}
+                          data-msg-id={msg.id}
+                        >
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                        </Paper>
+                      )}
+                      <Text size="10px" c="dimmed" mt={2} ta={isMe ? 'right' : 'left'}>
+                        {msg.updatedAt !== msg.createdAt && `${t('chat.edited')} `}
+                        {formatTime(msg.createdAt)}
+                      </Text>
+                      {/* Reply button — visible on row hover */}
+                      <ActionIcon
+                        className="chat-msg-reply-btn"
+                        variant="subtle"
+                        color="dark"
+                        size="sm"
+                        onClick={() => handleReply(msg)}
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          [isMe ? 'left' : 'right']: -30,
+                          opacity: 0,
+                          transition: 'opacity 120ms',
+                        }}
+                      >
+                        <ArrowBendUpLeftIcon size={18} />
+                      </ActionIcon>
+                    </Box>
+                  </Group>
+                </Box>
+              );
+            })}
+            {typingLabel && (
+              <Text size="xs" c="dimmed" fs="italic" px="md" py={2} style={{ flexShrink: 0 }}>
+                {typingLabel}
               </Text>
-            );
-          }
+            )}
+          </Stack>
 
-          if (msg.deleted) {
-            const isMe = msg.senderId === user?.id;
-            return (
-              <Text
-                key={msg.id}
-                size="xs"
-                c="dimmed"
-                fs="italic"
-                py={2}
-                ta={isMe ? 'right' : 'left'}
-              >
-                {t('chat.message_deleted')}
-              </Text>
-            );
-          }
-
-          const isMe = msg.senderId === user?.id;
-          const sender = senderNames.get(msg.senderId);
-          const quotedSender = msg.replyTo ? senderNames.get(msg.replyTo.senderId) : null;
-
-          return (
+          {/* New messages badge */}
+          {newMessageCount > 0 && (
             <Box
-              key={msg.id}
-              className="chat-msg-row"
-              onContextMenu={(e) => handleContextMenu(e, msg)}
+              onClick={handleScrollToBottom}
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: isMe ? 'flex-end' : 'flex-start',
-                position: 'relative',
+                position: 'absolute',
+                bottom: 8,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 10,
+                cursor: 'pointer',
               }}
             >
-              <Group gap={6} align="flex-end" style={{ maxWidth: '85%', flexDirection: isMe ? 'row-reverse' : 'row' }}>
-                {!isMe && (
-                  <Avatar size={28} radius="xl" color={sender?.color || 'gray'} style={{ flexShrink: 0 }}>
-                    <Text size="xs">{sender?.initials || '?'}</Text>
-                  </Avatar>
-                )}
-                <Box style={{ position: 'relative' }}>
-                  {!isMe && (
-                    <Text size="xs" c="dimmed" mb={2}>
-                      {sender?.name || msg.senderId}
-                    </Text>
-                  )}
-                  {/* Quoted message */}
-                  {msg.replyTo && (
-                    <Box
-                      px="sm"
-                      py={4}
-                      mb={2}
-                      style={{
-                        borderLeft: `3px solid var(--mantine-color-${quotedSender?.color || 'gray'}-4)`,
-                        borderRadius: '0 8px 8px 0',
-                        backgroundColor: 'var(--mantine-color-gray-1)',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => {
-                        const el = messagesContainerRef.current?.querySelector(`[data-msg-id="${msg.replyTo!.id}"]`);
-                        if (el) {
-                          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          el.classList.add('chat-msg-highlight');
-                          el.classList.remove('chat-msg-highlight-fade');
-                          setTimeout(() => {
-                            el.classList.add('chat-msg-highlight-fade');
-                            setTimeout(() => {
-                              el.classList.remove('chat-msg-highlight', 'chat-msg-highlight-fade');
-                            }, 300);
-                          }, 1200);
-                        }
-                      }}
-                    >
-                      <Text size="xs" fw={600} c={`${quotedSender?.color || 'gray'}.6`}>
-                        {quotedSender?.name || msg.replyTo.senderId}
-                      </Text>
-                      <Text size="xs" c="dimmed" lineClamp={2}>
-                        {msg.replyTo.content}
-                      </Text>
-                    </Box>
-                  )}
-                  {/* Shared encounter access */}
-                  {msg.metadata?.type === 'shared-encounter-access' && (
-                    <Box
-                      px="sm"
-                      py={4}
-                      mb={2}
-                      style={{
-                        borderLeft: '3px solid var(--mantine-color-teal-4)',
-                        borderRadius: '0 8px 8px 0',
-                        backgroundColor: 'var(--mantine-color-gray-1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => navigate(`/encounters/${(msg.metadata as SharedEncounterMetadata).patientId}`)}
-                    >
-                      <StethoscopeIcon size={14} color="var(--mantine-color-teal-6)" style={{ flexShrink: 0 }} />
-                      <Box>
-                        <Text size="xs" fw={600} c="teal.6" lineClamp={1}>
-                          {(msg.metadata as SharedEncounterMetadata).patientName}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          {t('chat.medical_record')}
-                        </Text>
-                      </Box>
-                    </Box>
-                  )}
-                  {/* Image attachments */}
-                  {msg.metadata?.type === 'attachments' && (
-                    <Stack gap={4} mb={4}>
-                      {msg.metadata.attachments.map((att, idx) => (
-                        <Image
-                          key={idx}
-                          src={att.url}
-                          alt={att.fileName}
-                          radius="md"
-                          maw={240}
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => handleOpenLightbox(att.url)}
-                        />
-                      ))}
-                    </Stack>
-                  )}
-                  {msg.content.trim() && (
-                    <Paper
-                      px="sm"
-                      py={6}
-                      radius="md"
-                      bg={isMe ? `${accentColor}.0` : 'gray.0'}
-                      style={{
-                        wordBreak: 'break-word',
-                        fontSize: isEmojiOnly(msg.content) ? '2rem' : '0.875rem',
-                        lineHeight: isEmojiOnly(msg.content) ? 1.3 : 1.5,
-                      }}
-                      data-msg-id={msg.id}
-                    >
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
-                    </Paper>
-                  )}
-                  <Text size="10px" c="dimmed" mt={2} ta={isMe ? 'right' : 'left'}>
-                    {msg.updatedAt !== msg.createdAt && `${t('chat.edited')} `}
-                    {formatTime(msg.createdAt)}
-                  </Text>
-                  {/* Reply button — visible on row hover */}
-                  <ActionIcon
-                    className="chat-msg-reply-btn"
-                    variant="subtle"
-                    color="dark"
-                    size="sm"
-                    onClick={() => handleReply(msg)}
-                    style={{
-                      position: 'absolute',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      [isMe ? 'left' : 'right']: -30,
-                      opacity: 0,
-                      transition: 'opacity 120ms',
-                    }}
-                  >
-                    <ArrowBendUpLeftIcon size={18} />
-                  </ActionIcon>
-                </Box>
-              </Group>
+              <Paper
+                px="sm"
+                py={4}
+                radius="xl"
+                shadow="sm"
+                withBorder
+                style={{ backgroundColor: 'var(--mantine-color-blue-6)' }}
+              >
+                <Text size="xs" c="white" fw={600}>
+                  {newMessageCount === 1
+                    ? t('chat.new_message_one')
+                    : t('chat.new_messages_many', { count: newMessageCount })}
+                  {' ↓'}
+                </Text>
+              </Paper>
             </Box>
-          );
-        })}
-        {typingLabel && (
-          <Text size="xs" c="dimmed" fs="italic" px="md" py={2} style={{ flexShrink: 0 }}>
-            {typingLabel}
-          </Text>
-        )}
-      </Stack>
-
-      {/* New messages badge */}
-      {newMessageCount > 0 && (
-        <Box
-          onClick={handleScrollToBottom}
-          style={{
-            position: 'absolute',
-            bottom: 8,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 10,
-            cursor: 'pointer',
-          }}
-        >
-          <Paper
-            px="sm"
-            py={4}
-            radius="xl"
-            shadow="sm"
-            withBorder
-            style={{ backgroundColor: 'var(--mantine-color-blue-6)' }}
-          >
-            <Text size="xs" c="white" fw={600}>
-              {newMessageCount === 1
-                ? t('chat.new_message_one')
-                : t('chat.new_messages_many', { count: newMessageCount })}
-              {' ↓'}
-            </Text>
-          </Paper>
-        </Box>
-      )}
-      </Box>
-
-      {/* Message context menu */}
-      <Menu
-        opened={contextMenu !== null}
-        onChange={(opened) => { if (!opened) handleCloseContextMenu(); }}
-        position="bottom-start"
-        withinPortal
-        zIndex={1400}
-      >
-        <Menu.Target>
-          <Box
-            style={{
-              position: 'fixed',
-              top: contextMenu?.y ?? 0,
-              left: contextMenu?.x ?? 0,
-              width: 0,
-              height: 0,
-              pointerEvents: 'none',
-            }}
-          />
-        </Menu.Target>
-        <Menu.Dropdown>
-          <Menu.Item
-            leftSection={<ArrowBendUpLeftIcon size={14} />}
-            onClick={handleReplyFromContext}
-          >
-            {t('chat.reply')}
-          </Menu.Item>
-          <Menu.Item
-            leftSection={<CopyIcon size={14} />}
-            onClick={handleCopyMessage}
-          >
-            {t('chat.copy')}
-          </Menu.Item>
-          {contextMenu?.msg.senderId === user?.id && (
-            <>
-              <Menu.Item
-                leftSection={<PencilSimpleIcon size={14} />}
-                onClick={handleEditFromContext}
-              >
-                {t('chat.edit')}
-              </Menu.Item>
-              {contextMenu?.msg.metadata?.type === 'attachments' && (
-                <Menu.Item
-                  leftSection={<ImageIcon size={14} />}
-                  color="red"
-                  onClick={handleDeleteAttachment}
-                >
-                  {t('chat.delete_attachment')}
-                </Menu.Item>
-              )}
-              <Menu.Divider />
-              <Menu.Item
-                leftSection={<TrashIcon size={14} />}
-                color="red"
-                onClick={handleDeleteMessage}
-              >
-                {t('chat.delete')}
-              </Menu.Item>
-            </>
           )}
-        </Menu.Dropdown>
-      </Menu>
+        </Box>
 
-      {/* Reply preview */}
-      {replyTo && (
-        <Group
-          gap="xs"
-          px="md"
-          py={6}
-          align="center"
-          style={{
-            flexShrink: 0,
-            borderBottom: '1px solid var(--mantine-color-gray-2)',
-            backgroundColor: 'var(--mantine-color-gray-0)',
+        {/* Message context menu */}
+        <Menu
+          opened={contextMenu !== null}
+          onChange={opened => {
+            if (!opened) handleCloseContextMenu();
           }}
+          position="bottom-start"
+          withinPortal
+          zIndex={1400}
         >
-          <Box
+          <Menu.Target>
+            <Box
+              style={{
+                position: 'fixed',
+                top: contextMenu?.y ?? 0,
+                left: contextMenu?.x ?? 0,
+                width: 0,
+                height: 0,
+                pointerEvents: 'none',
+              }}
+            />
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item leftSection={<ArrowBendUpLeftIcon size={14} />} onClick={handleReplyFromContext}>
+              {t('chat.reply')}
+            </Menu.Item>
+            <Menu.Item leftSection={<CopyIcon size={14} />} onClick={handleCopyMessage}>
+              {t('chat.copy')}
+            </Menu.Item>
+            {contextMenu?.msg.senderId === user?.id && (
+              <>
+                <Menu.Item leftSection={<PencilSimpleIcon size={14} />} onClick={handleEditFromContext}>
+                  {t('chat.edit')}
+                </Menu.Item>
+                {contextMenu?.msg.metadata?.type === 'attachments' && (
+                  <Menu.Item leftSection={<ImageIcon size={14} />} color="red" onClick={handleDeleteAttachment}>
+                    {t('chat.delete_attachment')}
+                  </Menu.Item>
+                )}
+                <Menu.Divider />
+                <Menu.Item leftSection={<TrashIcon size={14} />} color="red" onClick={handleDeleteMessage}>
+                  {t('chat.delete')}
+                </Menu.Item>
+              </>
+            )}
+          </Menu.Dropdown>
+        </Menu>
+
+        {/* Reply preview */}
+        {replyTo && (
+          <Group
+            gap="xs"
+            px="md"
+            py={6}
+            align="center"
             style={{
-              flex: 1,
-              minWidth: 0,
-              borderLeft: `3px solid var(--mantine-color-${senderNames.get(replyTo.senderId)?.color || 'gray'}-4)`,
-              paddingLeft: 8,
+              flexShrink: 0,
+              borderBottom: '1px solid var(--mantine-color-gray-2)',
+              backgroundColor: 'var(--mantine-color-gray-0)',
             }}
           >
-            <Text size="xs" fw={600} c={`${senderNames.get(replyTo.senderId)?.color || 'gray'}.6`} lineClamp={1}>
-              {senderNames.get(replyTo.senderId)?.name || replyTo.senderId}
-            </Text>
-            <Text size="xs" c="dimmed" lineClamp={1}>
-              {replyTo.content}
-            </Text>
-          </Box>
-          <ActionIcon variant="subtle" color="gray" size="xs" onClick={handleCancelReply}>
-            <XIcon size={14} />
-          </ActionIcon>
-        </Group>
-      )}
-
-      {/* Editing indicator */}
-      {editingMessageId && (
-        <Group
-          gap="xs"
-          px="md"
-          py={4}
-          align="center"
-          style={{
-            flexShrink: 0,
-            backgroundColor: 'var(--mantine-color-yellow-0)',
-            borderBottom: '1px solid var(--mantine-color-yellow-3)',
-          }}
-        >
-          <Text size="xs" c="dimmed" style={{ flex: 1 }}>
-            {t('chat.editing_message')}
-          </Text>
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="xs"
-            onClick={() => {
-              setEditingMessageId(null);
-              setDraftMessage('');
-            }}
-          >
-            <XIcon size={14} />
-          </ActionIcon>
-        </Group>
-      )}
-
-      {/* Share encounters picker */}
-      {showShareEncounters && (
-        <Group
-          gap={0}
-          align="center"
-          px="md"
-          py="xs"
-          style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}
-        >
-          <Autocomplete
-            ref={shareInputRef}
-            placeholder={t('chat.share_encounters_placeholder')}
-            value={sharePatientQuery}
-            onChange={setSharePatientQuery}
-            onOptionSubmit={handleShareEncounterSelect}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                e.preventDefault();
-                setShowShareEncounters(false);
-                setSharePatientQuery('');
-              }
-            }}
-            data={sharePatientOptions.data}
-            filter={({ options }) => options}
-            leftSection={isLoadingPatients ? <Loader size={14} /> : undefined}
-            comboboxProps={{ withinPortal: true, zIndex: 1400 }}
-            autoFocus
-            variant="unstyled"
-            style={{ flex: 1 }}
-          />
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="xs"
-            onClick={handleToggleShareEncounters}
-          >
-            <XIcon size={14} />
-          </ActionIcon>
-        </Group>
-      )}
-
-      {/* Pending share encounter preview */}
-      {pendingSharePatient && (
-        <Group
-          gap="xs"
-          px="md"
-          py={6}
-          align="center"
-          style={{
-            flexShrink: 0,
-            borderBottom: '1px solid var(--mantine-color-gray-2)',
-            backgroundColor: 'var(--mantine-color-gray-0)',
-          }}
-        >
-          <Box
-            style={{
-              flex: 1,
-              minWidth: 0,
-              borderLeft: '3px solid var(--mantine-color-teal-4)',
-              paddingLeft: 8,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <StethoscopeIcon size={16} color="var(--mantine-color-teal-6)" style={{ flexShrink: 0 }} />
-            <Box>
-              <Text size="xs" fw={600} c="teal.6" lineClamp={1}>
-                {pendingSharePatient.personalData.firstName} {pendingSharePatient.personalData.lastName}
+            <Box
+              style={{
+                flex: 1,
+                minWidth: 0,
+                borderLeft: `3px solid var(--mantine-color-${senderNames.get(replyTo.senderId)?.color || 'gray'}-4)`,
+                paddingLeft: 8,
+              }}
+            >
+              <Text size="xs" fw={600} c={`${senderNames.get(replyTo.senderId)?.color || 'gray'}.6`} lineClamp={1}>
+                {senderNames.get(replyTo.senderId)?.name || replyTo.senderId}
               </Text>
               <Text size="xs" c="dimmed" lineClamp={1}>
-                {t('chat.medical_record')}
+                {replyTo.content}
               </Text>
             </Box>
-          </Box>
-          <ActionIcon variant="subtle" color="gray" size="xs" onClick={handleCancelShareEncounter}>
-            <XIcon size={14} />
-          </ActionIcon>
-        </Group>
-      )}
+            <ActionIcon variant="subtle" color="gray" size="xs" onClick={handleCancelReply}>
+              <XIcon size={14} />
+            </ActionIcon>
+          </Group>
+        )}
 
-      {/* GIF picker */}
-      {isGiphyActive && (
-        <GifPicker
-          searchTerm={giphySearchTerm}
-          onSelect={handleGifSelect}
-          onClose={handleGifPickerClose}
-        />
-      )}
-
-      {/* Pending attachments preview */}
-      {(pendingAttachments.length > 0 || isUploading) && (
-        <Group
-          gap="xs"
-          px="md"
-          py={6}
-          align="center"
-          style={{
-            flexShrink: 0,
-            borderBottom: '1px solid var(--mantine-color-gray-2)',
-            backgroundColor: 'var(--mantine-color-gray-0)',
-            overflowX: 'auto',
-          }}
-        >
-          <ImageIcon size={14} color="var(--mantine-color-blue-6)" style={{ flexShrink: 0 }} />
-          {pendingAttachments.map((att, idx) => (
-            <Box
-              key={`${att.url}-${idx}`}
-              style={{
-                position: 'relative',
-                flexShrink: 0,
-                borderRadius: 6,
-                overflow: 'hidden',
-                border: '1px solid var(--mantine-color-gray-3)',
+        {/* Editing indicator */}
+        {editingMessageId && (
+          <Group
+            gap="xs"
+            px="md"
+            py={4}
+            align="center"
+            style={{
+              flexShrink: 0,
+              backgroundColor: 'var(--mantine-color-yellow-0)',
+              borderBottom: '1px solid var(--mantine-color-yellow-3)',
+            }}
+          >
+            <Text size="xs" c="dimmed" style={{ flex: 1 }}>
+              {t('chat.editing_message')}
+            </Text>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="xs"
+              onClick={() => {
+                setEditingMessageId(null);
+                setDraftMessage('');
               }}
             >
-              <Image
-                src={att.url}
-                alt={att.fileName}
-                h={60}
-                w={60}
-                fit="cover"
-                radius={6}
-              />
-              <ActionIcon
-                variant="filled"
-                color="dark"
-                size={16}
-                radius="xl"
-                onClick={() => handleRemoveAttachment(idx)}
+              <XIcon size={14} />
+            </ActionIcon>
+          </Group>
+        )}
+
+        {/* Share encounters picker */}
+        {showShareEncounters && (
+          <Group
+            gap={0}
+            align="center"
+            px="md"
+            py="xs"
+            style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', flexShrink: 0 }}
+          >
+            <Autocomplete
+              ref={shareInputRef}
+              placeholder={t('chat.share_encounters_placeholder')}
+              value={sharePatientQuery}
+              onChange={setSharePatientQuery}
+              onOptionSubmit={handleShareEncounterSelect}
+              onKeyDown={e => {
+                if (e.key === 'Escape') {
+                  e.preventDefault();
+                  setShowShareEncounters(false);
+                  setSharePatientQuery('');
+                }
+              }}
+              data={sharePatientOptions.data}
+              filter={({ options }) => options}
+              leftSection={isLoadingPatients ? <Loader size={14} /> : undefined}
+              comboboxProps={{ withinPortal: true, zIndex: 1400 }}
+              autoFocus
+              variant="unstyled"
+              style={{ flex: 1 }}
+            />
+            <ActionIcon variant="subtle" color="gray" size="xs" onClick={handleToggleShareEncounters}>
+              <XIcon size={14} />
+            </ActionIcon>
+          </Group>
+        )}
+
+        {/* Pending share encounter preview */}
+        {pendingSharePatient && (
+          <Group
+            gap="xs"
+            px="md"
+            py={6}
+            align="center"
+            style={{
+              flexShrink: 0,
+              borderBottom: '1px solid var(--mantine-color-gray-2)',
+              backgroundColor: 'var(--mantine-color-gray-0)',
+            }}
+          >
+            <Box
+              style={{
+                flex: 1,
+                minWidth: 0,
+                borderLeft: '3px solid var(--mantine-color-teal-4)',
+                paddingLeft: 8,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <StethoscopeIcon size={16} color="var(--mantine-color-teal-6)" style={{ flexShrink: 0 }} />
+              <Box>
+                <Text size="xs" fw={600} c="teal.6" lineClamp={1}>
+                  {pendingSharePatient.personalData.firstName} {pendingSharePatient.personalData.lastName}
+                </Text>
+                <Text size="xs" c="dimmed" lineClamp={1}>
+                  {t('chat.medical_record')}
+                </Text>
+              </Box>
+            </Box>
+            <ActionIcon variant="subtle" color="gray" size="xs" onClick={handleCancelShareEncounter}>
+              <XIcon size={14} />
+            </ActionIcon>
+          </Group>
+        )}
+
+        {/* GIF picker */}
+        {isGiphyActive && (
+          <GifPicker searchTerm={giphySearchTerm} onSelect={handleGifSelect} onClose={handleGifPickerClose} />
+        )}
+
+        {/* Pending attachments preview */}
+        {(pendingAttachments.length > 0 || isUploading) && (
+          <Group
+            gap="xs"
+            px="md"
+            py={6}
+            align="center"
+            style={{
+              flexShrink: 0,
+              borderBottom: '1px solid var(--mantine-color-gray-2)',
+              backgroundColor: 'var(--mantine-color-gray-0)',
+              overflowX: 'auto',
+            }}
+          >
+            <ImageIcon size={14} color="var(--mantine-color-blue-6)" style={{ flexShrink: 0 }} />
+            {pendingAttachments.map((att, idx) => (
+              <Box
+                key={`${att.url}-${idx}`}
                 style={{
-                  position: 'absolute',
-                  top: 2,
-                  right: 2,
-                  opacity: 0.8,
+                  position: 'relative',
+                  flexShrink: 0,
+                  borderRadius: 6,
+                  overflow: 'hidden',
+                  border: '1px solid var(--mantine-color-gray-3)',
                 }}
               >
-                <XIcon size={10} />
-              </ActionIcon>
-            </Box>
-          ))}
-          {isUploading && <Loader size={16} />}
-        </Group>
-      )}
-
-      {/* Inline emoji suggest */}
-      {emojiInlineQuery !== null && (
-        <EmojiInlineSuggest
-          query={emojiInlineQuery}
-          selectedIndex={emojiInlineIndex}
-          onSelect={handleEmojiInlineSelect}
-        />
-      )}
-
-      {/* Slash command menu */}
-      {showSlashMenu && slashCommandFilter && (
-        <Box
-          px="md"
-          py={4}
-          style={{
-            flexShrink: 0,
-            borderBottom: '1px solid var(--mantine-color-gray-2)',
-            backgroundColor: 'var(--mantine-color-gray-0)',
-          }}
-        >
-          {slashCommandFilter.map((cmd, idx) => (
-            <Group
-              key={cmd.name}
-              gap="xs"
-              px="xs"
-              py={6}
-              onClick={() => handleSlashCommandSelect(cmd)}
-              style={{
-                cursor: 'pointer',
-                borderRadius: 4,
-                backgroundColor: idx === slashMenuIndex
-                  ? 'var(--mantine-color-blue-0)'
-                  : 'transparent',
-              }}
-            >
-              <Text size="sm" fw={600} c="blue.6">
-                /{cmd.name}
-              </Text>
-              <Text size="xs" c="dimmed">
-                {cmd.name === 'giphy' ? t('chat.cmd_giphy') : cmd.name}
-              </Text>
-            </Group>
-          ))}
-        </Box>
-      )}
-
-      {/* Input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif"
-        multiple
-        style={{ display: 'none' }}
-        onChange={handleFileInputChange}
-      />
-      <Group gap={0} align="center" style={{ flexShrink: 0 }}>
-        {canShareEncounters && (
-          <Menu position="top-start" withinPortal zIndex={1400}>
-            <Menu.Target>
-              <ActionIcon variant="subtle" color="gray" size="lg" ml="xs">
-                <PaperclipIcon size={16} />
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item
-                leftSection={<ImageIcon size={16} />}
-                onClick={handleOpenFilePicker}
-              >
-                {t('chat.attach_image')}
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<StethoscopeIcon size={16} />}
-                onClick={handleToggleShareEncounters}
-              >
-                {t('chat.share_medical_record')}
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
+                <Image src={att.url} alt={att.fileName} h={60} w={60} fit="cover" radius={6} />
+                <ActionIcon
+                  variant="filled"
+                  color="dark"
+                  size={16}
+                  radius="xl"
+                  onClick={() => handleRemoveAttachment(idx)}
+                  style={{
+                    position: 'absolute',
+                    top: 2,
+                    right: 2,
+                    opacity: 0.8,
+                  }}
+                >
+                  <XIcon size={10} />
+                </ActionIcon>
+              </Box>
+            ))}
+            {isUploading && <Loader size={16} />}
+          </Group>
         )}
-        {!canShareEncounters && (
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="lg"
-            ml="xs"
-            title={t('chat.attach_image')}
-            onClick={handleOpenFilePicker}
+
+        {/* Inline emoji suggest */}
+        {emojiInlineQuery !== null && (
+          <EmojiInlineSuggest
+            query={emojiInlineQuery}
+            selectedIndex={emojiInlineIndex}
+            onSelect={handleEmojiInlineSelect}
+          />
+        )}
+
+        {/* Slash command menu */}
+        {showSlashMenu && slashCommandFilter && (
+          <Box
+            px="md"
+            py={4}
+            style={{
+              flexShrink: 0,
+              borderBottom: '1px solid var(--mantine-color-gray-2)',
+              backgroundColor: 'var(--mantine-color-gray-0)',
+            }}
           >
-            <PaperclipIcon size={16} />
-          </ActionIcon>
+            {slashCommandFilter.map((cmd, idx) => (
+              <Group
+                key={cmd.name}
+                gap="xs"
+                px="xs"
+                py={6}
+                onClick={() => handleSlashCommandSelect(cmd)}
+                style={{
+                  cursor: 'pointer',
+                  borderRadius: 4,
+                  backgroundColor: idx === slashMenuIndex ? 'var(--mantine-color-blue-0)' : 'transparent',
+                }}
+              >
+                <Text size="sm" fw={600} c="blue.6">
+                  /{cmd.name}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {cmd.name === 'giphy' ? t('chat.cmd_giphy') : cmd.name}
+                </Text>
+              </Group>
+            ))}
+          </Box>
         )}
-        <Textarea
-          ref={textareaRef}
-          value={draftMessage}
-          onChange={handleDraftChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          minRows={1}
-          placeholder={t('chat.type_message')}
-          variant="unstyled"
-          autosize
-          px="md"
-          py={4}
-          disabled={isSending || isUploading}
-          style={{ flex: 1 }}
-        />
-        <EmojiPicker
-          opened={emojiPickerOpen}
-          onToggle={handleToggleEmojiPicker}
-          onSelect={handleEmojiSelect}
-          disabled={isSending || isUploading}
-        />
-      </Group>
-    </Paper>
 
-    {lightboxUrl && <ImageLightbox url={lightboxUrl} onClose={handleCloseLightbox} />}
+        {/* Input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          multiple
+          style={{ display: 'none' }}
+          onChange={handleFileInputChange}
+        />
+        <Group gap={0} align="center" style={{ flexShrink: 0 }}>
+          {canShareEncounters && (
+            <Menu position="top-start" withinPortal zIndex={1400}>
+              <Menu.Target>
+                <ActionIcon variant="subtle" color="gray" size="lg" ml="xs">
+                  <PaperclipIcon size={16} />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item leftSection={<ImageIcon size={16} />} onClick={handleOpenFilePicker}>
+                  {t('chat.attach_image')}
+                </Menu.Item>
+                <Menu.Item leftSection={<StethoscopeIcon size={16} />} onClick={handleToggleShareEncounters}>
+                  {t('chat.share_medical_record')}
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          )}
+          {!canShareEncounters && (
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="lg"
+              ml="xs"
+              title={t('chat.attach_image')}
+              onClick={handleOpenFilePicker}
+            >
+              <PaperclipIcon size={16} />
+            </ActionIcon>
+          )}
+          <Textarea
+            ref={textareaRef}
+            value={draftMessage}
+            onChange={handleDraftChange}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            minRows={1}
+            placeholder={t('chat.type_message')}
+            variant="unstyled"
+            autosize
+            px="md"
+            py={4}
+            disabled={isSending || isUploading}
+            style={{ flex: 1 }}
+          />
+          <EmojiPicker
+            opened={emojiPickerOpen}
+            onToggle={handleToggleEmojiPicker}
+            onSelect={handleEmojiSelect}
+            disabled={isSending || isUploading}
+          />
+        </Group>
+      </Paper>
+
+      {lightboxUrl && <ImageLightbox url={lightboxUrl} onClose={handleCloseLightbox} />}
     </>
   );
 }

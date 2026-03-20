@@ -287,7 +287,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 const navLinkStyle = { borderRadius: 'var(--mantine-radius-md)', flex: 'none' } as const;
 
-function SettingsTabs({ isMedic, isPrescriber, isOrgOwner }: { isMedic: boolean; isPrescriber: boolean; isOrgOwner: boolean }) {
+function SettingsTabs({
+  isMedic,
+  isPrescriber,
+  isOrgOwner,
+}: {
+  isMedic: boolean;
+  isPrescriber: boolean;
+  isOrgOwner: boolean;
+}) {
   const { t } = useTranslation();
 
   return (

@@ -26,7 +26,12 @@ type Requirement = {
   met: boolean;
 };
 
-const STRENGTH_COLORS = ['var(--mantine-color-red-6)', 'var(--mantine-color-orange-5)', 'var(--mantine-color-yellow-6)', 'var(--mantine-color-teal-6)'];
+const STRENGTH_COLORS = [
+  'var(--mantine-color-red-6)',
+  'var(--mantine-color-orange-5)',
+  'var(--mantine-color-yellow-6)',
+  'var(--mantine-color-teal-6)',
+];
 
 const STRENGTH_KEYS = [
   'password_checklist.strength_weak',
@@ -123,7 +128,9 @@ export function PasswordChecklist({ password, onValidityChange }: PasswordCheckl
     }
 
     loadZxcvbn();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const requirements = useMemo(() => checkRequirements(password), [password]);
@@ -176,10 +183,7 @@ export function PasswordChecklist({ password, onValidityChange }: PasswordCheckl
           <BarContainer>
             <BarTrack>
               {[0, 1, 2, 3].map(i => (
-                <BarSegment
-                  key={i}
-                  style={i < filledSegments ? { backgroundColor: strengthColor } : undefined}
-                />
+                <BarSegment key={i} style={i < filledSegments ? { backgroundColor: strengthColor } : undefined} />
               ))}
             </BarTrack>
             <Text size="xs" fw={500} c="dimmed">

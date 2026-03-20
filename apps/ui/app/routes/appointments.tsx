@@ -23,12 +23,12 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
   const userRolesResponse = await client.service('user-roles').find({
     query: { roleId: 'medic', $limit: 500 },
   });
-  const medicUserRoles = Array.isArray(userRolesResponse) ? userRolesResponse : ((userRolesResponse as any)?.data ?? []);
+  const medicUserRoles = Array.isArray(userRolesResponse)
+    ? userRolesResponse
+    : ((userRolesResponse as any)?.data ?? []);
   const medicUserIds = new Set(medicUserRoles.map((ur: any) => ur.userId));
 
-  const medics = allMembers
-    .filter((m: any) => m.user && medicUserIds.has(m.userId))
-    .map((m: any) => m.user);
+  const medics = allMembers.filter((m: any) => m.user && medicUserIds.has(m.userId)).map((m: any) => m.user);
 
   if (!params.medicId) {
     const defaultMedic = medics.find((m: { id: string }) => m.id === DEFAULT_MEDIC_ID) ?? medics[0];

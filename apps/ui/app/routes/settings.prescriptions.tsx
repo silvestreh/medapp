@@ -31,18 +31,14 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   const membersResponse = await client.service('organization-users').find({
     query: { $populate: true, $limit: 200 },
   });
-  const allMembers = Array.isArray(membersResponse)
-    ? membersResponse
-    : ((membersResponse as any)?.data ?? []);
+  const allMembers = Array.isArray(membersResponse) ? membersResponse : ((membersResponse as any)?.data ?? []);
 
   // Build a userId → name map
   const userNameMap = new Map<string, string>();
   for (const m of allMembers) {
     if (!m.user) continue;
     const pd = m.user.personalData;
-    const name = pd
-      ? [pd.firstName, pd.lastName].filter(Boolean).join(' ')
-      : '';
+    const name = pd ? [pd.firstName, pd.lastName].filter(Boolean).join(' ') : '';
     userNameMap.set(m.userId, name || m.user.username || m.userId);
   }
 
@@ -67,9 +63,7 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     const prescriberUserIds = new Set(prescriberRoles.map((ur: any) => ur.userId));
 
     const existingPrescriberIds = new Set(
-      delegations
-        .filter((d: any) => d.medicId === user.id)
-        .map((d: any) => d.prescriberId)
+      delegations.filter((d: any) => d.medicId === user.id).map((d: any) => d.prescriberId)
     );
 
     orgPrescribers = allMembers
@@ -173,8 +167,8 @@ export default function SettingsPrescriptionsRoute() {
   const [showCanvas, setShowCanvas] = useState(false);
 
   const { delegations, orgPrescribers, isMedic, isPrescriber, userId } = loaderData;
-  const myDelegations = useMemo(() => delegations.filter((d) => d.medicId === userId), [delegations, userId]);
-  const grantedToMe = useMemo(() => delegations.filter((d) => d.prescriberId === userId), [delegations, userId]);
+  const myDelegations = useMemo(() => delegations.filter(d => d.medicId === userId), [delegations, userId]);
+  const grantedToMe = useMemo(() => delegations.filter(d => d.prescriberId === userId), [delegations, userId]);
 
   const missingOrgFields = useMemo(() => {
     const missing: string[] = [];
@@ -242,14 +236,14 @@ export default function SettingsPrescriptionsRoute() {
       if (!prescriberId) return;
       fetcher.submit({ intent: 'create-delegation', prescriberId }, { method: 'post' });
     },
-    [fetcher],
+    [fetcher]
   );
 
   const handleRemoveDelegation = useCallback(
     (delegationId: string) => {
       fetcher.submit({ intent: 'remove-delegation', delegationId }, { method: 'post' });
     },
-    [fetcher],
+    [fetcher]
   );
 
   return (
@@ -358,9 +352,7 @@ export default function SettingsPrescriptionsRoute() {
       {isMedic && (
         <>
           <FormHeader style={{ marginTop: '2rem' }}>
-            <SectionTitle id="prescriptions-delegations">
-              {t('recetario.delegations_medic_title')}
-            </SectionTitle>
+            <SectionTitle id="prescriptions-delegations">{t('recetario.delegations_medic_title')}</SectionTitle>
           </FormHeader>
           <FormCard>
             {myDelegations.length === 0 && (
@@ -370,7 +362,7 @@ export default function SettingsPrescriptionsRoute() {
                 </Text>
               </FieldRow>
             )}
-            {myDelegations.map((d) => (
+            {myDelegations.map(d => (
               <FieldRow key={d.id}>
                 <Group justify="space-between" w="100%">
                   <Text size="sm">{d.prescriberName}</Text>
@@ -392,7 +384,7 @@ export default function SettingsPrescriptionsRoute() {
             <Group mt="sm">
               <Select
                 placeholder={t('recetario.delegations_add')}
-                data={orgPrescribers.map((p) => ({ value: p.id, label: p.name }))}
+                data={orgPrescribers.map(p => ({ value: p.id, label: p.name }))}
                 onChange={handleAddDelegation}
                 searchable
                 clearable
@@ -418,7 +410,7 @@ export default function SettingsPrescriptionsRoute() {
                 </Text>
               </FieldRow>
             )}
-            {grantedToMe.map((d) => (
+            {grantedToMe.map(d => (
               <FieldRow key={d.id}>
                 <Text size="sm">{d.medicName}</Text>
               </FieldRow>

@@ -52,10 +52,10 @@ export function SireControlForm({
       sunday: (initialSchedule?.schedule?.sunday ?? '') as number | '',
       doseNotes: initialSchedule?.notes || '',
       // Next control
-      nextControlDate: nextControlDate ? new Date(nextControlDate) : null as Date | null,
+      nextControlDate: nextControlDate ? new Date(nextControlDate) : (null as Date | null),
     },
     validate: {
-      inr: (value) => (value === '' ? 'RIN es requerido' : null),
+      inr: value => (value === '' ? 'RIN es requerido' : null),
     },
   });
 
@@ -108,11 +108,7 @@ export function SireControlForm({
     <Stack gap="md">
       <Title order={5}>Lectura</Title>
 
-      <DateInput
-        label="Fecha"
-        valueFormat="YYYY-MM-DD"
-        {...form.getInputProps('date')}
-      />
+      <DateInput label="Fecha" valueFormat="YYYY-MM-DD" {...form.getInputProps('date')} />
 
       <NumberInput
         label="RIN"
@@ -139,11 +135,7 @@ export function SireControlForm({
 
       <Group justify="space-between">
         <Title order={5}>Esquema de dosis</Title>
-        <Button
-          variant="subtle"
-          size="xs"
-          onClick={handleToggleDose}
-        >
+        <Button variant="subtle" size="xs" onClick={handleToggleDose}>
           {form.values.includeDose ? 'Quitar esquema' : 'Agregar esquema'}
         </Button>
       </Group>
@@ -151,7 +143,7 @@ export function SireControlForm({
       {form.values.includeDose && (
         <>
           <Group grow>
-            {DAYS.map((day) => (
+            {DAYS.map(day => (
               <NumberInput
                 key={day.key}
                 label={day.label}

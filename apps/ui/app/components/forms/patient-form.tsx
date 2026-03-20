@@ -83,9 +83,7 @@ export function extractCountryCode(phone: string): { countryCode: string; localN
   const digits = phone.replace(/^(tel:|cel:)\+?/i, '').replace(/[^0-9]/g, '');
 
   // Try to match known country codes (longest first to avoid ambiguity)
-  const sortedCodes = COUNTRY_CALLING_CODES
-    .map((c) => c.value)
-    .sort((a, b) => b.length - a.length);
+  const sortedCodes = COUNTRY_CALLING_CODES.map(c => c.value).sort((a, b) => b.length - a.length);
 
   for (const code of sortedCodes) {
     if (digits.startsWith(code) && digits.length > code.length) {
@@ -116,17 +114,19 @@ export function parsePatientToFormValues(patient: any): PatientFormValues {
     ...(() => {
       const raw = Array.isArray(cd.phoneNumber) ? cd.phoneNumber.join(', ') : cd.phoneNumber || '';
       // If there's a single phone number with a prefix, extract country code
-      const phones: string[] = Array.isArray(cd.phoneNumber) ? cd.phoneNumber : (cd.phoneNumber ? [cd.phoneNumber] : []);
+      const phones: string[] = Array.isArray(cd.phoneNumber) ? cd.phoneNumber : cd.phoneNumber ? [cd.phoneNumber] : [];
       // Prefer cel: for extraction
       const primary = phones.find((p: string) => p.startsWith('cel:')) || phones[0] || '';
       if (primary) {
         const { countryCode, localNumber } = extractCountryCode(primary);
         // Show all numbers as comma-separated but strip country code from the primary
-        const displayNumbers = phones.map((p: string) => {
-          const prefix = p.match(/^(tel:|cel:)/i)?.[0] || '';
-          const { localNumber: ln } = extractCountryCode(p);
-          return `${prefix}${ln}`;
-        }).join(', ');
+        const displayNumbers = phones
+          .map((p: string) => {
+            const prefix = p.match(/^(tel:|cel:)/i)?.[0] || '';
+            const { localNumber: ln } = extractCountryCode(p);
+            return `${prefix}${ln}`;
+          })
+          .join(', ');
         return { phoneCountryCode: countryCode, phoneNumber: displayNumbers };
       }
       return { phoneCountryCode: '54', phoneNumber: raw };
@@ -148,7 +148,7 @@ export function prependCountryCode(phoneNumber: string, countryCode: string): st
   if (!phoneNumber) return '';
   return phoneNumber
     .split(',')
-    .map((p) => {
+    .map(p => {
       const trimmed = p.trim();
       if (!trimmed) return '';
       const prefixMatch = trimmed.match(/^(tel:|cel:)/i);
@@ -237,7 +237,7 @@ export function PatientForm({
       form.setFieldValue('medicareId', val);
       form.setFieldValue('medicarePlan', '');
     },
-    [form],
+    [form]
   );
 
   const countryOptions = useMemo(

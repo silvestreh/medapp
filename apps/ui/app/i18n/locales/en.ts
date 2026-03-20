@@ -848,11 +848,13 @@ export const en: typeof es = {
     org_save_error: 'Failed to update organization.',
     tab_whatsapp: 'WhatsApp',
     whatsapp_title: 'WhatsApp',
-    whatsapp_description: 'Connect your organization\'s WhatsApp number to send notifications and share documents with patients.',
+    whatsapp_description:
+      "Connect your organization's WhatsApp number to send notifications and share documents with patients.",
     whatsapp_not_connected: 'No WhatsApp number connected to this organization.',
     whatsapp_connect: 'Connect WhatsApp',
     whatsapp_scan_qr: 'Scan QR Code',
-    whatsapp_scan_instructions: 'Open WhatsApp on your phone, go to Settings > Linked Devices > Link a Device, and scan this QR code.',
+    whatsapp_scan_instructions:
+      'Open WhatsApp on your phone, go to Settings > Linked Devices > Link a Device, and scan this QR code.',
     whatsapp_get_qr: 'Get QR Code',
     whatsapp_refresh_qr: 'Refresh QR Code',
     whatsapp_connected: 'Connected',

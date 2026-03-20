@@ -10,7 +10,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const cookieHeader = await setCurrentOrganizationId(request, organizationId);
 
-  return json({ ok: true }, {
-    headers: { 'Set-Cookie': cookieHeader },
-  });
+  return json(
+    { ok: true },
+    {
+      headers: { 'Set-Cookie': cookieHeader },
+    }
+  );
 };

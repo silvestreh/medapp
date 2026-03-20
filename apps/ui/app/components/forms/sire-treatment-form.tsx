@@ -18,15 +18,14 @@ export function SireTreatmentForm({ patientId, initialData, onSubmit }: SireTrea
       targetInrMax: initialData?.targetInrMax || 3.0,
       indication: initialData?.indication || '',
       startDate: initialData?.startDate ? new Date(initialData.startDate) : new Date(),
-      nextControlDate: initialData?.nextControlDate ? new Date(initialData.nextControlDate) : null as Date | null,
+      nextControlDate: initialData?.nextControlDate ? new Date(initialData.nextControlDate) : (null as Date | null),
       status: initialData?.status || 'active',
       notes: initialData?.notes || '',
     },
   });
 
   const handleSubmit = useCallback(() => {
-    const formatDate = (d: Date | string | null) =>
-      d instanceof Date ? d.toISOString().split('T')[0] : d;
+    const formatDate = (d: Date | string | null) => (d instanceof Date ? d.toISOString().split('T')[0] : d);
 
     onSubmit({
       ...form.values,
@@ -74,18 +73,10 @@ export function SireTreatmentForm({ patientId, initialData, onSubmit }: SireTrea
         />
       </Group>
 
-      <TextInput
-        label="Indicación"
-        placeholder="Ej: Fibrilación auricular"
-        {...form.getInputProps('indication')}
-      />
+      <TextInput label="Indicación" placeholder="Ej: Fibrilación auricular" {...form.getInputProps('indication')} />
 
       <Group grow>
-        <DateInput
-          label="Fecha de inicio"
-          valueFormat="YYYY-MM-DD"
-          {...form.getInputProps('startDate')}
-        />
+        <DateInput label="Fecha de inicio" valueFormat="YYYY-MM-DD" {...form.getInputProps('startDate')} />
         <DateInput
           label="Próximo control"
           valueFormat="YYYY-MM-DD"
@@ -95,12 +86,7 @@ export function SireTreatmentForm({ patientId, initialData, onSubmit }: SireTrea
         />
       </Group>
 
-      <Textarea
-        label="Notas"
-        autosize
-        minRows={2}
-        {...form.getInputProps('notes')}
-      />
+      <Textarea label="Notas" autosize minRows={2} {...form.getInputProps('notes')} />
 
       <Button onClick={handleSubmit} fullWidth>
         {initialData ? 'Actualizar tratamiento' : 'Crear tratamiento'}

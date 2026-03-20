@@ -2,7 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionIcon, Badge, Box, Button, Group, Loader, Paper, Stack, Text, Textarea, Title } from '@mantine/core';
 import { useClickOutside, useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from '@remix-run/react';
-import { RobotIcon, CaretDownIcon, CopyIcon, ArrowSquareOutIcon, XIcon, ArrowDownRightIcon } from '@phosphor-icons/react';
+import {
+  RobotIcon,
+  CaretDownIcon,
+  CopyIcon,
+  ArrowSquareOutIcon,
+  XIcon,
+  ArrowDownRightIcon,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

@@ -851,11 +851,13 @@ export const es = {
     org_save_error: 'Error al actualizar la organización.',
     tab_whatsapp: 'WhatsApp',
     whatsapp_title: 'WhatsApp',
-    whatsapp_description: 'Conecta el número de WhatsApp de tu organización para enviar notificaciones y compartir documentos con pacientes.',
+    whatsapp_description:
+      'Conecta el número de WhatsApp de tu organización para enviar notificaciones y compartir documentos con pacientes.',
     whatsapp_not_connected: 'No hay un número de WhatsApp conectado a esta organización.',
     whatsapp_connect: 'Conectar WhatsApp',
     whatsapp_scan_qr: 'Escanear código QR',
-    whatsapp_scan_instructions: 'Abre WhatsApp en tu teléfono, ve a Configuración > Dispositivos vinculados > Vincular un dispositivo, y escanea este código QR.',
+    whatsapp_scan_instructions:
+      'Abre WhatsApp en tu teléfono, ve a Configuración > Dispositivos vinculados > Vincular un dispositivo, y escanea este código QR.',
     whatsapp_get_qr: 'Obtener código QR',
     whatsapp_refresh_qr: 'Actualizar código QR',
     whatsapp_connected: 'Conectado',
@@ -1200,7 +1202,8 @@ export const es = {
     delegations_revoked: 'Acceso de prescriptor revocado',
     delegations_empty_medic: 'No se ha otorgado acceso a ningún prescriptor.',
     delegations_empty_prescriber: 'Ningún médico le ha delegado acceso aún.',
-    no_delegations_hint: 'Ningún médico le ha otorgado acceso para prescribir. Solicite a un médico que lo agregue en su configuración.',
+    no_delegations_hint:
+      'Ningún médico le ha otorgado acceso para prescribir. Solicite a un médico que lo agregue en su configuración.',
   },
   identity_verification: {
     title: 'Verificación de Identidad',

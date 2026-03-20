@@ -89,7 +89,12 @@ export function PrescriptionDetail({ prescription: rx, onCancelled }: Prescripti
               </Button>
             )}
             {rx.status === 'completed' && (
-              <Button variant="light" size="xs" leftSection={<PaperPlaneTiltIcon size={14} />} onClick={() => setShareOpened(true)}>
+              <Button
+                variant="light"
+                size="xs"
+                leftSection={<PaperPlaneTiltIcon size={14} />}
+                onClick={() => setShareOpened(true)}
+              >
                 {t('recetario.send_via')}
               </Button>
             )}

@@ -2,7 +2,20 @@ import React, { cloneElement, isValidElement, type ReactElement } from 'react';
 import { ActionIcon, Flex, Tooltip, Image, Menu, type DefaultMantineColor } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { NavLink, useLocation, useMatches, useNavigate } from '@remix-run/react';
-import { CalendarIcon, UserIcon, StethoscopeIcon, FlaskIcon, ClipboardTextIcon, ShieldIcon, TranslateIcon, ChartBarIcon, CalculatorIcon, ChatCircleIcon, ShieldCheckIcon, type IconProps } from '@phosphor-icons/react';
+import {
+  CalendarIcon,
+  UserIcon,
+  StethoscopeIcon,
+  FlaskIcon,
+  ClipboardTextIcon,
+  ShieldIcon,
+  TranslateIcon,
+  ChartBarIcon,
+  CalculatorIcon,
+  ChatCircleIcon,
+  ShieldCheckIcon,
+  type IconProps,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
@@ -287,25 +300,27 @@ const SideNav: React.FC = () => {
               </HasPermission>
             );
           })}
-        {user && (user as any).isSuperAdmin && (() => {
-          const isAdminActive = matches.at(-1)?.pathname.startsWith('/admin');
-          return (
-            <Tooltip label={t('navigation.admin', 'Admin')} position="right">
-              <NavItem
-                tone="red"
-                active={isAdminActive}
-                component={NavLink}
-                prefetch="intent"
-                to={isAdminActive ? '#' : '/admin'}
-                variant="subtle"
-                size="3em"
-                className={isAdminActive ? 'active' : ''}
-              >
-                <ShieldCheckIcon size={isMobile ? 18 : 22} />
-              </NavItem>
-            </Tooltip>
-          );
-        })()}
+        {user &&
+          (user as any).isSuperAdmin &&
+          (() => {
+            const isAdminActive = matches.at(-1)?.pathname.startsWith('/admin');
+            return (
+              <Tooltip label={t('navigation.admin', 'Admin')} position="right">
+                <NavItem
+                  tone="red"
+                  active={isAdminActive}
+                  component={NavLink}
+                  prefetch="intent"
+                  to={isAdminActive ? '#' : '/admin'}
+                  variant="subtle"
+                  size="3em"
+                  className={isAdminActive ? 'active' : ''}
+                >
+                  <ShieldCheckIcon size={isMobile ? 18 : 22} />
+                </NavItem>
+              </Tooltip>
+            );
+          })()}
       </StickyContent>
       <LanguageSwitcherContainer>
         {user && (

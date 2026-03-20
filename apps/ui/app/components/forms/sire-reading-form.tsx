@@ -20,7 +20,7 @@ export function SireReadingForm({ treatmentId, patientId, organizationId, onSubm
       source: 'provider' as string,
     },
     validate: {
-      inr: (value) => (value === '' ? 'RIN es requerido' : null),
+      inr: value => (value === '' ? 'RIN es requerido' : null),
     },
   });
 
@@ -31,9 +31,7 @@ export function SireReadingForm({ treatmentId, patientId, organizationId, onSubm
       treatmentId,
       patientId,
       organizationId,
-      date: form.values.date instanceof Date
-        ? form.values.date.toISOString().split('T')[0]
-        : form.values.date,
+      date: form.values.date instanceof Date ? form.values.date.toISOString().split('T')[0] : form.values.date,
       inr: Number(form.values.inr),
       quick: form.values.quick !== '' ? Number(form.values.quick) : null,
       percentage: form.values.percentage !== '' ? Number(form.values.percentage) : null,
@@ -43,11 +41,7 @@ export function SireReadingForm({ treatmentId, patientId, organizationId, onSubm
 
   return (
     <Stack gap="md">
-      <DateInput
-        label="Fecha de lectura"
-        valueFormat="YYYY-MM-DD"
-        {...form.getInputProps('date')}
-      />
+      <DateInput label="Fecha de lectura" valueFormat="YYYY-MM-DD" {...form.getInputProps('date')} />
 
       <NumberInput
         label="RIN"

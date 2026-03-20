@@ -42,9 +42,10 @@ export function SireDoseForm({ treatmentId, onSubmit }: SireDoseFormProps) {
 
     onSubmit({
       treatmentId,
-      startDate: form.values.startDate instanceof Date
-        ? form.values.startDate.toISOString().split('T')[0]
-        : form.values.startDate,
+      startDate:
+        form.values.startDate instanceof Date
+          ? form.values.startDate.toISOString().split('T')[0]
+          : form.values.startDate,
       schedule,
       notes: form.values.notes || null,
     });
@@ -52,14 +53,10 @@ export function SireDoseForm({ treatmentId, onSubmit }: SireDoseFormProps) {
 
   return (
     <Stack gap="md">
-      <DateInput
-        label="Fecha de inicio"
-        valueFormat="YYYY-MM-DD"
-        {...form.getInputProps('startDate')}
-      />
+      <DateInput label="Fecha de inicio" valueFormat="YYYY-MM-DD" {...form.getInputProps('startDate')} />
 
       <Group grow>
-        {DAYS.map((day) => (
+        {DAYS.map(day => (
           <NumberInput
             key={day.key}
             label={day.label}

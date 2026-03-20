@@ -55,10 +55,7 @@ export function InviteModal({ opened, onClose, roleOptions }: InviteModalProps) 
       const validation = form.validate();
       if (validation.hasErrors) return;
 
-      fetcher.submit(
-        { intent: 'invite', email: form.values.email, role: form.values.role },
-        { method: 'post' }
-      );
+      fetcher.submit({ intent: 'invite', email: form.values.email, role: form.values.role }, { method: 'post' });
     },
     [form, fetcher]
   );

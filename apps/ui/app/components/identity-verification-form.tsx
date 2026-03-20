@@ -17,7 +17,15 @@ import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { CameraIcon, CreditCardIcon, CheckCircleIcon, XCircleIcon, ClockIcon, WarningIcon, ArrowsClockwiseIcon } from '@phosphor-icons/react';
+import {
+  CameraIcon,
+  CreditCardIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  WarningIcon,
+  ArrowsClockwiseIcon,
+} from '@phosphor-icons/react';
 
 import { useFeathers } from '~/components/provider';
 import { SectionTitle, FormCard } from '~/components/forms/styles';

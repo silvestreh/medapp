@@ -27,8 +27,8 @@ const SHORTCODES: Record<string, string> = {
   ':-*': '😘',
   ":'(": '😢',
   ":'-(": '😢',
-  'XD': '😆',
-  'xD': '😆',
+  XD: '😆',
+  xD: '😆',
   ':fire:': '🔥',
   ':heart:': '❤️',
   ':thumbsup:': '👍',
@@ -104,15 +104,12 @@ const escaped = Object.keys(SHORTCODES)
   .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
 
 // Match shortcodes that are either at a word boundary or surrounded by spaces/start/end.
-const SHORTCODE_REGEX = new RegExp(
-  `(?<=^|\\s)(${escaped.join('|')})(?=$|\\s)`,
-  'g'
-);
+const SHORTCODE_REGEX = new RegExp(`(?<=^|\\s)(${escaped.join('|')})(?=$|\\s)`, 'g');
 
 /**
  * Replaces text emoji shortcodes with their native unicode emoji.
  * Only replaces shortcodes surrounded by whitespace or at start/end of string.
  */
 export function replaceEmojiShortcodes(text: string): string {
-  return text.replace(SHORTCODE_REGEX, (match) => SHORTCODES[match] ?? match);
+  return text.replace(SHORTCODE_REGEX, match => SHORTCODES[match] ?? match);
 }

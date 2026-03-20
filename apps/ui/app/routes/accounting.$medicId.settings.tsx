@@ -22,7 +22,13 @@ import {
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { MagnifyingGlassIcon, PlusIcon, ClockCounterClockwiseIcon, CaretDownIcon, ArrowLeftIcon } from '@phosphor-icons/react';
+import {
+  MagnifyingGlassIcon,
+  PlusIcon,
+  ClockCounterClockwiseIcon,
+  CaretDownIcon,
+  ArrowLeftIcon,
+} from '@phosphor-icons/react';
 
 import { showNotification } from '@mantine/notifications';
 import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';

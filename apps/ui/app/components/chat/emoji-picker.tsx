@@ -36,23 +36,9 @@ export function EmojiPicker({ opened, onToggle, onSelect, disabled }: EmojiPicke
   }, [opened, onToggle]);
 
   return (
-    <Popover
-      opened={opened}
-      onChange={onToggle}
-      position="top-end"
-      withinPortal
-      zIndex={1400}
-      shadow="md"
-    >
+    <Popover opened={opened} onChange={onToggle} position="top-end" withinPortal zIndex={1400} shadow="md">
       <Popover.Target>
-        <ActionIcon
-          variant="subtle"
-          color="gray"
-          size="lg"
-          mr="xs"
-          onClick={onToggle}
-          disabled={disabled}
-        >
+        <ActionIcon variant="subtle" color="gray" size="lg" mr="xs" onClick={onToggle} disabled={disabled}>
           <SmileyIcon size={16} />
         </ActionIcon>
       </Popover.Target>

@@ -70,7 +70,12 @@ export function TimeOffTab({ events, isLoading, removingId, onCreate, onRemove }
         <Select
           label={t('appointments.type_label')}
           value={newTimeOff.type}
-          onChange={value => setNewTimeOff(current => ({ ...current, type: (value || 'vacation') as 'vacation' | 'cancelDay' | 'other' }))}
+          onChange={value =>
+            setNewTimeOff(current => ({
+              ...current,
+              type: (value || 'vacation') as 'vacation' | 'cancelDay' | 'other',
+            }))
+          }
           data={[
             { value: 'vacation', label: t('appointments.type_vacation') },
             { value: 'cancelDay', label: t('appointments.type_cancel_day') },
@@ -105,7 +110,13 @@ export function TimeOffTab({ events, isLoading, removingId, onCreate, onRemove }
                 {formatDateForInput(event.startDate)} - {formatDateForInput(event.endDate)}
               </Text>
             </Stack>
-            <Button color="red" variant="light" size="xs" loading={removingId === event.id} onClick={() => handleRemove(event.id)}>
+            <Button
+              color="red"
+              variant="light"
+              size="xs"
+              loading={removingId === event.id}
+              onClick={() => handleRemove(event.id)}
+            >
               {t('common.delete')}
             </Button>
           </Group>

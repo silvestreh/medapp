@@ -54,7 +54,9 @@ function formatPhoneForDisplay(digits: string, callingCode: string): string {
   const formatted = formatter.input(`+${callingCode}${digits}`);
   // Strip the country code prefix from the display (e.g. "+54 " → "")
   const prefix = `+${callingCode} `;
-  return formatted.startsWith(prefix) ? formatted.slice(prefix.length) : formatted.replace(`+${callingCode}`, '').trim();
+  return formatted.startsWith(prefix)
+    ? formatted.slice(prefix.length)
+    : formatted.replace(`+${callingCode}`, '').trim();
 }
 
 interface MedicineRow {
@@ -257,7 +259,15 @@ interface PrescribeModalProps {
   repeatData?: RepeatData;
 }
 
-export function PrescribeModal({ opened, onClose, onSuccess, patient, medicId, initialPrescriptionResult, repeatData }: PrescribeModalProps) {
+export function PrescribeModal({
+  opened,
+  onClose,
+  onSuccess,
+  patient,
+  medicId,
+  initialPrescriptionResult,
+  repeatData,
+}: PrescribeModalProps) {
   const { t } = useTranslation();
   const fetcher = useFetcher<any>();
   const patientFetcher = useFetcher<any>();
@@ -730,7 +740,11 @@ export function PrescribeModal({ opened, onClose, onSuccess, patient, medicId, i
                 <Checkbox label={t('recetario.hiv')} {...rxForm.getInputProps('hiv', { type: 'checkbox' })} />
 
                 <Group justify="flex-end" mt="sm">
-                  <Button variant="default" onClick={repeatData && patient ? onClose : () => setStep(0)} disabled={submitting}>
+                  <Button
+                    variant="default"
+                    onClick={repeatData && patient ? onClose : () => setStep(0)}
+                    disabled={submitting}
+                  >
                     {t('common.cancel')}
                   </Button>
                   <Button type="submit" loading={submitting}>

@@ -109,44 +109,48 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
 
   return (
     <ChatProvider>
-    <ChatManagerProvider>
-      <MainLayoutContainer>
-        <SideNav />
-        <Box flex={1}>
-          <VerificationBanner isVerified={isVerified} />
-          <TopNav />
-          {!isOrgActive && (
-            <Alert color="orange" icon={<ShieldWarningIcon size={18} />} py="sm" px="md" radius={0}>
-              {t(
-                'organization.inactive_banner',
-                'Your organization is not yet activated. Please contact sales to get started.'
-              )}{' '}
-              <Anchor href={`mailto:${SALES_EMAIL}`} fw={600}>
-                {SALES_EMAIL}
-              </Anchor>
-            </Alert>
-          )}
-          {showWeakPasswordBanner && (
-            <Alert
-              color="orange"
-              icon={<ShieldWarningIcon size={18} />}
-              py="sm"
-              px="md"
-              radius={0}
-              styles={{ root: { position: 'relative' } }}
-            >
-              {t('common.weak_password_warning', "Your password doesn't meet the current security policy.")}{' '}
-              <Anchor component={Link} to="/settings/security" fw={600}>
-                {t('common.update_password', 'Update it now')}
-              </Anchor>
-              <CloseButton onClick={handleDismissBanner} size="sm" style={{ position: 'absolute', top: 8, right: 8 }} />
-            </Alert>
-          )}
-          <ContentContainer>{children}</ContentContainer>
-        </Box>
-      </MainLayoutContainer>
-      {user && <ChatHeadsContainer />}
-    </ChatManagerProvider>
+      <ChatManagerProvider>
+        <MainLayoutContainer>
+          <SideNav />
+          <Box flex={1}>
+            <VerificationBanner isVerified={isVerified} />
+            <TopNav />
+            {!isOrgActive && (
+              <Alert color="orange" icon={<ShieldWarningIcon size={18} />} py="sm" px="md" radius={0}>
+                {t(
+                  'organization.inactive_banner',
+                  'Your organization is not yet activated. Please contact sales to get started.'
+                )}{' '}
+                <Anchor href={`mailto:${SALES_EMAIL}`} fw={600}>
+                  {SALES_EMAIL}
+                </Anchor>
+              </Alert>
+            )}
+            {showWeakPasswordBanner && (
+              <Alert
+                color="orange"
+                icon={<ShieldWarningIcon size={18} />}
+                py="sm"
+                px="md"
+                radius={0}
+                styles={{ root: { position: 'relative' } }}
+              >
+                {t('common.weak_password_warning', "Your password doesn't meet the current security policy.")}{' '}
+                <Anchor component={Link} to="/settings/security" fw={600}>
+                  {t('common.update_password', 'Update it now')}
+                </Anchor>
+                <CloseButton
+                  onClick={handleDismissBanner}
+                  size="sm"
+                  style={{ position: 'absolute', top: 8, right: 8 }}
+                />
+              </Alert>
+            )}
+            <ContentContainer>{children}</ContentContainer>
+          </Box>
+        </MainLayoutContainer>
+        {user && <ChatHeadsContainer />}
+      </ChatManagerProvider>
     </ChatProvider>
   );
 };

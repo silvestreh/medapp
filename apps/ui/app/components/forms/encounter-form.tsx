@@ -142,7 +142,12 @@ export function EncounterForm({
             <Portal id="form-actions">
               <Group>
                 <Box visibleFrom="lg">
-                  <Button onClick={handleSave} disabled={isEmpty} leftSection={<FloppyDiskIcon size={16} />} color="green">
+                  <Button
+                    onClick={handleSave}
+                    disabled={isEmpty}
+                    leftSection={<FloppyDiskIcon size={16} />}
+                    color="green"
+                  >
                     {t('common.save')}
                   </Button>
                 </Box>

@@ -16,11 +16,7 @@ import {
   StyledTextInput,
   SectionTitle,
 } from '~/components/forms/styles';
-import {
-  COUNTRY_CALLING_CODES,
-  extractCountryCode,
-  prependCountryCode,
-} from '~/components/forms/patient-form';
+import { COUNTRY_CALLING_CODES, extractCountryCode, prependCountryCode } from '~/components/forms/patient-form';
 import medicalSpecialties from '~/medical-specialties.json';
 
 const specialtyOptions = medicalSpecialties.map(s => s.nombre);
@@ -60,9 +56,7 @@ function getInitialProfileValues(
   const cd = user?.contactData;
   const rawPhone =
     cd?.phoneNumber == null ? '' : Array.isArray(cd.phoneNumber) ? cd.phoneNumber.join(', ') : String(cd.phoneNumber);
-  const { countryCode, localNumber } = rawPhone
-    ? extractCountryCode(rawPhone)
-    : { countryCode: '54', localNumber: '' };
+  const { countryCode, localNumber } = rawPhone ? extractCountryCode(rawPhone) : { countryCode: '54', localNumber: '' };
   return {
     firstName: pd?.firstName ?? '',
     lastName: pd?.lastName ?? '',

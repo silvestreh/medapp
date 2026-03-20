@@ -43,13 +43,16 @@ export function ImageLightbox({ url, onClose }: ImageLightboxProps) {
     });
   }, []);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (e.button !== 0) return;
-    isDragging.current = true;
-    dragStart.current = { x: e.clientX, y: e.clientY };
-    translateStart.current = { ...translate };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  }, [translate]);
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.button !== 0) return;
+      isDragging.current = true;
+      dragStart.current = { x: e.clientX, y: e.clientY };
+      translateStart.current = { ...translate };
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    },
+    [translate]
+  );
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDragging.current) return;
@@ -63,24 +66,30 @@ export function ImageLightbox({ url, onClose }: ImageLightboxProps) {
     isDragging.current = false;
   }, []);
 
-  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
-    // Only close if clicking the backdrop itself, not the image
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  }, [onClose]);
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Only close if clicking the backdrop itself, not the image
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
-  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (scale > 1) {
-      // Reset to fit
-      setScale(1);
-      setTranslate({ x: 0, y: 0 });
-    } else {
-      // Zoom to 2x centered on click position
-      setScale(2);
-    }
-  }, [scale]);
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (scale > 1) {
+        // Reset to fit
+        setScale(1);
+        setTranslate({ x: 0, y: 0 });
+      } else {
+        // Zoom to 2x centered on click position
+        setScale(2);
+      }
+    },
+    [scale]
+  );
 
   return createPortal(
     <Box
@@ -123,7 +132,7 @@ export function ImageLightbox({ url, onClose }: ImageLightboxProps) {
           objectFit: 'contain',
           borderRadius: 8,
           transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
-          cursor: isDragging.current ? 'grabbing' : (scale > 1 ? 'grab' : 'zoom-in'),
+          cursor: isDragging.current ? 'grabbing' : scale > 1 ? 'grab' : 'zoom-in',
           userSelect: 'none',
           transition: isDragging.current ? 'none' : 'transform 150ms ease',
         }}

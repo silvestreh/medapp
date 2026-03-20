@@ -223,12 +223,7 @@ export default function InviteAcceptPage() {
 
           {!showPasswordForm && <Text mb="xl">{t('invite.accept_description')}</Text>}
 
-          <Button
-            type="submit"
-            fullWidth
-            loading={submitting}
-            disabled={showPasswordForm ? !isPasswordValid : false}
-          >
+          <Button type="submit" fullWidth loading={submitting} disabled={showPasswordForm ? !isPasswordValid : false}>
             {showPasswordForm ? t('invite.set_password_and_join') : t('invite.accept')}
           </Button>
         </Form>
