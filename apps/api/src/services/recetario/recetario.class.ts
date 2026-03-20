@@ -490,7 +490,12 @@ export class Recetario {
     const { healthCenter } = data;
     if (!healthCenter) throw new BadRequest('healthCenter data is required');
 
-    const response = await recetarioClient.createHealthCenter(healthCenter);
+    // Check for existing health center by email before creating
+    const healthCenters = await recetarioClient.getHealthCenters();
+    const match = healthCenters.find(
+      (center: any) => center.email?.toLowerCase() === healthCenter.email?.toLowerCase()
+    );
+    const response = match?.id ? match : await recetarioClient.createHealthCenter(healthCenter);
 
     // Update org settings with health center ID
     if (response.id && params.organizationId) {
