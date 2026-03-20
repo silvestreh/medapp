@@ -17,8 +17,17 @@ import { useClickOutside } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
 import { Form, useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { CheckIcon, InfoIcon, KeyIcon, LockIcon, PencilIcon, ShieldCheckIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { startRegistration } from '@simplewebauthn/browser';
+import {
+  CheckIcon,
+  InfoIcon,
+  KeyIcon,
+  LockIcon,
+  PencilIcon,
+  ShieldCheckIcon,
+  TrashIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 
 import { useFeathers } from '~/components/provider';
 import { css } from '~/styled-system/css';
@@ -523,13 +532,19 @@ export function ProfileSecurity({
         <PasswordFormContainer>
           <input type="hidden" name="intent" value="change-password" />
           <FieldRow label={`${t('profile.current_password')}:`} variant="stacked">
-            <StyledPasswordInput name="currentPassword" required placeholder={t('profile.current_password')} />
+            <StyledPasswordInput
+              name="currentPassword"
+              required
+              placeholder={t('profile.current_password')}
+              autoComplete="current-password"
+            />
           </FieldRow>
           <FieldRow label={`${t('profile.new_password')}:`} variant="stacked">
             <StyledPasswordInput
               name="newPassword"
               required
               placeholder={t('profile.new_password')}
+              autoComplete="new-password"
               value={newPassword}
               onChange={handleNewPasswordChange}
             />
