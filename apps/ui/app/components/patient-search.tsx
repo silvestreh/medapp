@@ -24,6 +24,7 @@ interface PatientSearchProps {
   autoFocus?: boolean;
   createNewPatientSlot?: CreateNewPatientSlot | null;
   variant?: 'unstyled' | 'filled' | 'default';
+  label?: string;
 }
 
 const CREATE_NEW_VALUE = '__create_new__';
@@ -35,6 +36,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
   autoFocus = false,
   createNewPatientSlot,
   variant = 'unstyled',
+  label,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -171,6 +173,7 @@ const PatientSearch: FC<PatientSearchProps> = ({
       styles={{ input: { fontSize: '1em' } }}
       autoComplete="off"
       data-1p-ignore
+      label={label}
     />
   );
 };

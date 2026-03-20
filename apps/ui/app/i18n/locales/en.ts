@@ -1103,6 +1103,7 @@ export const en: typeof es = {
     verify_id: 'Verify Identity',
   },
   recetario: {
+    patient: 'Patient',
     prescribe: 'Prescribe',
     order: 'Order',
     prescribe_tooltip: 'Create electronic prescription',

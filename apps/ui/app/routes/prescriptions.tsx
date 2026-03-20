@@ -180,6 +180,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     });
   }
 
+  if (intent === 'update-patient-data') {
+    const { patientId, personalData, contactData, medicareId, medicareNumber } = parseFormJson(formData.get('data')) as any;
+    if (patientId) {
+      const patch: Record<string, any> = {};
+      if (personalData) patch.personalData = personalData;
+      if (contactData) patch.contactData = contactData;
+      if (medicareId !== undefined) patch.medicareId = medicareId;
+      if (medicareNumber !== undefined) patch.medicareNumber = medicareNumber;
+      if (Object.keys(patch).length > 0) {
+        await client.service('patients').patch(patientId, patch);
+      }
+    }
+    return json({ intent: 'update-patient-data', success: true });
+  }
+
   if (intent === 'search-recetario-medications') {
     const { search } = parseFormJson(formData.get('data')) as any;
     const result = await client.service('recetario' as any).create({ action: 'search-medications', search });

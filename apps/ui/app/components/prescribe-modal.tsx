@@ -32,6 +32,8 @@ import { AsYouType, type CountryCode } from 'libphonenumber-js';
 
 import { Icd10Selector } from '~/components/icd10-selector';
 import { PrepagaSelector } from '~/components/prepaga-selector';
+import PatientSearch from '~/components/patient-search';
+import { useFeathers } from '~/components/provider';
 import { trackAction } from '~/utils/breadcrumbs';
 
 const COUNTRY_PHONE_OPTIONS = [
@@ -272,9 +274,12 @@ export function PrescribeModal({
   const fetcher = useFetcher<any>();
   const patientFetcher = useFetcher<any>();
   const shareFetcher = useFetcher<any>();
+  const updatePatientFetcher = useFetcher<any>();
+  const feathersClient = useFeathers();
   const submitting = fetcher.state !== 'idle';
 
   const [step, setStep] = useState<0 | 1 | 2>(0);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [prescriptionResult, setPrescriptionResult] = useState<PrescriptionResult | null>(null);
   const [shareEmail, setShareEmail] = useState('');
   const [sharePhoneCountry, setSharePhoneCountry] = useState('54');
@@ -301,7 +306,10 @@ export function PrescribeModal({
       insuranceNumber: '',
     },
     validate: {
-      insuranceNumber: (v, values) => ((values as any).medicareId && !v.trim() ? t('common.required') : null),
+      insuranceNumber: (v, values) => {
+        const hasInsurance = (values as any).medicareId && (values as any).healthInsuranceName !== 'PARTICULAR';
+        return hasInsurance && !v.trim() ? t('common.required') : null;
+      },
     },
   });
 
@@ -331,7 +339,29 @@ export function PrescribeModal({
   const [orderDiagnosisError, setOrderDiagnosisError] = useState('');
   const [activeTab, setActiveTab] = useState('prescription');
 
-  // Pre-fill from props synchronously (if available); fire Recetario fetch for gap-fill
+  const fillPatientForm = useCallback((p: any) => {
+    const pd = p.personalData || {};
+    const cd = p.contactData || {};
+    const email = cd.email || '';
+    const phone = (cd.phoneNumber || '').replace(/^tel:/i, '');
+    patientForm.setValues({
+      documentValue: pd.documentValue || '',
+      documentType: pd.documentType || 'DNI',
+      firstName: pd.firstName || '',
+      lastName: pd.lastName || '',
+      gender: ({ male: 'm', female: 'f', other: 'o' } as any)[pd.gender] || pd.gender || '',
+      birthDate: pd.birthDate ? formatDate(pd.birthDate) : '',
+      email,
+      phone,
+      medicareId: p.medicareId || '',
+      healthInsuranceName: '',
+      insuranceNumber: p.medicareNumber || '',
+    });
+    setShareEmail(email);
+    setSharePhone(phone);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pre-fill from props synchronously (if available)
   useEffect(() => {
     if (opened) {
       trackAction('Opened prescribe modal');
@@ -340,24 +370,12 @@ export function PrescribeModal({
         setStep(2);
       }
       if (patient) {
-        const pd = patient.personalData || {};
-        const cd = patient.contactData || {};
-        const email = cd.email || '';
-        patientForm.setValues({
-          documentValue: pd.documentValue || '',
-          documentType: pd.documentType || 'DNI',
-          firstName: pd.firstName || '',
-          lastName: pd.lastName || '',
-          gender: ({ male: 'm', female: 'f', other: 'o' } as any)[pd.gender] || '',
-          birthDate: pd.birthDate ? formatDate(pd.birthDate) : '',
-          email,
-          phone: (cd.phoneNumber || '').replace(/^tel:/i, ''),
-          medicareId: patient.medicareId || '',
-          healthInsuranceName: '',
-          insuranceNumber: patient.medicareNumber || '',
-        });
-        setShareEmail(email);
-        setSharePhone((cd.phoneNumber || '').replace(/^tel:/i, ''));
+        fillPatientForm(patient);
+        setSelectedPatientId(patient.id);
+        patientFetcher.submit(
+          { intent: 'get-patient-data', data: JSON.stringify({ patientId: patient.id }) },
+          { method: 'post' }
+        );
       }
       if (repeatData) {
         setRxDiagnosis(repeatData.diagnosis);
@@ -366,22 +384,47 @@ export function PrescribeModal({
         setActiveTab('prescription');
         if (patient) setStep(1);
       }
-      patientFetcher.submit({ intent: 'get-patient-data' }, { method: 'post' });
     }
   }, [opened]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fill fields from fetcher: if no patient prop, use mhsPatientData; then gap-fill from Recetario
+  // Handle patient selected from PatientSearch
+  const handlePatientSelected = useCallback(
+    async (patientId: string) => {
+      setSelectedPatientId(patientId);
+      try {
+        const p = await feathersClient.service('patients').get(patientId);
+        fillPatientForm(p);
+      } catch {
+        // fallback: fetch via action for gap-fill
+      }
+      patientFetcher.submit({ intent: 'get-patient-data', data: JSON.stringify({ patientId }) }, { method: 'post' });
+    },
+    [feathersClient, fillPatientForm, patientFetcher]
+  );
+
+  // Gap-fill from fetcher (mhsPatientData / recetarioData)
   useEffect(() => {
     if (patientFetcher.state !== 'idle' || !patientFetcher.data) return;
     const { recetarioData, matchedPrepagaId, mhsPatientData } = patientFetcher.data;
-    if (!patient && mhsPatientData) {
-      const email = mhsPatientData.email || '';
-      patientForm.setValues({
-        ...mhsPatientData,
-        gender: ({ male: 'm', female: 'f', other: 'o' } as any)[mhsPatientData.gender] || '',
-        healthInsuranceName: '',
-      });
-      setShareEmail(prev => prev || email);
+    if (mhsPatientData) {
+      patientForm.setValues((prev: any) => ({
+        ...prev,
+        documentValue: prev.documentValue || mhsPatientData.documentValue || '',
+        documentType: prev.documentType || mhsPatientData.documentType || 'DNI',
+        firstName: prev.firstName || mhsPatientData.firstName || '',
+        lastName: prev.lastName || mhsPatientData.lastName || '',
+        gender:
+          prev.gender ||
+          ({ male: 'm', female: 'f', other: 'o' } as any)[mhsPatientData.gender] ||
+          mhsPatientData.gender ||
+          '',
+        birthDate: prev.birthDate || mhsPatientData.birthDate || '',
+        email: prev.email || mhsPatientData.email || '',
+        phone: prev.phone || mhsPatientData.phone || '',
+        medicareId: prev.medicareId || mhsPatientData.medicareId || '',
+        insuranceNumber: prev.insuranceNumber || mhsPatientData.insuranceNumber || '',
+      }));
+      setShareEmail(prev => prev || mhsPatientData.email || '');
       setSharePhone(prev => prev || mhsPatientData.phone || '');
     }
     if (!recetarioData) return;
@@ -404,6 +447,7 @@ export function PrescribeModal({
   useEffect(() => {
     if (!opened) {
       setStep(0);
+      setSelectedPatientId(null);
       setPrescriptionResult(null);
       setShareEmail('');
       setSharePhoneCountry('54');
@@ -446,9 +490,38 @@ export function PrescribeModal({
     }
   }, [shareFetcher.state, shareFetcher.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleNextStep = () => {
-    if (!patientForm.validate().hasErrors) setStep(1);
-  };
+  const handleNextStep = useCallback(() => {
+    if (patientForm.validate().hasErrors) return;
+
+    // Patch patient with form data (only fields the form manages)
+    const pv = patientForm.values;
+    const patientId = selectedPatientId || patient?.id;
+    if (patientId) {
+      const genderMap: Record<string, string> = { m: 'male', f: 'female', o: 'other' };
+      updatePatientFetcher.submit(
+        {
+          intent: 'update-patient-data',
+          data: JSON.stringify({
+            patientId,
+            personalData: {
+              gender: genderMap[pv.gender] || pv.gender || undefined,
+              birthDate: pv.birthDate || undefined,
+              documentValue: pv.documentValue || undefined,
+            },
+            contactData: {
+              email: pv.email || undefined,
+              phoneNumber: pv.phone ? `tel:${pv.phone}` : undefined,
+            },
+            medicareId: pv.medicareId || undefined,
+            medicareNumber: pv.insuranceNumber || undefined,
+          }),
+        },
+        { method: 'post' }
+      );
+    }
+
+    setStep(1);
+  }, [patientForm, selectedPatientId, patient, updatePatientFetcher]);
 
   const handlePrescriptionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -480,7 +553,7 @@ export function PrescribeModal({
           medications,
           hiv: rxForm.values.hiv,
           patientData: { ...patientForm.values, healthInsuranceName },
-          ...(patient?.id && { patientId: patient.id }),
+          ...((selectedPatientId || patient?.id) && { patientId: selectedPatientId || patient?.id }),
           ...(medicId && { medicId }),
         }),
       },
@@ -507,7 +580,7 @@ export function PrescribeModal({
           diagnosis: orderDiagnosis,
           content: orderForm.values.content,
           patientData: { ...patientForm.values, healthInsuranceName },
-          ...(patient?.id && { patientId: patient.id }),
+          ...((selectedPatientId || patient?.id) && { patientId: selectedPatientId || patient?.id }),
           ...(medicId && { medicId }),
         }),
       },
@@ -576,59 +649,112 @@ export function PrescribeModal({
       </Stepper>
 
       {/* Step 0 — Patient & Insurance */}
-      {step === 0 && (
-        <Stack gap="sm">
-          <SimpleGrid cols={2} spacing="sm">
-            <TextInput label={t('recetario.document_value')} {...patientForm.getInputProps('documentValue')} />
-            <Select
-              label={t('recetario.gender')}
-              data={[
-                { value: 'm', label: t('recetario.gender_male') },
-                { value: 'f', label: t('recetario.gender_female') },
-                { value: 'o', label: t('recetario.gender_other') },
-              ]}
-              {...patientForm.getInputProps('gender')}
-            />
-            <TextInput
-              label={t('recetario.birth_date')}
-              placeholder="YYYY-MM-DD"
-              {...patientForm.getInputProps('birthDate')}
-            />
-            <PrepagaSelector
-              label={t('recetario.health_insurance_name')}
-              value={patientForm.values.medicareId}
-              variant="default"
-              onChange={id => {
-                patientForm.setFieldValue('medicareId', id);
-                if (!id) {
-                  patientForm.setFieldValue('healthInsuranceName', '');
-                  patientForm.setFieldValue('insuranceNumber', '');
-                }
-              }}
-              onSelectPrepaga={p => {
-                patientForm.setFieldValue(
-                  'healthInsuranceName',
-                  (p as any).recetarioHealthInsuranceName || (p as any).shortName
-                );
-              }}
-            />
-            <TextInput
-              label={t('recetario.insurance_number')}
-              disabled={!patientForm.values.medicareId}
-              required={!!patientForm.values.medicareId}
-              {...patientForm.getInputProps('insuranceNumber')}
-            />
-            <TextInput label={t('recetario.email')} {...patientForm.getInputProps('email')} />
-            <TextInput label={t('recetario.phone')} {...patientForm.getInputProps('phone')} />
-          </SimpleGrid>
-          <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={onClose}>
-              {t('common.cancel')}
-            </Button>
-            <Button onClick={handleNextStep}>{t('common.next')}</Button>
-          </Group>
-        </Stack>
-      )}
+      {step === 0 &&
+        (() => {
+          const pv = patientForm.values;
+          const hasPatient = !!selectedPatientId || !!patient;
+          const showDocumentValue = !pv.documentValue;
+          const showGender = !pv.gender;
+          const showBirthDate = !pv.birthDate;
+          const showEmail = !pv.email;
+          const showPhone = !pv.phone;
+          const hasMissingFields = showDocumentValue || showGender || showBirthDate || showEmail || showPhone;
+
+          return (
+            <Stack gap="sm">
+              {!patient && (
+                <PatientSearch
+                  label={t('recetario.patient')}
+                  onChange={handlePatientSelected}
+                  autoFocus
+                  variant="default"
+                />
+              )}
+
+              {hasPatient && (
+                <>
+                  {pv.firstName && (
+                    <Text fw={500} size="sm">
+                      {pv.firstName} {pv.lastName}
+                      {pv.documentValue ? ` — ${pv.documentValue}` : ''}
+                    </Text>
+                  )}
+
+                  {hasMissingFields && (
+                    <SimpleGrid cols={2} spacing="sm">
+                      {showDocumentValue && (
+                        <TextInput
+                          label={t('recetario.document_value')}
+                          required
+                          {...patientForm.getInputProps('documentValue')}
+                        />
+                      )}
+                      {showGender && (
+                        <Select
+                          label={t('recetario.gender')}
+                          required
+                          data={[
+                            { value: 'm', label: t('recetario.gender_male') },
+                            { value: 'f', label: t('recetario.gender_female') },
+                            { value: 'o', label: t('recetario.gender_other') },
+                          ]}
+                          {...patientForm.getInputProps('gender')}
+                        />
+                      )}
+                      {showBirthDate && (
+                        <TextInput
+                          label={t('recetario.birth_date')}
+                          required
+                          placeholder="YYYY-MM-DD"
+                          {...patientForm.getInputProps('birthDate')}
+                        />
+                      )}
+                      {showEmail && <TextInput label={t('recetario.email')} {...patientForm.getInputProps('email')} />}
+                      {showPhone && <TextInput label={t('recetario.phone')} {...patientForm.getInputProps('phone')} />}
+                    </SimpleGrid>
+                  )}
+
+                  <SimpleGrid cols={2} spacing="sm">
+                    <PrepagaSelector
+                      label={t('recetario.health_insurance_name')}
+                      value={pv.medicareId}
+                      variant="default"
+                      onChange={id => {
+                        patientForm.setFieldValue('medicareId', id);
+                        if (!id) {
+                          patientForm.setFieldValue('healthInsuranceName', '');
+                          patientForm.setFieldValue('insuranceNumber', '');
+                        }
+                      }}
+                      onSelectPrepaga={p => {
+                        patientForm.setFieldValue(
+                          'healthInsuranceName',
+                          (p as any).recetarioHealthInsuranceName || (p as any).shortName
+                        );
+                      }}
+                    />
+                    {!!pv.medicareId && (
+                      <TextInput
+                        label={t('recetario.insurance_number')}
+                        required={pv.healthInsuranceName !== 'PARTICULAR'}
+                        {...patientForm.getInputProps('insuranceNumber')}
+                      />
+                    )}
+                  </SimpleGrid>
+                </>
+              )}
+
+              <Group justify="flex-end" mt="md">
+                <Button variant="default" onClick={onClose}>
+                  {t('common.cancel')}
+                </Button>
+                <Button onClick={handleNextStep} disabled={!hasPatient}>
+                  {t('common.next')}
+                </Button>
+              </Group>
+            </Stack>
+          );
+        })()}
 
       {/* Step 1 — Prescription / Order */}
       {step === 1 && (

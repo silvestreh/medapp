@@ -1107,6 +1107,7 @@ export const es = {
     verify_id: 'Verificar Identidad',
   },
   recetario: {
+    patient: 'Paciente',
     prescribe: 'Recetar',
     order: 'Orden',
     prescribe_tooltip: 'Crear receta electrónica',
