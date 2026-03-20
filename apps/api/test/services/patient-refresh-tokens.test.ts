@@ -6,6 +6,7 @@ describe('\'patient-refresh-tokens\' service', () => {
   const testDocumentValue = `refresh-test-${Date.now()}`;
   const testOrgSlug = `refresh-org-${Date.now()}`;
   let patientId: string;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let orgId: string;
 
   before(async () => {

@@ -22,6 +22,7 @@ export function isTestDocument(documentNumber: string | undefined | null): boole
 // Mock data returned by sire services for the test patient
 // ---------------------------------------------------------------------------
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const today = () => new Date().toISOString().slice(0, 10);
 const daysFromNow = (n: number) => {
   const d = new Date();

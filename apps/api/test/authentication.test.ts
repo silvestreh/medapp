@@ -54,6 +54,14 @@ describe('authentication', () => {
         await app.service('organization-users').remove(ou.id);
       }
 
+      const accessLogs = await app.service('access-logs').find({
+        query: { userId: user.id },
+        paginate: false,
+      } as any) as any[];
+      for (const log of accessLogs) {
+        await app.service('access-logs').remove(log.id);
+      }
+
       await app.service('users').remove(user.id);
     });
   });

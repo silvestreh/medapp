@@ -37,7 +37,7 @@ describe('\'signed-exports\' service', () => {
 
     medic = await app.service('users').create({
       username: 'export.test.medic',
-      password: 'SuperSecret1',
+      password: 'SuperSecret1!',
       personalData: {
         firstName: 'Export',
         lastName: 'Doctor',
@@ -257,7 +257,7 @@ describe('\'signed-exports\' service', () => {
     it('fails to sign when no certificate is uploaded', async () => {
       const noCertMedic = await app.service('users').create({
         username: 'export.nocert.medic',
-        password: 'SuperSecret1',
+        password: 'SuperSecret1!',
       });
 
       await app.service('organization-users').create({
@@ -287,7 +287,7 @@ describe('\'signed-exports\' service', () => {
     it('rejects non-medic users', async () => {
       const receptionist = await app.service('users').create({
         username: 'export.receptionist',
-        password: 'SuperSecret1',
+        password: 'SuperSecret1!',
       });
 
       await app.service('organization-users').create({
@@ -506,7 +506,7 @@ describe('\'signed-exports\' service', () => {
     before(async () => {
       encryptedMedic = await app.service('users').create({
         username: 'export.encrypted.medic',
-        password: 'SuperSecret1',
+        password: 'SuperSecret1!',
         personalData: {
           firstName: 'Encrypted',
           lastName: 'Doctor',

@@ -3,7 +3,11 @@ import { Hook, HookContext } from '@feathersjs/feathers';
 import { BadRequest } from '@feathersjs/errors';
 import { encryptValue } from '../../../hooks/encryption';
 
-const generateTempPassword = (): string => crypto.randomBytes(48).toString('base64url');
+const generateTempPassword = (): string => {
+  // Prefix guarantees the password always satisfies validation rules
+  // (uppercase, lowercase, digit, special character)
+  return 'Aa1!' + crypto.randomBytes(48).toString('base64url');
+};
 
 const resolveAndNotify = (): Hook => async (context: HookContext): Promise<HookContext> => {
   const { app, result } = context;

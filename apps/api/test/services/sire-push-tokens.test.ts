@@ -4,26 +4,47 @@ import { createTestUser, createTestOrganization } from '../test-helpers';
 
 describe('\'sire-push-tokens\' service', () => {
   let org: any;
-  let patient: any;
+  let accessToken: string;
+  const testDocumentValue = `sire-push-${Date.now()}`;
+  const testOrgSlug = `sire-push-org-${Date.now()}`;
 
   before(async () => {
-    org = await createTestOrganization({ slug: `sire-push-${Date.now()}` });
+    org = await createTestOrganization({ slug: testOrgSlug });
     await createTestUser({
       username: `push.medic.${Date.now()}@test.com`,
       password: 'SuperSecret1!',
       roleIds: ['medic'],
       organizationId: org.id,
     });
-    patient = await app.service('patients').create({
+    await app.service('patients').create({
       personalData: {
         firstName: 'Push',
         lastName: 'Patient',
-        documentValue: `sire-push-${Date.now()}`,
+        documentValue: testDocumentValue,
       },
       contactData: {
         phoneNumber: ['cel:1155550001'],
       },
     } as any);
+
+    // Authenticate as the patient via OTP to get an access token
+    await app.service('patient-otp').create({
+      action: 'request-otp',
+      documentNumber: testDocumentValue,
+    });
+
+    const otpService = app.service('patient-otp') as any;
+    const pending = otpService.pendingOtps.get(testDocumentValue);
+
+    const authResult: any = await app.service('authentication').create({
+      strategy: 'patient-otp',
+      documentNumber: testDocumentValue,
+      slug: testOrgSlug,
+      code: pending.code,
+      app: 'sire',
+    }, {});
+
+    accessToken = authResult.accessToken;
   });
 
   it('registered the service', () => {
@@ -37,7 +58,7 @@ describe('\'sire-push-tokens\' service', () => {
       token: `ExponentPushToken[test-${Date.now()}]`,
       platform: 'ios',
     }, {
-      patient: { id: patient.id, organizationId: org.id },
+      headers: { authorization: `Bearer ${accessToken}` },
     } as any);
 
     assert.strictEqual(result.status, 'ok');
@@ -51,7 +72,7 @@ describe('\'sire-push-tokens\' service', () => {
       token,
       platform: 'android',
     }, {
-      patient: { id: patient.id, organizationId: org.id },
+      headers: { authorization: `Bearer ${accessToken}` },
     } as any);
 
     // Register same token again — should not throw
@@ -60,7 +81,7 @@ describe('\'sire-push-tokens\' service', () => {
       token,
       platform: 'android',
     }, {
-      patient: { id: patient.id, organizationId: org.id },
+      headers: { authorization: `Bearer ${accessToken}` },
     } as any);
 
     assert.strictEqual(result.status, 'ok');
@@ -82,14 +103,14 @@ describe('\'sire-push-tokens\' service', () => {
       token,
       platform: 'ios',
     }, {
-      patient: { id: patient.id, organizationId: org.id },
+      headers: { authorization: `Bearer ${accessToken}` },
     } as any);
 
     const result: any = await app.service('sire-push-tokens').create({
       action: 'unregister',
       token,
     }, {
-      patient: { id: patient.id, organizationId: org.id },
+      headers: { authorization: `Bearer ${accessToken}` },
     } as any);
 
     assert.strictEqual(result.status, 'ok');
