@@ -103,7 +103,7 @@ export default function recetarioWebhookHandler(app: Application) {
       res.status(200).json({ ok: true });
     } catch (error: any) {
       console.error('Recetario webhook error:', error?.message || error);
-      res.status(200).json({ ok: true });
+      res.status(500).json({ ok: false, error: 'Internal error' });
     }
   };
 }

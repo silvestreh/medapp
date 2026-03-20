@@ -223,7 +223,7 @@ export class Recetario {
     const patient = await this.getPatientData(patientId);
     const orgSettings = await this.getOrgRecetarioSettings(params);
 
-    const reference = `athelas-${randomUUID()}`;
+    const reference = `${APP_SLUG}-${randomUUID()}`;
 
     const payload: recetarioClient.QuickLinkPayload = {
       professional: mapDoctorData(doctor),
@@ -264,14 +264,16 @@ export class Recetario {
 
     const effectiveMedicId = await this.resolveEffectiveMedicId(data, params);
     const doctor = await this.getDoctorData(effectiveMedicId);
-    const stagingEmail = ((this.app.get as any)('recetario') || {}).stagingEmail;
-    if (stagingEmail) doctor.contactData = { ...doctor.contactData, email: stagingEmail };
+    if (process.env.NODE_ENV !== 'production') {
+      const originalEmail = doctor.contactData?.email || 'unknown';
+      doctor.contactData = { ...doctor.contactData, email: `${originalEmail}@recetario.com.ar` };
+    }
     const { resolved: patient, mhsPatient } = await this.resolvePatientWithOverride(patientId, patientOverride);
     await this.upsertRecetarioPatient(patient);
     await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
     const orgSettings = await this.getOrgRecetarioSettings(params);
 
-    const reference = `athelas-${randomUUID()}`;
+    const reference = `${APP_SLUG}-${randomUUID()}`;
     const recetarioUserId = doctor.mdSettings.recetarioUserId as number | null | undefined;
 
     const doctorPayload = mapDoctorForAPI(doctor);
@@ -300,16 +302,15 @@ export class Recetario {
       })),
     };
 
-    const response = await recetarioClient.createPrescription(payload);
-
+    // Create DB record first so webhooks can find it
     const prescriptionRecord = await this.app.service('prescriptions').create({
       organizationId: params.organizationId || null,
       medicId: effectiveMedicId,
       patientId,
       recetarioReference: reference,
-      recetarioDocumentIds: response.id ? [{ id: response.id, type: 'prescription', url: response.url || '' }] : [],
+      recetarioDocumentIds: [],
       type: 'prescription',
-      status: response.id ? 'completed' : 'pending',
+      status: 'pending',
       content: {
         diagnosis,
         medicines: (medications || []).map((m: any) => ({
@@ -322,6 +323,33 @@ export class Recetario {
       },
     } as any, this.internal());
 
+    let response: any;
+    try {
+      response = await recetarioClient.createPrescription(payload);
+    } catch {
+      try {
+        response = await recetarioClient.createPrescription(payload);
+      } catch (retryError) {
+        await this.app.service('prescriptions').patch(
+          (prescriptionRecord as any).id,
+          { status: 'error' } as any,
+          this.internal()
+        );
+        throw retryError;
+      }
+    }
+
+    if (response.id) {
+      await this.app.service('prescriptions').patch(
+        (prescriptionRecord as any).id,
+        {
+          status: 'completed',
+          recetarioDocumentIds: [{ id: response.id, type: 'prescription', url: response.url || '' }],
+        } as any,
+        this.internal()
+      );
+    }
+
     return { success: true, ...response, reference, prescriptionId: (prescriptionRecord as any).id, recetarioDocumentId: response.id ?? null };
   }
 
@@ -332,8 +360,10 @@ export class Recetario {
 
     const effectiveMedicId = await this.resolveEffectiveMedicId(data, params);
     const doctor = await this.getDoctorData(effectiveMedicId);
-    const stagingEmail = ((this.app.get as any)('recetario') || {}).stagingEmail;
-    if (stagingEmail) doctor.contactData = { ...doctor.contactData, email: stagingEmail };
+    if (process.env.NODE_ENV !== 'production') {
+      const originalEmail = doctor.contactData?.email || 'unknown';
+      doctor.contactData = { ...doctor.contactData, email: `${originalEmail}@recetario.com.ar` };
+    }
     const { resolved: patient, mhsPatient } = await this.resolvePatientWithOverride(patientId, patientOverride);
     await this.upsertRecetarioPatient(patient);
     await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
@@ -356,21 +386,47 @@ export class Recetario {
       reference,
     };
 
-    const response = await recetarioClient.createOrder(payload);
-
+    // Create DB record first so webhooks can find it
     const prescriptionRecord = await this.app.service('prescriptions').create({
       organizationId: params.organizationId || null,
       medicId: effectiveMedicId,
       patientId,
       recetarioReference: reference,
-      recetarioDocumentIds: response.id ? [{ id: response.id, type: 'order', url: response.url || '' }] : [],
+      recetarioDocumentIds: [],
       type: 'order',
-      status: response.id ? 'completed' : 'pending',
+      status: 'pending',
       content: {
         diagnosis,
         orderText: content,
       },
     } as any, this.internal());
+
+    let response: any;
+    try {
+      response = await recetarioClient.createOrder(payload);
+    } catch {
+      try {
+        response = await recetarioClient.createOrder(payload);
+      } catch (retryError) {
+        await this.app.service('prescriptions').patch(
+          (prescriptionRecord as any).id,
+          { status: 'error' } as any,
+          this.internal()
+        );
+        throw retryError;
+      }
+    }
+
+    if (response.id) {
+      await this.app.service('prescriptions').patch(
+        (prescriptionRecord as any).id,
+        {
+          status: 'completed',
+          recetarioDocumentIds: [{ id: response.id, type: 'order', url: response.url || '' }],
+        } as any,
+        this.internal()
+      );
+    }
 
     return { success: true, ...response, reference, prescriptionId: (prescriptionRecord as any).id, recetarioDocumentId: response.id ?? null };
   }

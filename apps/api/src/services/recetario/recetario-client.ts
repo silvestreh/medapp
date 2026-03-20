@@ -261,7 +261,7 @@ function createClient(): AxiosInstance {
   });
 
   instance.interceptors.request.use((config) => {
-    console.log(`[Recetario] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, JSON.stringify(config.data || config.params || {}, null, 2));
+    console.log(`[Recetario] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     return config;
   });
 
@@ -275,7 +275,7 @@ async function handleRequest<T>(request: Promise<{ data: T }>): Promise<T> {
   } catch (err) {
     const error = err as AxiosError<{ message?: string; error?: string }>;
     if (error.response) {
-      console.error('[Recetario] API error', error.response.status, JSON.stringify(error.response.data, null, 2));
+      console.error('[Recetario] API error', error.response.status);
     }
     const message =
       error.response?.data?.message ||
