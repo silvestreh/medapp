@@ -137,11 +137,24 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     : ((userRolesResponse as any)?.data ?? []);
   const medicUserIds = new Set(medicUserRoles.map((ur: any) => ur.userId));
 
-  const medics = allMembers.filter((m: any) => m.user && medicUserIds.has(m.userId)).map((m: any) => m.user);
+  let medics = allMembers.filter((m: any) => m.user && medicUserIds.has(m.userId)).map((m: any) => m.user);
+
+  // If user is a prescriber (not a medic), only show medics who have delegated to them
+  const isPrescriber = orgRoleIds.includes('prescriber');
+  if (isPrescriber && !isMedic) {
+    const delegationsResponse = await client.service('prescription-delegations' as any).find({
+      query: { prescriberId: user.id, $limit: 200 },
+    });
+    const delegations = Array.isArray(delegationsResponse)
+      ? delegationsResponse
+      : ((delegationsResponse as any)?.data ?? []);
+    const delegatedMedicIds = new Set(delegations.map((d: any) => d.medicId));
+    medics = medics.filter((m: any) => delegatedMedicIds.has(m.id));
+  }
 
   const defaultMedicId = isMedic ? user.id : medics[0]?.id || null;
 
-  return { medics, defaultMedicId, isMedic, userId: user.id };
+  return { medics, defaultMedicId, isMedic, isPrescriber, userId: user.id };
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -249,7 +262,7 @@ const stickyHeaderStyle = {
 };
 
 export default function PrescriptionsPage() {
-  const { medics, defaultMedicId } = useLoaderData<typeof loader>();
+  const { medics, defaultMedicId, isPrescriber, isMedic } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const isDesktop = useMediaQuery(media.md);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -438,6 +451,12 @@ export default function PrescriptionsPage() {
       <HeaderContainer>
         <Title>{t('navigation.prescriptions')}</Title>
       </HeaderContainer>
+
+      {isPrescriber && !isMedic && medics.length === 0 && (
+        <EmptyState>
+          <Text c="dimmed">{t('recetario.no_delegations_hint')}</Text>
+        </EmptyState>
+      )}
 
       {status === 'loading' && (
         <Group justify="center" py="xl">

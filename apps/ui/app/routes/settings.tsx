@@ -99,6 +99,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const currentMembership = orgs?.find(o => o.id === currentOrganizationId);
     const currentOrgRoleIds = currentMembership?.roleIds || [];
     const isMedic = currentOrgRoleIds.includes('medic');
+    const isPrescriber = currentOrgRoleIds.includes('prescriber');
     let mdSettingsRecord: MdSettingsProfile | null = null;
     if (isMedic) {
       const settings = (fullUser as { settings?: unknown }).settings;
@@ -271,6 +272,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       twoFactorEnabled: Boolean(profile.twoFactorEnabled),
       user: fullUser,
       isMedic,
+      isPrescriber,
       mdSettings: mdSettingsRecord,
       identityVerification,
       passkeys,
@@ -285,7 +287,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 const navLinkStyle = { borderRadius: 'var(--mantine-radius-md)', flex: 'none' } as const;
 
-function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: boolean }) {
+function SettingsTabs({ isMedic, isPrescriber, isOrgOwner }: { isMedic: boolean; isPrescriber: boolean; isOrgOwner: boolean }) {
   const { t } = useTranslation();
 
   return (
@@ -347,7 +349,7 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
           style={navLinkStyle}
         />
       )}
-      {isOrgOwner && (
+      {(isOrgOwner || isMedic || isPrescriber) && (
         <NavLink
           component={RemixNavLink}
           to="/settings/prescriptions"
@@ -372,11 +374,11 @@ function SettingsTabs({ isMedic, isOrgOwner }: { isMedic: boolean; isOrgOwner: b
 }
 
 export default function SettingsLayout() {
-  const { isMedic, isOrgOwner } = useLoaderData<typeof loader>();
+  const { isMedic, isPrescriber, isOrgOwner } = useLoaderData<typeof loader>();
 
   return (
     <Flex direction={{ base: 'column', lg: 'row' }}>
-      <SettingsTabs isMedic={isMedic} isOrgOwner={isOrgOwner} />
+      <SettingsTabs isMedic={isMedic} isPrescriber={isPrescriber} isOrgOwner={isOrgOwner} />
       <FormContainer className="settings-container" styles={{ root: { maxWidth: 720, margin: '0 auto' } }}>
         <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>
           <Outlet />
@@ -391,7 +393,7 @@ export function ErrorBoundary() {
 
   return (
     <FormContainer style={{ maxWidth: 720, margin: '0 auto' }}>
-      {data && <SettingsTabs isMedic={data.isMedic} isOrgOwner={data.isOrgOwner} />}
+      {data && <SettingsTabs isMedic={data.isMedic} isPrescriber={data.isPrescriber} isOrgOwner={data.isOrgOwner} />}
 
       <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>
         <RouteErrorFallback />

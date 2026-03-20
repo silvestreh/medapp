@@ -128,6 +128,21 @@ export class Recetario {
       throw new Forbidden('Target user is not a medic');
     }
 
+    // Verify the medic has delegated prescription authority to this user
+    const delegations = await this.app.service('prescription-delegations').find({
+      query: {
+        medicId: data.medicId,
+        prescriberId: userId,
+        organizationId: params.organizationId,
+        $limit: 1,
+      },
+      paginate: false,
+      ...internal,
+    } as any);
+    if (!Array.isArray(delegations) || delegations.length === 0) {
+      throw new Forbidden('This medic has not granted you prescription delegation');
+    }
+
     return data.medicId;
   }
 

@@ -285,6 +285,13 @@ export interface SharedEncounterAccess {
   organizationId: Id;
 }
 
+export interface PrescriptionDelegation {
+  id: Id;
+  medicId: Id;
+  prescriberId: Id;
+  organizationId: Id;
+}
+
 export interface Invite {
   id: Id;
   email: string;
