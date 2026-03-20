@@ -3,7 +3,7 @@ import { useForm } from '@mantine/form';
 import { useHotkeys } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Form, useSubmit } from '@remix-run/react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { FloppyDiskIcon } from '@phosphor-icons/react';
 
 import { EncounterSchemaForm } from './encounter-schema-form';
@@ -73,6 +73,15 @@ export function EncounterForm({
   const form = useForm({
     initialValues: encounter.data || {},
   });
+
+  // Keep attachments in sync with parent — they're managed outside this form
+  // (via handleAttached/handleRemoveAttachment in the parent route component)
+  useEffect(() => {
+    const parentAttachments = encounter.data?.attachments;
+    if (parentAttachments !== undefined && parentAttachments !== form.values.attachments) {
+      form.setFieldValue('attachments', parentAttachments);
+    }
+  }, [encounter.data?.attachments, form]);
 
   const isEmpty = useMemo(() => isDataEmpty(form.values), [form.values]);
 
