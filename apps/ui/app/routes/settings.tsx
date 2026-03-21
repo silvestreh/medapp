@@ -14,10 +14,15 @@ import {
   FirstAidKitIcon,
 } from '@phosphor-icons/react';
 
+import Joyride from 'react-joyride';
+
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
 import { FormContainer } from '~/components/forms/styles';
 import RouteErrorFallback from '~/components/route-error-fallback';
+import { useSectionTour } from '~/components/guided-tour/use-section-tour';
+import { getSettingsSteps } from '~/components/guided-tour/tour-steps/settings-steps';
+import TourTooltip from '~/components/guided-tour/tour-tooltip';
 import { styled } from '~/styled-system/jsx';
 
 type MdSettingsProfile = {
@@ -346,6 +351,7 @@ function SettingsTabs({
           leftSection={<FirstAidKitIcon size={16} />}
           variant="light"
           style={navLinkStyle}
+          data-tour="settings-practices"
         />
       )}
       {isOrgOwner && (
@@ -366,6 +372,7 @@ function SettingsTabs({
           leftSection={<WhatsappLogoIcon size={16} />}
           variant="light"
           style={navLinkStyle}
+          data-tour="settings-whatsapp"
         />
       )}
       {(isOrgOwner || isMedic || isPrescriber) && (
@@ -394,9 +401,23 @@ function SettingsTabs({
 
 export default function SettingsLayout() {
   const { isMedic, isPrescriber, isOrgOwner } = useLoaderData<typeof loader>();
+  const { t } = useTranslation();
+  const tourSteps = getSettingsSteps(t);
+  const { run, stepIndex, handleCallback } = useSectionTour('settings', tourSteps);
 
   return (
     <Flex direction={{ base: 'column', lg: 'row' }}>
+      <Joyride
+        steps={tourSteps}
+        run={run}
+        stepIndex={stepIndex}
+        callback={handleCallback}
+        continuous
+        showSkipButton
+        disableOverlayClose={false}
+        tooltipComponent={TourTooltip}
+        styles={{ options: { zIndex: 10000 } }}
+      />
       <SettingsTabs isMedic={isMedic} isPrescriber={isPrescriber} isOrgOwner={isOrgOwner} />
       <FormContainer className="settings-container" styles={{ root: { maxWidth: 800, margin: '0 auto' } }}>
         <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>

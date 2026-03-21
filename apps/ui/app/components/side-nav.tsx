@@ -23,6 +23,7 @@ import { media } from '~/media';
 import { useAccount } from '~/components/provider';
 import HasPermission from '~/components/has-permission';
 import { UserListPopover } from '~/components/chat/user-list-popover';
+import HelpButton from '~/components/guided-tour/help-button';
 
 type Section = {
   labelKey: string;
@@ -332,6 +333,7 @@ const SideNav: React.FC = () => {
             </Tooltip>
           </UserListPopover>
         )}
+        {user && <HelpButton />}
         <Menu withArrow position={isMobile ? 'right-end' : 'right-end'} shadow="xs">
           <Menu.Target>
             <Tooltip label={t('navigation.language')} position="right">

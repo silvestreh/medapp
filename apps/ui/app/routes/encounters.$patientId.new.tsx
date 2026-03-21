@@ -18,6 +18,10 @@ import { useAttachmentUpload, FloatingAttachmentsList, type AttachmentData } fro
 import { useFeathers } from '~/components/provider';
 import { useChatManager } from '~/components/chat-manager';
 import { trackFeature } from '~/utils/breadcrumbs';
+import Joyride from 'react-joyride';
+import { useSectionTour } from '~/components/guided-tour/use-section-tour';
+import { getEncounterNewSteps } from '~/components/guided-tour/tour-steps/encounter-new-steps';
+import TourTooltip from '~/components/guided-tour/tour-tooltip';
 import {
   getAuthenticatedClient,
   authenticatedLoader,
@@ -265,15 +269,31 @@ export default function NewEncounter() {
     return null;
   }
 
+  const tourSteps = getEncounterNewSteps(t);
+  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('encounter-new', tourSteps);
+
   return (
     <Container className="encounters-container">
+      <Joyride
+        steps={tourSteps}
+        run={tourRun}
+        stepIndex={tourStepIndex}
+        callback={tourHandleCallback}
+        continuous
+        showSkipButton
+        disableOverlayClose={false}
+        tooltipComponent={TourTooltip}
+        styles={{ options: { zIndex: 10000 } }}
+      />
       <Portal id="toolbar">
         <Group justify="space-between" align="center" style={{ width: '100%' }}>
-          <ToolbarTitle
-            title={t('encounters.new')}
-            subTitle={`${patient.personalData.firstName} ${patient.personalData.lastName}`}
-            onBack={handleGoBack}
-          />
+          <div data-tour="new-encounter-back">
+            <ToolbarTitle
+              title={t('encounters.new')}
+              subTitle={`${patient.personalData.firstName} ${patient.personalData.lastName}`}
+              onBack={handleGoBack}
+            />
+          </div>
           <Group gap="sm">
             <Box visibleFrom="lg">
               <Button variant="light" color="violet" onClick={handleOpenChat} leftSection={<RobotIcon size={16} />}>
@@ -285,7 +305,7 @@ export default function NewEncounter() {
                 <RobotIcon size={20} />
               </ActionIcon>
             </Box>
-            <Box visibleFrom="lg">
+            <Box visibleFrom="lg" data-tour="new-encounter-attach">
               <Button
                 variant="light"
                 onClick={openFilePicker}
@@ -307,7 +327,7 @@ export default function NewEncounter() {
       </Portal>
       {FileInputElement}
 
-      <Sidebar>
+      <Sidebar data-tour="new-encounter-sidebar">
         <NewEncounterSidebar
           availableForms={availableForms}
           activeForms={activeForms}

@@ -4,12 +4,16 @@ import { Stack, Group, Text, Loader, Alert, Paper, SimpleGrid } from '@mantine/c
 import { AreaChart, BarChart, DonutChart } from '@mantine/charts';
 import { InfoIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
+import Joyride from 'react-joyride';
 
 import { authenticatedLoader } from '~/utils/auth.server';
 import { useFind } from '~/components/provider';
 import Portal from '~/components/portal';
 import { ToolbarTitle } from '~/components/toolbar-title';
 import { DateRangeFilterState, DateRangePopover, resolveDateRange } from '~/components/date-range-popover';
+import { useSectionTour } from '~/components/guided-tour/use-section-tour';
+import { getStatsSteps } from '~/components/guided-tour/tour-steps/stats-steps';
+import TourTooltip from '~/components/guided-tour/tour-tooltip';
 
 export const loader = authenticatedLoader();
 
@@ -252,21 +256,37 @@ export default function StatsIndex() {
     }));
   }, [stats, t]);
 
+  const tourSteps = getStatsSteps(t);
+  const { run, stepIndex, handleCallback } = useSectionTour('stats', tourSteps);
+
   return (
     <Stack gap="lg" p={{ base: '1rem', md: '2rem' }}>
+      <Joyride
+        steps={tourSteps}
+        run={run}
+        stepIndex={stepIndex}
+        callback={handleCallback}
+        continuous
+        showSkipButton
+        disableOverlayClose={false}
+        tooltipComponent={TourTooltip}
+        styles={{ options: { zIndex: 10000 } }}
+      />
       <Portal id="toolbar">
         <Group justify="space-between" align="center" w="100%">
           <ToolbarTitle title={t('stats.title')} />
           <Group align="center" justify="center" gap="md" wrap="wrap">
             <Text c="dimmed">{t('stats.date_range')}</Text>
-            <DateRangePopover
-              value={rangeFilter}
-              onApply={handleApplyRange}
-              minRangeStart={MIN_RANGE_START}
-              maxDate={dayjs().format('YYYY-MM-DD')}
-              precision="day"
-              variant="filled"
-            />
+            <div data-tour="stats-date-range">
+              <DateRangePopover
+                value={rangeFilter}
+                onApply={handleApplyRange}
+                minRangeStart={MIN_RANGE_START}
+                maxDate={dayjs().format('YYYY-MM-DD')}
+                precision="day"
+                variant="filled"
+              />
+            </div>
             {isLoading && <Loader size="sm" />}
           </Group>
         </Group>

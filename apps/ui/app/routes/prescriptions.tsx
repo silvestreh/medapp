@@ -9,6 +9,8 @@ import { showNotification } from '@mantine/notifications';
 import { ClipboardTextIcon, PlusIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 
+import Joyride from 'react-joyride';
+
 import { getAuthenticatedClient, authenticatedLoader, getCurrentOrgRoleIds } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -23,6 +25,9 @@ import PatientSearch from '~/components/patient-search';
 import { getPageTitle } from '~/utils/meta';
 import RouteErrorFallback from '~/components/route-error-fallback';
 import { styled } from '~/styled-system/jsx';
+import { useSectionTour } from '~/components/guided-tour/use-section-tour';
+import { getPrescriptionsSteps } from '~/components/guided-tour/tour-steps/prescriptions-steps';
+import TourTooltip from '~/components/guided-tour/tour-tooltip';
 
 const statusColors: Record<string, string> = {
   pending: 'yellow',
@@ -430,20 +435,40 @@ export default function PrescriptionsPage() {
     ...extra,
   });
 
+  const tourSteps = getPrescriptionsSteps(t);
+  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('prescriptions', tourSteps);
+
   return (
     <>
+      <Joyride
+        steps={tourSteps}
+        run={tourRun}
+        stepIndex={tourStepIndex}
+        callback={tourHandleCallback}
+        continuous
+        showSkipButton
+        disableOverlayClose={false}
+        tooltipComponent={TourTooltip}
+        styles={{ options: { zIndex: 10000 } }}
+      />
       <Portal id="toolbar">
         <Group gap="sm">
-          <MedicList onChange={handleMedicChange} medics={medics} value={selectedMedicId} />
+          <div data-tour="prescriptions-medic">
+            <MedicList onChange={handleMedicChange} medics={medics} value={selectedMedicId} />
+          </div>
         </Group>
       </Portal>
 
       {isDesktop && (
         <Portal id="form-actions">
           <Group gap="sm">
-            <SegmentedControl value={selectedType} onChange={handleTypeChange} data={typeFilterData} size="sm" />
-            <PatientSearch onChange={handlePatientSelected} onBlur={handlePatientCleared} variant="filled" />
-            <Button leftSection={<PlusIcon size={16} />} onClick={openPrescribe} disabled={!selectedMedicId}>
+            <div data-tour="prescriptions-type">
+              <SegmentedControl value={selectedType} onChange={handleTypeChange} data={typeFilterData} size="sm" />
+            </div>
+            <div data-tour="prescriptions-patient-search">
+              <PatientSearch onChange={handlePatientSelected} onBlur={handlePatientCleared} variant="filled" />
+            </div>
+            <Button data-tour="prescriptions-new" leftSection={<PlusIcon size={16} />} onClick={openPrescribe} disabled={!selectedMedicId}>
               {t('recetario.new_prescription')}
             </Button>
           </Group>
@@ -604,6 +629,7 @@ export default function PrescriptionsPage() {
           bg="white"
           py="lg"
           style={{ borderTop: '1px solid var(--mantine-color-gray-1)' }}
+          data-tour="prescriptions-pagination"
         >
           <Pagination total={totalPages} value={page} onChange={handlePageChange} size={isDesktop ? 'md' : 'sm'} />
         </Group>
@@ -634,6 +660,7 @@ function RepeatButton({ rx, onRepeat }: { rx: any; onRepeat: (rx: any) => void }
     <Popover opened={opened} onChange={setOpened} withArrow shadow="md" position="bottom-end">
       <Popover.Target>
         <Button
+          data-tour="prescriptions-repeat"
           variant="subtle"
           size="xs"
           leftSection={<ArrowCounterClockwiseIcon size={14} />}

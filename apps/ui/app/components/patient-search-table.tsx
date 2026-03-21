@@ -108,9 +108,11 @@ const DEFAULT_COLUMNS: ColumnDef[] = [
 interface PatientSearchTableProps {
   basePath?: string;
   columns?: ColumnDef[];
+  searchTourId?: string;
+  resultsTourId?: string;
 }
 
-const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounters', columns = DEFAULT_COLUMNS }) => {
+const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounters', columns = DEFAULT_COLUMNS, searchTourId = 'encounters-search', resultsTourId }) => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('q') || '';
@@ -203,10 +205,11 @@ const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounte
           styles={{ input: { lineHeight: 1, height: 'auto', minHeight: 0 } }}
           autoComplete="off"
           data-1p-ignore
+          data-tour={searchTourId}
         />
       </Portal>
 
-      <Wrapper hideOnMobileIfEmpty={rows.length === 0}>
+      <Wrapper hideOnMobileIfEmpty={rows.length === 0} data-tour={resultsTourId}>
         <HeaderContainer>
           <Title>{t('patients.title')}</Title>
         </HeaderContainer>

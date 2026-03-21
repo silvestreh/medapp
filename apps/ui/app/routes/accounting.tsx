@@ -72,7 +72,9 @@ export default function Accounting() {
   return (
     <>
       <Portal id="toolbar">
-        <MedicList onChange={handleMedicChange} medics={medics} value={medicId} />
+        <div data-tour="accounting-medic">
+          <MedicList onChange={handleMedicChange} medics={medics} value={medicId} />
+        </div>
       </Portal>
       <Outlet />
     </>

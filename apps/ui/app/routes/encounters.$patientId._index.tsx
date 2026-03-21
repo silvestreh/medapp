@@ -28,6 +28,10 @@ import { media } from '~/media';
 import { trackFeature } from '~/utils/breadcrumbs';
 import { ExportSignedPdfDialog } from '~/components/export-signed-pdf-dialog';
 import { PrintPdfDialog } from '~/components/print-pdf-dialog';
+import Joyride from 'react-joyride';
+import { useSectionTour } from '~/components/guided-tour/use-section-tour';
+import { getEncounterDetailSteps } from '~/components/guided-tour/tour-steps/encounter-detail-steps';
+import TourTooltip from '~/components/guided-tour/tour-tooltip';
 import { Fab, FabItem } from '~/components/fab';
 import { ToolbarTitle } from '~/components/toolbar-title';
 import { PrescriptionDetail } from '~/components/prescription-detail';
@@ -441,16 +445,32 @@ export default function PatientEncounterDetail() {
     return null;
   }
 
+  const tourSteps = getEncounterDetailSteps(t);
+  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('encounter-detail', tourSteps);
+
   return (
     <Container className="encounters-container">
+      <Joyride
+        steps={tourSteps}
+        run={tourRun}
+        stepIndex={tourStepIndex}
+        callback={tourHandleCallback}
+        continuous
+        showSkipButton
+        disableOverlayClose={false}
+        tooltipComponent={TourTooltip}
+        styles={{ options: { zIndex: 10000 } }}
+      />
       <Portal id="toolbar">
         <Group justify="space-between" align="center" style={{ width: '100%' }}>
-          <ToolbarTitle
-            title={`${data.patient.personalData.firstName} ${data.patient.personalData.lastName}`}
-            onBack={handleGoBack}
-          />
+          <div data-tour="encounter-back">
+            <ToolbarTitle
+              title={`${data.patient.personalData.firstName} ${data.patient.personalData.lastName}`}
+              onBack={handleGoBack}
+            />
+          </div>
           {isDesktop && (
-            <Group gap="sm">
+            <Group gap="sm" data-tour="encounter-actions">
               {data.isVerified && data.recetarioReady && (
                 <Tooltip label={t('recetario.prescribe_tooltip')}>
                   <Button
@@ -477,7 +497,7 @@ export default function PatientEncounterDetail() {
                 {t('ai_chat.title')}
               </Button>
               {data.isVerified && (
-                <Button component={Link} to={`/encounters/${data.patient.id}/new`} leftSection={<PlusIcon size={16} />}>
+                <Button data-tour="encounter-new" component={Link} to={`/encounters/${data.patient.id}/new`} leftSection={<PlusIcon size={16} />}>
                   {t('encounters.new')}
                 </Button>
               )}
@@ -517,7 +537,7 @@ export default function PatientEncounterDetail() {
         />
       )}
 
-      <Sidebar>
+      <Sidebar data-tour="encounter-tree">
         <EncounterTree
           encounters={data.encounters}
           studies={data.studies}

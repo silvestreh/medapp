@@ -8,6 +8,8 @@ import { Link, useLoaderData, useSearchParams } from '@remix-run/react';
 import { TextInput, Stack, Loader, Group, Button, Autocomplete, Select, Popover } from '@mantine/core';
 import dayjs from 'dayjs';
 
+import Joyride from 'react-joyride';
+
 import { useFind, useFeathers } from '~/components/provider';
 import { getCurrentOrganizationId } from '~/session';
 import Portal from '~/components/portal';
@@ -16,6 +18,9 @@ import { StudiesTable, toStudyItems } from '~/components/studies-table';
 import type { Study } from '~/components/studies-table';
 import { Fab } from '~/components/fab';
 import { styled } from '~/styled-system/jsx';
+import { useSectionTour } from '~/components/guided-tour/use-section-tour';
+import { getStudiesSteps } from '~/components/guided-tour/tour-steps/studies-steps';
+import TourTooltip from '~/components/guided-tour/tour-tooltip';
 import {
   authenticatedLoader,
   getAuthenticatedClient,
@@ -336,8 +341,22 @@ export default function StudiesIndex() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const studyItems = toStudyItems(studies);
 
+  const tourSteps = getStudiesSteps(t);
+  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('studies', tourSteps);
+
   return (
     <Stack gap={0}>
+      <Joyride
+        steps={tourSteps}
+        run={tourRun}
+        stepIndex={tourStepIndex}
+        callback={tourHandleCallback}
+        continuous
+        showSkipButton
+        disableOverlayClose={false}
+        tooltipComponent={TourTooltip}
+        styles={{ options: { zIndex: 10000 } }}
+      />
       <Portal id="toolbar">
         <Group justify="space-between" align="center" w="100%" wrap="nowrap">
           <TextInput
@@ -353,9 +372,10 @@ export default function StudiesIndex() {
             styles={{ input: { lineHeight: 1, height: 'auto', minHeight: 0 } }}
             autoComplete="off"
             data-1p-ignore
+            data-tour="studies-search"
           />
           {isDesktop && (
-            <Group gap="sm" wrap="nowrap">
+            <Group gap="sm" wrap="nowrap" data-tour="studies-filters">
               <Select
                 data={studyTypeOptions}
                 value={selectedStudyType}
@@ -387,7 +407,7 @@ export default function StudiesIndex() {
                 variant="filled"
               />
               {isVerified && (
-                <Button component={Link} to="/studies/new" leftSection={<PlusIcon size={16} />}>
+                <Button data-tour="studies-new" component={Link} to="/studies/new" leftSection={<PlusIcon size={16} />}>
                   {t('studies.new_study')}
                 </Button>
               )}

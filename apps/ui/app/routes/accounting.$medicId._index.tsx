@@ -9,6 +9,8 @@ import { CaretDownIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
+import Joyride from 'react-joyride';
+
 import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';
 import Portal from '~/components/portal';
 import { DateRangePopover, resolveDateRange, type DateRangeFilterState } from '~/components/date-range-popover';
@@ -16,6 +18,9 @@ import { useFeathers } from '~/components/provider';
 import { normalizeInsurerPrices, PARTICULAR_INSURER_ID } from '~/utils/accounting';
 import { styled } from '~/styled-system/jsx';
 import { css } from '~/styled-system/css';
+import { useSectionTour } from '~/components/guided-tour/use-section-tour';
+import { getAccountingSteps } from '~/components/guided-tour/tour-steps/accounting-steps';
+import TourTooltip from '~/components/guided-tour/tour-tooltip';
 
 type Prepaga = {
   id: string;
@@ -370,14 +375,28 @@ export default function AccountingDashboardPage() {
     }
   }, [selectedForBackfill, uncostedPractices, feathersClient, refetchAccounting, t]);
 
+  const tourSteps = getAccountingSteps(t);
+  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('accounting', tourSteps);
+
   return (
     <ContentWrapper>
+      <Joyride
+        steps={tourSteps}
+        run={tourRun}
+        stepIndex={tourStepIndex}
+        callback={tourHandleCallback}
+        continuous
+        showSkipButton
+        disableOverlayClose={false}
+        tooltipComponent={TourTooltip}
+        styles={{ options: { zIndex: 10000 } }}
+      />
       <Portal id="form-actions">
         <Group justify="space-between" align="center" w="100%">
           <Group gap="sm">
             <Menu shadow="md" width={260}>
               <Menu.Target>
-                <Button variant="filled" color="gray.1" c="gray.7" fw={500} rightSection={<CaretDownIcon size={14} />}>
+                <Button data-tour="accounting-insurer-filter" variant="filled" color="gray.1" c="gray.7" fw={500} rightSection={<CaretDownIcon size={14} />}>
                   {selectedInsurerLabel}
                 </Button>
               </Menu.Target>
@@ -398,14 +417,16 @@ export default function AccountingDashboardPage() {
                 ))}
               </Menu.Dropdown>
             </Menu>
-            <DateRangePopover
-              value={rangeFilter}
-              onApply={handleApplyRange}
-              minRangeStart={MIN_RANGE_START}
-              maxDate={dayjs().format('YYYY-MM-DD')}
-              precision="day"
-              variant="filled"
-            />
+            <div data-tour="accounting-date-range">
+              <DateRangePopover
+                value={rangeFilter}
+                onApply={handleApplyRange}
+                minRangeStart={MIN_RANGE_START}
+                maxDate={dayjs().format('YYYY-MM-DD')}
+                precision="day"
+                variant="filled"
+              />
+            </div>
             <Button component={Link} to="settings" variant="filled" color="gray.1" c="gray.7">
               {t('common.settings')}
             </Button>
@@ -414,7 +435,7 @@ export default function AccountingDashboardPage() {
       </Portal>
 
       <Stack gap="md">
-        <Paper withBorder p="md">
+        <Paper withBorder p="md" data-tour="accounting-revenue">
           <Text c="dimmed">{t('accounting.total_revenue', { defaultValue: 'Total revenue' })}</Text>
           <Title order={2}>${totalRevenue.toFixed(2)}</Title>
           {loading && (
@@ -425,7 +446,7 @@ export default function AccountingDashboardPage() {
         </Paper>
 
         {revenueByInsurer.length > 0 && (
-          <Paper withBorder p="md">
+          <Paper withBorder p="md" data-tour="accounting-chart">
             <Text fw={600} mb="sm">
               {t('accounting.revenue_by_insurer', { defaultValue: 'Revenue by insurer' })}
             </Text>
@@ -445,6 +466,7 @@ export default function AccountingDashboardPage() {
         )}
 
         <Table
+          data-tour="accounting-table"
           layout="fixed"
           bg="white"
           className={css({
@@ -519,11 +541,12 @@ export default function AccountingDashboardPage() {
                 </Table.Td>
               </Table.Tr>
             ))}
-            {uncostedPractices.map(practice => (
+            {uncostedPractices.map((practice, idx) => (
               <Table.Tr
                 key={`uncosted-${practice.practiceId}`}
                 style={{ opacity: 0.6 }}
                 styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
+                {...(idx === 0 ? { 'data-tour': 'accounting-untracked' } : {})}
               >
                 <Table.Td>
                   <Checkbox
@@ -560,7 +583,7 @@ export default function AccountingDashboardPage() {
         </Table>
 
         {hasUncosted && selectedForBackfill.size > 0 && (
-          <Paper withBorder p="sm" style={{ position: 'sticky', bottom: 0, zIndex: 2 }}>
+          <Paper data-tour="accounting-backfill" withBorder p="sm" style={{ position: 'sticky', bottom: 0, zIndex: 2 }}>
             <Group justify="space-between">
               <Text size="sm">
                 {t('accounting.backfill_selected_count', {

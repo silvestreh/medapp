@@ -6,11 +6,16 @@ import { useMediaQuery } from '@mantine/hooks';
 import { ActionIcon, Button, Group, Table, Text } from '@mantine/core';
 import { PlusIcon, UserPlusIcon } from '@phosphor-icons/react';
 
+import Joyride from 'react-joyride';
+
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import Portal from '~/components/portal';
 import { media } from '~/media';
 import { styled } from '~/styled-system/jsx';
 import { InviteModal, RemoveConfirmPopover, RoleMultiSelect, type MemberRow } from '~/components/users';
+import { useSectionTour } from '~/components/guided-tour/use-section-tour';
+import { getUsersSteps } from '~/components/guided-tour/tour-steps/users-steps';
+import TourTooltip from '~/components/guided-tour/tour-tooltip';
 
 const CellText = styled('span', {
   base: {
@@ -189,12 +194,26 @@ export default function UsersIndex() {
     return member.user?.contactData?.email || '—';
   }, []);
 
+  const tourSteps = getUsersSteps(t);
+  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('users', tourSteps);
+
   return (
     <Container>
+      <Joyride
+        steps={tourSteps}
+        run={tourRun}
+        stepIndex={tourStepIndex}
+        callback={tourHandleCallback}
+        continuous
+        showSkipButton
+        disableOverlayClose={false}
+        tooltipComponent={TourTooltip}
+        styles={{ options: { zIndex: 10000 } }}
+      />
       <Portal id="form-actions">
         <Group>
           {isDesktop && (
-            <Button leftSection={<UserPlusIcon size={16} />} onClick={handleOpenInvite}>
+            <Button data-tour="users-invite" leftSection={<UserPlusIcon size={16} />} onClick={handleOpenInvite}>
               {t('users.invite_user')}
             </Button>
           )}
@@ -241,10 +260,11 @@ export default function UsersIndex() {
                   {t('users.col_email')}
                 </Table.Th>
               )}
-              <Table.Th style={{ border: '1px solid var(--mantine-primary-color-1)' }} fw={500} fz="md" py="0.5em">
+              <Table.Th data-tour="users-roles" style={{ border: '1px solid var(--mantine-primary-color-1)' }} fw={500} fz="md" py="0.5em">
                 {t('users.col_role')}
               </Table.Th>
               <Table.Th
+                data-tour="users-remove"
                 w={60}
                 style={{
                   border: '1px solid var(--mantine-primary-color-1)',

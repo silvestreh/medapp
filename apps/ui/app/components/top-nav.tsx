@@ -133,12 +133,14 @@ export default function TopNav() {
 
       <Menu withArrow position="bottom-end" shadow="md" width={220}>
         <Menu.Target>
-          <TriggerButton>
-            <Avatar size={32} radius="xl" color={avatarColor}>
-              {initials}
-            </Avatar>
-            <CaretDownIcon size={14} color="var(--mantine-color-gray-5)" />
-          </TriggerButton>
+          <div data-tour="user-menu">
+            <TriggerButton>
+              <Avatar size={32} radius="xl" color={avatarColor}>
+                {initials}
+              </Avatar>
+              <CaretDownIcon size={14} color="var(--mantine-color-gray-5)" />
+            </TriggerButton>
+          </div>
         </Menu.Target>
 
         <Menu.Dropdown>

@@ -31,8 +31,13 @@ import {
 } from '@phosphor-icons/react';
 
 import { showNotification } from '@mantine/notifications';
+import Joyride from 'react-joyride';
+
 import { authenticatedLoader, getAuthenticatedClient } from '~/utils/auth.server';
 import Portal from '~/components/portal';
+import { useSectionTour } from '~/components/guided-tour/use-section-tour';
+import { getAccountingSettingsSteps } from '~/components/guided-tour/tour-steps/accounting-settings-steps';
+import TourTooltip from '~/components/guided-tour/tour-tooltip';
 import {
   ACCOUNTING_PRACTICE_KEYS,
   PARTICULAR_INSURER_ID,
@@ -913,24 +918,40 @@ export default function AccountingSettingsPage() {
     }
   }, [uncostedPractices, feathersClient, t]);
 
+  const tourSteps = getAccountingSettingsSteps(t);
+  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('accounting-settings', tourSteps);
+
   return (
     <Layout>
+      <Joyride
+        steps={tourSteps}
+        run={tourRun}
+        stepIndex={tourStepIndex}
+        callback={tourHandleCallback}
+        continuous
+        showSkipButton
+        disableOverlayClose={false}
+        tooltipComponent={TourTooltip}
+        styles={{ options: { zIndex: 10000 } }}
+      />
       <Portal id="form-actions">
         <Group justify="flex-end" flex={1}>
           {activeInsurerId && copyFromOptions.length > 0 && (
-            <Select
-              placeholder={t('accounting.settings_copy_from', { defaultValue: 'Copy from...' })}
-              data={copyFromOptions}
-              value={null}
-              onChange={handleCopyFrom}
-              searchable
-              clearable
-              variant="filled"
-              style={{ width: 200 }}
-            />
+            <div data-tour="acct-settings-copy-from">
+              <Select
+                placeholder={t('accounting.settings_copy_from', { defaultValue: 'Copy from...' })}
+                data={copyFromOptions}
+                value={null}
+                onChange={handleCopyFrom}
+                searchable
+                clearable
+                variant="filled"
+                style={{ width: 200 }}
+              />
+            </div>
           )}
           {hasAnyMultiplier && (
-            <>
+            <Group gap="sm" data-tour="acct-settings-base-value">
               <TextInput
                 value={activeInsurerBaseName}
                 onChange={handleInsurerBaseNameChange}
@@ -949,9 +970,9 @@ export default function AccountingSettingsPage() {
                 prefix="$"
                 variant="filled"
               />
-            </>
+            </Group>
           )}
-          <Button onClick={handleSave} loading={isSaving}>
+          <Button data-tour="acct-settings-save" onClick={handleSave} loading={isSaving}>
             {t('common.save')}
           </Button>
         </Group>
@@ -973,6 +994,7 @@ export default function AccountingSettingsPage() {
         >
           {!showAddInsurer && (
             <Input
+              data-tour="acct-settings-search"
               placeholder={t('accounting.settings_search_insurers')}
               variant="unstyled"
               size="lg"
@@ -1007,6 +1029,7 @@ export default function AccountingSettingsPage() {
           ) : (
             <Group gap={0}>
               <Button
+                data-tour="acct-settings-add-insurer"
                 variant="light"
                 size="xs"
                 leftSection={<PlusIcon size={14} />}
@@ -1033,6 +1056,7 @@ export default function AccountingSettingsPage() {
                   </Popover.Target>
                   <Popover.Dropdown p={0}>
                     <Button
+                      data-tour="acct-settings-add-past"
                       variant="transparent"
                       size="xs"
                       leftSection={<ClockCounterClockwiseIcon size={14} />}
@@ -1072,7 +1096,7 @@ export default function AccountingSettingsPage() {
               onChange={handleShowHiddenInsurersChange}
             />
             <Divider />
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size="xs" fw={600} c="dimmed" data-tour="acct-settings-backfill">
               {t('accounting.settings_backfill', { defaultValue: 'Backfill costs' })}
             </Text>
             <DateRangePopover
@@ -1128,6 +1152,7 @@ export default function AccountingSettingsPage() {
                 </InsurerName>
               </Stack>
               <Switch
+                data-tour="acct-settings-visibility"
                 label={t('accounting.settings_visible', { defaultValue: 'Visible' })}
                 checked={!hiddenInsurers.includes(activeInsurer.id)}
                 onChange={handleToggleVisibility}
@@ -1135,6 +1160,7 @@ export default function AccountingSettingsPage() {
             </Group>
 
             <SegmentedControl
+              data-tour="acct-settings-pricing-mode"
               value={pricingMode}
               onChange={v => setPricingMode(v as 'normal' | 'emergency')}
               data={[
@@ -1184,14 +1210,17 @@ export default function AccountingSettingsPage() {
                         onChange={getTypeChangeHandler(practiceKey)}
                         size="xs"
                         style={{ width: '110px' }}
+                        {...(index === 0 ? { 'data-tour': 'acct-settings-practice-type' } : {})}
                       />
                     </Group>
                     <Group justify="stretch">
-                      <PracticeCodeInput
-                        key={`${activeInsurerId}-${practiceKey}`}
-                        value={practiceCodesState[activeInsurerId!]?.[practiceKey] ?? ''}
-                        onChange={v => handlePracticeCodeChange(practiceKey, v)}
-                      />
+                      <div {...(index === 0 ? { 'data-tour': 'acct-settings-practice-code' } : {})}>
+                        <PracticeCodeInput
+                          key={`${activeInsurerId}-${practiceKey}`}
+                          value={practiceCodesState[activeInsurerId!]?.[practiceKey] ?? ''}
+                          onChange={v => handlePracticeCodeChange(practiceKey, v)}
+                        />
+                      </div>
 
                       {pricingMode === 'normal' && practiceType === 'fixed' && (
                         <NumberInput

@@ -406,6 +406,7 @@ export function StudiesTable({
           bg="white"
           py="lg"
           style={{ borderTop: '1px solid var(--mantine-color-gray-1)' }}
+          data-tour="studies-pagination"
         >
           <Pagination total={totalPages} value={page} onChange={onPageChange} size={isDesktop ? 'md' : 'sm'} />
         </Group>

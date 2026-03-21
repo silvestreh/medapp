@@ -6,6 +6,8 @@ import { useLoaderData, useNavigate } from '@remix-run/react';
 import { Flex } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
+import Joyride from 'react-joyride';
+
 import { generateSlots } from '~/utils';
 import { css } from '~/styled-system/css';
 import { styled } from '~/styled-system/jsx';
@@ -13,6 +15,9 @@ import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server
 import AppointmentsList from '~/components/appointments-list';
 import PatientSearchTable from '~/components/patient-search-table';
 import type { Appointment } from '~/declarations';
+import { useSectionTour } from '~/components/guided-tour/use-section-tour';
+import { getEncountersSteps } from '~/components/guided-tour/tour-steps/encounters-steps';
+import TourTooltip from '~/components/guided-tour/tour-tooltip';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -104,6 +109,9 @@ export default function EncountersIndex() {
   const { t } = useTranslation();
   const { slots, date } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
+  const steps = getEncountersSteps(t);
+  const { run, stepIndex, handleCallback } = useSectionTour('encounters', steps);
+
   const handleAppointmentClick = (appointment: Appointment | null) => {
     if (appointment) {
       navigate(`/encounters/${appointment.patientId}`);
@@ -112,25 +120,38 @@ export default function EncountersIndex() {
 
   return (
     <Container>
+      <Joyride
+        steps={steps}
+        run={run}
+        stepIndex={stepIndex}
+        callback={handleCallback}
+        continuous
+        showSkipButton
+        disableOverlayClose={false}
+        tooltipComponent={TourTooltip}
+        styles={{ options: { zIndex: 10000 } }}
+      />
       <LeftColumn>
-        <HeaderContainer>
-          <Title>{t('appointments.today_schedule')}</Title>
-        </HeaderContainer>
-        <AppointmentsList
-          slots={slots}
-          readonly
-          currentDate={date}
-          onAppointmentClick={handleAppointmentClick}
-          className={css({
-            borderTop: '1px solid var(--mantine-color-gray-2)',
-            lg: {
-              borderRight: '1px solid var(--mantine-color-gray-2)',
-            },
-          })}
-        />
+        <div data-tour="encounters-schedule">
+          <HeaderContainer>
+            <Title>{t('appointments.today_schedule')}</Title>
+          </HeaderContainer>
+          <AppointmentsList
+            slots={slots}
+            readonly
+            currentDate={date}
+            onAppointmentClick={handleAppointmentClick}
+            className={css({
+              borderTop: '1px solid var(--mantine-color-gray-2)',
+              lg: {
+                borderRight: '1px solid var(--mantine-color-gray-2)',
+              },
+            })}
+          />
+        </div>
       </LeftColumn>
       <MainColumn>
-        <PatientSearchTable />
+        <PatientSearchTable resultsTourId="encounters-results" />
       </MainColumn>
     </Container>
   );
