@@ -3,4 +3,5 @@ export interface CliOptions {
   delayMs: number;
   startFrom?: string;
   maxItems?: number;
+  noFetch?: boolean;
 }

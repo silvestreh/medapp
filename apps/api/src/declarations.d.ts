@@ -492,6 +492,14 @@ export interface Practice {
   systemKey: string | null;
 }
 
+export interface PracticeCode {
+  id: Id;
+  practiceId: Id;
+  userId: Id;
+  insurerId: Id;
+  code: string;
+}
+
 export interface EncounterAiChatMessage {
   id: Id;
   organizationId: Id;

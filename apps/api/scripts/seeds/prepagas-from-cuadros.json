@@ -1034,6 +1034,47 @@
     ]
   },
   {
+    "id": "006b8073-0c35-44cc-a263-62cfc47eecc1",
+    "registry": null,
+    "denomination": "Obra Social Del Sindicato Regional De Luz Y Fuerza De La Patagonia",
+    "shortName": "GENERAR SALUD",
+    "tiers": [
+      {
+        "name": "CLASICO",
+        "code": null
+      },
+      {
+        "name": "SUPERIOR",
+        "code": null
+      },
+      {
+        "name": "PREMIUM",
+        "code": null
+      }
+    ]
+  },
+  {
+    "id": "1cbc646d-3ab1-4e0f-9e44-df150e2b957b",
+    "registry": null,
+    "denomination": "Obra Social Del Personal De La Universidad Nacional De La Patagonia San Juan Bosco",
+    "shortName": "DASU",
+    "tiers": []
+  },
+  {
+    "id": "d9fc52a4-74d3-4506-9854-f904c6e9ef3e",
+    "registry": null,
+    "denomination": "Instituto De Obra Social De Las Fuerzas Armadas Y De Seguridad",
+    "shortName": "IOSFA",
+    "tiers": []
+  },
+  {
+    "id": "db73084e-4f58-4cf5-a0e1-facaa23c1386",
+    "registry": null,
+    "denomination": "Asociación De Obras Sociales Comodoro Rivadavia",
+    "shortName": "ADOS",
+    "tiers": []
+  },
+  {
     "id": "14562b84-845c-a527-9d02-03cffb6802be",
     "registry": "rnemp:112325",
     "denomination": "BRAMED S.R.L.",

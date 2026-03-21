@@ -37,11 +37,11 @@ import {
   usePracticeSelection,
   formatPracticesForOrder,
   type Practice,
+  type PracticeCodeRecord,
 } from '~/components/practice-selector';
 import PatientSearch from '~/components/patient-search';
 import { useFeathers } from '~/components/provider';
 import { trackAction } from '~/utils/breadcrumbs';
-import { normalizeInsurerPrices, type InsurerPrices } from '~/utils/accounting';
 
 const COUNTRY_PHONE_OPTIONS = [
   { value: '54', label: '🇦🇷 +54', country: 'AR' as CountryCode },
@@ -348,7 +348,7 @@ export function PrescribeModal({
 
   // Practices state for order tab
   const [practices, setPractices] = useState<Practice[]>([]);
-  const [orderInsurerPrices, setOrderInsurerPrices] = useState<InsurerPrices>({});
+  const [practiceCodes, setPracticeCodes] = useState<PracticeCodeRecord[]>([]);
   const [selectedPracticeIds, setSelectedPracticeIds] = useState<string[]>([]);
   const [practicesLoaded, setPracticesLoaded] = useState(false);
 
@@ -463,23 +463,17 @@ export function PrescribeModal({
 
     const fetchPractices = async () => {
       try {
-        const [practicesRes, acctRes] = await Promise.all([
+        const [practicesRes, codesRes] = await Promise.all([
           feathersClient.service('practices' as any).find({ query: { $limit: 200 } }),
-          feathersClient.service('accounting-settings' as any).find({ query: { $limit: 1 } }),
+          feathersClient.service('practice-codes' as any).find({ query: { $limit: 500 } }),
         ]);
         if (cancelled) return;
 
         const practicesList = Array.isArray(practicesRes) ? practicesRes : (practicesRes as any)?.data || [];
-        const acctList = Array.isArray(acctRes) ? acctRes : (acctRes as any)?.data || [];
-        const acctSettings = acctList[0];
-        const customKeys = practicesList
-          .filter((p: Practice) => !p.isSystem)
-          .map((p: Practice) => `custom_${p.id}`);
+        const codesList = Array.isArray(codesRes) ? codesRes : (codesRes as any)?.data || [];
 
         setPractices(practicesList);
-        setOrderInsurerPrices(
-          normalizeInsurerPrices(acctSettings?.insurerPrices, customKeys.length > 0 ? customKeys : undefined)
-        );
+        setPracticeCodes(codesList);
         setPracticesLoaded(true);
       } catch {
         // practices service may not be available
@@ -493,7 +487,7 @@ export function PrescribeModal({
   // Auto-populate order content when practices selection changes
   const selectedPracticesData = usePracticeSelection(
     practices,
-    orderInsurerPrices,
+    practiceCodes,
     patientForm.values.medicareId || undefined,
     selectedPracticeIds
   );
@@ -967,7 +961,7 @@ export function PrescribeModal({
                 {practices.length > 0 && (
                   <PracticeSelector
                     practices={practices}
-                    insurerPrices={orderInsurerPrices}
+                    codes={practiceCodes}
                     insurerId={patientForm.values.medicareId || undefined}
                     selectedPracticeIds={selectedPracticeIds}
                     onChange={setSelectedPracticeIds}

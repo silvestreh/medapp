@@ -338,7 +338,7 @@ function SettingsTabs({
           style={navLinkStyle}
         />
       )}
-      {isMedic && (
+      {(isMedic || isPrescriber) && (
         <NavLink
           component={RemixNavLink}
           to="/settings/practices"
@@ -398,7 +398,7 @@ export default function SettingsLayout() {
   return (
     <Flex direction={{ base: 'column', lg: 'row' }}>
       <SettingsTabs isMedic={isMedic} isPrescriber={isPrescriber} isOrgOwner={isOrgOwner} />
-      <FormContainer className="settings-container" styles={{ root: { maxWidth: 720, margin: '0 auto' } }}>
+      <FormContainer className="settings-container" styles={{ root: { maxWidth: 800, margin: '0 auto' } }}>
         <div style={{ paddingTop: 'var(--mantine-spacing-md)' }}>
           <Outlet />
         </div>

@@ -6,10 +6,12 @@
     "scrape:prepagas": "tsx src/index.ts prepagas",
     "scrape:medications": "tsx src/index.ts medications",
     "scrape:icd10": "tsx src/index.ts icd10",
+    "scrape:practices": "tsx src/index.ts practices",
     "scrape:all": "tsx src/index.ts all"
   },
   "dependencies": {
     "cli-progress": "^3.12.0",
+    "dotenv": "^16.5.0",
     "minimist": "^1.2.8",
     "puppeteer": "^24.5.0"
   },

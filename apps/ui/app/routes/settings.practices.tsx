@@ -1,35 +1,25 @@
 import { useCallback, useMemo, useState } from 'react';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
 import { useFetcher, useLoaderData, useRevalidator } from '@remix-run/react';
-import {
-  ActionIcon,
-  Button,
-  Group,
-  Stack,
-  Text,
-  TextInput,
-  Textarea,
-  Title,
-  Badge,
-  Flex,
-  Modal,
-} from '@mantine/core';
+import { ActionIcon, Badge, Button, Drawer, Flex, Group, Stack, Table, Text, TextInput, Textarea } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { useForm } from '@mantine/form';
-import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import {
   PlusIcon,
   TrashIcon,
   LockSimpleIcon,
+  FirstAidKitIcon,
+  PencilSimpleIcon,
+  CheckIcon,
+  XIcon,
 } from '@phosphor-icons/react';
 
-import { getAuthenticatedClient, getCurrentOrgRoleIds } from '~/utils/auth.server';
+import { getAuthenticatedClient, getCurrentOrgRoleIds, authenticatedLoader } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
-import { FormCard, FieldRow, Label } from '~/components/forms/styles';
+import { FormCard, FieldRow, SectionTitle } from '~/components/forms/styles';
 import { PrepagaSelector } from '~/components/prepaga-selector';
+import Portal from '~/components/portal';
 import { parseFormJson } from '~/utils/parse-form-json';
-import { toPricingConfig, type InsurerPrices } from '~/utils/accounting';
 import { styled } from '~/styled-system/jsx';
 
 interface Practice {
@@ -40,6 +30,14 @@ interface Practice {
   systemKey: string | null;
 }
 
+interface PracticeCodeRecord {
+  id: string;
+  practiceId: string;
+  userId: string;
+  insurerId: string;
+  code: string;
+}
+
 interface Prepaga {
   id: string;
   shortName: string;
@@ -47,109 +45,78 @@ interface Prepaga {
 }
 
 interface InsurerCode {
+  id: string;
   insurerId: string;
-  insurerName: string;
+  insurerShortName: string;
   code: string;
 }
 
-function getPracticeKey(practice: Practice): string {
-  return practice.isSystem && practice.systemKey ? practice.systemKey : `custom_${practice.id}`;
-}
+const MAX_VISIBLE_TAGS = 5;
 
-function extractCodesForPractice(
-  insurerPrices: InsurerPrices,
-  practiceKey: string,
-  prepagas: Prepaga[]
-): InsurerCode[] {
-  const codes: InsurerCode[] = [];
-  const prepagaMap = new Map(prepagas.map(p => [p.id, p]));
-
-  for (const [insurerId, practices] of Object.entries(insurerPrices)) {
-    const config = practices[practiceKey];
-    if (!config) continue;
-    const pricing = toPricingConfig(config);
-    if (pricing.code) {
-      const prepaga = prepagaMap.get(insurerId);
-      codes.push({
-        insurerId,
-        insurerName: prepaga ? `${prepaga.shortName} / ${prepaga.denomination}` : insurerId,
-        code: pricing.code,
-      });
-    }
-  }
-
-  return codes;
-}
-
-const CodeRow = styled('div', {
+const ClickableRow = styled('tr', {
   base: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    padding: '0.5rem 1rem',
-    borderBottom: '1px solid var(--mantine-color-gray-2)',
-    '&:last-child': {
-      borderBottom: 'none',
+    cursor: 'pointer',
+    transition: 'background-color 120ms ease',
+    '&:hover': {
+      backgroundColor: 'var(--mantine-color-gray-0)',
     },
   },
 });
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+// ---------------------------------------------------------------------------
+// Loader
+// ---------------------------------------------------------------------------
+
+export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
   const { client, user } = await getAuthenticatedClient(request);
   const orgId = await getCurrentOrganizationId(request);
   const orgRoleIds = getCurrentOrgRoleIds(user, orgId);
 
-  if (!orgRoleIds.includes('medic')) {
+  const canAccess =
+    orgRoleIds.includes('medic') || orgRoleIds.includes('prescriber') || orgRoleIds.includes('accounting');
+  if (!canAccess) {
     throw json({ error: 'Not authorized' }, { status: 403 });
   }
 
-  const practicesResponse = await client.service('practices' as any).find({
-    query: { $limit: 200 },
-  });
-  const practices = Array.isArray(practicesResponse)
+  const [practicesResponse, codesResponse] = await Promise.all([
+    client.service('practices' as any).find({ query: { $limit: 200 } }),
+    client.service('practice-codes' as any).find({ query: { $limit: 500 } }),
+  ]);
+
+  const practices: Practice[] = Array.isArray(practicesResponse)
     ? practicesResponse
     : ((practicesResponse as any)?.data ?? []);
 
-  // Fetch accounting settings for this medic to get codes
-  const accountingResponse = await client.service('accounting-settings' as any).find({
-    query: { userId: user.id, $limit: 1 },
-  });
-  const accountingList = Array.isArray(accountingResponse)
-    ? accountingResponse
-    : ((accountingResponse as any)?.data ?? []);
-  const accountingSettings = accountingList[0] || null;
-  const insurerPrices: InsurerPrices = accountingSettings?.insurerPrices || {};
+  const codes: PracticeCodeRecord[] = Array.isArray(codesResponse)
+    ? codesResponse
+    : ((codesResponse as any)?.data ?? []);
 
-  // Fetch prepagas that have been configured (to resolve names)
-  const insurerIds = Object.keys(insurerPrices).filter(id => id !== '_particular');
+  const insurerIdSet = new Set(codes.map(c => c.insurerId));
   let prepagas: Prepaga[] = [];
-  if (insurerIds.length > 0) {
+  if (insurerIdSet.size > 0) {
     const prepagasResponse = await client.service('prepagas').find({
-      query: { id: { $in: insurerIds }, $limit: 200 },
+      query: { id: { $in: [...insurerIdSet] }, $limit: 200 },
     });
-    prepagas = Array.isArray(prepagasResponse)
-      ? prepagasResponse
-      : ((prepagasResponse as any)?.data ?? []);
+    prepagas = Array.isArray(prepagasResponse) ? prepagasResponse : ((prepagasResponse as any)?.data ?? []);
   }
 
-  return json({
-    practices: practices as Practice[],
-    insurerPrices,
-    accountingSettingsId: accountingSettings?.id || null,
-    prepagas,
-  });
-};
+  return json({ practices, codes, prepagas });
+});
+
+// ---------------------------------------------------------------------------
+// Action
+// ---------------------------------------------------------------------------
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { client, user } = await getAuthenticatedClient(request);
+  const { client } = await getAuthenticatedClient(request);
   const formData = await request.formData();
   const intent = formData.get('intent') as string;
 
   try {
     if (intent === 'create-practice') {
       const data = parseFormJson<{ title: string; description: string }>(formData.get('data'));
-      await client.service('practices' as any).create(data);
-      return json({ ok: true, intent });
+      const created: any = await client.service('practices' as any).create(data);
+      return json({ ok: true, intent, practiceId: created.id });
     }
 
     if (intent === 'update-practice') {
@@ -166,60 +133,25 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
 
     if (intent === 'save-code') {
-      const data = parseFormJson<{
-        accountingSettingsId: string | null;
-        insurerId: string;
-        practiceKey: string;
-        code: string;
-      }>(formData.get('data'));
-
-      if (!data.accountingSettingsId) {
-        // Create accounting-settings record first
-        const newSettings = await client.service('accounting-settings' as any).create({
-          userId: user.id,
-          insurerPrices: {
-            [data.insurerId]: {
-              [data.practiceKey]: { type: 'fixed', code: data.code },
-            },
-          },
-        });
-        return json({ ok: true, intent, accountingSettingsId: newSettings.id });
-      }
-
-      // Fetch current settings to merge
-      const current = await client.service('accounting-settings' as any).get(data.accountingSettingsId);
-      const prices = { ...(current.insurerPrices || {}) };
-      const insurerPricing = { ...(prices[data.insurerId] || {}) };
-      const existingConfig = toPricingConfig(insurerPricing[data.practiceKey]);
-      insurerPricing[data.practiceKey] = { ...existingConfig, code: data.code };
-      prices[data.insurerId] = insurerPricing;
-
-      await client.service('accounting-settings' as any).patch(data.accountingSettingsId, {
-        insurerPrices: prices,
+      const data = parseFormJson<{ practiceId: string; insurerId: string; code: string }>(formData.get('data'));
+      await client.service('practice-codes' as any).create({
+        practiceId: data.practiceId,
+        insurerId: data.insurerId,
+        code: data.code,
       });
+      return json({ ok: true, intent });
+    }
 
+    if (intent === 'update-code') {
+      const data = parseFormJson<{ codeId: string; code?: string; insurerId?: string }>(formData.get('data'));
+      const { codeId, ...patch } = data;
+      await client.service('practice-codes' as any).patch(codeId, patch);
       return json({ ok: true, intent });
     }
 
     if (intent === 'remove-code') {
-      const data = parseFormJson<{
-        accountingSettingsId: string;
-        insurerId: string;
-        practiceKey: string;
-      }>(formData.get('data'));
-
-      const current = await client.service('accounting-settings' as any).get(data.accountingSettingsId);
-      const prices = { ...(current.insurerPrices || {}) };
-      const insurerPricing = { ...(prices[data.insurerId] || {}) };
-      const existingConfig = toPricingConfig(insurerPricing[data.practiceKey]);
-      delete existingConfig.code;
-      insurerPricing[data.practiceKey] = existingConfig;
-      prices[data.insurerId] = insurerPricing;
-
-      await client.service('accounting-settings' as any).patch(data.accountingSettingsId, {
-        insurerPrices: prices,
-      });
-
+      const data = parseFormJson<{ codeId: string }>(formData.get('data'));
+      await client.service('practice-codes' as any).remove(data.codeId);
       return json({ ok: true, intent });
     }
 
@@ -229,141 +161,134 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 };
 
-function AddCodeForm({
-  practiceKey,
-  accountingSettingsId,
-  existingInsurerIds,
-}: {
-  practiceKey: string;
-  accountingSettingsId: string | null;
-  existingInsurerIds: string[];
-}) {
-  const { t } = useTranslation();
-  const fetcher = useFetcher();
-  const revalidator = useRevalidator();
-  const [insurerId, setInsurerId] = useState('');
-  const [code, setCode] = useState('');
+// ---------------------------------------------------------------------------
+// Insurer tags for table rows
+// ---------------------------------------------------------------------------
 
-  const handleSubmit = useCallback(() => {
-    if (!insurerId || !code.trim()) return;
-
-    fetcher.submit(
-      {
-        intent: 'save-code',
-        data: JSON.stringify({ accountingSettingsId, insurerId, practiceKey, code: code.trim() }),
-      },
-      { method: 'post' }
+function InsurerTags({ codes }: { codes: InsurerCode[] }) {
+  if (codes.length === 0) {
+    return (
+      <Text size="xs" c="dimmed">
+        —
+      </Text>
     );
+  }
 
-    setInsurerId('');
-    setCode('');
-    setTimeout(() => revalidator.revalidate(), 300);
-  }, [accountingSettingsId, insurerId, practiceKey, code, fetcher, revalidator]);
-
-  const handleCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setCode(e.currentTarget.value);
-  }, []);
-
-  const handleInsurerChange = useCallback((id: string) => {
-    setInsurerId(id);
-  }, []);
+  const visible = codes.slice(0, MAX_VISIBLE_TAGS);
+  const remaining = codes.length - MAX_VISIBLE_TAGS;
 
   return (
-    <Flex gap="sm" align="flex-end" p="sm" wrap="wrap">
-      <TextInput
-        placeholder={t('settings.practices_code_placeholder', 'Código')}
-        value={code}
-        onChange={handleCodeChange}
-        style={{ flex: '0 0 120px' }}
-        size="sm"
-      />
-      <div style={{ flex: 1, minWidth: 200 }}>
-        <PrepagaSelector
-          value={insurerId}
-          onChange={handleInsurerChange}
-          placeholder={t('settings.practices_insurer_placeholder', 'Buscar prepaga...')}
-          variant="default"
-        />
-      </div>
-      <Button
-        size="sm"
-        leftSection={<PlusIcon size={14} />}
-        onClick={handleSubmit}
-        disabled={!insurerId || !code.trim() || existingInsurerIds.includes(insurerId)}
-        loading={fetcher.state !== 'idle'}
-      >
-        {t('settings.practices_add_code', 'Agregar')}
-      </Button>
-    </Flex>
+    <Group gap={4} wrap="wrap">
+      {visible.map(c => (
+        <Badge key={c.id} variant="light" size="sm">
+          {c.insurerShortName}
+        </Badge>
+      ))}
+      {remaining > 0 && (
+        <Badge variant="light" size="sm" color="gray">
+          +{remaining} más
+        </Badge>
+      )}
+    </Group>
   );
 }
 
-function PracticeCard({
+// ---------------------------------------------------------------------------
+// Practice detail drawer
+// ---------------------------------------------------------------------------
+
+function PracticeDrawer({
   practice,
   codes,
-  accountingSettingsId,
-  practiceKey,
+  opened,
+  onClose,
+  isCreateMode,
 }: {
-  practice: Practice;
+  practice: Practice | null;
   codes: InsurerCode[];
-  accountingSettingsId: string | null;
-  practiceKey: string;
+  opened: boolean;
+  onClose: () => void;
+  isCreateMode?: boolean;
 }) {
   const { t } = useTranslation();
   const fetcher = useFetcher();
   const revalidator = useRevalidator();
 
-  const handleRemoveCode = useCallback(
-    (insurerId: string) => {
-      if (!accountingSettingsId) return;
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [newInsurerId, setNewInsurerId] = useState('');
+  const [newCode, setNewCode] = useState('');
+  const [editingCodeId, setEditingCodeId] = useState<string | null>(null);
+  const [editingCodeValue, setEditingCodeValue] = useState('');
+  const [editingInsurerId, setEditingInsurerId] = useState<string | null>(null);
+  const [editingInsurerValue, setEditingInsurerValue] = useState('');
+  const [createdPracticeId, setCreatedPracticeId] = useState<string | null>(null);
+
+  // Sync local state when practice changes or create mode
+  const practiceId = practice?.id;
+  useMemo(() => {
+    if (isCreateMode) {
+      setEditTitle('');
+      setEditDescription('');
+      setCreatedPracticeId(null);
+    } else if (practice) {
+      setEditTitle(practice.title);
+      setEditDescription(practice.description);
+    }
+    setNewInsurerId('');
+    setNewCode('');
+    setEditingCodeId(null);
+    setEditingInsurerId(null);
+  }, [practiceId, isCreateMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Capture the new practice ID after creation so codes can be added
+  useMemo(() => {
+    const data = fetcher.data as any;
+    if (data?.ok && data?.intent === 'create-practice' && data?.practiceId) {
+      setCreatedPracticeId(data.practiceId);
+    }
+  }, [fetcher.data]);
+
+  const effectivePracticeId = practice?.id || createdPracticeId;
+  const isSystem = practice?.isSystem ?? false;
+  const isNew = isCreateMode && !createdPracticeId;
+
+  const handleTitleBlur = useCallback(() => {
+    if (isSystem || !effectivePracticeId) return;
+    if (editTitle.trim() && editTitle !== practice?.title) {
+      fetcher.submit(
+        { intent: 'update-practice', data: JSON.stringify({ id: effectivePracticeId, title: editTitle.trim() }) },
+        { method: 'post' }
+      );
+      setTimeout(() => revalidator.revalidate(), 300);
+    }
+  }, [isSystem, effectivePracticeId, practice?.title, editTitle, fetcher, revalidator]);
+
+  const handleDescriptionBlur = useCallback(() => {
+    if (isSystem || !effectivePracticeId) return;
+    if (editDescription.trim() && editDescription !== practice?.description) {
       fetcher.submit(
         {
-          intent: 'remove-code',
-          data: JSON.stringify({ accountingSettingsId, insurerId, practiceKey }),
+          intent: 'update-practice',
+          data: JSON.stringify({ id: effectivePracticeId, description: editDescription.trim() }),
         },
         { method: 'post' }
       );
       setTimeout(() => revalidator.revalidate(), 300);
-    },
-    [accountingSettingsId, practiceKey, fetcher, revalidator]
-  );
+    }
+  }, [isSystem, effectivePracticeId, practice?.description, editDescription, fetcher, revalidator]);
 
-  const handleUpdatePractice = useCallback(
-    (field: 'title' | 'description', value: string) => {
-      if (practice.isSystem) return;
-      fetcher.submit(
-        {
-          intent: 'update-practice',
-          data: JSON.stringify({ id: practice.id, [field]: value }),
-        },
-        { method: 'post' }
-      );
-    },
-    [practice.id, practice.isSystem, fetcher]
-  );
-
-  const handleDeletePractice = useCallback(() => {
+  const handleCreatePractice = useCallback(() => {
+    if (!editTitle.trim() || !editDescription.trim()) return;
     fetcher.submit(
-      { intent: 'delete-practice', id: practice.id },
+      {
+        intent: 'create-practice',
+        data: JSON.stringify({ title: editTitle.trim(), description: editDescription.trim() }),
+      },
       { method: 'post' }
     );
     setTimeout(() => revalidator.revalidate(), 300);
-  }, [practice.id, fetcher, revalidator]);
-
-  const [editTitle, setEditTitle] = useState(practice.title);
-  const [editDescription, setEditDescription] = useState(practice.description);
-
-  const handleTitleBlur = useCallback(() => {
-    if (editTitle.trim() && editTitle !== practice.title) {
-      handleUpdatePractice('title', editTitle.trim());
-    }
-  }, [editTitle, practice.title, handleUpdatePractice]);
-
-  const handleDescriptionBlur = useCallback(() => {
-    if (editDescription.trim() && editDescription !== practice.description) {
-      handleUpdatePractice('description', editDescription.trim());
-    }
-  }, [editDescription, practice.description, handleUpdatePractice]);
+  }, [editTitle, editDescription, fetcher, revalidator]);
 
   const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setEditTitle(e.currentTarget.value);
@@ -373,225 +298,456 @@ function PracticeCard({
     setEditDescription(e.currentTarget.value);
   }, []);
 
+  const handleAddCode = useCallback(() => {
+    if (!effectivePracticeId || !newInsurerId || !newCode.trim()) return;
+    fetcher.submit(
+      {
+        intent: 'save-code',
+        data: JSON.stringify({ practiceId: effectivePracticeId, insurerId: newInsurerId, code: newCode.trim() }),
+      },
+      { method: 'post' }
+    );
+    setNewInsurerId('');
+    setNewCode('');
+    setTimeout(() => revalidator.revalidate(), 300);
+  }, [effectivePracticeId, newInsurerId, newCode, fetcher, revalidator]);
+
+  const handleRemoveCode = useCallback(
+    (codeId: string) => {
+      fetcher.submit({ intent: 'remove-code', data: JSON.stringify({ codeId }) }, { method: 'post' });
+      setTimeout(() => revalidator.revalidate(), 300);
+    },
+    [fetcher, revalidator]
+  );
+
+  const handleDelete = useCallback(() => {
+    if (!effectivePracticeId) return;
+    fetcher.submit({ intent: 'delete-practice', id: effectivePracticeId }, { method: 'post' });
+    setTimeout(() => {
+      revalidator.revalidate();
+      onClose();
+    }, 300);
+  }, [effectivePracticeId, fetcher, revalidator, onClose]);
+
+  const handleNewCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewCode(e.currentTarget.value);
+  }, []);
+
+  const handleNewInsurerChange = useCallback((id: string) => {
+    setNewInsurerId(id);
+  }, []);
+
+  const handleStartEditCode = useCallback((code: InsurerCode) => {
+    setEditingCodeId(code.id);
+    setEditingCodeValue(code.code);
+  }, []);
+
+  const handleCancelEditCode = useCallback(() => {
+    setEditingCodeId(null);
+    setEditingCodeValue('');
+  }, []);
+
+  const handleSaveEditCode = useCallback(() => {
+    if (!editingCodeId || !editingCodeValue.trim()) return;
+    fetcher.submit(
+      { intent: 'update-code', data: JSON.stringify({ codeId: editingCodeId, code: editingCodeValue.trim() }) },
+      { method: 'post' }
+    );
+    setEditingCodeId(null);
+    setEditingCodeValue('');
+    setTimeout(() => revalidator.revalidate(), 300);
+  }, [editingCodeId, editingCodeValue, fetcher, revalidator]);
+
+  const handleEditCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingCodeValue(e.currentTarget.value);
+  }, []);
+
+  const handleEditCodeKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') handleSaveEditCode();
+      if (e.key === 'Escape') handleCancelEditCode();
+    },
+    [handleSaveEditCode, handleCancelEditCode]
+  );
+
+  const handleStartEditInsurer = useCallback((code: InsurerCode) => {
+    setEditingInsurerId(code.id);
+    setEditingInsurerValue(code.insurerId);
+  }, []);
+
+  const handleCancelEditInsurer = useCallback(() => {
+    setEditingInsurerId(null);
+    setEditingInsurerValue('');
+  }, []);
+
+  const handleSaveEditInsurer = useCallback(() => {
+    if (!editingInsurerId || !editingInsurerValue) return;
+    fetcher.submit(
+      { intent: 'update-code', data: JSON.stringify({ codeId: editingInsurerId, insurerId: editingInsurerValue }) },
+      { method: 'post' }
+    );
+    setEditingInsurerId(null);
+    setEditingInsurerValue('');
+    setTimeout(() => revalidator.revalidate(), 300);
+  }, [editingInsurerId, editingInsurerValue, fetcher, revalidator]);
+
+  const handleEditInsurerChange = useCallback((id: string) => {
+    setEditingInsurerValue(id);
+  }, []);
+
   const existingInsurerIds = useMemo(() => codes.map(c => c.insurerId), [codes]);
 
+  const drawerTitle = isCreateMode
+    ? t('settings.practices_new_title', 'Nueva práctica')
+    : isSystem
+      ? practice?.title
+      : t('settings.practices_edit', 'Editar práctica');
+
+  if (!isCreateMode && !practice) return null;
+
   return (
-    <FormCard>
-      <FieldRow>
-        <Label>{t('settings.practices_title', 'Título')}:</Label>
-        {practice.isSystem && (
-          <Group gap="xs" style={{ flex: 1 }}>
-            <Text size="sm">{practice.title}</Text>
-            <LockSimpleIcon size={14} color="var(--mantine-color-gray-5)" />
-          </Group>
-        )}
-        {!practice.isSystem && (
-          <TextInput
-            variant="unstyled"
-            value={editTitle}
-            onChange={handleTitleChange}
-            onBlur={handleTitleBlur}
-            style={{ flex: 1 }}
-            styles={{ input: { minHeight: '1.5rem', height: 'auto', lineHeight: 1.75 } }}
-          />
-        )}
-      </FieldRow>
+    <Drawer opened={opened} onClose={onClose} title={drawerTitle} position="right" size="lg">
+      <Stack gap="md">
+        {/* Title & Description */}
+        <FormCard>
+          <FieldRow label={`${t('settings.practices_title', 'Título')}:`}>
+            {isSystem && (
+              <Group gap="xs" style={{ flex: 1 }}>
+                <Text size="sm">{practice?.title}</Text>
+                <LockSimpleIcon size={14} color="var(--mantine-color-gray-5)" />
+              </Group>
+            )}
+            {!isSystem && (
+              <TextInput
+                variant="unstyled"
+                value={editTitle}
+                onChange={handleTitleChange}
+                onBlur={isNew ? undefined : handleTitleBlur}
+                placeholder={t('settings.practices_title_placeholder', 'Nombre de la práctica')}
+                style={{ flex: 1 }}
+                styles={{ input: { minHeight: '1.5rem', height: 'auto', lineHeight: 1.75 } }}
+              />
+            )}
+          </FieldRow>
+          <FieldRow label={`${t('settings.practices_description', 'Descripción')}:`}>
+            {isSystem && (
+              <Group gap="xs" style={{ flex: 1 }}>
+                <Text size="sm">{practice?.description}</Text>
+                <LockSimpleIcon size={14} color="var(--mantine-color-gray-5)" />
+              </Group>
+            )}
+            {!isSystem && (
+              <Textarea
+                variant="unstyled"
+                value={editDescription}
+                onChange={handleDescriptionChange}
+                onBlur={isNew ? undefined : handleDescriptionBlur}
+                placeholder={t('settings.practices_description_placeholder', 'Descripción de la práctica')}
+                autosize
+                style={{ flex: 1 }}
+                styles={{ input: { lineHeight: 1.75 } }}
+              />
+            )}
+          </FieldRow>
+        </FormCard>
 
-      <FieldRow>
-        <Label>{t('settings.practices_description', 'Descripción')}:</Label>
-        {practice.isSystem && (
-          <Group gap="xs" style={{ flex: 1 }}>
-            <Text size="sm">{practice.description}</Text>
-            <LockSimpleIcon size={14} color="var(--mantine-color-gray-5)" />
-          </Group>
-        )}
-        {!practice.isSystem && (
-          <Textarea
-            variant="unstyled"
-            value={editDescription}
-            onChange={handleDescriptionChange}
-            onBlur={handleDescriptionBlur}
-            autosize
-            style={{ flex: 1 }}
-            styles={{ input: { minHeight: '1.5rem', lineHeight: 1.75 } }}
-          />
-        )}
-      </FieldRow>
-
-      {codes.length > 0 && (
-        <div>
-          <Text size="xs" fw={600} c="dimmed" px="md" pt="xs">
-            {t('settings.practices_insurer_codes', 'Códigos por prepaga')}
-          </Text>
-          {codes.map(c => (
-            <CodeRow key={c.insurerId}>
-              <Text size="sm" style={{ flex: 1 }}>
-                {c.insurerName}
-              </Text>
-              <Badge variant="light" size="lg">
-                {c.code}
-              </Badge>
-              <ActionIcon
-                variant="subtle"
-                color="red"
-                size="sm"
-                onClick={() => handleRemoveCode(c.insurerId)}
-              >
-                <TrashIcon size={14} />
-              </ActionIcon>
-            </CodeRow>
-          ))}
-        </div>
-      )}
-
-      <AddCodeForm
-        practiceKey={practiceKey}
-        accountingSettingsId={accountingSettingsId}
-        existingInsurerIds={existingInsurerIds}
-      />
-
-      {!practice.isSystem && (
-        <Flex justify="flex-end" p="sm">
+        {/* Create button — only in create mode before practice is saved */}
+        {isNew && (
           <Button
-            variant="subtle"
-            color="red"
-            size="xs"
-            leftSection={<TrashIcon size={14} />}
-            onClick={handleDeletePractice}
+            onClick={handleCreatePractice}
+            disabled={!editTitle.trim() || !editDescription.trim()}
             loading={fetcher.state !== 'idle'}
           >
-            {t('settings.practices_delete', 'Eliminar práctica')}
+            {t('settings.practices_create_and_continue', 'Crear práctica')}
           </Button>
-        </Flex>
-      )}
-    </FormCard>
+        )}
+
+        {/* Insurer codes — only after practice exists */}
+        {!isNew && (
+          <>
+            <div>
+              <Text size="sm" fw={600} mb="xs">
+                {t('settings.practices_insurer_codes', 'Códigos por prepaga')}
+              </Text>
+              <FormCard>
+                <Table>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th fw={400}>{t('settings.practices_col_insurer', 'Prepaga')}</Table.Th>
+                      <Table.Th fw={400}>{t('settings.practices_col_code', 'Código')}</Table.Th>
+                      <Table.Th fw={400} style={{ width: 80 }}></Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {codes.map(c => (
+                      <Table.Tr key={c.id}>
+                        <Table.Td>
+                          {editingInsurerId === c.id && (
+                            <Group gap={4}>
+                              <div style={{ flex: 1, minWidth: 180 }}>
+                                <PrepagaSelector
+                                  value={editingInsurerValue}
+                                  onChange={handleEditInsurerChange}
+                                  placeholder={t('settings.practices_insurer_placeholder', 'Buscar prepaga...')}
+                                  variant="default"
+                                />
+                              </div>
+                              <ActionIcon variant="subtle" color="teal" size="sm" onClick={handleSaveEditInsurer}>
+                                <CheckIcon size={14} />
+                              </ActionIcon>
+                              <ActionIcon variant="subtle" color="gray" size="sm" onClick={handleCancelEditInsurer}>
+                                <XIcon size={14} />
+                              </ActionIcon>
+                            </Group>
+                          )}
+                          {editingInsurerId !== c.id && (
+                            <Group gap={4}>
+                              <Text size="sm">{c.insurerShortName}</Text>
+                              <ActionIcon
+                                variant="subtle"
+                                color="gray"
+                                size="sm"
+                                onClick={() => handleStartEditInsurer(c)}
+                              >
+                                <PencilSimpleIcon size={14} />
+                              </ActionIcon>
+                            </Group>
+                          )}
+                        </Table.Td>
+                        <Table.Td>
+                          {editingCodeId === c.id && (
+                            <Group gap={4}>
+                              <TextInput
+                                size="xs"
+                                value={editingCodeValue}
+                                onChange={handleEditCodeChange}
+                                onKeyDown={handleEditCodeKeyDown}
+                                autoFocus
+                                style={{ maxWidth: 160 }}
+                              />
+                              <ActionIcon variant="subtle" color="teal" size="sm" onClick={handleSaveEditCode}>
+                                <CheckIcon size={14} />
+                              </ActionIcon>
+                              <ActionIcon variant="subtle" color="gray" size="sm" onClick={handleCancelEditCode}>
+                                <XIcon size={14} />
+                              </ActionIcon>
+                            </Group>
+                          )}
+                          {editingCodeId !== c.id && (
+                            <Group gap={4}>
+                              <Text size="sm">{c.code}</Text>
+                              <ActionIcon
+                                variant="subtle"
+                                color="gray"
+                                size="sm"
+                                onClick={() => handleStartEditCode(c)}
+                              >
+                                <PencilSimpleIcon size={14} />
+                              </ActionIcon>
+                            </Group>
+                          )}
+                        </Table.Td>
+                        <Table.Td>
+                          <ActionIcon variant="subtle" color="red" size="sm" onClick={() => handleRemoveCode(c.id)}>
+                            <TrashIcon size={14} />
+                          </ActionIcon>
+                        </Table.Td>
+                      </Table.Tr>
+                    ))}
+                    {codes.length === 0 && (
+                      <Table.Tr>
+                        <Table.Td colSpan={3}>
+                          <Text size="sm" c="dimmed" ta="center" py="md">
+                            {t('settings.practices_no_codes', 'Sin códigos asignados.')}
+                          </Text>
+                        </Table.Td>
+                      </Table.Tr>
+                    )}
+                  </Table.Tbody>
+                </Table>
+              </FormCard>
+            </div>
+
+            {/* Add code form */}
+            <Flex gap="sm" align="flex-end" wrap="wrap">
+              <TextInput
+                placeholder={t('settings.practices_code_placeholder', 'Código')}
+                value={newCode}
+                onChange={handleNewCodeChange}
+                style={{ flex: '0 0 120px' }}
+                size="sm"
+              />
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <PrepagaSelector
+                  value={newInsurerId}
+                  onChange={handleNewInsurerChange}
+                  placeholder={t('settings.practices_insurer_placeholder', 'Buscar prepaga...')}
+                  variant="default"
+                />
+              </div>
+              <Button
+                size="sm"
+                leftSection={<PlusIcon size={14} />}
+                onClick={handleAddCode}
+                disabled={!newInsurerId || !newCode.trim() || existingInsurerIds.includes(newInsurerId)}
+                loading={fetcher.state !== 'idle'}
+              >
+                {t('settings.practices_add_code', 'Agregar')}
+              </Button>
+            </Flex>
+          </>
+        )}
+
+        {/* Delete (custom only) */}
+        {!isNew && !isSystem && (
+          <Flex justify="flex-end" mt="md">
+            <Button
+              variant="subtle"
+              color="red"
+              size="xs"
+              leftSection={<TrashIcon size={14} />}
+              onClick={handleDelete}
+              loading={fetcher.state !== 'idle'}
+            >
+              {t('settings.practices_delete', 'Eliminar práctica')}
+            </Button>
+          </Flex>
+        )}
+      </Stack>
+    </Drawer>
   );
 }
 
+// ---------------------------------------------------------------------------
+// Main page
+// ---------------------------------------------------------------------------
+
 export default function SettingsPracticesPage() {
   const { t } = useTranslation();
-  const { practices, insurerPrices, accountingSettingsId, prepagas } = useLoaderData<typeof loader>();
+  const { practices, codes, prepagas } = useLoaderData<typeof loader>();
   const revalidator = useRevalidator();
-  const fetcher = useFetcher();
-  const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
+  const [selectedPractice, setSelectedPractice] = useState<Practice | null>(null);
+  const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
+  const [isCreateMode, setIsCreateMode] = useState(false);
 
-  const createForm = useForm({
-    initialValues: { title: '', description: '' },
-    validate: {
-      title: v => (v.trim() ? null : t('settings.practices_title_required', 'Título requerido')),
-      description: v => (v.trim() ? null : t('settings.practices_description_required', 'Descripción requerida')),
+  const prepagaMap = useMemo(() => new Map(prepagas.map((p: Prepaga) => [p.id, p])), [prepagas]);
+
+  const codesByPracticeId = useMemo(() => {
+    const map = new Map<string, InsurerCode[]>();
+    for (const c of codes) {
+      const prepaga = prepagaMap.get(c.insurerId);
+      const entry: InsurerCode = {
+        id: c.id,
+        insurerId: c.insurerId,
+        insurerShortName: (prepaga as Prepaga)?.shortName || c.insurerId,
+        code: c.code,
+      };
+      const list = map.get(c.practiceId) || [];
+      list.push(entry);
+      map.set(c.practiceId, list);
+    }
+    return map;
+  }, [codes, prepagaMap]);
+
+  const handleRowClick = useCallback(
+    (practice: Practice) => {
+      setSelectedPractice(practice);
+      setIsCreateMode(false);
+      openDrawer();
     },
-  });
-
-  const handleCreate = useCallback(
-    (values: { title: string; description: string }) => {
-      fetcher.submit(
-        {
-          intent: 'create-practice',
-          data: JSON.stringify(values),
-        },
-        { method: 'post' }
-      );
-      closeCreate();
-      createForm.reset();
-      setTimeout(() => revalidator.revalidate(), 300);
-    },
-    [fetcher, closeCreate, createForm, revalidator]
+    [openDrawer]
   );
 
-  const systemPractices = useMemo(
-    () => practices.filter((p: Practice) => p.isSystem),
-    [practices]
-  );
-  const customPractices = useMemo(
-    () => practices.filter((p: Practice) => !p.isSystem),
-    [practices]
-  );
+  const handleNewPractice = useCallback(() => {
+    setSelectedPractice(null);
+    setIsCreateMode(true);
+    openDrawer();
+  }, [openDrawer]);
+
+  const handleDrawerClose = useCallback(() => {
+    closeDrawer();
+    setIsCreateMode(false);
+    setTimeout(() => revalidator.revalidate(), 300);
+  }, [closeDrawer, revalidator]);
+
+  const allPractices = useMemo(() => {
+    const system = practices.filter((p: Practice) => p.isSystem);
+    const custom = practices.filter((p: Practice) => !p.isSystem);
+    return [...system, ...custom];
+  }, [practices]);
 
   return (
-    <Stack gap="lg">
-      <Title order={3}>{t('settings.practices_heading', 'Prácticas')}</Title>
+    <Stack gap={0}>
+      <Portal id="form-actions">
+        <Button
+          size="xs"
+          leftSection={<PlusIcon size={14} />}
+          onClick={handleNewPractice}
+          style={{ marginLeft: 'auto' }}
+        >
+          {t('settings.practices_add', 'Nueva práctica')}
+        </Button>
+      </Portal>
 
-      {systemPractices.length > 0 && (
-        <Stack gap="sm">
-          <Text size="sm" fw={600} c="dimmed">
-            {t('settings.practices_system', 'Prácticas del sistema')}
-          </Text>
-          {systemPractices.map((practice: Practice) => {
-            const key = getPracticeKey(practice);
-            const codes = extractCodesForPractice(insurerPrices, key, prepagas);
-            return (
-              <PracticeCard
-                key={practice.id}
-                practice={practice}
-                codes={codes}
-                accountingSettingsId={accountingSettingsId}
-                practiceKey={key}
-              />
-            );
-          })}
-        </Stack>
-      )}
+      <SectionTitle id="practices" icon={<FirstAidKitIcon />} mb="md">
+        {t('settings.practices_heading', 'Prácticas')}
+      </SectionTitle>
 
-      <Stack gap="sm">
-        <Group justify="space-between">
-          <Text size="sm" fw={600} c="dimmed">
-            {t('settings.practices_custom', 'Prácticas personalizadas')}
-          </Text>
-          <Button size="xs" leftSection={<PlusIcon size={14} />} onClick={openCreate}>
-            {t('settings.practices_add', 'Nueva práctica')}
-          </Button>
-        </Group>
-        {customPractices.length === 0 && (
-          <Text size="sm" c="dimmed" ta="center" py="xl">
-            {t('settings.practices_empty', 'No hay prácticas personalizadas aún.')}
-          </Text>
-        )}
-        {customPractices.map((practice: Practice) => {
-          const key = getPracticeKey(practice);
-          const codes = extractCodesForPractice(insurerPrices, key, prepagas);
-          return (
-            <PracticeCard
-              key={practice.id}
-              practice={practice}
-              codes={codes}
-              accountingSettingsId={accountingSettingsId}
-              practiceKey={key}
-            />
-          );
-        })}
-      </Stack>
+      <FormCard>
+        <Table highlightOnHover verticalSpacing="md">
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th fw={400} py="xs">
+                {t('settings.practices_col_name', 'Nombre')}
+              </Table.Th>
+              <Table.Th fw={400} py="xs">
+                {t('settings.practices_col_insurers', 'Prepagas')}
+              </Table.Th>
+              <Table.Th fw={400} py="xs" style={{ width: 40 }}></Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {allPractices.map((practice: Practice) => {
+              const practiceCodes = codesByPracticeId.get(practice.id) || [];
+              return (
+                <ClickableRow key={practice.id} onClick={() => handleRowClick(practice)}>
+                  <Table.Td>
+                    <Group gap="xs">
+                      <Text size="sm">{practice.title}</Text>
+                      {practice.isSystem && <LockSimpleIcon size={12} color="var(--mantine-color-gray-5)" />}
+                    </Group>
+                  </Table.Td>
+                  <Table.Td>
+                    <InsurerTags codes={practiceCodes} />
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="xs" c="dimmed">
+                      {practiceCodes.length}
+                    </Text>
+                  </Table.Td>
+                </ClickableRow>
+              );
+            })}
+            {allPractices.length === 0 && (
+              <Table.Tr>
+                <Table.Td colSpan={3}>
+                  <Text size="sm" c="dimmed" ta="center" py="xl">
+                    {t('settings.practices_empty', 'No hay prácticas aún.')}
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            )}
+          </Table.Tbody>
+        </Table>
+      </FormCard>
 
-      <Modal
-        opened={createOpened}
-        onClose={closeCreate}
-        title={t('settings.practices_new_title', 'Nueva práctica')}
-      >
-        <form onSubmit={createForm.onSubmit(handleCreate)}>
-          <Stack gap="md">
-            <TextInput
-              label={t('settings.practices_title', 'Título')}
-              placeholder={t('settings.practices_title_placeholder', 'Nombre de la práctica')}
-              {...createForm.getInputProps('title')}
-            />
-            <Textarea
-              label={t('settings.practices_description', 'Descripción')}
-              placeholder={t('settings.practices_description_placeholder', 'Descripción de la práctica')}
-              autosize
-              minRows={2}
-              {...createForm.getInputProps('description')}
-            />
-            <Group justify="flex-end">
-              <Button variant="default" onClick={closeCreate}>
-                {t('common.cancel', 'Cancelar')}
-              </Button>
-              <Button type="submit" loading={fetcher.state !== 'idle'}>
-                {t('common.create', 'Crear')}
-              </Button>
-            </Group>
-          </Stack>
-        </form>
-      </Modal>
+      <PracticeDrawer
+        practice={selectedPractice}
+        codes={selectedPractice ? codesByPracticeId.get(selectedPractice.id) || [] : []}
+        opened={drawerOpened}
+        onClose={handleDrawerClose}
+        isCreateMode={isCreateMode}
+      />
     </Stack>
   );
 }

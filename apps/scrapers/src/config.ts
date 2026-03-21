@@ -22,3 +22,12 @@ export const checkpointDir = path.resolve(outputDir, '.checkpoints');
 
 export const defaultDelayMs = 2000;
 export const estimatedAnmatLaboratories = 119;
+
+export const recetarioLoginUrl = 'https://app.recetario.com.ar/login';
+export const recetarioNewOrderUrl = 'https://app.recetario.com.ar/orders/new';
+
+const recetarioEnv = process.env.RECETARIO_CREDENTIALS?.split(':') ?? [];
+export const recetarioCredentials = {
+  email: recetarioEnv[0] ?? '',
+  password: recetarioEnv[1] ?? '',
+};

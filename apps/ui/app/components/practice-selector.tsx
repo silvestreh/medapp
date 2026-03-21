@@ -3,14 +3,20 @@ import { Checkbox, Group, Stack, Text, Badge, Tooltip } from '@mantine/core';
 import { WarningIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
-import { toPricingConfig, type InsurerPrices } from '~/utils/accounting';
-
 export interface Practice {
   id: string;
   title: string;
   description: string;
   isSystem: boolean;
   systemKey: string | null;
+}
+
+export interface PracticeCodeRecord {
+  id: string;
+  practiceId: string;
+  userId: string;
+  insurerId: string;
+  code: string;
 }
 
 interface SelectedPractice {
@@ -20,35 +26,26 @@ interface SelectedPractice {
 
 interface PracticeSelectorProps {
   practices: Practice[];
-  insurerPrices: InsurerPrices;
+  codes: PracticeCodeRecord[];
   insurerId: string | undefined;
   selectedPracticeIds: string[];
   onChange: (selectedIds: string[]) => void;
   max?: number;
 }
 
-function getPracticeKey(practice: Practice): string {
-  return practice.isSystem && practice.systemKey ? practice.systemKey : `custom_${practice.id}`;
-}
-
 function getCodeForPractice(
-  practice: Practice,
-  insurerPrices: InsurerPrices,
+  practiceId: string,
+  codes: PracticeCodeRecord[],
   insurerId: string | undefined
 ): string | null {
   if (!insurerId) return null;
-  const practiceKey = getPracticeKey(practice);
-  const insurerPricing = insurerPrices[insurerId];
-  if (!insurerPricing) return null;
-  const config = insurerPricing[practiceKey];
-  if (!config) return null;
-  const pricing = toPricingConfig(config);
-  return pricing.code || null;
+  const match = codes.find(c => c.practiceId === practiceId && c.insurerId === insurerId);
+  return match?.code || null;
 }
 
 export function usePracticeSelection(
   practices: Practice[],
-  insurerPrices: InsurerPrices,
+  codes: PracticeCodeRecord[],
   insurerId: string | undefined,
   selectedPracticeIds: string[]
 ): SelectedPractice[] {
@@ -57,11 +54,11 @@ export function usePracticeSelection(
       .map(id => {
         const practice = practices.find(p => p.id === id);
         if (!practice) return null;
-        const code = getCodeForPractice(practice, insurerPrices, insurerId);
+        const code = getCodeForPractice(practice.id, codes, insurerId);
         return { practice, code };
       })
       .filter((sp): sp is SelectedPractice => sp !== null);
-  }, [practices, insurerPrices, insurerId, selectedPracticeIds]);
+  }, [practices, codes, insurerId, selectedPracticeIds]);
 }
 
 export function formatPracticesForOrder(selectedPractices: SelectedPractice[]): string {
@@ -77,7 +74,7 @@ export function formatPracticesForOrder(selectedPractices: SelectedPractice[]): 
 
 export function PracticeSelector({
   practices,
-  insurerPrices,
+  codes,
   insurerId,
   selectedPracticeIds,
   onChange,
@@ -88,9 +85,9 @@ export function PracticeSelector({
   const practicesWithCodes = useMemo(() => {
     return practices.map(practice => ({
       practice,
-      code: getCodeForPractice(practice, insurerPrices, insurerId),
+      code: getCodeForPractice(practice.id, codes, insurerId),
     }));
-  }, [practices, insurerPrices, insurerId]);
+  }, [practices, codes, insurerId]);
 
   const handleToggle = useCallback(
     (practiceId: string) => {

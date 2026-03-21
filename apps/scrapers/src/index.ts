@@ -1,14 +1,16 @@
+import 'dotenv/config';
 import minimist from 'minimist';
 import puppeteer from 'puppeteer';
 import { alphabet, defaultDelayMs, estimatedAnmatLaboratories, icd10ChapterUrls } from './config.js';
 import { scrapeIcd10 } from './scrapers/icd10-scraper.js';
 import { scrapeMedications } from './scrapers/medications-scraper.js';
+import { scrapePractices } from './scrapers/practices-scraper.js';
 import { scrapePrepagas } from './scrapers/prepagas-scraper.js';
 import type { CliOptions } from './types.js';
 import { readCheckpoint } from './utils/checkpoints.js';
 import { createMultiBar, createOverallProgress } from './utils/progress-bars.js';
 
-type Command = 'prepagas' | 'medications' | 'icd10' | 'all';
+type Command = 'prepagas' | 'medications' | 'icd10' | 'practices' | 'all';
 
 interface Icd10Checkpoint {
   lastChapterIndex: number;
@@ -20,14 +22,14 @@ interface MedicationsCheckpoint {
 
 function parseCliOptions(): { command: Command; options: CliOptions } {
   const argv = minimist(process.argv.slice(2), {
-    boolean: ['headed'],
+    boolean: ['headed', 'noFetch'],
     string: ['startFrom'],
-    default: { headed: false, delayMs: defaultDelayMs }
+    default: { headed: false, noFetch: false, delayMs: defaultDelayMs }
   });
 
   const command = (argv._[0] as Command | undefined) ?? 'all';
-  if (!['prepagas', 'medications', 'icd10', 'all'].includes(command)) {
-    throw new Error(`Unsupported command "${command}". Use: prepagas | medications | icd10 | all`);
+  if (!['prepagas', 'medications', 'icd10', 'practices', 'all'].includes(command)) {
+    throw new Error(`Unsupported command "${command}". Use: prepagas | medications | icd10 | practices | all`);
   }
 
   const maxItems =
@@ -38,7 +40,8 @@ function parseCliOptions(): { command: Command; options: CliOptions } {
     headed: Boolean(argv.headed),
     delayMs: Math.max(2000, Number.isNaN(parsedDelay) ? defaultDelayMs : parsedDelay),
     startFrom: argv.startFrom ? String(argv.startFrom) : undefined,
-    maxItems: Number.isNaN(maxItems ?? Number.NaN) ? undefined : maxItems
+    maxItems: Number.isNaN(maxItems ?? Number.NaN) ? undefined : maxItems,
+    noFetch: Boolean(argv.noFetch)
   };
 
   return { command, options };
@@ -65,6 +68,7 @@ async function main(): Promise<void> {
   const runPrepagas = command === 'prepagas' || command === 'all';
   const runMedications = command === 'medications' || command === 'all';
   const runIcd10 = command === 'icd10' || command === 'all';
+  const runPractices = command === 'practices';
 
   const prepagasBars = runPrepagas
     ? {
@@ -86,11 +90,18 @@ async function main(): Promise<void> {
       }
     : null;
 
+  const practicesBars = runPractices
+    ? {
+        templatesBar: multiBar.create(1, 0, { title: 'Templates' })
+      }
+    : null;
+
   prepagasBars?.sourceABar.update(0, { title: 'Prepagas A' });
   prepagasBars?.sourceBBar.update(0, { title: 'Prepagas B' });
   medicationsBars?.labsBar.update(0, { title: 'ANMAT labs' });
   medicationsBars?.pagesBar.update(0, { title: 'ANMAT pages' });
   icd10Bars?.chapterBar.update(0, { title: 'ICD10 chapters' });
+  practicesBars?.templatesBar.update(0, { title: 'Templates' });
 
   const prepagasStartIndex = options.startFrom
     ? Math.max(alphabet.indexOf(options.startFrom.toLowerCase()), 0)
@@ -133,6 +144,9 @@ async function main(): Promise<void> {
     }
     if (runIcd10 && icd10Bars) {
       tasks.push(scrapeIcd10(browser, options, icd10Bars, overall));
+    }
+    if (runPractices && practicesBars) {
+      tasks.push(scrapePractices(browser, options, practicesBars, overall));
     }
 
     await Promise.all(tasks);
