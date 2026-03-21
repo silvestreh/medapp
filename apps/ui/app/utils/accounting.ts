@@ -123,10 +123,14 @@ export function calculateExtraCost(config: PricingConfig, activeSections: string
   return Number(total.toFixed(2));
 }
 
-export function normalizeInsurerPrices(value: unknown): InsurerPrices {
+export function normalizeInsurerPrices(value: unknown, extraKeys?: string[]): InsurerPrices {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return {};
   }
+
+  const allKeys: readonly string[] = extraKeys
+    ? [...ACCOUNTING_PRACTICE_KEYS, ...extraKeys]
+    : ACCOUNTING_PRACTICE_KEYS;
 
   const entries = Object.entries(value as Record<string, unknown>);
   const normalized: InsurerPrices = {};
@@ -137,7 +141,7 @@ export function normalizeInsurerPrices(value: unknown): InsurerPrices {
     }
 
     const nextPrices: Record<string, PricingConfig> = {};
-    for (const practiceKey of ACCOUNTING_PRACTICE_KEYS) {
+    for (const practiceKey of allKeys) {
       const raw = (prices as Record<string, unknown>)[practiceKey];
       if (raw === undefined || raw === null || raw === '') {
         continue;

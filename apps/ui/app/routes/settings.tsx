@@ -11,6 +11,7 @@ import {
   RobotIcon,
   CreditCardIcon,
   WhatsappLogoIcon,
+  FirstAidKitIcon,
 } from '@phosphor-icons/react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
@@ -333,6 +334,16 @@ function SettingsTabs({
           to="/settings/signature"
           label={t('profile.tab_signature')}
           leftSection={<PenNibIcon size={16} />}
+          variant="light"
+          style={navLinkStyle}
+        />
+      )}
+      {isMedic && (
+        <NavLink
+          component={RemixNavLink}
+          to="/settings/practices"
+          label={t('profile.tab_practices', 'Prácticas')}
+          leftSection={<FirstAidKitIcon size={16} />}
           variant="light"
           style={navLinkStyle}
         />

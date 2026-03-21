@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Modal,
   Stepper,
@@ -32,9 +32,16 @@ import { AsYouType, type CountryCode } from 'libphonenumber-js';
 
 import { Icd10Selector } from '~/components/icd10-selector';
 import { PrepagaSelector } from '~/components/prepaga-selector';
+import {
+  PracticeSelector,
+  usePracticeSelection,
+  formatPracticesForOrder,
+  type Practice,
+} from '~/components/practice-selector';
 import PatientSearch from '~/components/patient-search';
 import { useFeathers } from '~/components/provider';
 import { trackAction } from '~/utils/breadcrumbs';
+import { normalizeInsurerPrices, type InsurerPrices } from '~/utils/accounting';
 
 const COUNTRY_PHONE_OPTIONS = [
   { value: '54', label: '🇦🇷 +54', country: 'AR' as CountryCode },
@@ -339,6 +346,12 @@ export function PrescribeModal({
   const [orderDiagnosisError, setOrderDiagnosisError] = useState('');
   const [activeTab, setActiveTab] = useState('prescription');
 
+  // Practices state for order tab
+  const [practices, setPractices] = useState<Practice[]>([]);
+  const [orderInsurerPrices, setOrderInsurerPrices] = useState<InsurerPrices>({});
+  const [selectedPracticeIds, setSelectedPracticeIds] = useState<string[]>([]);
+  const [practicesLoaded, setPracticesLoaded] = useState(false);
+
   const fillPatientForm = useCallback((p: any) => {
     const pd = p.personalData || {};
     const cd = p.contactData || {};
@@ -443,6 +456,55 @@ export function PrescribeModal({
     setSharePhone(prev => prev || recetarioData.phone || '');
   }, [patientFetcher.state, patientFetcher.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch practices and accounting settings when entering step 1
+  useEffect(() => {
+    if (step !== 1 || practicesLoaded) return;
+    let cancelled = false;
+
+    const fetchPractices = async () => {
+      try {
+        const [practicesRes, acctRes] = await Promise.all([
+          feathersClient.service('practices' as any).find({ query: { $limit: 200 } }),
+          feathersClient.service('accounting-settings' as any).find({ query: { $limit: 1 } }),
+        ]);
+        if (cancelled) return;
+
+        const practicesList = Array.isArray(practicesRes) ? practicesRes : (practicesRes as any)?.data || [];
+        const acctList = Array.isArray(acctRes) ? acctRes : (acctRes as any)?.data || [];
+        const acctSettings = acctList[0];
+        const customKeys = practicesList
+          .filter((p: Practice) => !p.isSystem)
+          .map((p: Practice) => `custom_${p.id}`);
+
+        setPractices(practicesList);
+        setOrderInsurerPrices(
+          normalizeInsurerPrices(acctSettings?.insurerPrices, customKeys.length > 0 ? customKeys : undefined)
+        );
+        setPracticesLoaded(true);
+      } catch {
+        // practices service may not be available
+      }
+    };
+
+    fetchPractices();
+    return () => { cancelled = true; };
+  }, [step, practicesLoaded, feathersClient]);
+
+  // Auto-populate order content when practices selection changes
+  const selectedPracticesData = usePracticeSelection(
+    practices,
+    orderInsurerPrices,
+    patientForm.values.medicareId || undefined,
+    selectedPracticeIds
+  );
+
+  useEffect(() => {
+    if (selectedPracticeIds.length > 0) {
+      const formatted = formatPracticesForOrder(selectedPracticesData);
+      orderForm.setFieldValue('content', formatted);
+    }
+  }, [selectedPracticesData]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Reset all state when modal closes
   useEffect(() => {
     if (!opened) {
@@ -461,6 +523,8 @@ export function PrescribeModal({
       setOrderDiagnosis('');
       setRxDiagnosisError('');
       setOrderDiagnosisError('');
+      setSelectedPracticeIds([]);
+      setPracticesLoaded(false);
     }
   }, [opened]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -900,6 +964,16 @@ export function PrescribeModal({
                     variant="default"
                   />
                 </Box>
+                {practices.length > 0 && (
+                  <PracticeSelector
+                    practices={practices}
+                    insurerPrices={orderInsurerPrices}
+                    insurerId={patientForm.values.medicareId || undefined}
+                    selectedPracticeIds={selectedPracticeIds}
+                    onChange={setSelectedPracticeIds}
+                    max={3}
+                  />
+                )}
                 <Textarea
                   label={t('recetario.order_content')}
                   required

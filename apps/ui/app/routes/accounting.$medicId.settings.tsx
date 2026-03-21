@@ -196,12 +196,36 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
       .sort((a, b) => a.shortName.localeCompare(b.shortName)),
   ];
 
+  // Fetch custom practices to extend the practice list
+  let customPractices: { id: string; title: string; systemKey: string | null }[] = [];
+  try {
+    const practicesResponse = await client.service('practices' as any).find({
+      query: { isSystem: false, $limit: 200 },
+    });
+    const practicesList = Array.isArray(practicesResponse)
+      ? practicesResponse
+      : ((practicesResponse as any)?.data ?? []);
+    customPractices = practicesList.map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      systemKey: p.systemKey,
+    }));
+  } catch {
+    // practices service may not exist yet
+  }
+
+  const customPracticeKeys = customPractices.map(p => `custom_${p.id}`);
+  const normalizedPrices = customPracticeKeys.length > 0
+    ? normalizeInsurerPrices(acctSettings?.insurerPrices, customPracticeKeys)
+    : insurerPrices;
+
   return json({
     acctSettingsId: acctSettings?.id ?? null,
-    insurerPrices,
+    insurerPrices: normalizedPrices,
     insurers,
     hiddenInsurers,
     allHistoricalInsurerIds: Array.isArray(allHistoricalInsurerIds) ? allHistoricalInsurerIds : [],
+    customPractices,
   });
 });
 
@@ -224,7 +248,22 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     : ((acctSettingsResponse as { data?: unknown[] }).data ?? []);
   const acctSettings = acctSettingsList[0] as { id: string } | undefined;
 
-  const insurerPrices = normalizeInsurerPrices(payload.insurerPrices);
+  // Extract custom practice keys from payload so they aren't stripped
+  const rawPrices = payload.insurerPrices as Record<string, Record<string, unknown>> | undefined;
+  const customKeys: string[] = [];
+  if (rawPrices) {
+    for (const prices of Object.values(rawPrices)) {
+      if (prices && typeof prices === 'object') {
+        for (const key of Object.keys(prices)) {
+          if (key.startsWith('custom_') && !customKeys.includes(key)) {
+            customKeys.push(key);
+          }
+        }
+      }
+    }
+  }
+
+  const insurerPrices = normalizeInsurerPrices(payload.insurerPrices, customKeys.length > 0 ? customKeys : undefined);
   const hiddenInsurers = Array.isArray(payload.hiddenInsurers) ? payload.hiddenInsurers : [];
 
   if (acctSettings?.id) {
@@ -994,10 +1033,19 @@ export default function AccountingSettingsPage() {
               mb="md"
             />
 
-            {ACCOUNTING_PRACTICE_KEYS.filter(key => pricingMode === 'normal' || key !== 'encounter').map(
+            {[
+              ...ACCOUNTING_PRACTICE_KEYS.filter(key => pricingMode === 'normal' || key !== 'encounter'),
+              ...((data.customPractices || []) as { id: string; title: string }[]).map(p => `custom_${p.id}`),
+            ].map(
               (practiceKey, index, array) => {
                 const config = getPracticeConfig(practiceKey);
                 const practiceType = config.type;
+                const customPractice = practiceKey.startsWith('custom_')
+                  ? ((data.customPractices || []) as { id: string; title: string }[]).find(p => `custom_${p.id}` === practiceKey)
+                  : null;
+                const practiceLabel = customPractice
+                  ? customPractice.title
+                  : t(practiceI18nKey[practiceKey as keyof typeof practiceI18nKey]);
 
                 return (
                   <Paper
@@ -1013,7 +1061,7 @@ export default function AccountingSettingsPage() {
                     <Stack gap={0}>
                       <Group justify="space-between" align="center">
                         <Text c="var(--mantine-primary-color-4)" fw={600}>
-                          {t(practiceI18nKey[practiceKey])}
+                          {practiceLabel}
                         </Text>
                         <Select
                           data={[

@@ -483,6 +483,15 @@ export interface SirePushToken {
   platform: 'ios' | 'android' | null;
 }
 
+export interface Practice {
+  id: Id;
+  organizationId: Id;
+  title: string;
+  description: string;
+  isSystem: boolean;
+  systemKey: string | null;
+}
+
 export interface EncounterAiChatMessage {
   id: Id;
   organizationId: Id;
