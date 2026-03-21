@@ -116,6 +116,16 @@
       "study-results:remove:all",
       "practice-costs:find",
       "practice-costs:get",
+      "practices:find",
+      "practices:get",
+      "practices:create",
+      "practices:patch",
+      "practices:remove",
+      "practice-codes:find",
+      "practice-codes:get",
+      "practice-codes:create",
+      "practice-codes:patch",
+      "practice-codes:remove",
       "prepagas:find"
     ]
   },

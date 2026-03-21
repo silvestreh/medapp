@@ -158,6 +158,19 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     return json({ intent: 'share-prescription', success: true });
   }
 
+  if (intent === 'update-patient-data') {
+    const { patientId: targetPatientId, personalData, contactData, medicareId, medicareNumber } = parseFormJson(
+      formData.get('data')
+    ) as any;
+    const patchData: Record<string, unknown> = {};
+    if (personalData) patchData.personalData = personalData;
+    if (contactData) patchData.contactData = contactData;
+    if (medicareId !== undefined) patchData.medicareId = medicareId;
+    if (medicareNumber !== undefined) patchData.medicareNumber = medicareNumber;
+    await client.service('patients').patch(targetPatientId || patientId, patchData);
+    return json({ intent: 'update-patient-data', success: true });
+  }
+
   const data = parseFormJson(formData.get('data'));
   const encounterId = String(formData.get('encounterId') || '').trim();
 

@@ -31,16 +31,21 @@ import { PlusIcon, TrashIcon, MagnifyingGlassIcon, PencilIcon } from '@phosphor-
 import { AsYouType, type CountryCode } from 'libphonenumber-js';
 
 import { Icd10Selector } from '~/components/icd10-selector';
+import { HighlightedTextarea } from '~/components/highlighted-textarea';
 import { PrepagaSelector } from '~/components/prepaga-selector';
 import {
   PracticeSelector,
-  usePracticeSelection,
-  formatPracticesForOrder,
+  resolvePractice,
+  applyPracticesToContent,
+  detectSelectedFromContent,
+  clearEditedPracticeLines,
+  practiceLine,
   type Practice,
   type PracticeCodeRecord,
+  type ResolvedPractice,
 } from '~/components/practice-selector';
 import PatientSearch from '~/components/patient-search';
-import { useFeathers } from '~/components/provider';
+import { useFeathers, useGet } from '~/components/provider';
 import { trackAction } from '~/utils/breadcrumbs';
 
 const COUNTRY_PHONE_OPTIONS = [
@@ -349,8 +354,13 @@ export function PrescribeModal({
   // Practices state for order tab
   const [practices, setPractices] = useState<Practice[]>([]);
   const [practiceCodes, setPracticeCodes] = useState<PracticeCodeRecord[]>([]);
-  const [selectedPracticeIds, setSelectedPracticeIds] = useState<string[]>([]);
+  const [selectedPractices, setSelectedPractices] = useState<ResolvedPractice[]>([]);
   const [practicesLoaded, setPracticesLoaded] = useState(false);
+
+  const { data: selectedInsurer } = useGet('prepagas', patientForm.values.medicareId, {
+    enabled: !!patientForm.values.medicareId,
+  });
+  const insurerShortName = (selectedInsurer as any)?.shortName || '';
 
   const fillPatientForm = useCallback((p: any) => {
     const pd = p.personalData || {};
@@ -475,8 +485,8 @@ export function PrescribeModal({
         setPractices(practicesList);
         setPracticeCodes(codesList);
         setPracticesLoaded(true);
-      } catch {
-        // practices service may not be available
+      } catch (err) {
+        console.error('[PrescribeModal] Failed to fetch practices:', err);
       }
     };
 
@@ -484,20 +494,43 @@ export function PrescribeModal({
     return () => { cancelled = true; };
   }, [step, practicesLoaded, feathersClient]);
 
-  // Auto-populate order content when practices selection changes
-  const selectedPracticesData = usePracticeSelection(
-    practices,
-    practiceCodes,
-    patientForm.values.medicareId || undefined,
-    selectedPracticeIds
+  const handleAddPractice = useCallback(
+    (practiceId: string) => {
+      const rp = resolvePractice(practiceId, practices, practiceCodes, patientForm.values.medicareId || undefined);
+      if (!rp) return;
+      const prev = selectedPractices;
+      const next = [...prev, rp];
+      setSelectedPractices(next);
+      orderForm.setFieldValue('content', applyPracticesToContent(orderForm.values.content, prev, next));
+    },
+    [practices, practiceCodes, patientForm.values.medicareId, selectedPractices, orderForm]
   );
 
-  useEffect(() => {
-    if (selectedPracticeIds.length > 0) {
-      const formatted = formatPracticesForOrder(selectedPracticesData);
-      orderForm.setFieldValue('content', formatted);
-    }
-  }, [selectedPracticesData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const handleRemovePractice = useCallback(
+    (practiceId: string) => {
+      const prev = selectedPractices;
+      const next = prev.filter(rp => rp.practice.id !== practiceId);
+      setSelectedPractices(next);
+      orderForm.setFieldValue('content', applyPracticesToContent(orderForm.values.content, prev, next));
+    },
+    [selectedPractices, orderForm]
+  );
+
+  // When user edits textarea, detect if any practice lines were modified and clear them
+  const handleContentChange = useCallback(
+    (value: string) => {
+      const cleaned = clearEditedPracticeLines(value, selectedPractices);
+      const detected = detectSelectedFromContent(cleaned, practices, practiceCodes, patientForm.values.medicareId || undefined);
+      setSelectedPractices(detected);
+      orderForm.setFieldValue('content', cleaned);
+    },
+    [practices, practiceCodes, patientForm.values.medicareId, orderForm, selectedPractices]
+  );
+
+  const highlightedLines = useMemo(
+    () => new Set(selectedPractices.map(rp => practiceLine(rp))),
+    [selectedPractices]
+  );
 
   // Reset all state when modal closes
   useEffect(() => {
@@ -517,7 +550,7 @@ export function PrescribeModal({
       setOrderDiagnosis('');
       setRxDiagnosisError('');
       setOrderDiagnosisError('');
-      setSelectedPracticeIds([]);
+      setSelectedPractices([]);
       setPracticesLoaded(false);
     }
   }, [opened]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -963,17 +996,21 @@ export function PrescribeModal({
                     practices={practices}
                     codes={practiceCodes}
                     insurerId={patientForm.values.medicareId || undefined}
-                    selectedPracticeIds={selectedPracticeIds}
-                    onChange={setSelectedPracticeIds}
+                    insurerName={insurerShortName || undefined}
+                    selected={selectedPractices}
+                    onAdd={handleAddPractice}
+                    onRemove={handleRemovePractice}
                     max={3}
                   />
                 )}
-                <Textarea
+                <HighlightedTextarea
                   label={t('recetario.order_content')}
                   required
                   minRows={2}
-                  autosize
-                  {...orderForm.getInputProps('content')}
+                  value={orderForm.values.content}
+                  onChange={handleContentChange}
+                  highlightLines={highlightedLines}
+                  error={orderForm.errors.content}
                 />
                 <Group justify="flex-end" mt="sm">
                   <Button variant="default" onClick={() => setStep(0)} disabled={submitting}>

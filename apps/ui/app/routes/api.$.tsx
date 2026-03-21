@@ -51,6 +51,8 @@ const ALLOWED_PATHS = new Set([
   'accounting',
   'accounting-settings',
   'practice-costs',
+  'practices',
+  'practice-codes',
   'prescriptions',
   'recetario',
   'whatsapp',
