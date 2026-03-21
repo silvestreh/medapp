@@ -491,7 +491,9 @@ export function PrescribeModal({
     };
 
     fetchPractices();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [step, practicesLoaded, feathersClient]);
 
   const handleAddPractice = useCallback(
@@ -520,17 +522,19 @@ export function PrescribeModal({
   const handleContentChange = useCallback(
     (value: string) => {
       const cleaned = clearEditedPracticeLines(value, selectedPractices);
-      const detected = detectSelectedFromContent(cleaned, practices, practiceCodes, patientForm.values.medicareId || undefined);
+      const detected = detectSelectedFromContent(
+        cleaned,
+        practices,
+        practiceCodes,
+        patientForm.values.medicareId || undefined
+      );
       setSelectedPractices(detected);
       orderForm.setFieldValue('content', cleaned);
     },
     [practices, practiceCodes, patientForm.values.medicareId, orderForm, selectedPractices]
   );
 
-  const highlightedLines = useMemo(
-    () => new Set(selectedPractices.map(rp => practiceLine(rp))),
-    [selectedPractices]
-  );
+  const highlightedLines = useMemo(() => new Set(selectedPractices.map(rp => practiceLine(rp))), [selectedPractices]);
 
   // Reset all state when modal closes
   useEffect(() => {

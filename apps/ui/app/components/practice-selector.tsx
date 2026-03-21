@@ -84,10 +84,7 @@ export function detectSelectedFromContent(
  * find any line that shares a long common prefix (>50% of the original)
  * and clear it — the user started editing a practice line.
  */
-export function clearEditedPracticeLines(
-  content: string,
-  previouslySelected: ResolvedPractice[]
-): string {
+export function clearEditedPracticeLines(content: string, previouslySelected: ResolvedPractice[]): string {
   if (previouslySelected.length === 0) return content;
 
   const knownLines = previouslySelected.map(practiceLine);
@@ -111,7 +108,10 @@ export function clearEditedPracticeLines(
     return line;
   });
 
-  return cleaned.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  return cleaned
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 /**

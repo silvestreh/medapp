@@ -128,9 +128,7 @@ export function normalizeInsurerPrices(value: unknown, extraKeys?: string[]): In
     return {};
   }
 
-  const allKeys: readonly string[] = extraKeys
-    ? [...ACCOUNTING_PRACTICE_KEYS, ...extraKeys]
-    : ACCOUNTING_PRACTICE_KEYS;
+  const allKeys: readonly string[] = extraKeys ? [...ACCOUNTING_PRACTICE_KEYS, ...extraKeys] : ACCOUNTING_PRACTICE_KEYS;
 
   const entries = Object.entries(value as Record<string, unknown>);
   const normalized: InsurerPrices = {};

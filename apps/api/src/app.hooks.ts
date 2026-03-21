@@ -65,7 +65,8 @@ export default {
             typeof ctx.id === 'string' &&
             ctx.id.length > 36;
 
-          const isExpectedError = ctx.error.code === 401 || isLegacyNotFound;
+          const isAccessLogError = ctx.path === 'access-logs';
+          const isExpectedError = ctx.error.code === 401 || isLegacyNotFound || isAccessLogError;
 
           if (!isExpectedError) {
             if (ctx.params.user) {

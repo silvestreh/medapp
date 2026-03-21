@@ -47,6 +47,7 @@ import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@athe
 import { parseFormJson } from '~/utils/parse-form-json';
 import { styled } from '~/styled-system/jsx';
 import { useFeathers } from '~/components/provider';
+import { PracticeCodeInput } from '~/components/practices/practice-code-input';
 import { PrepagaSelector } from '~/components/prepaga-selector';
 import { DateRangePopover, resolveDateRange, type DateRangeFilterState } from '~/components/date-range-popover';
 
@@ -182,9 +183,81 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
     : ((insurersResponse as { data?: unknown[] }).data ?? []);
   const insurerById = new Map((insurersList as Prepaga[]).map(item => [item.id, item]));
 
-  const insurers = [
+  // Fetch practices and practice-codes
+  let allPractices: { id: string; title: string; systemKey: string | null; isSystem: boolean }[] = [];
+  let practiceCodes: { codeId: string; practiceId: string; insurerId: string; code: string }[] = [];
+  try {
+    const [practicesResponse, codesResponse] = await Promise.all([
+      client.service('practices' as any).find({ query: { $limit: 200 } }),
+      client.service('practice-codes' as any).find({ query: { userId: medicId, $limit: 500 } }),
+    ]);
+    const practicesList = Array.isArray(practicesResponse)
+      ? practicesResponse
+      : ((practicesResponse as any)?.data ?? []);
+    allPractices = practicesList.map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      systemKey: p.systemKey,
+      isSystem: p.isSystem,
+    }));
+    const codesList = Array.isArray(codesResponse) ? codesResponse : ((codesResponse as any)?.data ?? []);
+    practiceCodes = codesList.map((c: any) => ({
+      codeId: c.id,
+      practiceId: c.practiceId,
+      insurerId: c.insurerId,
+      code: c.code,
+    }));
+  } catch {
+    // practices/practice-codes service may not exist yet
+  }
+
+  const customPractices = allPractices.filter(p => !p.isSystem);
+  const customPracticeKeys = customPractices.map(p => `custom_${p.id}`);
+  const normalizedPrices =
+    customPracticeKeys.length > 0
+      ? normalizeInsurerPrices(acctSettings?.insurerPrices, customPracticeKeys)
+      : insurerPrices;
+
+  // Build practice code lookup: practiceCodeMap[insurerId][practiceKey] = { code, practiceId, codeId }
+  const practiceCodeMap: Record<string, Record<string, { code: string; practiceId: string; codeId: string }>> = {};
+  // Also build practiceKey → practiceId map for creating new codes
+  const practiceKeyToId: Record<string, string> = {};
+  for (const p of allPractices) {
+    const key = p.systemKey || `custom_${p.id}`;
+    practiceKeyToId[key] = p.id;
+  }
+  for (const pc of practiceCodes) {
+    const practice = allPractices.find(p => p.id === pc.practiceId);
+    if (!practice) continue;
+    const practiceKey = practice.systemKey || `custom_${practice.id}`;
+    if (!practiceCodeMap[pc.insurerId]) practiceCodeMap[pc.insurerId] = {};
+    practiceCodeMap[pc.insurerId][practiceKey] = { code: pc.code, practiceId: pc.practiceId, codeId: pc.codeId };
+  }
+
+  // Merge practice-code insurer IDs into the sidebar list
+  const practiceCodeInsurerIds = [...new Set(practiceCodes.map(c => c.insurerId))];
+  const mergedInsurerIds = [
+    ...new Set([...realInsurerIds, ...practiceCodeInsurerIds.filter(id => id !== PARTICULAR_INSURER_ID)]),
+  ];
+
+  // Re-fetch any new insurers we didn't have before
+  const missingInsurerIds = mergedInsurerIds.filter(id => !insurerById.has(id));
+  if (missingInsurerIds.length > 0) {
+    const extraResponse = await client.service('prepagas').find({
+      query: { id: { $in: missingInsurerIds }, $limit: missingInsurerIds.length },
+      paginate: false,
+    });
+    const extraList = Array.isArray(extraResponse)
+      ? extraResponse
+      : ((extraResponse as { data?: unknown[] }).data ?? []);
+    for (const item of extraList as Prepaga[]) {
+      insurerById.set(item.id, item);
+    }
+  }
+
+  const finalInsurers = [
     { id: PARTICULAR_INSURER_ID, shortName: 'Particular', denomination: 'Particular' },
-    ...realInsurerIds
+    ...mergedInsurerIds
       .map(id => {
         const insurer = insurerById.get(id);
         return {
@@ -196,36 +269,15 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
       .sort((a, b) => a.shortName.localeCompare(b.shortName)),
   ];
 
-  // Fetch custom practices to extend the practice list
-  let customPractices: { id: string; title: string; systemKey: string | null }[] = [];
-  try {
-    const practicesResponse = await client.service('practices' as any).find({
-      query: { isSystem: false, $limit: 200 },
-    });
-    const practicesList = Array.isArray(practicesResponse)
-      ? practicesResponse
-      : ((practicesResponse as any)?.data ?? []);
-    customPractices = practicesList.map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      systemKey: p.systemKey,
-    }));
-  } catch {
-    // practices service may not exist yet
-  }
-
-  const customPracticeKeys = customPractices.map(p => `custom_${p.id}`);
-  const normalizedPrices = customPracticeKeys.length > 0
-    ? normalizeInsurerPrices(acctSettings?.insurerPrices, customPracticeKeys)
-    : insurerPrices;
-
   return json({
     acctSettingsId: acctSettings?.id ?? null,
     insurerPrices: normalizedPrices,
-    insurers,
+    insurers: finalInsurers,
     hiddenInsurers,
     allHistoricalInsurerIds: Array.isArray(allHistoricalInsurerIds) ? allHistoricalInsurerIds : [],
     customPractices,
+    practiceCodeMap,
+    practiceKeyToId,
   });
 });
 
@@ -233,7 +285,11 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
   const { medicId } = params;
   const formData = await request.formData();
-  const payload = parseFormJson<{ insurerPrices?: unknown; hiddenInsurers?: string[] }>(formData.get('payload'));
+  const payload = parseFormJson<{
+    insurerPrices?: unknown;
+    hiddenInsurers?: string[];
+    practiceCodes?: Record<string, Record<string, string>>;
+  }>(formData.get('payload'));
 
   if (!medicId) {
     throw new Response('Medic ID is required', { status: 400 });
@@ -276,6 +332,55 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     } as any);
   }
 
+  // Save practice codes
+  const practiceCodes = payload.practiceCodes as Record<string, Record<string, string>> | undefined;
+  if (practiceCodes) {
+    // Fetch all practices to map practiceKey → practiceId
+    const practicesRes = await client.service('practices' as any).find({ query: { $limit: 200 } });
+    const practicesList = Array.isArray(practicesRes) ? practicesRes : ((practicesRes as any)?.data ?? []);
+    const keyToId = new Map<string, string>();
+    for (const p of practicesList) {
+      keyToId.set((p as any).systemKey || `custom_${(p as any).id}`, (p as any).id);
+    }
+
+    // Fetch existing codes for this medic
+    const existingRes = await client.service('practice-codes' as any).find({
+      query: { userId: medicId, $limit: 500 },
+    });
+    const existingCodes = Array.isArray(existingRes) ? existingRes : ((existingRes as any)?.data ?? []);
+    const existingMap = new Map<string, any>();
+    for (const ec of existingCodes) {
+      existingMap.set(`${(ec as any).insurerId}:${(ec as any).practiceId}`, ec);
+    }
+
+    for (const [insurerId, practiceEntries] of Object.entries(practiceCodes)) {
+      if (insurerId === '_particular') continue;
+      for (const [practiceKey, code] of Object.entries(practiceEntries)) {
+        const practiceId = keyToId.get(practiceKey);
+        if (!practiceId) continue;
+
+        const mapKey = `${insurerId}:${practiceId}`;
+        const existing = existingMap.get(mapKey);
+        const trimmed = code.trim();
+
+        if (trimmed && existing) {
+          if ((existing as any).code !== trimmed) {
+            await client.service('practice-codes' as any).patch((existing as any).id, { code: trimmed });
+          }
+        } else if (trimmed && !existing) {
+          await client.service('practice-codes' as any).create({
+            practiceId,
+            insurerId,
+            userId: medicId,
+            code: trimmed,
+          });
+        } else if (!trimmed && existing) {
+          await client.service('practice-codes' as any).remove((existing as any).id);
+        }
+      }
+    }
+  }
+
   return json({ ok: true });
 };
 
@@ -293,6 +398,21 @@ export default function AccountingSettingsPage() {
   const [hiddenInsurers, setHiddenInsurers] = useState<string[]>(data.hiddenInsurers || []);
   const [showHiddenInsurers, setShowHiddenInsurers] = useState(false);
   const [showAddInsurer, setShowAddInsurer] = useState(false);
+
+  // Practice codes state: practiceCodesState[insurerId][practiceKey] = code string
+  const [practiceCodesState, setPracticeCodesState] = useState<Record<string, Record<string, string>>>(() => {
+    const map: Record<string, Record<string, string>> = {};
+    const pcMap = data.practiceCodeMap as Record<string, Record<string, { code: string }>> | undefined;
+    if (pcMap) {
+      for (const [insId, practices] of Object.entries(pcMap)) {
+        map[insId] = {};
+        for (const [pKey, entry] of Object.entries(practices)) {
+          map[insId][pKey] = entry.code;
+        }
+      }
+    }
+    return map;
+  });
   const [loadingHistorical, setLoadingHistorical] = useState(false);
   const [backfillRange, setBackfillRange] = useState<DateRangeFilterState>({
     mode: 'in_last',
@@ -339,9 +459,26 @@ export default function AccountingSettingsPage() {
     return multiplierPractice ? (toPricingConfig(multiplierPractice).baseValue ?? 0) : 0;
   }, [activeInsurerId, insurerPrices]);
 
+  const handlePracticeCodeChange = useCallback(
+    (practiceKey: string, code: string) => {
+      if (!activeInsurerId) return;
+      setPracticeCodesState(prev => ({
+        ...prev,
+        [activeInsurerId]: {
+          ...(prev[activeInsurerId] ?? {}),
+          [practiceKey]: code,
+        },
+      }));
+    },
+    [activeInsurerId]
+  );
+
   const handleSave = useCallback(() => {
-    fetcher.submit({ payload: JSON.stringify({ insurerPrices, hiddenInsurers }) }, { method: 'post' });
-  }, [fetcher, insurerPrices, hiddenInsurers]);
+    fetcher.submit(
+      { payload: JSON.stringify({ insurerPrices, hiddenInsurers, practiceCodes: practiceCodesState }) },
+      { method: 'post' }
+    );
+  }, [fetcher, insurerPrices, hiddenInsurers, practiceCodesState]);
 
   const handleSelectInsurer = useCallback((insurerId: string) => {
     setActiveInsurerId(insurerId);
@@ -393,25 +530,6 @@ export default function AccountingSettingsPage() {
           },
         };
       });
-    },
-    [activeInsurerId]
-  );
-
-  const handlePracticeCodeChange = useCallback(
-    (practiceKey: string, value: string) => {
-      if (!activeInsurerId) {
-        return;
-      }
-      setInsurerPrices(prev => ({
-        ...prev,
-        [activeInsurerId]: {
-          ...(prev[activeInsurerId] ?? {}),
-          [practiceKey]: {
-            ...toPricingConfig(prev[activeInsurerId]?.[practiceKey]),
-            code: value,
-          },
-        },
-      }));
     },
     [activeInsurerId]
   );
@@ -602,13 +720,6 @@ export default function AccountingSettingsPage() {
       handleSelectInsurer(insurerId);
     },
     [handleSelectInsurer]
-  );
-
-  const getCodeChangeHandler = useCallback(
-    (practiceKey: string) => (event: ChangeEvent<HTMLInputElement>) => {
-      handlePracticeCodeChange(practiceKey, event.currentTarget.value);
-    },
-    [handlePracticeCodeChange]
   );
 
   const getFixedValueChangeHandler = useCallback(
@@ -1036,170 +1147,167 @@ export default function AccountingSettingsPage() {
             {[
               ...ACCOUNTING_PRACTICE_KEYS.filter(key => pricingMode === 'normal' || key !== 'encounter'),
               ...((data.customPractices || []) as { id: string; title: string }[]).map(p => `custom_${p.id}`),
-            ].map(
-              (practiceKey, index, array) => {
-                const config = getPracticeConfig(practiceKey);
-                const practiceType = config.type;
-                const customPractice = practiceKey.startsWith('custom_')
-                  ? ((data.customPractices || []) as { id: string; title: string }[]).find(p => `custom_${p.id}` === practiceKey)
-                  : null;
-                const practiceLabel = customPractice
-                  ? customPractice.title
-                  : t(practiceI18nKey[practiceKey as keyof typeof practiceI18nKey]);
+            ].map((practiceKey, index, array) => {
+              const config = getPracticeConfig(practiceKey);
+              const practiceType = config.type;
+              const customPractice = practiceKey.startsWith('custom_')
+                ? ((data.customPractices || []) as { id: string; title: string }[]).find(
+                    p => `custom_${p.id}` === practiceKey
+                  )
+                : null;
+              const practiceLabel = customPractice
+                ? customPractice.title
+                : t(practiceI18nKey[practiceKey as keyof typeof practiceI18nKey]);
 
-                return (
-                  <Paper
-                    key={practiceKey}
-                    withBorder
-                    p="md"
-                    style={{
-                      borderRadius:
-                        index === 0 ? '0.5rem 0.5rem 0 0' : index === array.length - 1 ? '0 0 0.5rem 0.5rem' : '0',
-                      borderBottomWidth: index !== array.length - 1 ? 0 : 1,
-                    }}
-                  >
-                    <Stack gap={0}>
-                      <Group justify="space-between" align="center">
-                        <Text c="var(--mantine-primary-color-4)" fw={600}>
-                          {practiceLabel}
-                        </Text>
-                        <Select
-                          data={[
-                            { value: 'fixed', label: t('accounting.settings_fixed_price') },
-                            { value: 'multiplier', label: t('accounting.settings_multiplier') },
-                          ]}
-                          value={practiceType}
-                          onChange={getTypeChangeHandler(practiceKey)}
-                          size="xs"
-                          style={{ width: '110px' }}
-                        />
-                      </Group>
-                      <Group justify="stretch">
-                        <TextInput
-                          label={t('accounting.settings_practice_code')}
-                          value={config.code ?? ''}
-                          onChange={getCodeChangeHandler(practiceKey)}
-                          placeholder={t('accounting.settings_practice_code_placeholder')}
+              return (
+                <Paper
+                  key={practiceKey}
+                  withBorder
+                  p="md"
+                  style={{
+                    borderRadius:
+                      index === 0 ? '0.5rem 0.5rem 0 0' : index === array.length - 1 ? '0 0 0.5rem 0.5rem' : '0',
+                    borderBottomWidth: index !== array.length - 1 ? 0 : 1,
+                  }}
+                >
+                  <Stack gap={0}>
+                    <Group justify="space-between" align="center">
+                      <Text c="var(--mantine-primary-color-4)" fw={600}>
+                        {practiceLabel}
+                      </Text>
+                      <Select
+                        data={[
+                          { value: 'fixed', label: t('accounting.settings_fixed_price') },
+                          { value: 'multiplier', label: t('accounting.settings_multiplier') },
+                        ]}
+                        value={practiceType}
+                        onChange={getTypeChangeHandler(practiceKey)}
+                        size="xs"
+                        style={{ width: '110px' }}
+                      />
+                    </Group>
+                    <Group justify="stretch">
+                      <PracticeCodeInput
+                        key={`${activeInsurerId}-${practiceKey}`}
+                        value={practiceCodesState[activeInsurerId!]?.[practiceKey] ?? ''}
+                        onChange={v => handlePracticeCodeChange(practiceKey, v)}
+                      />
+
+                      {pricingMode === 'normal' && practiceType === 'fixed' && (
+                        <NumberInput
+                          label={t('accounting.settings_price')}
+                          decimalScale={2}
+                          min={0}
+                          fixedDecimalScale
+                          value={config.value ?? 0}
+                          onChange={getFixedValueChangeHandler(practiceKey)}
+                          thousandSeparator=","
                           flex={1}
                           styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
+                          prefix="$"
                         />
+                      )}
 
+                      {pricingMode === 'normal' && practiceType === 'multiplier' && (
+                        <NumberInput
+                          label={t('accounting.settings_units')}
+                          decimalScale={2}
+                          min={0}
+                          value={config.multiplier ?? 1}
+                          onChange={getMultiplierChangeHandler(practiceKey)}
+                          flex={1}
+                          styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
+                          suffix={` ${activeInsurerBaseName}`}
+                        />
+                      )}
+
+                      {pricingMode === 'emergency' && practiceType === 'fixed' && (
+                        <NumberInput
+                          label={t('accounting.settings_price')}
+                          decimalScale={2}
+                          min={0}
+                          fixedDecimalScale
+                          value={config.emergencyValue ?? 0}
+                          onChange={getEmergencyFixedValueChangeHandler(practiceKey)}
+                          thousandSeparator=","
+                          flex={1}
+                          styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
+                          prefix="$"
+                        />
+                      )}
+
+                      {pricingMode === 'emergency' && practiceType === 'multiplier' && (
+                        <NumberInput
+                          label={t('accounting.settings_units')}
+                          decimalScale={2}
+                          min={0}
+                          value={config.emergencyMultiplier ?? 0}
+                          onChange={getEmergencyMultiplierChangeHandler(practiceKey)}
+                          flex={1}
+                          styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
+                          suffix={` ${activeInsurerBaseName}`}
+                        />
+                      )}
+                    </Group>
+                    {(extraCostSectionsByPractice[practiceKey] ?? []).map(section => (
+                      <Group key={section.name} justify="flex-end" mt="xs">
+                        <Text c="dimmed" size="sm" flex={1} style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                          {`${section.label.toLowerCase()}:`}
+                        </Text>
                         {pricingMode === 'normal' && practiceType === 'fixed' && (
                           <NumberInput
-                            label={t('accounting.settings_price')}
                             decimalScale={2}
                             min={0}
                             fixedDecimalScale
-                            value={config.value ?? 0}
-                            onChange={getFixedValueChangeHandler(practiceKey)}
+                            value={config.extras?.[section.name] ?? 0}
+                            onChange={getExtraCostChangeHandler(practiceKey, section.name)}
                             thousandSeparator=","
-                            flex={1}
                             styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
                             prefix="$"
+                            flex={1}
                           />
                         )}
-
                         {pricingMode === 'normal' && practiceType === 'multiplier' && (
                           <NumberInput
-                            label={t('accounting.settings_units')}
                             decimalScale={2}
                             min={0}
-                            value={config.multiplier ?? 1}
-                            onChange={getMultiplierChangeHandler(practiceKey)}
-                            flex={1}
+                            value={config.extras?.[section.name] ?? 0}
+                            onChange={getExtraCostChangeHandler(practiceKey, section.name)}
                             styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
                             suffix={` ${activeInsurerBaseName}`}
+                            flex={1}
                           />
                         )}
-
                         {pricingMode === 'emergency' && practiceType === 'fixed' && (
                           <NumberInput
-                            label={t('accounting.settings_price')}
                             decimalScale={2}
                             min={0}
                             fixedDecimalScale
-                            value={config.emergencyValue ?? 0}
-                            onChange={getEmergencyFixedValueChangeHandler(practiceKey)}
+                            value={config.emergencyExtras?.[section.name] ?? 0}
+                            onChange={getEmergencyExtraCostChangeHandler(practiceKey, section.name)}
                             thousandSeparator=","
-                            flex={1}
                             styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
                             prefix="$"
+                            flex={1}
                           />
                         )}
-
                         {pricingMode === 'emergency' && practiceType === 'multiplier' && (
                           <NumberInput
-                            label={t('accounting.settings_units')}
                             decimalScale={2}
                             min={0}
-                            value={config.emergencyMultiplier ?? 0}
-                            onChange={getEmergencyMultiplierChangeHandler(practiceKey)}
-                            flex={1}
+                            value={config.emergencyExtras?.[section.name] ?? 0}
+                            onChange={getEmergencyExtraCostChangeHandler(practiceKey, section.name)}
                             styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
                             suffix={` ${activeInsurerBaseName}`}
+                            flex={1}
                           />
                         )}
                       </Group>
-                      {(extraCostSectionsByPractice[practiceKey] ?? []).map(section => (
-                        <Group key={section.name} justify="flex-end" mt="xs">
-                          <Text c="dimmed" size="sm" flex={1} style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                            {`${section.label.toLowerCase()}:`}
-                          </Text>
-                          {pricingMode === 'normal' && practiceType === 'fixed' && (
-                            <NumberInput
-                              decimalScale={2}
-                              min={0}
-                              fixedDecimalScale
-                              value={config.extras?.[section.name] ?? 0}
-                              onChange={getExtraCostChangeHandler(practiceKey, section.name)}
-                              thousandSeparator=","
-                              styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
-                              prefix="$"
-                              flex={1}
-                            />
-                          )}
-                          {pricingMode === 'normal' && practiceType === 'multiplier' && (
-                            <NumberInput
-                              decimalScale={2}
-                              min={0}
-                              value={config.extras?.[section.name] ?? 0}
-                              onChange={getExtraCostChangeHandler(practiceKey, section.name)}
-                              styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
-                              suffix={` ${activeInsurerBaseName}`}
-                              flex={1}
-                            />
-                          )}
-                          {pricingMode === 'emergency' && practiceType === 'fixed' && (
-                            <NumberInput
-                              decimalScale={2}
-                              min={0}
-                              fixedDecimalScale
-                              value={config.emergencyExtras?.[section.name] ?? 0}
-                              onChange={getEmergencyExtraCostChangeHandler(practiceKey, section.name)}
-                              thousandSeparator=","
-                              styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
-                              prefix="$"
-                              flex={1}
-                            />
-                          )}
-                          {pricingMode === 'emergency' && practiceType === 'multiplier' && (
-                            <NumberInput
-                              decimalScale={2}
-                              min={0}
-                              value={config.emergencyExtras?.[section.name] ?? 0}
-                              onChange={getEmergencyExtraCostChangeHandler(practiceKey, section.name)}
-                              styles={{ label: { color: 'var(--mantine-color-gray-6)' } }}
-                              suffix={` ${activeInsurerBaseName}`}
-                              flex={1}
-                            />
-                          )}
-                        </Group>
-                      ))}
-                    </Stack>
-                  </Paper>
-                );
-              }
-            )}
+                    ))}
+                  </Stack>
+                </Paper>
+              );
+            })}
           </Stack>
         )}
       </Content>

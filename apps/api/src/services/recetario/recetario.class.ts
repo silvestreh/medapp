@@ -184,7 +184,7 @@ export class Recetario {
     let insurerName: string | null = null;
     if ((patient as any).medicareId) {
       try {
-        const prepaga = await this.app.service('prepagas').get((patient as any).medicareId, internal);
+        const prepaga = await this.app.service('prepagas').get((patient as any).medicareId, this.internal());
         insurerName = (prepaga as any).recetarioHealthInsuranceName || (prepaga as any).shortName || null;
       } catch {
         // prepaga not found

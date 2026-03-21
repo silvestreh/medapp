@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useRevalidator } from '@remix-run/react';
+import { useLoaderData, useNavigate, useRevalidator } from '@remix-run/react';
 import { Button, Group, Stack, Table, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,7 @@ import { getAuthenticatedClient, getCurrentOrgRoleIds, authenticatedLoader } fro
 import { getCurrentOrganizationId } from '~/session';
 import { FormCard, SectionTitle } from '~/components/forms/styles';
 import Portal from '~/components/portal';
+import MedicList from '~/components/medic-list';
 import { parseFormJson } from '~/utils/parse-form-json';
 import { styled } from '~/styled-system/jsx';
 import type { Practice, PracticeCodeRecord, Prepaga, InsurerCode } from '~/components/practices/types';
@@ -31,15 +32,51 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   const orgId = await getCurrentOrganizationId(request);
   const orgRoleIds = getCurrentOrgRoleIds(user, orgId);
 
-  const canAccess =
-    orgRoleIds.includes('medic') || orgRoleIds.includes('prescriber') || orgRoleIds.includes('accounting');
+  const isMedic = orgRoleIds.includes('medic');
+  const isPrescriber = orgRoleIds.includes('prescriber');
+  const canAccess = isMedic || isPrescriber || orgRoleIds.includes('accounting');
   if (!canAccess) {
     throw json({ error: 'Not authorized' }, { status: 403 });
   }
 
+  // For prescribers: fetch delegated medics so they can view medic-specific codes
+  let delegatedMedics: any[] = [];
+  let selectedMedicId = user.id;
+
+  if (!isMedic && isPrescriber) {
+    const url = new URL(request.url);
+    const medicIdParam = url.searchParams.get('medicId');
+
+    const delegationsResponse = await client.service('prescription-delegations' as any).find({
+      query: { $limit: 200 },
+    });
+    const delegations = Array.isArray(delegationsResponse)
+      ? delegationsResponse
+      : ((delegationsResponse as any)?.data ?? []);
+
+    const medicIds = new Set(delegations.map((d: any) => d.medicId));
+
+    if (medicIds.size > 0) {
+      const membersResponse = await client.service('organization-users').find({
+        query: { $populate: true, $limit: 200 },
+      });
+      const allMembers = Array.isArray(membersResponse) ? membersResponse : ((membersResponse as any)?.data ?? []);
+
+      delegatedMedics = allMembers.filter((m: any) => m.user && medicIds.has(m.userId)).map((m: any) => m.user);
+
+      const firstMedicId = delegatedMedics[0]?.id;
+      selectedMedicId = medicIdParam && medicIds.has(medicIdParam) ? medicIdParam : firstMedicId || user.id;
+    }
+  }
+
+  const codesQuery: Record<string, any> = { $limit: 500 };
+  if (!isMedic && isPrescriber && selectedMedicId !== user.id) {
+    codesQuery.userId = selectedMedicId;
+  }
+
   const [practicesResponse, codesResponse] = await Promise.all([
     client.service('practices' as any).find({ query: { $limit: 200 } }),
-    client.service('practice-codes' as any).find({ query: { $limit: 500 } }),
+    client.service('practice-codes' as any).find({ query: codesQuery }),
   ]);
 
   const practices: Practice[] = Array.isArray(practicesResponse)
@@ -59,7 +96,7 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     prepagas = Array.isArray(prepagasResponse) ? prepagasResponse : ((prepagasResponse as any)?.data ?? []);
   }
 
-  return json({ practices, codes, prepagas });
+  return json({ practices, codes, prepagas, delegatedMedics, selectedMedicId, isMedic });
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -118,8 +155,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function SettingsPracticesPage() {
   const { t } = useTranslation();
-  const { practices, codes, prepagas } = useLoaderData<typeof loader>();
+  const { practices, codes, prepagas, delegatedMedics, selectedMedicId, isMedic } = useLoaderData<typeof loader>();
   const revalidator = useRevalidator();
+  const navigate = useNavigate();
   const [selectedPractice, setSelectedPractice] = useState<Practice | null>(null);
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
   const [isCreateMode, setIsCreateMode] = useState(false);
@@ -186,6 +224,18 @@ export default function SettingsPracticesPage() {
       <SectionTitle id="practices" icon={<FirstAidKitIcon />} mb="md">
         {t('settings.practices_heading', 'Prácticas')}
       </SectionTitle>
+
+      {!isMedic && delegatedMedics.length > 0 && (
+        <Portal id="toolbar">
+          <Group gap="sm">
+            <MedicList
+              medics={delegatedMedics}
+              value={selectedMedicId}
+              onChange={v => v && navigate(`/settings/practices?medicId=${v}`)}
+            />
+          </Group>
+        </Portal>
+      )}
 
       <FormCard>
         <Table highlightOnHover verticalSpacing="md">

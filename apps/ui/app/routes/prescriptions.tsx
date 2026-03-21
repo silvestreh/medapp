@@ -181,7 +181,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   if (intent === 'update-patient-data') {
-    const { patientId, personalData, contactData, medicareId, medicareNumber } = parseFormJson(formData.get('data')) as any;
+    const { patientId, personalData, contactData, medicareId, medicareNumber } = parseFormJson(
+      formData.get('data')
+    ) as any;
     if (patientId) {
       const patch: Record<string, any> = {};
       if (personalData) patch.personalData = personalData;
