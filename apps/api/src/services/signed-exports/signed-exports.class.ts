@@ -110,10 +110,12 @@ export class SignedExports {
 
     const orgId = params.organizationId;
     let organizationName = 'Athelas';
+    let organizationLogoUrl: string | undefined;
     if (orgId) {
       try {
         const org = await this.app.service('organizations').get(orgId, internal());
         organizationName = org.name || 'Athelas';
+        organizationLogoUrl = (org as any).settings?.healthCenter?.logoUrl || undefined;
       } catch {
         // fall through to default
       }
@@ -165,6 +167,7 @@ export class SignedExports {
 
     const renderOptions: PdfRenderOptions = {
       organizationName,
+      organizationLogoUrl,
       doctor: {
         fullName: [personalData.firstName, personalData.lastName].filter(Boolean).join(' ') || (doctorUser as any).username || '',
         title: mdSettings?.title || (personalData.gender === 'female' ? 'Dra.' : 'Dr.'),

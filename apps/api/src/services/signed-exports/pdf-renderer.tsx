@@ -71,6 +71,7 @@ export interface PdfStudy {
 
 export interface PdfRenderOptions {
   organizationName: string;
+  organizationLogoUrl?: string;
   doctor: PdfDoctorInfo;
   patient: PdfPatientInfo;
   encounters: PdfEncounter[];
@@ -348,6 +349,14 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
       borderBottomWidth: 2,
       borderBottomColor: '#2563eb',
       paddingBottom: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    orgLogo: {
+      width: 48,
+      height: 48,
+      marginRight: 12,
+      objectFit: 'contain',
     },
     orgName: {
       fontSize: 16,
@@ -686,11 +695,16 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.orgName}>{organizationName}</Text>
-          <Text style={styles.doctorInfo}>
-            {doctor.title} {doctor.fullName}
-            {licenseLines.length > 0 ? ` — ${licenseLines.join(' | ')}` : ''}
-          </Text>
+          {options.organizationLogoUrl && (
+            <Image style={styles.orgLogo} src={options.organizationLogoUrl} />
+          )}
+          <View>
+            <Text style={styles.orgName}>{organizationName}</Text>
+            <Text style={styles.doctorInfo}>
+              {doctor.title} {doctor.fullName}
+              {licenseLines.length > 0 ? ` — ${licenseLines.join(' | ')}` : ''}
+            </Text>
+          </View>
         </View>
 
         <Text style={styles.sectionTitle}>{t.patientData}</Text>
