@@ -116,10 +116,10 @@ export function PasswordChecklist({ password, onValidityChange }: PasswordCheckl
       if (cancelled) return;
 
       core.zxcvbnOptions.setOptions({
-        graphs: commonPkg.default.adjacencyGraphs ?? (commonPkg as any).adjacencyGraphs,
+        graphs: commonPkg.default?.adjacencyGraphs ?? (commonPkg as any).adjacencyGraphs,
         dictionary: {
-          ...(commonPkg.default.dictionary ?? (commonPkg as any).dictionary),
-          ...(enPkg.default.dictionary ?? (enPkg as any).dictionary),
+          ...(commonPkg.default?.dictionary ?? (commonPkg as any).dictionary),
+          ...(enPkg.default?.dictionary ?? (enPkg as any).dictionary),
         },
       });
 
