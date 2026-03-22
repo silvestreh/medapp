@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { ActionIcon, Menu, Tooltip } from '@mantine/core';
 import { QuestionIcon, ArrowCounterClockwiseIcon, BookOpenIcon } from '@phosphor-icons/react';
-import { useLocation } from '@remix-run/react';
+import { useLocation, useNavigate } from '@remix-run/react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 
@@ -39,6 +39,7 @@ function getTourIdFromPath(pathname: string): string | null {
 const HelpButton: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery(media.sm);
   const { resetTour } = useTour();
 
@@ -51,8 +52,8 @@ const HelpButton: React.FC = () => {
   }, [currentTourId, resetTour]);
 
   const handleReadDocs = useCallback(() => {
-    // Placeholder — docs to be built later
-  }, []);
+    navigate('/docs');
+  }, [navigate]);
 
   return (
     <Menu withArrow position={isMobile ? 'right-end' : 'right-end'} shadow="xs">
