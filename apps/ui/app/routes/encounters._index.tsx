@@ -35,12 +35,12 @@ const Container = styled(Flex, {
   },
 });
 
-const LeftColumn = styled(Flex, {
+const LeftColumn = styled('div', {
   base: {
+    display: 'flex',
     flexDirection: 'column',
 
     lg: {
-      minHeight: 0,
       width: '40%',
     },
   },
@@ -131,24 +131,22 @@ export default function EncountersIndex() {
         tooltipComponent={TourTooltip}
         styles={{ options: { zIndex: 10000 } }}
       />
-      <LeftColumn>
-        <div data-tour="encounters-schedule">
-          <HeaderContainer>
-            <Title>{t('appointments.today_schedule')}</Title>
-          </HeaderContainer>
-          <AppointmentsList
-            slots={slots}
-            readonly
-            currentDate={date}
-            onAppointmentClick={handleAppointmentClick}
-            className={css({
-              borderTop: '1px solid var(--mantine-color-gray-2)',
-              lg: {
-                borderRight: '1px solid var(--mantine-color-gray-2)',
-              },
-            })}
-          />
-        </div>
+      <LeftColumn data-tour="encounters-schedule">
+        <HeaderContainer>
+          <Title>{t('appointments.today_schedule')}</Title>
+        </HeaderContainer>
+        <AppointmentsList
+          slots={slots}
+          readonly
+          currentDate={date}
+          onAppointmentClick={handleAppointmentClick}
+          className={css({
+            borderTop: '1px solid var(--mantine-color-gray-2)',
+            lg: {
+              borderRight: '1px solid var(--mantine-color-gray-2)',
+            },
+          })}
+        />
       </LeftColumn>
       <MainColumn>
         <PatientSearchTable resultsTourId="encounters-results" />
