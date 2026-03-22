@@ -259,7 +259,7 @@ export interface OrganizationPatient {
 
 export type AccessLogResource = 'encounters' | 'studies' | 'prescriptions' | 'shared-access' | 'authentication' | 'access-control' | 'configuration' | 'system' | 'user-management';
 export type AccessAction = 'read' | 'write' | 'export' | 'grant' | 'login' | 'logout' | 'deny' | 'execute';
-export type AccessPurpose = 'treatment' | 'billing' | 'emergency' | 'operations' | 'share';
+export type AccessPurpose = 'treatment' | 'billing' | 'emergency' | 'operations' | 'share' | 'record-management';
 
 export interface AccessLog {
   id: Id;

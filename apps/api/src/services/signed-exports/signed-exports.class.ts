@@ -49,7 +49,8 @@ export class SignedExports {
 
     if (!user) throw new Forbidden('Authentication required');
     const orgRoleIds: string[] = params.orgRoleIds || [];
-    if (!orgRoleIds.includes('medic')) throw new Forbidden('Only medics can export medical history');
+    const canExport = orgRoleIds.includes('medic') || orgRoleIds.includes('lab-tech') || orgRoleIds.includes('lab-owner');
+    if (!canExport) throw new Forbidden('Only medics, lab techs, and lab owners can export medical history');
     if (!patientId) throw new BadRequest('patientId is required');
     if (delivery === 'email' && !emailTo) throw new BadRequest('emailTo is required for email delivery');
 

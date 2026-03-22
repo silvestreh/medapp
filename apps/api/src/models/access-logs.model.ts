@@ -42,7 +42,7 @@ export default function (app: Application): typeof Model {
       allowNull: false,
     },
     purpose: {
-      type: DataTypes.ENUM('treatment', 'billing', 'emergency', 'operations', 'share'),
+      type: DataTypes.ENUM('treatment', 'billing', 'emergency', 'operations', 'share', 'record-management'),
       allowNull: false,
       defaultValue: 'treatment',
     },

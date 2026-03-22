@@ -284,7 +284,7 @@ describe('\'signed-exports\' service', () => {
       }
     });
 
-    it('rejects non-medic users', async () => {
+    it('rejects unauthorized roles (e.g. receptionist)', async () => {
       const receptionist = await app.service('users').create({
         username: 'export.receptionist',
         password: 'SuperSecret1!',
@@ -322,6 +322,68 @@ describe('\'signed-exports\' service', () => {
       } catch (error: any) {
         assert.strictEqual(error.name, 'Forbidden');
       }
+    });
+  });
+
+  describe('lab-tech and lab-owner access', () => {
+    let labTech: any;
+    let labOwner: any;
+
+    before(async () => {
+      labTech = await app.service('users').create({
+        username: 'export.labtech',
+        password: 'SuperSecret1!',
+        personalData: {
+          firstName: 'Lab',
+          lastName: 'Tech',
+          documentType: 'DNI',
+          documentValue: '55000111',
+        },
+      });
+
+      labOwner = await app.service('users').create({
+        username: 'export.labowner',
+        password: 'SuperSecret1!',
+        personalData: {
+          firstName: 'Lab',
+          lastName: 'Owner',
+          documentType: 'DNI',
+          documentValue: '55000222',
+        },
+      });
+
+      await app.service('organization-users').create({ organizationId: org.id, userId: labTech.id } as any);
+      await app.service('organization-users').create({ organizationId: org.id, userId: labOwner.id } as any);
+      await app.service('user-roles').create({ userId: labTech.id, roleId: 'lab-tech', organizationId: org.id } as any);
+      await app.service('user-roles').create({ userId: labOwner.id, roleId: 'lab-owner', organizationId: org.id } as any);
+    });
+
+    it('allows lab-tech to generate unsigned PDF for a single study', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        studyId: study.id,
+        content: 'studies',
+        delivery: 'download',
+      }, { user: labTech, orgRoleIds: ['lab-tech'], organizationId: org.id } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.pdf, 'PDF buffer is present');
+      assert.ok(Buffer.isBuffer(result.pdf), 'PDF is a Buffer');
+      assert.ok(result.pdf.toString('utf-8', 0, 5).startsWith('%PDF'), 'Starts with %PDF header');
+    });
+
+    it('allows lab-owner to generate unsigned PDF for a single study', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: patient.id,
+        studyId: study.id,
+        content: 'studies',
+        delivery: 'download',
+      }, { user: labOwner, orgRoleIds: ['lab-owner'], organizationId: org.id } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.pdf, 'PDF buffer is present');
+      assert.ok(Buffer.isBuffer(result.pdf), 'PDF is a Buffer');
+      assert.ok(result.pdf.toString('utf-8', 0, 5).startsWith('%PDF'), 'Starts with %PDF header');
     });
   });
 

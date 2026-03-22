@@ -5,6 +5,7 @@ import { verifyOrganizationMembership } from '../../hooks/verify-organization-me
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { blockSuperAdmin } from '../../hooks/block-super-admin';
 import { logAccess } from '../../hooks/log-access';
+import { setLabRolePurpose } from './hooks/set-lab-role-purpose';
 
 const { authenticate } = authentication.hooks;
 
@@ -13,7 +14,7 @@ export default {
     all: [authenticate('jwt'), verifyOrganizationMembership()],
     find: [disallow('external')],
     get: [disallow('external')],
-    create: [blockSuperAdmin(), enforceActiveOrganization()],
+    create: [blockSuperAdmin(), enforceActiveOrganization(), setLabRolePurpose()],
     update: [disallow('external')],
     patch: [disallow('external')],
     remove: [disallow('external')],
