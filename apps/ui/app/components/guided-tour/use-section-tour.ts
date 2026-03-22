@@ -52,12 +52,32 @@ export function useSectionTour(tourId: string, steps: Step[]): UseSectionTourRet
         return;
       }
 
+      // If a step's target is missing, Joyride fires TARGET_NOT_FOUND.
+      // If it's the last step, complete the tour instead of getting stuck.
+      if (type === EVENTS.TARGET_NOT_FOUND && index >= steps.length - 1) {
+        setRun(false);
+        completeTour(tourId);
+        return;
+      }
+
+      // Skip missing targets by advancing to the next step
+      if (type === EVENTS.TARGET_NOT_FOUND) {
+        setStepIndex(index + 1);
+        return;
+      }
+
       if (type === EVENTS.STEP_AFTER) {
         const nextIndex = index + (action === ACTIONS.PREV ? -1 : 1);
+        // If we've moved past the last step, complete the tour
+        if (nextIndex >= steps.length) {
+          setRun(false);
+          completeTour(tourId);
+          return;
+        }
         setStepIndex(nextIndex);
       }
     },
-    [tourId, completeTour],
+    [tourId, completeTour, steps.length],
   );
 
   return { steps, run, stepIndex, handleCallback };

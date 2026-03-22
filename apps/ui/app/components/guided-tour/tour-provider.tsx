@@ -1,16 +1,6 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  type PropsWithChildren,
-} from 'react';
+import React, { createContext, useCallback, useContext, useRef, useState, type PropsWithChildren } from 'react';
 
 import { useFeathers, useAccount } from '~/components/provider';
-
-const PERSIST_DEBOUNCE_MS = 500;
 
 interface TourContextValue {
   completedTours: Record<string, boolean>;
@@ -24,78 +14,76 @@ interface TourContextValue {
 
 const TourContext = createContext<TourContextValue | undefined>(undefined);
 
+async function persistCompletedTours(
+  client: ReturnType<typeof useFeathers>,
+  userId: string,
+  completedTours: Record<string, boolean>
+) {
+  try {
+    // Fetch fresh preferences to avoid overwriting other keys (e.g. chatHeads)
+    const currentUser = await client.service('users').get(userId);
+    const currentPrefs = (currentUser as any)?.preferences ?? {};
+    await client.service('users').patch(userId, {
+      preferences: { ...currentPrefs, completedTours },
+    } as any);
+  } catch (err) {
+    console.error('[tour] Failed to persist completedTours:', err);
+  }
+}
+
 export const TourProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const client = useFeathers();
   const { user } = useAccount();
 
   const [completedTours, setCompletedTours] = useState<Record<string, boolean>>(
-    () => user?.preferences?.completedTours ?? {},
+    () => user?.preferences?.completedTours ?? {}
   );
   const [activeTourId, setActiveTourId] = useState<string | null>(null);
-
-  const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastPersistedRef = useRef<string>(JSON.stringify(completedTours));
-
-  // Sync from user preferences on initial load
-  useEffect(() => {
-    if (user?.preferences?.completedTours) {
-      setCompletedTours(user.preferences.completedTours);
-      lastPersistedRef.current = JSON.stringify(user.preferences.completedTours);
-    }
-  }, [user?.id]);
-
-  // Debounced persist to server
-  useEffect(() => {
-    if (!client || !user?.id) return;
-
-    const serialized = JSON.stringify(completedTours);
-    if (serialized === lastPersistedRef.current) return;
-
-    if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
-
-    persistTimerRef.current = setTimeout(async () => {
-      try {
-        await client.service('users').patch(user!.id, {
-          preferences: { ...user!.preferences, completedTours },
-        });
-        lastPersistedRef.current = serialized;
-      } catch {
-        // best-effort persistence
-      }
-    }, PERSIST_DEBOUNCE_MS);
-
-    return () => {
-      if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
-    };
-  }, [completedTours, client, user?.id]);
+  const userIdRef = useRef(user?.id);
+  userIdRef.current = user?.id;
 
   const startTour = useCallback((tourId: string) => {
     setActiveTourId(tourId);
   }, []);
 
-  const completeTour = useCallback((tourId: string) => {
-    setCompletedTours((prev) => ({ ...prev, [tourId]: true }));
-    setActiveTourId(null);
-  }, []);
+  const completeTour = useCallback(
+    (tourId: string) => {
+      setCompletedTours(prev => {
+        const next = { ...prev, [tourId]: true };
+        if (userIdRef.current) {
+          persistCompletedTours(client, userIdRef.current, next);
+        }
+        return next;
+      });
+      setActiveTourId(null);
+    },
+    [client]
+  );
 
-  const resetTour = useCallback((tourId: string) => {
-    setCompletedTours((prev) => {
-      const next = { ...prev };
-      delete next[tourId];
-      return next;
-    });
-    setActiveTourId(tourId);
-  }, []);
+  const resetTour = useCallback(
+    (tourId: string) => {
+      setCompletedTours(prev => {
+        const next = { ...prev };
+        delete next[tourId];
+        if (userIdRef.current) {
+          persistCompletedTours(client, userIdRef.current, next);
+        }
+        return next;
+      });
+      setActiveTourId(tourId);
+    },
+    [client]
+  );
 
   const resetAllTours = useCallback(() => {
     setCompletedTours({});
+    if (userIdRef.current) {
+      persistCompletedTours(client, userIdRef.current, {});
+    }
     setActiveTourId(null);
-  }, []);
+  }, [client]);
 
-  const isTourCompleted = useCallback(
-    (tourId: string) => !!completedTours[tourId],
-    [completedTours],
-  );
+  const isTourCompleted = useCallback((tourId: string) => !!completedTours[tourId], [completedTours]);
 
   const value: TourContextValue = {
     completedTours,

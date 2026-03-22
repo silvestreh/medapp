@@ -166,8 +166,10 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
 
     persistTimerRef.current = setTimeout(async () => {
       try {
+        const currentUser = await client.service('users').get(user!.id);
+        const currentPrefs = (currentUser as any)?.preferences ?? {};
         await client.service('users').patch(user!.id, {
-          preferences: { chatHeads: heads },
+          preferences: { ...currentPrefs, chatHeads: heads },
         });
         lastPersistedRef.current = serialized;
       } catch {
