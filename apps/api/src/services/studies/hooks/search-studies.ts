@@ -5,7 +5,7 @@ import { findByPersonalData } from '../../../hooks/find-by-personal-data';
 /**
  * Before.find hook for studies search.
  *
- * - If `q` is purely numeric: filter by `protocol` exact match
+ * - If `q` is purely numeric: search by documentValue (and protocol exact match)
  * - If `q` is text: delegate to the shared personal data search
  * - If no `q`: pass through
  */
@@ -25,12 +25,32 @@ export default function searchStudies(): Hook {
 
     const trimmed = q.trim();
 
-    // Purely numeric query -> exact protocol match
+    // Purely numeric query -> search by documentValue + protocol
     if (/^\d+$/.test(trimmed)) {
       context.params.query = {
         ...omit(params.query, 'q'),
-        protocol: parseInt(trimmed, 10),
+        documentValue: trimmed,
       };
+      await personalDataHook(context);
+
+      // Also include protocol matches via $or
+      const protocol = parseInt(trimmed, 10);
+      const currentQuery = context.params.query;
+
+      if (currentQuery.patientId === 'none') {
+        // No documentValue match — fall back to exact protocol match
+        delete currentQuery.patientId;
+        currentQuery.protocol = protocol;
+      } else if (currentQuery.patientId) {
+        // Has documentValue matches — also include exact protocol match
+        const patientIdCondition = currentQuery.patientId;
+        delete currentQuery.patientId;
+        currentQuery.$or = [
+          { patientId: patientIdCondition },
+          { protocol },
+        ];
+      }
+
       return context;
     }
 

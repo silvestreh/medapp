@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@remix-run/react';
 import { MagnifyingGlassIcon, FlaskIcon } from '@phosphor-icons/react';
@@ -137,6 +138,26 @@ const CardRow = styled('div', {
 // Helpers
 // ---------------------------------------------------------------------------
 
+const markStyle = {
+  background: 'var(--mantine-color-yellow-3)',
+  padding: '0 3px',
+  margin: '0 -3px',
+  borderRadius: '2px',
+};
+
+function highlightMatch(text: string, query: string): ReactNode {
+  if (!query) return text;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark style={markStyle}>{text.slice(idx, idx + query.length)}</mark>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
+
 function getPatientMedicareLabel(patient?: Patient): string {
   if (patient?.medicareId && patient?.prepaga) {
     return patient.prepaga.shortName;
@@ -184,6 +205,7 @@ export function StudiesTable({
 }: StudiesTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const numericQuery = /^\d+$/.test(searchValue.trim()) ? searchValue.trim() : '';
   const stickyHeaderStyle = {
     position: 'sticky' as const,
     top: '4.8em',
@@ -242,7 +264,9 @@ export function StudiesTable({
       }}
     >
       <Table.Td>
-        <CellText style={{ fontWeight: 600 }}>#{item.study.protocol}</CellText>
+        <CellText style={{ fontWeight: 600 }}>
+          #{numericQuery ? highlightMatch(String(item.study.protocol), numericQuery) : item.study.protocol}
+        </CellText>
       </Table.Td>
       <Table.Td>
         <CellText>
@@ -250,7 +274,9 @@ export function StudiesTable({
         </CellText>
       </Table.Td>
       <Table.Td>
-        <CellText>{displayDocumentValue(item.dni)}</CellText>
+        <CellText>
+          {numericQuery ? highlightMatch(displayDocumentValue(item.dni), numericQuery) : displayDocumentValue(item.dni)}
+        </CellText>
       </Table.Td>
       <Table.Td>{renderBadges(item.study.studies)}</Table.Td>
       <Table.Td>
@@ -280,13 +306,13 @@ export function StudiesTable({
           {item.firstName} {item.lastName}
         </BaseText>
         <BaseText size="xs" c="dimmed">
-          #{item.study.protocol}
+          #{numericQuery ? highlightMatch(String(item.study.protocol), numericQuery) : item.study.protocol}
         </BaseText>
       </CardRow>
 
       <CardRow style={{ marginTop: 4 }}>
         <BaseText size="xs" c="dimmed">
-          {displayDocumentValue(item.dni)}
+          {numericQuery ? highlightMatch(displayDocumentValue(item.dni), numericQuery) : displayDocumentValue(item.dni)}
         </BaseText>
         <BaseText size="xs" c="dimmed">
           {item.study.date ? dayjs(item.study.date).format('DD/MM/YYYY') : '—'}

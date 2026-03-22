@@ -97,14 +97,14 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   const q = url.searchParams.get('q') || '';
 
   const now = dayjs();
-  const sixMonthsAgo = now.subtract(6, 'month');
+  const fiveYearsAgo = now.subtract(5, 'year');
 
   const query: Record<string, unknown> = {
     $sort: { createdAt: -1 },
     $limit: PAGE_SIZE,
     $skip: (page - 1) * PAGE_SIZE,
     date: {
-      $gte: sixMonthsAgo.format('YYYY-MM-DD'),
+      $gte: fiveYearsAgo.format('YYYY-MM-DD'),
       $lt: now.add(1, 'day').format('YYYY-MM-DD'),
     },
   };
@@ -159,10 +159,10 @@ export default function StudiesIndex() {
 
   const [rangeFilter, setRangeFilter] = useState<DateRangeFilterState>({
     mode: 'in_last',
-    lastAmount: 6,
-    lastUnit: 'month',
+    lastAmount: 5,
+    lastUnit: 'year',
     singleDate: dayjs().format('YYYY-MM-DD'),
-    betweenRange: [dayjs().subtract(6, 'month').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+    betweenRange: [dayjs().subtract(5, 'year').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
   });
   const [activeRange, setActiveRange] = useState<ResolvedDateRange | null>(() =>
     resolveDateRange(rangeFilter, {
@@ -342,7 +342,11 @@ export default function StudiesIndex() {
   const studyItems = toStudyItems(studies);
 
   const tourSteps = getStudiesSteps(t);
-  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('studies', tourSteps);
+  const {
+    run: tourRun,
+    stepIndex: tourStepIndex,
+    handleCallback: tourHandleCallback,
+  } = useSectionTour('studies', tourSteps);
 
   return (
     <Stack gap={0}>

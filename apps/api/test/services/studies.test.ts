@@ -143,6 +143,87 @@ describe('\'studies\' service', () => {
     assert.deepStrictEqual(thrombophilia!.data, { value: 'added' }, 'New result has expected payload');
   });
 
+  describe('searchStudies hook', () => {
+    it('finds a study by patient documentValue', async () => {
+      const testPatient = await app.service('patients').create({
+        medicare: 'medicare-search-test',
+        medicareNumber: '999999999',
+        medicarePlan: 'planB',
+        personalData: {
+          documentType: 'DNI',
+          documentValue: '12345678',
+          firstName: 'Test',
+          lastName: 'SearchPatient',
+        },
+      } as any) as Patient;
+
+      const testStudy = await app.service('studies').create({
+        date: new Date(),
+        studies: ['anemia'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: testPatient.id,
+      });
+
+      const result = await app.service('studies').find({
+        query: { q: '12345678' },
+      });
+
+      const ids = result.data.map((s: Study) => s.id);
+      assert.ok(ids.includes(testStudy.id), 'Study found by patient documentValue');
+    });
+
+    it('finds a study by protocol when no documentValue matches', async () => {
+      const result = await app.service('studies').find({
+        query: { q: String(study.protocol) },
+      });
+
+      const ids = result.data.map((s: Study) => s.id);
+      assert.ok(ids.includes(study.id), 'Study found by protocol number');
+    });
+
+    it('finds studies by both documentValue and protocol', async () => {
+      // Create a study so we know its protocol number
+      const protoStudy = await app.service('studies').create({
+        date: new Date(),
+        studies: ['hemostasis'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+      });
+
+      // Create a patient whose DNI matches the protocol number
+      const dniPatient = await app.service('patients').create({
+        medicare: 'medicare-dual-test',
+        medicareNumber: '888888888',
+        medicarePlan: 'planC',
+        personalData: {
+          documentType: 'DNI',
+          documentValue: String(protoStudy.protocol),
+          firstName: 'Dual',
+          lastName: 'TestPatient',
+        },
+      } as any) as Patient;
+
+      const dniStudy = await app.service('studies').create({
+        date: new Date(),
+        studies: ['anemia'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: dniPatient.id,
+      });
+
+      // Search by the protocol number (which also matches the DNI)
+      const result = await app.service('studies').find({
+        query: { q: String(protoStudy.protocol) },
+      });
+
+      const ids = result.data.map((s: Study) => s.id);
+      assert.ok(ids.includes(protoStudy.id), 'Study found by protocol');
+      assert.ok(ids.includes(dniStudy.id), 'Study found by documentValue');
+    });
+  });
+
   it('stores insurerId for accounting', async () => {
     const created = await app.service('studies').create({
       date: new Date(),

@@ -1056,7 +1056,7 @@ export const es = {
     unit_days: 'dias',
     unit_weeks: 'semanas',
     unit_months: 'meses',
-    unit_years: 'anos',
+    unit_years: 'años',
     pick_date: 'Elegir fecha',
     pick_range: 'Elegir rango',
     invalid_range: 'Rango invalido',
