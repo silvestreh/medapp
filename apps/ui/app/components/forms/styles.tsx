@@ -130,7 +130,7 @@ const FieldRowBase = styled('div', {
   variants: {
     stacked: {
       true: {
-        gap: '0.5rem',
+        gap: '0.25rem',
         lg: {
           flexDirection: 'column',
           alignItems: 'stretch',

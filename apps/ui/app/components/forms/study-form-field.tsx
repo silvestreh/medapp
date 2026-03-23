@@ -25,16 +25,16 @@ function formatReference(reference: string | StudyFieldReference): string {
 
 const ReferenceText = styled('span', {
   base: {
-    color: 'var(--mantine-color-gray-5)',
+    color: 'var(--mantine-color-gray-7)',
     fontSize: 'var(--mantine-font-size-xs)',
-    lineHeight: 1.4,
+    lineHeight: 1.8,
     whiteSpace: 'nowrap',
   },
 });
 
 const MethodText = styled('span', {
   base: {
-    color: 'var(--mantine-color-gray-5)',
+    color: 'var(--mantine-color-gray-7)',
     fontSize: 'var(--mantine-font-size-xs)',
     fontStyle: 'italic',
     lineHeight: 1.4,

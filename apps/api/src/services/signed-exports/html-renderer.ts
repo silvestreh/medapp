@@ -32,7 +32,7 @@ const CSS = `
   body {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 10pt;
-    color: #1a1a1a;
+    color: #111827;
     padding: 20mm;
   }
   @media print {
@@ -53,14 +53,14 @@ const CSS = `
   }
   .org-logo { width: 48px; height: 48px; object-fit: contain; }
   .org-name { font-size: 16pt; font-weight: bold; color: #2563eb; margin-bottom: 4px; }
-  .doctor-info { font-size: 9pt; color: #4b5563; }
+  .doctor-info { font-size: 9pt; color: #374151; }
 
   /* Patient block */
   .section-title { font-size: 9pt; font-weight: bold; color: #374151; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .patient-block { background: #f9fafb; padding: 10px; border-radius: 4px; margin-bottom: 12px; }
+  .patient-block { padding: 10px; margin-bottom: 16px; margin-top: 16px; border-left: 2px solid #d1d5db; }
   .patient-row { display: flex; margin-bottom: 3px; font-size: 9.5pt; }
-  .patient-label { font-weight: bold; width: 140px; flex-shrink: 0; color: #374151; }
-  .patient-value { color: #1a1a1a; }
+  .patient-label { font-weight: bold; width: 140px; flex-shrink: 0; color: #111827; }
+  .patient-value { color: #111827; }
 
   /* Date range */
   .date-range { font-size: 9pt; color: #6b7280; margin-bottom: 16px; }
@@ -76,23 +76,24 @@ const CSS = `
   .entry-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     padding: 6px 8px;
-    border-radius: 4px 4px 0 0;
+    border-radius: 4px;
     margin-bottom: 0;
   }
   .entry-date-row { display: flex; align-items: center; gap: 8px; }
-  .entry-date { font-size: 9.5pt; font-weight: bold; }
+  .entry-date { font-size: 9.5pt; font-weight: bold; margin-top: 1px; }
   .entry-badge {
     font-size: 7.5pt;
     font-weight: bold;
+    line-height: 10pt;
     color: #fff;
-    padding: 1px 6px;
+    padding: 3px 6px 1px;
     border-radius: 10px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
-  .entry-doctor { font-size: 8.5pt; color: #4b5563; margin-top: 2px; }
+  .entry-doctor { font-size: 8.5pt; color: #374151; margin-top: 2px; }
   .entry-body { padding: 8px 0 0 0; }
 
   /* Form sections */
@@ -100,9 +101,9 @@ const CSS = `
   .form-title { font-size: 8.5pt; font-weight: bold; color: #374151; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
   .field-heading { font-size: 8pt; font-style: italic; color: #6b7280; margin: 4px 0 2px; }
   .field-row { display: flex; font-size: 9pt; margin-bottom: 2px; }
-  .field-label { width: 180px; flex-shrink: 0; color: #6b7280; }
-  .field-value { flex: 1; color: #1a1a1a; }
-  .field-reference { width: 120px; flex-shrink: 0; color: #9ca3af; font-size: 8pt; text-align: right; }
+  .field-label { width: 180px; flex-shrink: 0; color: #374151; }
+  .field-value { flex: 1; color: #111827; font-weight: 600; }
+  .field-reference { width: 120px; flex-shrink: 0; color: #6b7280; font-size: 8pt; text-align: right; }
 
   /* Attachments */
   .attachment-image { max-width: 100%; height: auto; margin-bottom: 4px; }
@@ -285,43 +286,43 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
   const timelineHtml = entries.length === 0
     ? `<div class="empty-note">${esc(t.noRecords)}</div>`
     : `<div class="timeline">${entries.map((entry, i) => {
-        const isFirst = i === 0;
-        const isLast = i === entries.length - 1;
+      const isFirst = i === 0;
+      const isLast = i === entries.length - 1;
 
-        const colors = entry.type === 'encounter' ? COLORS.encounter
-          : entry.type === 'study' ? COLORS.study
+      const colors = entry.type === 'encounter' ? COLORS.encounter
+        : entry.type === 'study' ? COLORS.study
           : COLORS.attachment;
 
-        const typeLabel = entry.type === 'encounter' ? t.encounter
-          : entry.type === 'study' ? t.study
+      const typeLabel = entry.type === 'encounter' ? t.encounter
+        : entry.type === 'study' ? t.study
           : t.attachmentLabel;
 
-        const dateLabel = entry.type === 'study' && entry.protocol
-          ? `${dayjs(entry.date).format('DD/MM/YYYY')} &mdash; ${esc(t.protocol)} #${entry.protocol}`
-          : dayjs(entry.date).format('DD/MM/YYYY');
+      const dateLabel = entry.type === 'study' && entry.protocol
+        ? `${dayjs(entry.date).format('DD/MM/YYYY')} &mdash; ${esc(t.protocol)} #${entry.protocol}`
+        : dayjs(entry.date).format('DD/MM/YYYY');
 
-        let bodyHtml = '';
-        if (entry.type === 'encounter' && entry.sections) {
-          bodyHtml = renderSections(entry.sections);
-        } else if (entry.type === 'study' && entry.resultSections) {
-          bodyHtml = renderSections(entry.resultSections, entry.hasAnyReference);
-        } else if (entry.type === 'image-attachment' && entry.imageBuffer) {
-          const b64 = Buffer.from(entry.imageBuffer).toString('base64');
-          bodyHtml = `
+      let bodyHtml = '';
+      if (entry.type === 'encounter' && entry.sections) {
+        bodyHtml = renderSections(entry.sections);
+      } else if (entry.type === 'study' && entry.resultSections) {
+        bodyHtml = renderSections(entry.resultSections, entry.hasAnyReference);
+      } else if (entry.type === 'image-attachment' && entry.imageBuffer) {
+        const b64 = Buffer.from(entry.imageBuffer).toString('base64');
+        bodyHtml = `
             <img class="attachment-image" src="data:${entry.imageMime};base64,${b64}" alt="${esc(entry.imageFileName)}">
             <div class="attachment-filename">${esc(entry.imageFileName)}</div>`;
-        } else if (entry.type === 'pdf-attachment') {
-          bodyHtml = `
+      } else if (entry.type === 'pdf-attachment') {
+        bodyHtml = `
             <div class="attachment-filename">${esc(entry.pdfFileName)}</div>
             <div class="attachment-note">${esc(t.seeAppendedPages)}</div>`;
-        }
+      }
 
-        return `
+      return /* HTML */ `
           <div class="entry">
             <div class="entry-gutter">
-              ${!isFirst ? `<div class="entry-gutter-line" style="height:6px"></div>` : ''}
+              ${!isFirst ? '<div class="entry-gutter-line" style="height:6px"></div>' : ''}
               <div class="entry-gutter-dot" style="background:${colors.dot}"></div>
-              ${!isLast ? `<div class="entry-gutter-line" style="flex:1;min-height:14px"></div>` : ''}
+              ${!isLast ? '<div class="entry-gutter-line" style="flex:1;min-height:14px"></div>' : ''}
             </div>
             <div class="entry-main${isLast ? ' last' : ''}">
               <div class="entry-header" style="background:${colors.bg}">
@@ -334,7 +335,7 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
               <div class="entry-body">${bodyHtml}</div>
             </div>
           </div>`;
-      }).join('')}</div>`;
+    }).join('')}</div>`;
 
   // --- Signature ---
 

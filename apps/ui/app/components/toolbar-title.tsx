@@ -32,7 +32,7 @@ export function ToolbarTitle({ title, subTitle, onBack }: ToolbarTitleProps) {
   return (
     <TitleGroup maxW={{ base: 'calc(100vw - 11rem)', md: 'none' }}>
       {onBack && (
-        <ActionIcon variant="subtle" color="gray" size="lg" onClick={onBack}>
+        <ActionIcon variant="subtle" color="dark" size="lg" onClick={onBack}>
           <ArrowLeftIcon size={20} />
         </ActionIcon>
       )}

@@ -40,7 +40,21 @@ export function printPdfBlob(blob: Blob): void {
 
 export function printHtmlContent(html: string): void {
   const iframe = document.createElement('iframe');
-  iframe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;border:none';
+
+  iframe.style.cssText = `
+    position: fixed;
+    top: 5rem;
+    left: 10rem;
+    max-width: 100vw;
+    min-width: 80%;
+    height: calc(100vh - 10rem);
+    aspect-ratio: 1/3;
+    border: none;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+  `;
+
   document.body.appendChild(iframe);
 
   const cleanup = () => {

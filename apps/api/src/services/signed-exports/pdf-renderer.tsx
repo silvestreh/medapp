@@ -342,7 +342,7 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
       padding: 40,
       fontSize: 10,
       fontFamily: 'Helvetica',
-      color: '#1a1a1a',
+      color: '#111827',
     },
     header: {
       marginBottom: 20,
@@ -366,11 +366,10 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
     },
     doctorInfo: {
       fontSize: 9,
-      color: '#4b5563',
+      color: '#374151',
       lineHeight: 1.4,
     },
     patientBlock: {
-      backgroundColor: '#f9fafb',
       padding: 10,
       borderRadius: 4,
       marginBottom: 12,
@@ -382,11 +381,11 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
     patientLabel: {
       fontFamily: 'Helvetica-Bold',
       width: 120,
-      color: '#374151',
+      color: '#111827',
     },
     patientValue: {
       flex: 1,
-      color: '#1a1a1a',
+      color: '#111827',
     },
     sectionTitle: {
       fontSize: 12,
@@ -447,7 +446,7 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
     },
     entryDoctor: {
       fontSize: 8,
-      color: '#6b7280',
+      color: '#4b5563',
     },
     // --- Shared content styles ---
     formSection: {
@@ -467,18 +466,19 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
     fieldLabel: {
       fontFamily: 'Helvetica-Bold',
       flex: 1,
-      color: '#6b7280',
+      color: '#374151',
       fontSize: 9,
     },
     fieldValue: {
       flex: 1,
       fontSize: 9,
-      color: '#1a1a1a',
+      fontFamily: 'Helvetica-Bold',
+      color: '#111827',
     },
     fieldReference: {
       width: 80,
       fontSize: 8,
-      color: '#9ca3af',
+      color: '#6b7280',
       textAlign: 'right',
     },
     // --- Attachment styles ---
