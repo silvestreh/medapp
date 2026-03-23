@@ -19,7 +19,7 @@ import type { StudyResultData } from '~/components/forms/study-form-types';
 import { StyledTitle } from '~/components/forms/styles';
 import { getPageTitle } from '~/utils/meta';
 import { media } from '~/media';
-import { pdfDataToBlob, printPdfBlob } from '~/utils/print-pdf';
+import { printHtmlContent } from '~/utils/print-pdf';
 import { Fab, FabItem } from '~/components/fab';
 import { ToolbarTitle } from '~/components/toolbar-title';
 import { useUnsavedGuard } from '~/hooks/use-unsaved-guard';
@@ -123,11 +123,12 @@ export default function StudyDetail() {
         studyId,
         content: 'studies',
         delivery: 'download',
+        outputFormat: 'html',
         locale: i18n.language,
       });
 
-      if (result.pdf) {
-        printPdfBlob(pdfDataToBlob(result));
+      if (result.html) {
+        printHtmlContent(result.html);
       }
     } catch {
       // silent — printing is best-effort

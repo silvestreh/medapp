@@ -9,6 +9,7 @@ import dayjs from 'dayjs';
 
 import type { Application } from '../../declarations';
 import { renderMedicalHistoryPdf, PdfRenderOptions, PdfEncounter, PdfStudy } from './pdf-renderer';
+import { renderMedicalHistoryHtml } from './html-renderer';
 import { getPdfTranslations } from '@athelas/translations';
 
 export type ExportContent = 'encounters' | 'studies' | 'both';
@@ -24,11 +25,13 @@ export interface SignedExportCreateData {
   delivery: 'download' | 'email';
   emailTo?: string;
   locale?: string;
+  outputFormat?: 'html';
 }
 
 export interface SignedExportResult {
   success: boolean;
   pdf?: Buffer;
+  html?: string;
   fileName?: string;
   message?: string;
   hash?: string;
@@ -192,6 +195,11 @@ export class SignedExports {
       locale,
       patientGender: patientPersonalData.gender || undefined,
     };
+
+    if (data.outputFormat === 'html' && !wantSign) {
+      const html = renderMedicalHistoryHtml(renderOptions);
+      return { success: true, html };
+    }
 
     let pdfBuffer = await renderMedicalHistoryPdf(renderOptions);
 

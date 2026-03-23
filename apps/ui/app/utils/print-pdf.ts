@@ -20,35 +20,39 @@ export function pdfDataToBlob(result: { pdf: any }): Blob {
 export function printPdfBlob(blob: Blob): void {
   const url = URL.createObjectURL(blob);
 
+  // PDF plugin content inside an iframe is invisible to the browser's print engine,
+  // so we open the PDF in a new tab where it's a first-class document.
+  const printWindow = window.open(url);
+
+  if (printWindow) {
+    setTimeout(() => URL.revokeObjectURL(url), 120_000);
+  } else {
+    // Popup blocked — fall back to download.
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'document.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1_000);
+  }
+}
+
+export function printHtmlContent(html: string): void {
   const iframe = document.createElement('iframe');
-  iframe.style.position = 'fixed';
-  iframe.style.top = '0';
-  iframe.style.left = '0';
-  iframe.style.width = '100vw';
-  iframe.style.height = '100vh';
-  iframe.style.opacity = '0';
-  iframe.style.pointerEvents = 'none';
-  iframe.style.zIndex = '-1';
+  iframe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;border:none';
   document.body.appendChild(iframe);
 
   const cleanup = () => {
-    if (iframe.parentNode) {
-      document.body.removeChild(iframe);
-    }
-    URL.revokeObjectURL(url);
+    if (iframe.parentNode) document.body.removeChild(iframe);
   };
+
+  iframe.srcdoc = html;
 
   iframe.onload = () => {
     setTimeout(() => {
-      try {
-        iframe.contentWindow?.focus();
-        iframe.contentWindow?.print();
-      } catch {
-        // silent — user can still Ctrl+P
-      }
+      iframe.contentWindow?.print();
       setTimeout(cleanup, 5000);
-    }, 1000);
+    }, 500);
   };
-
-  iframe.src = url;
 }

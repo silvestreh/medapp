@@ -4,7 +4,7 @@ import { PrinterIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { useFeathers } from '~/components/provider';
-import { pdfDataToBlob, printPdfBlob } from '~/utils/print-pdf';
+import { printHtmlContent } from '~/utils/print-pdf';
 import { DateRangeFilterState, DateRangePopover, resolveDateRange } from '~/components/date-range-popover';
 import { trackAction, trackFeature } from '~/utils/breadcrumbs';
 
@@ -85,15 +85,16 @@ export function PrintPdfDialog({ opened, onClose, patientId, patientName, dateRa
         endDate: resolvedRange!.to.format('YYYY-MM-DD'),
         content,
         delivery: 'download',
+        outputFormat: 'html',
         locale: i18n.language,
       });
 
-      if (!result.pdf) {
+      if (!result.html) {
         throw new Error(t('print_pdf.error_generating'));
       }
 
       trackFeature('Exported PDF', { patientId });
-      printPdfBlob(pdfDataToBlob(result));
+      printHtmlContent(result.html);
       onClose();
     } catch (err: any) {
       setError(err.message || t('print_pdf.error_generating'));

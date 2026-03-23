@@ -110,7 +110,7 @@ function formatTriState(val: any, t: ReturnType<typeof getPdfTranslations>): str
   return '';
 }
 
-function formatFieldValue(
+export function formatFieldValue(
   value: any,
   t: ReturnType<typeof getPdfTranslations>,
   field?: EncounterField,
@@ -132,14 +132,14 @@ function formatFieldValue(
   return str;
 }
 
-interface PdfLine {
+export interface PdfLine {
   kind: 'heading' | 'field';
   label: string;
   value?: string;
   reference?: string;
 }
 
-function extractFormLines(
+export function extractFormLines(
   schema: EncounterSchema,
   formValues: Record<string, any>,
   t: ReturnType<typeof getPdfTranslations>,
@@ -202,13 +202,13 @@ function extractFormLines(
   return lines;
 }
 
-function formatStudyValue(value: any): string {
+export function formatStudyValue(value: any): string {
   if (value === null || value === undefined || value === '') return '';
   if (typeof value === 'object' && 'label' in value) return value.label || '';
   return String(value);
 }
 
-function resolveStudyReference(
+export function resolveStudyReference(
   field: StudyField,
   patientGender?: string,
 ): string | undefined {
@@ -229,7 +229,7 @@ function resolveStudyReference(
   return undefined;
 }
 
-function extractStudyLines(
+export function extractStudyLines(
   schema: StudySchema,
   data: Record<string, any>,
   patientGender?: string,
@@ -279,7 +279,7 @@ function extractStudyLines(
   return lines;
 }
 
-interface FormSectionData {
+export interface FormSectionData {
   label: string;
   lines: PdfLine[];
 }
