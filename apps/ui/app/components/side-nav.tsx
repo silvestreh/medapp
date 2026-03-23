@@ -289,7 +289,7 @@ const SideNav: React.FC = () => {
                     active={isActive}
                     component={NavLink}
                     prefetch="intent"
-                    to={isActive ? '#' : section.path}
+                    to={section.path}
                     variant="subtle"
                     size="3em"
                     className={isActive ? 'active' : ''}
@@ -312,7 +312,7 @@ const SideNav: React.FC = () => {
                   active={isAdminActive}
                   component={NavLink}
                   prefetch="intent"
-                  to={isAdminActive ? '#' : '/admin'}
+                  to="/admin"
                   variant="subtle"
                   size="3em"
                   className={isAdminActive ? 'active' : ''}
