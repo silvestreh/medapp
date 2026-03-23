@@ -1,3 +1,4 @@
+import geoip from 'geoip-lite';
 import { Application } from '../declarations';
 import logger from '../logger';
 import { generateMobileHtml, errorPage } from './template';
@@ -91,7 +92,27 @@ export function setupMobilePage(app: Application): void {
 
       // Accept device fingerprint from client
       if (req.body.deviceFingerprint) {
-        updates.deviceFingerprint = req.body.deviceFingerprint;
+        const fingerprint = req.body.deviceFingerprint as Record<string, unknown>;
+        updates.deviceFingerprint = fingerprint;
+
+        // IP-based geolocation fallback when user denied precise GPS
+        if (!fingerprint.geolocation) {
+          const clientIp = updates.clientIp || (session as any).clientIp;
+          if (clientIp) {
+            const geo = geoip.lookup(String(clientIp));
+            if (geo) {
+              fingerprint.geolocation = {
+                latitude: geo.ll[0],
+                longitude: geo.ll[1],
+                accuracy: null,
+                source: 'ip',
+                city: geo.city,
+                region: geo.region,
+                country: geo.country,
+              };
+            }
+          }
+        }
       }
 
       await session.update(updates);

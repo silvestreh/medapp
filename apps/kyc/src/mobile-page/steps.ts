@@ -40,7 +40,7 @@ export const STEPS: StepDef[] = [
     key: 'selfie',
     title: 'Video selfie',
     introTitle: 'Video selfie',
-    introDesc: 'Verificación mirando a la cámara',
+    introDesc: 'Verificación mirando a la cámara (sin anteojos)',
     cameraHint: 'Mirá a la cámara',
     cameraHintAuto: 'Estamos verificando tus documentos...',
     nextTitle: null,

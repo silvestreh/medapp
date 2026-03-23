@@ -27,6 +27,7 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
   const [cameraSupported, setCameraSupported] = useState(true);
   const [detectStatus, setDetectStatus] = useState<DetectStatus>('');
   const [recordProgress, setRecordProgress] = useState(0);
+  const [glassesDetected, setGlassesDetected] = useState(false);
 
   // Keep a stable ref to startAutoDetection so recordVideo's onstop can restart it
   const startAutoDetectionRef = useRef<() => void>(() => {});
@@ -131,7 +132,7 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
           const video = videoRef.current;
           if (!video || !video.videoWidth || recorder.state !== 'recording') return;
           const result = landmarker.detect(video);
-          if (result.detected && result.lookingAtCamera) {
+          if (result.detected && result.lookingAtCamera && !result.wearingGlasses) {
             consecutiveMisses = 0;
           } else {
             consecutiveMisses++;
@@ -230,15 +231,21 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
             if (frameCount % 6 !== 0) { scanIdRef.current = requestAnimationFrame(scanFrame); return; }
 
             const result = landmarker.detect(vid);
-            if (result.detected && result.lookingAtCamera) {
-              consecutiveDetections++;
-              if (consecutiveDetections >= requiredDetections) {
-                setDetectStatus('detected');
-                setTimeout(doVideoRecord, 300);
-                return;
-              }
+            if (result.wearingGlasses) {
+              setGlassesDetected(true);
+              consecutiveDetections = 0;
             } else {
-              consecutiveDetections = Math.max(0, consecutiveDetections - 1);
+              setGlassesDetected(false);
+              if (result.detected && result.lookingAtCamera) {
+                consecutiveDetections++;
+                if (consecutiveDetections >= requiredDetections) {
+                  setDetectStatus('detected');
+                  setTimeout(doVideoRecord, 300);
+                  return;
+                }
+              } else {
+                consecutiveDetections = Math.max(0, consecutiveDetections - 1);
+              }
             }
             scanIdRef.current = requestAnimationFrame(scanFrame);
           };
@@ -278,6 +285,7 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
     activeRef.current = true;
     setDetectStatus('');
     setCameraSupported(true);
+    setGlassesDetected(false);
 
     // Pre-load heavy detectors without blocking
     if (step.autoDetect === 'face') getFaceLandmarker().catch(() => {});
@@ -311,11 +319,12 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
 
   const handleManualCapture = useCallback(() => {
     if (step.key === 'selfie') {
+      if (glassesDetected) return;
       doVideoRecord();
     } else {
       doCapture();
     }
-  }, [step.key, doCapture, doVideoRecord]);
+  }, [step.key, doCapture, doVideoRecord, glassesDetected]);
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -445,6 +454,12 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
         {detectStatus === 'face_lost' && (
           <div className="py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white">
             Mantené la mirada en la cámara
+          </div>
+        )}
+
+        {glassesDetected && detectStatus !== 'recording' && (
+          <div className="py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white">
+            Quitá los anteojos para continuar
           </div>
         )}
 

@@ -29,6 +29,29 @@ export function getBarcodeDetector(): Promise<BarcodeDetectorInstance> {
 export interface FaceDetectResult {
   detected: boolean;
   lookingAtCamera: boolean;
+  wearingGlasses: boolean;
+}
+
+const EYE_BLENDSHAPE_NAMES = new Set([
+  'eyeBlinkLeft', 'eyeBlinkRight',
+  'eyeSquintLeft', 'eyeSquintRight',
+  'eyeLookDownLeft', 'eyeLookDownRight',
+  'eyeLookUpLeft', 'eyeLookUpRight',
+  'eyeLookInLeft', 'eyeLookInRight',
+  'eyeLookOutLeft', 'eyeLookOutRight',
+  'eyeWideLeft', 'eyeWideRight',
+]);
+
+const GLASSES_THRESHOLD = 0.03;
+
+function detectGlasses(blendshapes: Array<{ categoryName: string; score: number }>): boolean {
+  let eyeScoreSum = 0;
+  for (const bs of blendshapes) {
+    if (EYE_BLENDSHAPE_NAMES.has(bs.categoryName)) {
+      eyeScoreSum += bs.score;
+    }
+  }
+  return eyeScoreSum < GLASSES_THRESHOLD;
 }
 
 interface FaceLandmarkerInstance {
@@ -57,6 +80,7 @@ export function getFaceLandmarker(): Promise<FaceLandmarkerInstance> {
         runningMode: 'VIDEO',
         numFaces: 1,
         outputFacialTransformationMatrixes: true,
+        outputFaceBlendshapes: true,
       });
 
       let lastTimestamp = 0;
@@ -64,16 +88,21 @@ export function getFaceLandmarker(): Promise<FaceLandmarkerInstance> {
       return {
         detect: (video: HTMLVideoElement): FaceDetectResult => {
           const timestamp = performance.now();
-          if (timestamp <= lastTimestamp) return { detected: false, lookingAtCamera: false };
+          if (timestamp <= lastTimestamp) return { detected: false, lookingAtCamera: false, wearingGlasses: false };
           lastTimestamp = timestamp;
           try {
             const result = landmarker.detectForVideo(video, timestamp);
             if (!result.faceLandmarks || result.faceLandmarks.length === 0) {
-              return { detected: false, lookingAtCamera: false };
+              return { detected: false, lookingAtCamera: false, wearingGlasses: false };
             }
+
+            const wearingGlasses = result.faceBlendshapes && result.faceBlendshapes.length > 0
+              ? detectGlasses(result.faceBlendshapes[0].categories)
+              : false;
+
             const matrices = result.facialTransformationMatrixes;
             if (!matrices || matrices.length === 0) {
-              return { detected: true, lookingAtCamera: true };
+              return { detected: true, lookingAtCamera: true, wearingGlasses };
             }
             const matrix = matrices[0].data;
             const m00 = matrix[0];
@@ -84,9 +113,10 @@ export function getFaceLandmarker(): Promise<FaceLandmarkerInstance> {
             return {
               detected: true,
               lookingAtCamera: Math.abs(yaw) < MAX_YAW_DEG && Math.abs(pitch) < MAX_PITCH_DEG,
+              wearingGlasses,
             };
           } catch {
-            return { detected: false, lookingAtCamera: false };
+            return { detected: false, lookingAtCamera: false, wearingGlasses: false };
           }
         },
       };

@@ -1,7 +1,8 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { STEPS } from '../steps';
 import { uploadFile, patchSession } from './api';
-import { collectDeviceFingerprint } from './utils';
+import { collectDeviceFingerprint, collectGeolocation } from './utils';
+import type { GeolocationData } from './utils';
 import { IntroPhase } from './phases/IntroPhase';
 import { CameraPhase } from './phases/CameraPhase';
 import { IntermediatePhase } from './phases/IntermediatePhase';
@@ -37,6 +38,13 @@ export function App({ token, api }: Props) {
 
   const fingerprintSentRef = useRef(false);
   const deviceFingerprintRef = useRef(collectDeviceFingerprint());
+  const geolocationRef = useRef<GeolocationData | null>(null);
+
+  useEffect(() => {
+    collectGeolocation().then((geo) => {
+      geolocationRef.current = geo;
+    });
+  }, []);
 
   const showError = useCallback((msg: string) => {
     let message = msg;
@@ -95,7 +103,10 @@ export function App({ token, api }: Props) {
           [`${key}Url`]: url,
         };
         if (!fingerprintSentRef.current) {
-          patchBody.deviceFingerprint = deviceFingerprintRef.current;
+          patchBody.deviceFingerprint = {
+            ...deviceFingerprintRef.current,
+            geolocation: geolocationRef.current,
+          };
           fingerprintSentRef.current = true;
         }
         await patchSession(token, api, patchBody);
