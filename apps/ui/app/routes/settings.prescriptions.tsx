@@ -115,7 +115,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const recetarioProvince = String(formData.get('recetarioProvince') || '');
       const signatureImage = String(formData.get('signatureImage') || '');
       await client.service('users').patch(userId, {
-        settings: {
+        mdSettings: {
           recetarioProvince: recetarioProvince || undefined,
           signatureImage: signatureImage || undefined,
         },
