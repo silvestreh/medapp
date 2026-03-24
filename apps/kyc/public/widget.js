@@ -1091,7 +1091,7 @@
             }
             return dispatcher.useContext(Context);
           }
-          function useState3(initialState) {
+          function useState4(initialState) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useState(initialState);
           }
@@ -1099,11 +1099,11 @@
             var dispatcher = resolveDispatcher();
             return dispatcher.useReducer(reducer, initialArg, init);
           }
-          function useRef3(initialValue) {
+          function useRef4(initialValue) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useRef(initialValue);
           }
-          function useEffect4(create, deps) {
+          function useEffect5(create, deps) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useEffect(create, deps);
           }
@@ -1886,15 +1886,15 @@
           exports.useContext = useContext;
           exports.useDebugValue = useDebugValue;
           exports.useDeferredValue = useDeferredValue;
-          exports.useEffect = useEffect4;
+          exports.useEffect = useEffect5;
           exports.useId = useId;
           exports.useImperativeHandle = useImperativeHandle;
           exports.useInsertionEffect = useInsertionEffect;
           exports.useLayoutEffect = useLayoutEffect;
           exports.useMemo = useMemo;
           exports.useReducer = useReducer;
-          exports.useRef = useRef3;
-          exports.useState = useState3;
+          exports.useRef = useRef4;
+          exports.useState = useState4;
           exports.useSyncExternalStore = useSyncExternalStore;
           exports.useTransition = useTransition;
           exports.version = ReactVersion;
@@ -2390,9 +2390,9 @@
           if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") {
             __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
           }
-          var React4 = require_react();
+          var React5 = require_react();
           var Scheduler = require_scheduler();
-          var ReactSharedInternals = React4.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+          var ReactSharedInternals = React5.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
           var suppressWarning = false;
           function setSuppressWarning(newSuppressWarning) {
             {
@@ -3999,7 +3999,7 @@
             {
               if (props.value == null) {
                 if (typeof props.children === "object" && props.children !== null) {
-                  React4.Children.forEach(props.children, function(child) {
+                  React5.Children.forEach(props.children, function(child) {
                     if (child == null) {
                       return;
                     }
@@ -7359,25 +7359,25 @@
             }
             return listenerWrapper.bind(null, domEventName, eventSystemFlags, targetContainer);
           }
-          function dispatchDiscreteEvent(domEventName, eventSystemFlags, container2, nativeEvent) {
+          function dispatchDiscreteEvent(domEventName, eventSystemFlags, container, nativeEvent) {
             var previousPriority = getCurrentUpdatePriority();
             var prevTransition = ReactCurrentBatchConfig.transition;
             ReactCurrentBatchConfig.transition = null;
             try {
               setCurrentUpdatePriority(DiscreteEventPriority);
-              dispatchEvent(domEventName, eventSystemFlags, container2, nativeEvent);
+              dispatchEvent(domEventName, eventSystemFlags, container, nativeEvent);
             } finally {
               setCurrentUpdatePriority(previousPriority);
               ReactCurrentBatchConfig.transition = prevTransition;
             }
           }
-          function dispatchContinuousEvent(domEventName, eventSystemFlags, container2, nativeEvent) {
+          function dispatchContinuousEvent(domEventName, eventSystemFlags, container, nativeEvent) {
             var previousPriority = getCurrentUpdatePriority();
             var prevTransition = ReactCurrentBatchConfig.transition;
             ReactCurrentBatchConfig.transition = null;
             try {
               setCurrentUpdatePriority(ContinuousEventPriority);
-              dispatchEvent(domEventName, eventSystemFlags, container2, nativeEvent);
+              dispatchEvent(domEventName, eventSystemFlags, container, nativeEvent);
             } finally {
               setCurrentUpdatePriority(previousPriority);
               ReactCurrentBatchConfig.transition = prevTransition;
@@ -9081,8 +9081,8 @@
                   }
                   var nodeTag = node.tag;
                   if (nodeTag === HostRoot || nodeTag === HostPortal) {
-                    var container2 = node.stateNode.containerInfo;
-                    if (isMatchingRootContainer(container2, targetContainerNode)) {
+                    var container = node.stateNode.containerInfo;
+                    if (isMatchingRootContainer(container, targetContainerNode)) {
                       break;
                     }
                     if (nodeTag === HostPortal) {
@@ -9098,8 +9098,8 @@
                         grandNode = grandNode.return;
                       }
                     }
-                    while (container2 !== null) {
-                      var parentNode = getClosestInstanceFromNode(container2);
+                    while (container !== null) {
+                      var parentNode = getClosestInstanceFromNode(container);
                       if (parentNode === null) {
                         return;
                       }
@@ -9108,7 +9108,7 @@
                         node = ancestorInst = parentNode;
                         continue mainLoop;
                       }
-                      container2 = container2.parentNode;
+                      container = container.parentNode;
                     }
                   }
                   node = node.return;
@@ -10238,9 +10238,9 @@
                 break;
               }
               default: {
-                var container2 = nodeType === COMMENT_NODE ? rootContainerInstance.parentNode : rootContainerInstance;
-                var ownNamespace = container2.namespaceURI || null;
-                type = container2.tagName;
+                var container = nodeType === COMMENT_NODE ? rootContainerInstance.parentNode : rootContainerInstance;
+                var ownNamespace = container.namespaceURI || null;
+                type = container.tagName;
                 namespace = getChildNamespace(ownNamespace, type);
                 break;
               }
@@ -10388,16 +10388,16 @@
           function appendChild(parentInstance, child) {
             parentInstance.appendChild(child);
           }
-          function appendChildToContainer(container2, child) {
+          function appendChildToContainer(container, child) {
             var parentNode;
-            if (container2.nodeType === COMMENT_NODE) {
-              parentNode = container2.parentNode;
-              parentNode.insertBefore(child, container2);
+            if (container.nodeType === COMMENT_NODE) {
+              parentNode = container.parentNode;
+              parentNode.insertBefore(child, container);
             } else {
-              parentNode = container2;
+              parentNode = container;
               parentNode.appendChild(child);
             }
-            var reactRootContainer = container2._reactRootContainer;
+            var reactRootContainer = container._reactRootContainer;
             if ((reactRootContainer === null || reactRootContainer === void 0) && parentNode.onclick === null) {
               trapClickOnNonInteractiveElement(parentNode);
             }
@@ -10405,21 +10405,21 @@
           function insertBefore(parentInstance, child, beforeChild) {
             parentInstance.insertBefore(child, beforeChild);
           }
-          function insertInContainerBefore(container2, child, beforeChild) {
-            if (container2.nodeType === COMMENT_NODE) {
-              container2.parentNode.insertBefore(child, beforeChild);
+          function insertInContainerBefore(container, child, beforeChild) {
+            if (container.nodeType === COMMENT_NODE) {
+              container.parentNode.insertBefore(child, beforeChild);
             } else {
-              container2.insertBefore(child, beforeChild);
+              container.insertBefore(child, beforeChild);
             }
           }
           function removeChild(parentInstance, child) {
             parentInstance.removeChild(child);
           }
-          function removeChildFromContainer(container2, child) {
-            if (container2.nodeType === COMMENT_NODE) {
-              container2.parentNode.removeChild(child);
+          function removeChildFromContainer(container, child) {
+            if (container.nodeType === COMMENT_NODE) {
+              container.parentNode.removeChild(child);
             } else {
-              container2.removeChild(child);
+              container.removeChild(child);
             }
           }
           function clearSuspenseBoundary(parentInstance, suspenseInstance) {
@@ -10446,13 +10446,13 @@
             } while (node);
             retryIfBlockedOn(suspenseInstance);
           }
-          function clearSuspenseBoundaryFromContainer(container2, suspenseInstance) {
-            if (container2.nodeType === COMMENT_NODE) {
-              clearSuspenseBoundary(container2.parentNode, suspenseInstance);
-            } else if (container2.nodeType === ELEMENT_NODE) {
-              clearSuspenseBoundary(container2, suspenseInstance);
+          function clearSuspenseBoundaryFromContainer(container, suspenseInstance) {
+            if (container.nodeType === COMMENT_NODE) {
+              clearSuspenseBoundary(container.parentNode, suspenseInstance);
+            } else if (container.nodeType === ELEMENT_NODE) {
+              clearSuspenseBoundary(container, suspenseInstance);
             }
-            retryIfBlockedOn(container2);
+            retryIfBlockedOn(container);
           }
           function hideInstance(instance) {
             instance = instance;
@@ -10475,12 +10475,12 @@
           function unhideTextInstance(textInstance, text) {
             textInstance.nodeValue = text;
           }
-          function clearContainer(container2) {
-            if (container2.nodeType === ELEMENT_NODE) {
-              container2.textContent = "";
-            } else if (container2.nodeType === DOCUMENT_NODE) {
-              if (container2.documentElement) {
-                container2.removeChild(container2.documentElement);
+          function clearContainer(container) {
+            if (container.nodeType === ELEMENT_NODE) {
+              container.textContent = "";
+            } else if (container.nodeType === DOCUMENT_NODE) {
+              if (container.documentElement) {
+                container.removeChild(container.documentElement);
               }
             }
           }
@@ -10618,8 +10618,8 @@
             }
             return null;
           }
-          function commitHydratedContainer(container2) {
-            retryIfBlockedOn(container2);
+          function commitHydratedContainer(container) {
+            retryIfBlockedOn(container);
           }
           function commitHydratedSuspenseInstance(suspenseInstance) {
             retryIfBlockedOn(suspenseInstance);
@@ -22707,21 +22707,21 @@
             scheduleInitialHydrationOnRoot(root2, lane, eventTime);
             return root2;
           }
-          function updateContainer(element, container2, parentComponent, callback) {
+          function updateContainer(element, container, parentComponent, callback) {
             {
-              onScheduleRoot(container2, element);
+              onScheduleRoot(container, element);
             }
-            var current$1 = container2.current;
+            var current$1 = container.current;
             var eventTime = requestEventTime();
             var lane = requestUpdateLane(current$1);
             {
               markRenderScheduled(lane);
             }
             var context = getContextForSubtree(parentComponent);
-            if (container2.context === null) {
-              container2.context = context;
+            if (container.context === null) {
+              container.context = context;
             } else {
-              container2.pendingContext = context;
+              container.pendingContext = context;
             }
             {
               if (isRendering && current !== null && !didWarnAboutNestedUpdates) {
@@ -22749,8 +22749,8 @@
             }
             return lane;
           }
-          function getPublicRootInstance(container2) {
-            var containerFiber = container2.current;
+          function getPublicRootInstance(container) {
+            var containerFiber = container.current;
             if (!containerFiber.child) {
               return null;
             }
@@ -23074,11 +23074,11 @@
               } else if (typeof arguments[1] !== "undefined") {
                 error("You passed a second argument to root.render(...) but it only accepts one argument.");
               }
-              var container2 = root2.containerInfo;
-              if (container2.nodeType !== COMMENT_NODE) {
+              var container = root2.containerInfo;
+              if (container.nodeType !== COMMENT_NODE) {
                 var hostInstance = findHostInstanceWithNoPortals(root2.current);
                 if (hostInstance) {
-                  if (hostInstance.parentNode !== container2) {
+                  if (hostInstance.parentNode !== container) {
                     error("render(...): It looks like the React-rendered content of the root container was removed without using React. This is not supported and will cause errors. Instead, call root.unmount() to empty a root's container.");
                   }
                 }
@@ -23095,7 +23095,7 @@
             var root2 = this._internalRoot;
             if (root2 !== null) {
               this._internalRoot = null;
-              var container2 = root2.containerInfo;
+              var container = root2.containerInfo;
               {
                 if (isAlreadyRendering()) {
                   error("Attempted to synchronously unmount a root while React was already rendering. React cannot finish unmounting the root until the current render has completed, which may lead to a race condition.");
@@ -23104,14 +23104,14 @@
               flushSync(function() {
                 updateContainer(null, root2, null, null);
               });
-              unmarkContainerAsRoot(container2);
+              unmarkContainerAsRoot(container);
             }
           };
-          function createRoot2(container2, options2) {
-            if (!isValidContainer(container2)) {
+          function createRoot2(container, options2) {
+            if (!isValidContainer(container)) {
               throw new Error("createRoot(...): Target container is not a DOM element.");
             }
-            warnIfReactDOMContainerInDEV(container2);
+            warnIfReactDOMContainerInDEV(container);
             var isStrictMode = false;
             var concurrentUpdatesByDefaultOverride = false;
             var identifierPrefix = "";
@@ -23140,9 +23140,9 @@
                 transitionCallbacks = options2.transitionCallbacks;
               }
             }
-            var root2 = createContainer(container2, ConcurrentRoot, null, isStrictMode, concurrentUpdatesByDefaultOverride, identifierPrefix, onRecoverableError);
-            markContainerAsRoot(root2.current, container2);
-            var rootContainerElement = container2.nodeType === COMMENT_NODE ? container2.parentNode : container2;
+            var root2 = createContainer(container, ConcurrentRoot, null, isStrictMode, concurrentUpdatesByDefaultOverride, identifierPrefix, onRecoverableError);
+            markContainerAsRoot(root2.current, container);
+            var rootContainerElement = container.nodeType === COMMENT_NODE ? container.parentNode : container;
             listenToAllSupportedEvents(rootContainerElement);
             return new ReactDOMRoot(root2);
           }
@@ -23155,11 +23155,11 @@
             }
           }
           ReactDOMHydrationRoot.prototype.unstable_scheduleHydration = scheduleHydration;
-          function hydrateRoot(container2, initialChildren, options2) {
-            if (!isValidContainer(container2)) {
+          function hydrateRoot(container, initialChildren, options2) {
+            if (!isValidContainer(container)) {
               throw new Error("hydrateRoot(...): Target container is not a DOM element.");
             }
-            warnIfReactDOMContainerInDEV(container2);
+            warnIfReactDOMContainerInDEV(container);
             {
               if (initialChildren === void 0) {
                 error("Must provide initial children as second argument to hydrateRoot. Example usage: hydrateRoot(domContainer, <App />)");
@@ -23182,9 +23182,9 @@
                 onRecoverableError = options2.onRecoverableError;
               }
             }
-            var root2 = createHydrationContainer(initialChildren, null, container2, ConcurrentRoot, hydrationCallbacks, isStrictMode, concurrentUpdatesByDefaultOverride, identifierPrefix, onRecoverableError);
-            markContainerAsRoot(root2.current, container2);
-            listenToAllSupportedEvents(container2);
+            var root2 = createHydrationContainer(initialChildren, null, container, ConcurrentRoot, hydrationCallbacks, isStrictMode, concurrentUpdatesByDefaultOverride, identifierPrefix, onRecoverableError);
+            markContainerAsRoot(root2.current, container);
+            listenToAllSupportedEvents(container);
             if (mutableSources) {
               for (var i = 0; i < mutableSources.length; i++) {
                 var mutableSource = mutableSources[i];
@@ -23199,13 +23199,13 @@
           function isValidContainerLegacy(node) {
             return !!(node && (node.nodeType === ELEMENT_NODE || node.nodeType === DOCUMENT_NODE || node.nodeType === DOCUMENT_FRAGMENT_NODE || node.nodeType === COMMENT_NODE && node.nodeValue === " react-mount-point-unstable "));
           }
-          function warnIfReactDOMContainerInDEV(container2) {
+          function warnIfReactDOMContainerInDEV(container) {
             {
-              if (container2.nodeType === ELEMENT_NODE && container2.tagName && container2.tagName.toUpperCase() === "BODY") {
+              if (container.nodeType === ELEMENT_NODE && container.tagName && container.tagName.toUpperCase() === "BODY") {
                 error("createRoot(): Creating roots directly with document.body is discouraged, since its children are often manipulated by third-party scripts and browser extensions. This may lead to subtle reconciliation issues. Try using a container element created for your app.");
               }
-              if (isContainerMarkedAsRoot(container2)) {
-                if (container2._reactRootContainer) {
+              if (isContainerMarkedAsRoot(container)) {
+                if (container._reactRootContainer) {
                   error("You are calling ReactDOMClient.createRoot() on a container that was previously passed to ReactDOM.render(). This is not supported.");
                 } else {
                   error("You are calling ReactDOMClient.createRoot() on a container that has already been passed to createRoot() before. Instead, call root.render() on the existing root instead if you want to update it.");
@@ -23216,39 +23216,39 @@
           var ReactCurrentOwner$3 = ReactSharedInternals.ReactCurrentOwner;
           var topLevelUpdateWarnings;
           {
-            topLevelUpdateWarnings = function(container2) {
-              if (container2._reactRootContainer && container2.nodeType !== COMMENT_NODE) {
-                var hostInstance = findHostInstanceWithNoPortals(container2._reactRootContainer.current);
+            topLevelUpdateWarnings = function(container) {
+              if (container._reactRootContainer && container.nodeType !== COMMENT_NODE) {
+                var hostInstance = findHostInstanceWithNoPortals(container._reactRootContainer.current);
                 if (hostInstance) {
-                  if (hostInstance.parentNode !== container2) {
+                  if (hostInstance.parentNode !== container) {
                     error("render(...): It looks like the React-rendered content of this container was removed without using React. This is not supported and will cause errors. Instead, call ReactDOM.unmountComponentAtNode to empty a container.");
                   }
                 }
               }
-              var isRootRenderedBySomeReact = !!container2._reactRootContainer;
-              var rootEl = getReactRootElementInContainer(container2);
+              var isRootRenderedBySomeReact = !!container._reactRootContainer;
+              var rootEl = getReactRootElementInContainer(container);
               var hasNonRootReactChild = !!(rootEl && getInstanceFromNode(rootEl));
               if (hasNonRootReactChild && !isRootRenderedBySomeReact) {
                 error("render(...): Replacing React-rendered children with a new root component. If you intended to update the children of this node, you should instead have the existing children update their state and render the new components instead of calling ReactDOM.render.");
               }
-              if (container2.nodeType === ELEMENT_NODE && container2.tagName && container2.tagName.toUpperCase() === "BODY") {
+              if (container.nodeType === ELEMENT_NODE && container.tagName && container.tagName.toUpperCase() === "BODY") {
                 error("render(): Rendering components directly into document.body is discouraged, since its children are often manipulated by third-party scripts and browser extensions. This may lead to subtle reconciliation issues. Try rendering into a container element created for your app.");
               }
             };
           }
-          function getReactRootElementInContainer(container2) {
-            if (!container2) {
+          function getReactRootElementInContainer(container) {
+            if (!container) {
               return null;
             }
-            if (container2.nodeType === DOCUMENT_NODE) {
-              return container2.documentElement;
+            if (container.nodeType === DOCUMENT_NODE) {
+              return container.documentElement;
             } else {
-              return container2.firstChild;
+              return container.firstChild;
             }
           }
           function noopOnRecoverableError() {
           }
-          function legacyCreateRootFromDOMContainer(container2, initialChildren, parentComponent, callback, isHydrationContainer) {
+          function legacyCreateRootFromDOMContainer(container, initialChildren, parentComponent, callback, isHydrationContainer) {
             if (isHydrationContainer) {
               if (typeof callback === "function") {
                 var originalCallback = callback;
@@ -23260,7 +23260,7 @@
               var root2 = createHydrationContainer(
                 initialChildren,
                 callback,
-                container2,
+                container,
                 LegacyRoot,
                 null,
                 // hydrationCallbacks
@@ -23272,16 +23272,16 @@
                 // identifierPrefix
                 noopOnRecoverableError
               );
-              container2._reactRootContainer = root2;
-              markContainerAsRoot(root2.current, container2);
-              var rootContainerElement = container2.nodeType === COMMENT_NODE ? container2.parentNode : container2;
+              container._reactRootContainer = root2;
+              markContainerAsRoot(root2.current, container);
+              var rootContainerElement = container.nodeType === COMMENT_NODE ? container.parentNode : container;
               listenToAllSupportedEvents(rootContainerElement);
               flushSync();
               return root2;
             } else {
               var rootSibling;
-              while (rootSibling = container2.lastChild) {
-                container2.removeChild(rootSibling);
+              while (rootSibling = container.lastChild) {
+                container.removeChild(rootSibling);
               }
               if (typeof callback === "function") {
                 var _originalCallback = callback;
@@ -23291,7 +23291,7 @@
                 };
               }
               var _root = createContainer(
-                container2,
+                container,
                 LegacyRoot,
                 null,
                 // hydrationCallbacks
@@ -23303,9 +23303,9 @@
                 // identifierPrefix
                 noopOnRecoverableError
               );
-              container2._reactRootContainer = _root;
-              markContainerAsRoot(_root.current, container2);
-              var _rootContainerElement = container2.nodeType === COMMENT_NODE ? container2.parentNode : container2;
+              container._reactRootContainer = _root;
+              markContainerAsRoot(_root.current, container);
+              var _rootContainerElement = container.nodeType === COMMENT_NODE ? container.parentNode : container;
               listenToAllSupportedEvents(_rootContainerElement);
               flushSync(function() {
                 updateContainer(initialChildren, _root, parentComponent, callback);
@@ -23320,15 +23320,15 @@
               }
             }
           }
-          function legacyRenderSubtreeIntoContainer(parentComponent, children, container2, forceHydrate, callback) {
+          function legacyRenderSubtreeIntoContainer(parentComponent, children, container, forceHydrate, callback) {
             {
-              topLevelUpdateWarnings(container2);
+              topLevelUpdateWarnings(container);
               warnOnInvalidCallback$1(callback === void 0 ? null : callback, "render");
             }
-            var maybeRoot = container2._reactRootContainer;
+            var maybeRoot = container._reactRootContainer;
             var root2;
             if (!maybeRoot) {
-              root2 = legacyCreateRootFromDOMContainer(container2, children, parentComponent, callback, forceHydrate);
+              root2 = legacyCreateRootFromDOMContainer(container, children, parentComponent, callback, forceHydrate);
             } else {
               root2 = maybeRoot;
               if (typeof callback === "function") {
@@ -23368,35 +23368,35 @@
               return findHostInstanceWithWarning(componentOrElement, "findDOMNode");
             }
           }
-          function hydrate(element, container2, callback) {
+          function hydrate(element, container, callback) {
             {
               error("ReactDOM.hydrate is no longer supported in React 18. Use hydrateRoot instead. Until you switch to the new API, your app will behave as if it's running React 17. Learn more: https://reactjs.org/link/switch-to-createroot");
             }
-            if (!isValidContainerLegacy(container2)) {
+            if (!isValidContainerLegacy(container)) {
               throw new Error("Target container is not a DOM element.");
             }
             {
-              var isModernRoot = isContainerMarkedAsRoot(container2) && container2._reactRootContainer === void 0;
+              var isModernRoot = isContainerMarkedAsRoot(container) && container._reactRootContainer === void 0;
               if (isModernRoot) {
                 error("You are calling ReactDOM.hydrate() on a container that was previously passed to ReactDOMClient.createRoot(). This is not supported. Did you mean to call hydrateRoot(container, element)?");
               }
             }
-            return legacyRenderSubtreeIntoContainer(null, element, container2, true, callback);
+            return legacyRenderSubtreeIntoContainer(null, element, container, true, callback);
           }
-          function render(element, container2, callback) {
+          function render(element, container, callback) {
             {
               error("ReactDOM.render is no longer supported in React 18. Use createRoot instead. Until you switch to the new API, your app will behave as if it's running React 17. Learn more: https://reactjs.org/link/switch-to-createroot");
             }
-            if (!isValidContainerLegacy(container2)) {
+            if (!isValidContainerLegacy(container)) {
               throw new Error("Target container is not a DOM element.");
             }
             {
-              var isModernRoot = isContainerMarkedAsRoot(container2) && container2._reactRootContainer === void 0;
+              var isModernRoot = isContainerMarkedAsRoot(container) && container._reactRootContainer === void 0;
               if (isModernRoot) {
                 error("You are calling ReactDOM.render() on a container that was previously passed to ReactDOMClient.createRoot(). This is not supported. Did you mean to call root.render(element)?");
               }
             }
-            return legacyRenderSubtreeIntoContainer(null, element, container2, false, callback);
+            return legacyRenderSubtreeIntoContainer(null, element, container, false, callback);
           }
           function unstable_renderSubtreeIntoContainer(parentComponent, element, containerNode, callback) {
             {
@@ -23411,42 +23411,42 @@
             return legacyRenderSubtreeIntoContainer(parentComponent, element, containerNode, false, callback);
           }
           var didWarnAboutUnmountComponentAtNode = false;
-          function unmountComponentAtNode(container2) {
+          function unmountComponentAtNode(container) {
             {
               if (!didWarnAboutUnmountComponentAtNode) {
                 didWarnAboutUnmountComponentAtNode = true;
                 error("unmountComponentAtNode is deprecated and will be removed in the next major release. Switch to the createRoot API. Learn more: https://reactjs.org/link/switch-to-createroot");
               }
             }
-            if (!isValidContainerLegacy(container2)) {
+            if (!isValidContainerLegacy(container)) {
               throw new Error("unmountComponentAtNode(...): Target container is not a DOM element.");
             }
             {
-              var isModernRoot = isContainerMarkedAsRoot(container2) && container2._reactRootContainer === void 0;
+              var isModernRoot = isContainerMarkedAsRoot(container) && container._reactRootContainer === void 0;
               if (isModernRoot) {
                 error("You are calling ReactDOM.unmountComponentAtNode() on a container that was previously passed to ReactDOMClient.createRoot(). This is not supported. Did you mean to call root.unmount()?");
               }
             }
-            if (container2._reactRootContainer) {
+            if (container._reactRootContainer) {
               {
-                var rootEl = getReactRootElementInContainer(container2);
+                var rootEl = getReactRootElementInContainer(container);
                 var renderedByDifferentReact = rootEl && !getInstanceFromNode(rootEl);
                 if (renderedByDifferentReact) {
                   error("unmountComponentAtNode(): The node you're attempting to unmount was rendered by another copy of React.");
                 }
               }
               flushSync(function() {
-                legacyRenderSubtreeIntoContainer(null, null, container2, false, function() {
-                  container2._reactRootContainer = null;
-                  unmarkContainerAsRoot(container2);
+                legacyRenderSubtreeIntoContainer(null, null, container, false, function() {
+                  container._reactRootContainer = null;
+                  unmarkContainerAsRoot(container);
                 });
               });
               return true;
             } else {
               {
-                var _rootEl = getReactRootElementInContainer(container2);
+                var _rootEl = getReactRootElementInContainer(container);
                 var hasNonRootReactChild = !!(_rootEl && getInstanceFromNode(_rootEl));
-                var isContainerReactRoot = container2.nodeType === ELEMENT_NODE && isValidContainerLegacy(container2.parentNode) && !!container2.parentNode._reactRootContainer;
+                var isContainerReactRoot = container.nodeType === ELEMENT_NODE && isValidContainerLegacy(container.parentNode) && !!container.parentNode._reactRootContainer;
                 if (hasNonRootReactChild) {
                   error("unmountComponentAtNode(): The node you're attempting to unmount was rendered by React and is not a top-level container. %s", isContainerReactRoot ? "You may have accidentally passed in a React root node instead of its container." : "Instead, have the parent component update its state and rerender in order to remove this component.");
                 }
@@ -23468,12 +23468,12 @@
           }
           setRestoreImplementation(restoreControlledState$3);
           setBatchingImplementation(batchedUpdates$1, discreteUpdates, flushSync);
-          function createPortal$1(children, container2) {
+          function createPortal$1(children, container) {
             var key = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : null;
-            if (!isValidContainer(container2)) {
+            if (!isValidContainer(container)) {
               throw new Error("Target container is not a DOM element.");
             }
-            return createPortal(children, container2, null, key);
+            return createPortal(children, container, null, key);
           }
           function renderSubtreeIntoContainer(parentComponent, element, containerNode, callback) {
             return unstable_renderSubtreeIntoContainer(parentComponent, element, containerNode, callback);
@@ -23484,21 +23484,21 @@
             // This is an array for better minification.
             Events: [getInstanceFromNode, getNodeFromInstance, getFiberCurrentPropsFromNode, enqueueStateRestore, restoreStateIfNeeded, batchedUpdates$1]
           };
-          function createRoot$1(container2, options2) {
+          function createRoot$1(container, options2) {
             {
               if (!Internals.usingClientEntryPoint && true) {
                 error('You are importing createRoot from "react-dom" which is not supported. You should instead import it from "react-dom/client".');
               }
             }
-            return createRoot2(container2, options2);
+            return createRoot2(container, options2);
           }
-          function hydrateRoot$1(container2, initialChildren, options2) {
+          function hydrateRoot$1(container, initialChildren, options2) {
             {
               if (!Internals.usingClientEntryPoint && true) {
                 error('You are importing hydrateRoot from "react-dom" which is not supported. You should instead import it from "react-dom/client".');
               }
             }
-            return hydrateRoot(container2, initialChildren, options2);
+            return hydrateRoot(container, initialChildren, options2);
           }
           function flushSync$1(fn) {
             {
@@ -23595,7 +23595,7 @@
       if (true) {
         (function() {
           "use strict";
-          var React4 = require_react();
+          var React5 = require_react();
           var REACT_ELEMENT_TYPE = Symbol.for("react.element");
           var REACT_PORTAL_TYPE = Symbol.for("react.portal");
           var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
@@ -23621,7 +23621,7 @@
             }
             return null;
           }
-          var ReactSharedInternals = React4.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+          var ReactSharedInternals = React5.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
           function error(format) {
             {
               {
@@ -24493,10 +24493,2088 @@
     }
   });
 
-  // src/mobile-page/client/index.tsx
+  // ../../node_modules/qrcode/lib/can-promise.js
+  var require_can_promise = __commonJS({
+    "../../node_modules/qrcode/lib/can-promise.js"(exports, module) {
+      module.exports = function() {
+        return typeof Promise === "function" && Promise.prototype && Promise.prototype.then;
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/utils.js
+  var require_utils = __commonJS({
+    "../../node_modules/qrcode/lib/core/utils.js"(exports) {
+      var toSJISFunction;
+      var CODEWORDS_COUNT = [
+        0,
+        // Not used
+        26,
+        44,
+        70,
+        100,
+        134,
+        172,
+        196,
+        242,
+        292,
+        346,
+        404,
+        466,
+        532,
+        581,
+        655,
+        733,
+        815,
+        901,
+        991,
+        1085,
+        1156,
+        1258,
+        1364,
+        1474,
+        1588,
+        1706,
+        1828,
+        1921,
+        2051,
+        2185,
+        2323,
+        2465,
+        2611,
+        2761,
+        2876,
+        3034,
+        3196,
+        3362,
+        3532,
+        3706
+      ];
+      exports.getSymbolSize = function getSymbolSize(version) {
+        if (!version) throw new Error('"version" cannot be null or undefined');
+        if (version < 1 || version > 40) throw new Error('"version" should be in range from 1 to 40');
+        return version * 4 + 17;
+      };
+      exports.getSymbolTotalCodewords = function getSymbolTotalCodewords(version) {
+        return CODEWORDS_COUNT[version];
+      };
+      exports.getBCHDigit = function(data) {
+        let digit = 0;
+        while (data !== 0) {
+          digit++;
+          data >>>= 1;
+        }
+        return digit;
+      };
+      exports.setToSJISFunction = function setToSJISFunction(f) {
+        if (typeof f !== "function") {
+          throw new Error('"toSJISFunc" is not a valid function.');
+        }
+        toSJISFunction = f;
+      };
+      exports.isKanjiModeEnabled = function() {
+        return typeof toSJISFunction !== "undefined";
+      };
+      exports.toSJIS = function toSJIS(kanji) {
+        return toSJISFunction(kanji);
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/error-correction-level.js
+  var require_error_correction_level = __commonJS({
+    "../../node_modules/qrcode/lib/core/error-correction-level.js"(exports) {
+      exports.L = { bit: 1 };
+      exports.M = { bit: 0 };
+      exports.Q = { bit: 3 };
+      exports.H = { bit: 2 };
+      function fromString(string) {
+        if (typeof string !== "string") {
+          throw new Error("Param is not a string");
+        }
+        const lcStr = string.toLowerCase();
+        switch (lcStr) {
+          case "l":
+          case "low":
+            return exports.L;
+          case "m":
+          case "medium":
+            return exports.M;
+          case "q":
+          case "quartile":
+            return exports.Q;
+          case "h":
+          case "high":
+            return exports.H;
+          default:
+            throw new Error("Unknown EC Level: " + string);
+        }
+      }
+      exports.isValid = function isValid(level) {
+        return level && typeof level.bit !== "undefined" && level.bit >= 0 && level.bit < 4;
+      };
+      exports.from = function from(value, defaultValue) {
+        if (exports.isValid(value)) {
+          return value;
+        }
+        try {
+          return fromString(value);
+        } catch (e) {
+          return defaultValue;
+        }
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/bit-buffer.js
+  var require_bit_buffer = __commonJS({
+    "../../node_modules/qrcode/lib/core/bit-buffer.js"(exports, module) {
+      function BitBuffer() {
+        this.buffer = [];
+        this.length = 0;
+      }
+      BitBuffer.prototype = {
+        get: function(index) {
+          const bufIndex = Math.floor(index / 8);
+          return (this.buffer[bufIndex] >>> 7 - index % 8 & 1) === 1;
+        },
+        put: function(num, length) {
+          for (let i = 0; i < length; i++) {
+            this.putBit((num >>> length - i - 1 & 1) === 1);
+          }
+        },
+        getLengthInBits: function() {
+          return this.length;
+        },
+        putBit: function(bit) {
+          const bufIndex = Math.floor(this.length / 8);
+          if (this.buffer.length <= bufIndex) {
+            this.buffer.push(0);
+          }
+          if (bit) {
+            this.buffer[bufIndex] |= 128 >>> this.length % 8;
+          }
+          this.length++;
+        }
+      };
+      module.exports = BitBuffer;
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/bit-matrix.js
+  var require_bit_matrix = __commonJS({
+    "../../node_modules/qrcode/lib/core/bit-matrix.js"(exports, module) {
+      function BitMatrix(size) {
+        if (!size || size < 1) {
+          throw new Error("BitMatrix size must be defined and greater than 0");
+        }
+        this.size = size;
+        this.data = new Uint8Array(size * size);
+        this.reservedBit = new Uint8Array(size * size);
+      }
+      BitMatrix.prototype.set = function(row, col, value, reserved) {
+        const index = row * this.size + col;
+        this.data[index] = value;
+        if (reserved) this.reservedBit[index] = true;
+      };
+      BitMatrix.prototype.get = function(row, col) {
+        return this.data[row * this.size + col];
+      };
+      BitMatrix.prototype.xor = function(row, col, value) {
+        this.data[row * this.size + col] ^= value;
+      };
+      BitMatrix.prototype.isReserved = function(row, col) {
+        return this.reservedBit[row * this.size + col];
+      };
+      module.exports = BitMatrix;
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/alignment-pattern.js
+  var require_alignment_pattern = __commonJS({
+    "../../node_modules/qrcode/lib/core/alignment-pattern.js"(exports) {
+      var getSymbolSize = require_utils().getSymbolSize;
+      exports.getRowColCoords = function getRowColCoords(version) {
+        if (version === 1) return [];
+        const posCount = Math.floor(version / 7) + 2;
+        const size = getSymbolSize(version);
+        const intervals = size === 145 ? 26 : Math.ceil((size - 13) / (2 * posCount - 2)) * 2;
+        const positions = [size - 7];
+        for (let i = 1; i < posCount - 1; i++) {
+          positions[i] = positions[i - 1] - intervals;
+        }
+        positions.push(6);
+        return positions.reverse();
+      };
+      exports.getPositions = function getPositions(version) {
+        const coords = [];
+        const pos = exports.getRowColCoords(version);
+        const posLength = pos.length;
+        for (let i = 0; i < posLength; i++) {
+          for (let j = 0; j < posLength; j++) {
+            if (i === 0 && j === 0 || // top-left
+            i === 0 && j === posLength - 1 || // bottom-left
+            i === posLength - 1 && j === 0) {
+              continue;
+            }
+            coords.push([pos[i], pos[j]]);
+          }
+        }
+        return coords;
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/finder-pattern.js
+  var require_finder_pattern = __commonJS({
+    "../../node_modules/qrcode/lib/core/finder-pattern.js"(exports) {
+      var getSymbolSize = require_utils().getSymbolSize;
+      var FINDER_PATTERN_SIZE = 7;
+      exports.getPositions = function getPositions(version) {
+        const size = getSymbolSize(version);
+        return [
+          // top-left
+          [0, 0],
+          // top-right
+          [size - FINDER_PATTERN_SIZE, 0],
+          // bottom-left
+          [0, size - FINDER_PATTERN_SIZE]
+        ];
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/mask-pattern.js
+  var require_mask_pattern = __commonJS({
+    "../../node_modules/qrcode/lib/core/mask-pattern.js"(exports) {
+      exports.Patterns = {
+        PATTERN000: 0,
+        PATTERN001: 1,
+        PATTERN010: 2,
+        PATTERN011: 3,
+        PATTERN100: 4,
+        PATTERN101: 5,
+        PATTERN110: 6,
+        PATTERN111: 7
+      };
+      var PenaltyScores = {
+        N1: 3,
+        N2: 3,
+        N3: 40,
+        N4: 10
+      };
+      exports.isValid = function isValid(mask) {
+        return mask != null && mask !== "" && !isNaN(mask) && mask >= 0 && mask <= 7;
+      };
+      exports.from = function from(value) {
+        return exports.isValid(value) ? parseInt(value, 10) : void 0;
+      };
+      exports.getPenaltyN1 = function getPenaltyN1(data) {
+        const size = data.size;
+        let points = 0;
+        let sameCountCol = 0;
+        let sameCountRow = 0;
+        let lastCol = null;
+        let lastRow = null;
+        for (let row = 0; row < size; row++) {
+          sameCountCol = sameCountRow = 0;
+          lastCol = lastRow = null;
+          for (let col = 0; col < size; col++) {
+            let module2 = data.get(row, col);
+            if (module2 === lastCol) {
+              sameCountCol++;
+            } else {
+              if (sameCountCol >= 5) points += PenaltyScores.N1 + (sameCountCol - 5);
+              lastCol = module2;
+              sameCountCol = 1;
+            }
+            module2 = data.get(col, row);
+            if (module2 === lastRow) {
+              sameCountRow++;
+            } else {
+              if (sameCountRow >= 5) points += PenaltyScores.N1 + (sameCountRow - 5);
+              lastRow = module2;
+              sameCountRow = 1;
+            }
+          }
+          if (sameCountCol >= 5) points += PenaltyScores.N1 + (sameCountCol - 5);
+          if (sameCountRow >= 5) points += PenaltyScores.N1 + (sameCountRow - 5);
+        }
+        return points;
+      };
+      exports.getPenaltyN2 = function getPenaltyN2(data) {
+        const size = data.size;
+        let points = 0;
+        for (let row = 0; row < size - 1; row++) {
+          for (let col = 0; col < size - 1; col++) {
+            const last = data.get(row, col) + data.get(row, col + 1) + data.get(row + 1, col) + data.get(row + 1, col + 1);
+            if (last === 4 || last === 0) points++;
+          }
+        }
+        return points * PenaltyScores.N2;
+      };
+      exports.getPenaltyN3 = function getPenaltyN3(data) {
+        const size = data.size;
+        let points = 0;
+        let bitsCol = 0;
+        let bitsRow = 0;
+        for (let row = 0; row < size; row++) {
+          bitsCol = bitsRow = 0;
+          for (let col = 0; col < size; col++) {
+            bitsCol = bitsCol << 1 & 2047 | data.get(row, col);
+            if (col >= 10 && (bitsCol === 1488 || bitsCol === 93)) points++;
+            bitsRow = bitsRow << 1 & 2047 | data.get(col, row);
+            if (col >= 10 && (bitsRow === 1488 || bitsRow === 93)) points++;
+          }
+        }
+        return points * PenaltyScores.N3;
+      };
+      exports.getPenaltyN4 = function getPenaltyN4(data) {
+        let darkCount = 0;
+        const modulesCount = data.data.length;
+        for (let i = 0; i < modulesCount; i++) darkCount += data.data[i];
+        const k = Math.abs(Math.ceil(darkCount * 100 / modulesCount / 5) - 10);
+        return k * PenaltyScores.N4;
+      };
+      function getMaskAt(maskPattern, i, j) {
+        switch (maskPattern) {
+          case exports.Patterns.PATTERN000:
+            return (i + j) % 2 === 0;
+          case exports.Patterns.PATTERN001:
+            return i % 2 === 0;
+          case exports.Patterns.PATTERN010:
+            return j % 3 === 0;
+          case exports.Patterns.PATTERN011:
+            return (i + j) % 3 === 0;
+          case exports.Patterns.PATTERN100:
+            return (Math.floor(i / 2) + Math.floor(j / 3)) % 2 === 0;
+          case exports.Patterns.PATTERN101:
+            return i * j % 2 + i * j % 3 === 0;
+          case exports.Patterns.PATTERN110:
+            return (i * j % 2 + i * j % 3) % 2 === 0;
+          case exports.Patterns.PATTERN111:
+            return (i * j % 3 + (i + j) % 2) % 2 === 0;
+          default:
+            throw new Error("bad maskPattern:" + maskPattern);
+        }
+      }
+      exports.applyMask = function applyMask(pattern, data) {
+        const size = data.size;
+        for (let col = 0; col < size; col++) {
+          for (let row = 0; row < size; row++) {
+            if (data.isReserved(row, col)) continue;
+            data.xor(row, col, getMaskAt(pattern, row, col));
+          }
+        }
+      };
+      exports.getBestMask = function getBestMask(data, setupFormatFunc) {
+        const numPatterns = Object.keys(exports.Patterns).length;
+        let bestPattern = 0;
+        let lowerPenalty = Infinity;
+        for (let p = 0; p < numPatterns; p++) {
+          setupFormatFunc(p);
+          exports.applyMask(p, data);
+          const penalty = exports.getPenaltyN1(data) + exports.getPenaltyN2(data) + exports.getPenaltyN3(data) + exports.getPenaltyN4(data);
+          exports.applyMask(p, data);
+          if (penalty < lowerPenalty) {
+            lowerPenalty = penalty;
+            bestPattern = p;
+          }
+        }
+        return bestPattern;
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/error-correction-code.js
+  var require_error_correction_code = __commonJS({
+    "../../node_modules/qrcode/lib/core/error-correction-code.js"(exports) {
+      var ECLevel = require_error_correction_level();
+      var EC_BLOCKS_TABLE = [
+        // L  M  Q  H
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        1,
+        2,
+        2,
+        4,
+        1,
+        2,
+        4,
+        4,
+        2,
+        4,
+        4,
+        4,
+        2,
+        4,
+        6,
+        5,
+        2,
+        4,
+        6,
+        6,
+        2,
+        5,
+        8,
+        8,
+        4,
+        5,
+        8,
+        8,
+        4,
+        5,
+        8,
+        11,
+        4,
+        8,
+        10,
+        11,
+        4,
+        9,
+        12,
+        16,
+        4,
+        9,
+        16,
+        16,
+        6,
+        10,
+        12,
+        18,
+        6,
+        10,
+        17,
+        16,
+        6,
+        11,
+        16,
+        19,
+        6,
+        13,
+        18,
+        21,
+        7,
+        14,
+        21,
+        25,
+        8,
+        16,
+        20,
+        25,
+        8,
+        17,
+        23,
+        25,
+        9,
+        17,
+        23,
+        34,
+        9,
+        18,
+        25,
+        30,
+        10,
+        20,
+        27,
+        32,
+        12,
+        21,
+        29,
+        35,
+        12,
+        23,
+        34,
+        37,
+        12,
+        25,
+        34,
+        40,
+        13,
+        26,
+        35,
+        42,
+        14,
+        28,
+        38,
+        45,
+        15,
+        29,
+        40,
+        48,
+        16,
+        31,
+        43,
+        51,
+        17,
+        33,
+        45,
+        54,
+        18,
+        35,
+        48,
+        57,
+        19,
+        37,
+        51,
+        60,
+        19,
+        38,
+        53,
+        63,
+        20,
+        40,
+        56,
+        66,
+        21,
+        43,
+        59,
+        70,
+        22,
+        45,
+        62,
+        74,
+        24,
+        47,
+        65,
+        77,
+        25,
+        49,
+        68,
+        81
+      ];
+      var EC_CODEWORDS_TABLE = [
+        // L  M  Q  H
+        7,
+        10,
+        13,
+        17,
+        10,
+        16,
+        22,
+        28,
+        15,
+        26,
+        36,
+        44,
+        20,
+        36,
+        52,
+        64,
+        26,
+        48,
+        72,
+        88,
+        36,
+        64,
+        96,
+        112,
+        40,
+        72,
+        108,
+        130,
+        48,
+        88,
+        132,
+        156,
+        60,
+        110,
+        160,
+        192,
+        72,
+        130,
+        192,
+        224,
+        80,
+        150,
+        224,
+        264,
+        96,
+        176,
+        260,
+        308,
+        104,
+        198,
+        288,
+        352,
+        120,
+        216,
+        320,
+        384,
+        132,
+        240,
+        360,
+        432,
+        144,
+        280,
+        408,
+        480,
+        168,
+        308,
+        448,
+        532,
+        180,
+        338,
+        504,
+        588,
+        196,
+        364,
+        546,
+        650,
+        224,
+        416,
+        600,
+        700,
+        224,
+        442,
+        644,
+        750,
+        252,
+        476,
+        690,
+        816,
+        270,
+        504,
+        750,
+        900,
+        300,
+        560,
+        810,
+        960,
+        312,
+        588,
+        870,
+        1050,
+        336,
+        644,
+        952,
+        1110,
+        360,
+        700,
+        1020,
+        1200,
+        390,
+        728,
+        1050,
+        1260,
+        420,
+        784,
+        1140,
+        1350,
+        450,
+        812,
+        1200,
+        1440,
+        480,
+        868,
+        1290,
+        1530,
+        510,
+        924,
+        1350,
+        1620,
+        540,
+        980,
+        1440,
+        1710,
+        570,
+        1036,
+        1530,
+        1800,
+        570,
+        1064,
+        1590,
+        1890,
+        600,
+        1120,
+        1680,
+        1980,
+        630,
+        1204,
+        1770,
+        2100,
+        660,
+        1260,
+        1860,
+        2220,
+        720,
+        1316,
+        1950,
+        2310,
+        750,
+        1372,
+        2040,
+        2430
+      ];
+      exports.getBlocksCount = function getBlocksCount(version, errorCorrectionLevel) {
+        switch (errorCorrectionLevel) {
+          case ECLevel.L:
+            return EC_BLOCKS_TABLE[(version - 1) * 4 + 0];
+          case ECLevel.M:
+            return EC_BLOCKS_TABLE[(version - 1) * 4 + 1];
+          case ECLevel.Q:
+            return EC_BLOCKS_TABLE[(version - 1) * 4 + 2];
+          case ECLevel.H:
+            return EC_BLOCKS_TABLE[(version - 1) * 4 + 3];
+          default:
+            return void 0;
+        }
+      };
+      exports.getTotalCodewordsCount = function getTotalCodewordsCount(version, errorCorrectionLevel) {
+        switch (errorCorrectionLevel) {
+          case ECLevel.L:
+            return EC_CODEWORDS_TABLE[(version - 1) * 4 + 0];
+          case ECLevel.M:
+            return EC_CODEWORDS_TABLE[(version - 1) * 4 + 1];
+          case ECLevel.Q:
+            return EC_CODEWORDS_TABLE[(version - 1) * 4 + 2];
+          case ECLevel.H:
+            return EC_CODEWORDS_TABLE[(version - 1) * 4 + 3];
+          default:
+            return void 0;
+        }
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/galois-field.js
+  var require_galois_field = __commonJS({
+    "../../node_modules/qrcode/lib/core/galois-field.js"(exports) {
+      var EXP_TABLE = new Uint8Array(512);
+      var LOG_TABLE = new Uint8Array(256);
+      (function initTables() {
+        let x = 1;
+        for (let i = 0; i < 255; i++) {
+          EXP_TABLE[i] = x;
+          LOG_TABLE[x] = i;
+          x <<= 1;
+          if (x & 256) {
+            x ^= 285;
+          }
+        }
+        for (let i = 255; i < 512; i++) {
+          EXP_TABLE[i] = EXP_TABLE[i - 255];
+        }
+      })();
+      exports.log = function log(n) {
+        if (n < 1) throw new Error("log(" + n + ")");
+        return LOG_TABLE[n];
+      };
+      exports.exp = function exp(n) {
+        return EXP_TABLE[n];
+      };
+      exports.mul = function mul(x, y) {
+        if (x === 0 || y === 0) return 0;
+        return EXP_TABLE[LOG_TABLE[x] + LOG_TABLE[y]];
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/polynomial.js
+  var require_polynomial = __commonJS({
+    "../../node_modules/qrcode/lib/core/polynomial.js"(exports) {
+      var GF = require_galois_field();
+      exports.mul = function mul(p1, p2) {
+        const coeff = new Uint8Array(p1.length + p2.length - 1);
+        for (let i = 0; i < p1.length; i++) {
+          for (let j = 0; j < p2.length; j++) {
+            coeff[i + j] ^= GF.mul(p1[i], p2[j]);
+          }
+        }
+        return coeff;
+      };
+      exports.mod = function mod(divident, divisor) {
+        let result = new Uint8Array(divident);
+        while (result.length - divisor.length >= 0) {
+          const coeff = result[0];
+          for (let i = 0; i < divisor.length; i++) {
+            result[i] ^= GF.mul(divisor[i], coeff);
+          }
+          let offset = 0;
+          while (offset < result.length && result[offset] === 0) offset++;
+          result = result.slice(offset);
+        }
+        return result;
+      };
+      exports.generateECPolynomial = function generateECPolynomial(degree) {
+        let poly = new Uint8Array([1]);
+        for (let i = 0; i < degree; i++) {
+          poly = exports.mul(poly, new Uint8Array([1, GF.exp(i)]));
+        }
+        return poly;
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/reed-solomon-encoder.js
+  var require_reed_solomon_encoder = __commonJS({
+    "../../node_modules/qrcode/lib/core/reed-solomon-encoder.js"(exports, module) {
+      var Polynomial = require_polynomial();
+      function ReedSolomonEncoder(degree) {
+        this.genPoly = void 0;
+        this.degree = degree;
+        if (this.degree) this.initialize(this.degree);
+      }
+      ReedSolomonEncoder.prototype.initialize = function initialize(degree) {
+        this.degree = degree;
+        this.genPoly = Polynomial.generateECPolynomial(this.degree);
+      };
+      ReedSolomonEncoder.prototype.encode = function encode(data) {
+        if (!this.genPoly) {
+          throw new Error("Encoder not initialized");
+        }
+        const paddedData = new Uint8Array(data.length + this.degree);
+        paddedData.set(data);
+        const remainder = Polynomial.mod(paddedData, this.genPoly);
+        const start = this.degree - remainder.length;
+        if (start > 0) {
+          const buff = new Uint8Array(this.degree);
+          buff.set(remainder, start);
+          return buff;
+        }
+        return remainder;
+      };
+      module.exports = ReedSolomonEncoder;
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/version-check.js
+  var require_version_check = __commonJS({
+    "../../node_modules/qrcode/lib/core/version-check.js"(exports) {
+      exports.isValid = function isValid(version) {
+        return !isNaN(version) && version >= 1 && version <= 40;
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/regex.js
+  var require_regex = __commonJS({
+    "../../node_modules/qrcode/lib/core/regex.js"(exports) {
+      var numeric = "[0-9]+";
+      var alphanumeric = "[A-Z $%*+\\-./:]+";
+      var kanji = "(?:[u3000-u303F]|[u3040-u309F]|[u30A0-u30FF]|[uFF00-uFFEF]|[u4E00-u9FAF]|[u2605-u2606]|[u2190-u2195]|u203B|[u2010u2015u2018u2019u2025u2026u201Cu201Du2225u2260]|[u0391-u0451]|[u00A7u00A8u00B1u00B4u00D7u00F7])+";
+      kanji = kanji.replace(/u/g, "\\u");
+      var byte = "(?:(?![A-Z0-9 $%*+\\-./:]|" + kanji + ")(?:.|[\r\n]))+";
+      exports.KANJI = new RegExp(kanji, "g");
+      exports.BYTE_KANJI = new RegExp("[^A-Z0-9 $%*+\\-./:]+", "g");
+      exports.BYTE = new RegExp(byte, "g");
+      exports.NUMERIC = new RegExp(numeric, "g");
+      exports.ALPHANUMERIC = new RegExp(alphanumeric, "g");
+      var TEST_KANJI = new RegExp("^" + kanji + "$");
+      var TEST_NUMERIC = new RegExp("^" + numeric + "$");
+      var TEST_ALPHANUMERIC = new RegExp("^[A-Z0-9 $%*+\\-./:]+$");
+      exports.testKanji = function testKanji(str) {
+        return TEST_KANJI.test(str);
+      };
+      exports.testNumeric = function testNumeric(str) {
+        return TEST_NUMERIC.test(str);
+      };
+      exports.testAlphanumeric = function testAlphanumeric(str) {
+        return TEST_ALPHANUMERIC.test(str);
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/mode.js
+  var require_mode = __commonJS({
+    "../../node_modules/qrcode/lib/core/mode.js"(exports) {
+      var VersionCheck = require_version_check();
+      var Regex = require_regex();
+      exports.NUMERIC = {
+        id: "Numeric",
+        bit: 1 << 0,
+        ccBits: [10, 12, 14]
+      };
+      exports.ALPHANUMERIC = {
+        id: "Alphanumeric",
+        bit: 1 << 1,
+        ccBits: [9, 11, 13]
+      };
+      exports.BYTE = {
+        id: "Byte",
+        bit: 1 << 2,
+        ccBits: [8, 16, 16]
+      };
+      exports.KANJI = {
+        id: "Kanji",
+        bit: 1 << 3,
+        ccBits: [8, 10, 12]
+      };
+      exports.MIXED = {
+        bit: -1
+      };
+      exports.getCharCountIndicator = function getCharCountIndicator(mode, version) {
+        if (!mode.ccBits) throw new Error("Invalid mode: " + mode);
+        if (!VersionCheck.isValid(version)) {
+          throw new Error("Invalid version: " + version);
+        }
+        if (version >= 1 && version < 10) return mode.ccBits[0];
+        else if (version < 27) return mode.ccBits[1];
+        return mode.ccBits[2];
+      };
+      exports.getBestModeForData = function getBestModeForData(dataStr) {
+        if (Regex.testNumeric(dataStr)) return exports.NUMERIC;
+        else if (Regex.testAlphanumeric(dataStr)) return exports.ALPHANUMERIC;
+        else if (Regex.testKanji(dataStr)) return exports.KANJI;
+        else return exports.BYTE;
+      };
+      exports.toString = function toString(mode) {
+        if (mode && mode.id) return mode.id;
+        throw new Error("Invalid mode");
+      };
+      exports.isValid = function isValid(mode) {
+        return mode && mode.bit && mode.ccBits;
+      };
+      function fromString(string) {
+        if (typeof string !== "string") {
+          throw new Error("Param is not a string");
+        }
+        const lcStr = string.toLowerCase();
+        switch (lcStr) {
+          case "numeric":
+            return exports.NUMERIC;
+          case "alphanumeric":
+            return exports.ALPHANUMERIC;
+          case "kanji":
+            return exports.KANJI;
+          case "byte":
+            return exports.BYTE;
+          default:
+            throw new Error("Unknown mode: " + string);
+        }
+      }
+      exports.from = function from(value, defaultValue) {
+        if (exports.isValid(value)) {
+          return value;
+        }
+        try {
+          return fromString(value);
+        } catch (e) {
+          return defaultValue;
+        }
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/version.js
+  var require_version = __commonJS({
+    "../../node_modules/qrcode/lib/core/version.js"(exports) {
+      var Utils = require_utils();
+      var ECCode = require_error_correction_code();
+      var ECLevel = require_error_correction_level();
+      var Mode = require_mode();
+      var VersionCheck = require_version_check();
+      var G18 = 1 << 12 | 1 << 11 | 1 << 10 | 1 << 9 | 1 << 8 | 1 << 5 | 1 << 2 | 1 << 0;
+      var G18_BCH = Utils.getBCHDigit(G18);
+      function getBestVersionForDataLength(mode, length, errorCorrectionLevel) {
+        for (let currentVersion = 1; currentVersion <= 40; currentVersion++) {
+          if (length <= exports.getCapacity(currentVersion, errorCorrectionLevel, mode)) {
+            return currentVersion;
+          }
+        }
+        return void 0;
+      }
+      function getReservedBitsCount(mode, version) {
+        return Mode.getCharCountIndicator(mode, version) + 4;
+      }
+      function getTotalBitsFromDataArray(segments, version) {
+        let totalBits = 0;
+        segments.forEach(function(data) {
+          const reservedBits = getReservedBitsCount(data.mode, version);
+          totalBits += reservedBits + data.getBitsLength();
+        });
+        return totalBits;
+      }
+      function getBestVersionForMixedData(segments, errorCorrectionLevel) {
+        for (let currentVersion = 1; currentVersion <= 40; currentVersion++) {
+          const length = getTotalBitsFromDataArray(segments, currentVersion);
+          if (length <= exports.getCapacity(currentVersion, errorCorrectionLevel, Mode.MIXED)) {
+            return currentVersion;
+          }
+        }
+        return void 0;
+      }
+      exports.from = function from(value, defaultValue) {
+        if (VersionCheck.isValid(value)) {
+          return parseInt(value, 10);
+        }
+        return defaultValue;
+      };
+      exports.getCapacity = function getCapacity(version, errorCorrectionLevel, mode) {
+        if (!VersionCheck.isValid(version)) {
+          throw new Error("Invalid QR Code version");
+        }
+        if (typeof mode === "undefined") mode = Mode.BYTE;
+        const totalCodewords = Utils.getSymbolTotalCodewords(version);
+        const ecTotalCodewords = ECCode.getTotalCodewordsCount(version, errorCorrectionLevel);
+        const dataTotalCodewordsBits = (totalCodewords - ecTotalCodewords) * 8;
+        if (mode === Mode.MIXED) return dataTotalCodewordsBits;
+        const usableBits = dataTotalCodewordsBits - getReservedBitsCount(mode, version);
+        switch (mode) {
+          case Mode.NUMERIC:
+            return Math.floor(usableBits / 10 * 3);
+          case Mode.ALPHANUMERIC:
+            return Math.floor(usableBits / 11 * 2);
+          case Mode.KANJI:
+            return Math.floor(usableBits / 13);
+          case Mode.BYTE:
+          default:
+            return Math.floor(usableBits / 8);
+        }
+      };
+      exports.getBestVersionForData = function getBestVersionForData(data, errorCorrectionLevel) {
+        let seg;
+        const ecl = ECLevel.from(errorCorrectionLevel, ECLevel.M);
+        if (Array.isArray(data)) {
+          if (data.length > 1) {
+            return getBestVersionForMixedData(data, ecl);
+          }
+          if (data.length === 0) {
+            return 1;
+          }
+          seg = data[0];
+        } else {
+          seg = data;
+        }
+        return getBestVersionForDataLength(seg.mode, seg.getLength(), ecl);
+      };
+      exports.getEncodedBits = function getEncodedBits(version) {
+        if (!VersionCheck.isValid(version) || version < 7) {
+          throw new Error("Invalid QR Code version");
+        }
+        let d = version << 12;
+        while (Utils.getBCHDigit(d) - G18_BCH >= 0) {
+          d ^= G18 << Utils.getBCHDigit(d) - G18_BCH;
+        }
+        return version << 12 | d;
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/format-info.js
+  var require_format_info = __commonJS({
+    "../../node_modules/qrcode/lib/core/format-info.js"(exports) {
+      var Utils = require_utils();
+      var G15 = 1 << 10 | 1 << 8 | 1 << 5 | 1 << 4 | 1 << 2 | 1 << 1 | 1 << 0;
+      var G15_MASK = 1 << 14 | 1 << 12 | 1 << 10 | 1 << 4 | 1 << 1;
+      var G15_BCH = Utils.getBCHDigit(G15);
+      exports.getEncodedBits = function getEncodedBits(errorCorrectionLevel, mask) {
+        const data = errorCorrectionLevel.bit << 3 | mask;
+        let d = data << 10;
+        while (Utils.getBCHDigit(d) - G15_BCH >= 0) {
+          d ^= G15 << Utils.getBCHDigit(d) - G15_BCH;
+        }
+        return (data << 10 | d) ^ G15_MASK;
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/numeric-data.js
+  var require_numeric_data = __commonJS({
+    "../../node_modules/qrcode/lib/core/numeric-data.js"(exports, module) {
+      var Mode = require_mode();
+      function NumericData(data) {
+        this.mode = Mode.NUMERIC;
+        this.data = data.toString();
+      }
+      NumericData.getBitsLength = function getBitsLength(length) {
+        return 10 * Math.floor(length / 3) + (length % 3 ? length % 3 * 3 + 1 : 0);
+      };
+      NumericData.prototype.getLength = function getLength() {
+        return this.data.length;
+      };
+      NumericData.prototype.getBitsLength = function getBitsLength() {
+        return NumericData.getBitsLength(this.data.length);
+      };
+      NumericData.prototype.write = function write(bitBuffer) {
+        let i, group, value;
+        for (i = 0; i + 3 <= this.data.length; i += 3) {
+          group = this.data.substr(i, 3);
+          value = parseInt(group, 10);
+          bitBuffer.put(value, 10);
+        }
+        const remainingNum = this.data.length - i;
+        if (remainingNum > 0) {
+          group = this.data.substr(i);
+          value = parseInt(group, 10);
+          bitBuffer.put(value, remainingNum * 3 + 1);
+        }
+      };
+      module.exports = NumericData;
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/alphanumeric-data.js
+  var require_alphanumeric_data = __commonJS({
+    "../../node_modules/qrcode/lib/core/alphanumeric-data.js"(exports, module) {
+      var Mode = require_mode();
+      var ALPHA_NUM_CHARS = [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+        " ",
+        "$",
+        "%",
+        "*",
+        "+",
+        "-",
+        ".",
+        "/",
+        ":"
+      ];
+      function AlphanumericData(data) {
+        this.mode = Mode.ALPHANUMERIC;
+        this.data = data;
+      }
+      AlphanumericData.getBitsLength = function getBitsLength(length) {
+        return 11 * Math.floor(length / 2) + 6 * (length % 2);
+      };
+      AlphanumericData.prototype.getLength = function getLength() {
+        return this.data.length;
+      };
+      AlphanumericData.prototype.getBitsLength = function getBitsLength() {
+        return AlphanumericData.getBitsLength(this.data.length);
+      };
+      AlphanumericData.prototype.write = function write(bitBuffer) {
+        let i;
+        for (i = 0; i + 2 <= this.data.length; i += 2) {
+          let value = ALPHA_NUM_CHARS.indexOf(this.data[i]) * 45;
+          value += ALPHA_NUM_CHARS.indexOf(this.data[i + 1]);
+          bitBuffer.put(value, 11);
+        }
+        if (this.data.length % 2) {
+          bitBuffer.put(ALPHA_NUM_CHARS.indexOf(this.data[i]), 6);
+        }
+      };
+      module.exports = AlphanumericData;
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/byte-data.js
+  var require_byte_data = __commonJS({
+    "../../node_modules/qrcode/lib/core/byte-data.js"(exports, module) {
+      var Mode = require_mode();
+      function ByteData(data) {
+        this.mode = Mode.BYTE;
+        if (typeof data === "string") {
+          this.data = new TextEncoder().encode(data);
+        } else {
+          this.data = new Uint8Array(data);
+        }
+      }
+      ByteData.getBitsLength = function getBitsLength(length) {
+        return length * 8;
+      };
+      ByteData.prototype.getLength = function getLength() {
+        return this.data.length;
+      };
+      ByteData.prototype.getBitsLength = function getBitsLength() {
+        return ByteData.getBitsLength(this.data.length);
+      };
+      ByteData.prototype.write = function(bitBuffer) {
+        for (let i = 0, l = this.data.length; i < l; i++) {
+          bitBuffer.put(this.data[i], 8);
+        }
+      };
+      module.exports = ByteData;
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/kanji-data.js
+  var require_kanji_data = __commonJS({
+    "../../node_modules/qrcode/lib/core/kanji-data.js"(exports, module) {
+      var Mode = require_mode();
+      var Utils = require_utils();
+      function KanjiData(data) {
+        this.mode = Mode.KANJI;
+        this.data = data;
+      }
+      KanjiData.getBitsLength = function getBitsLength(length) {
+        return length * 13;
+      };
+      KanjiData.prototype.getLength = function getLength() {
+        return this.data.length;
+      };
+      KanjiData.prototype.getBitsLength = function getBitsLength() {
+        return KanjiData.getBitsLength(this.data.length);
+      };
+      KanjiData.prototype.write = function(bitBuffer) {
+        let i;
+        for (i = 0; i < this.data.length; i++) {
+          let value = Utils.toSJIS(this.data[i]);
+          if (value >= 33088 && value <= 40956) {
+            value -= 33088;
+          } else if (value >= 57408 && value <= 60351) {
+            value -= 49472;
+          } else {
+            throw new Error(
+              "Invalid SJIS character: " + this.data[i] + "\nMake sure your charset is UTF-8"
+            );
+          }
+          value = (value >>> 8 & 255) * 192 + (value & 255);
+          bitBuffer.put(value, 13);
+        }
+      };
+      module.exports = KanjiData;
+    }
+  });
+
+  // ../../node_modules/dijkstrajs/dijkstra.js
+  var require_dijkstra = __commonJS({
+    "../../node_modules/dijkstrajs/dijkstra.js"(exports, module) {
+      "use strict";
+      var dijkstra = {
+        single_source_shortest_paths: function(graph, s, d) {
+          var predecessors = {};
+          var costs = {};
+          costs[s] = 0;
+          var open = dijkstra.PriorityQueue.make();
+          open.push(s, 0);
+          var closest, u, v, cost_of_s_to_u, adjacent_nodes, cost_of_e, cost_of_s_to_u_plus_cost_of_e, cost_of_s_to_v, first_visit;
+          while (!open.empty()) {
+            closest = open.pop();
+            u = closest.value;
+            cost_of_s_to_u = closest.cost;
+            adjacent_nodes = graph[u] || {};
+            for (v in adjacent_nodes) {
+              if (adjacent_nodes.hasOwnProperty(v)) {
+                cost_of_e = adjacent_nodes[v];
+                cost_of_s_to_u_plus_cost_of_e = cost_of_s_to_u + cost_of_e;
+                cost_of_s_to_v = costs[v];
+                first_visit = typeof costs[v] === "undefined";
+                if (first_visit || cost_of_s_to_v > cost_of_s_to_u_plus_cost_of_e) {
+                  costs[v] = cost_of_s_to_u_plus_cost_of_e;
+                  open.push(v, cost_of_s_to_u_plus_cost_of_e);
+                  predecessors[v] = u;
+                }
+              }
+            }
+          }
+          if (typeof d !== "undefined" && typeof costs[d] === "undefined") {
+            var msg = ["Could not find a path from ", s, " to ", d, "."].join("");
+            throw new Error(msg);
+          }
+          return predecessors;
+        },
+        extract_shortest_path_from_predecessor_list: function(predecessors, d) {
+          var nodes = [];
+          var u = d;
+          var predecessor;
+          while (u) {
+            nodes.push(u);
+            predecessor = predecessors[u];
+            u = predecessors[u];
+          }
+          nodes.reverse();
+          return nodes;
+        },
+        find_path: function(graph, s, d) {
+          var predecessors = dijkstra.single_source_shortest_paths(graph, s, d);
+          return dijkstra.extract_shortest_path_from_predecessor_list(
+            predecessors,
+            d
+          );
+        },
+        /**
+         * A very naive priority queue implementation.
+         */
+        PriorityQueue: {
+          make: function(opts) {
+            var T = dijkstra.PriorityQueue, t = {}, key;
+            opts = opts || {};
+            for (key in T) {
+              if (T.hasOwnProperty(key)) {
+                t[key] = T[key];
+              }
+            }
+            t.queue = [];
+            t.sorter = opts.sorter || T.default_sorter;
+            return t;
+          },
+          default_sorter: function(a, b) {
+            return a.cost - b.cost;
+          },
+          /**
+           * Add a new item to the queue and ensure the highest priority element
+           * is at the front of the queue.
+           */
+          push: function(value, cost) {
+            var item = { value, cost };
+            this.queue.push(item);
+            this.queue.sort(this.sorter);
+          },
+          /**
+           * Return the highest priority element in the queue.
+           */
+          pop: function() {
+            return this.queue.shift();
+          },
+          empty: function() {
+            return this.queue.length === 0;
+          }
+        }
+      };
+      if (typeof module !== "undefined") {
+        module.exports = dijkstra;
+      }
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/segments.js
+  var require_segments = __commonJS({
+    "../../node_modules/qrcode/lib/core/segments.js"(exports) {
+      var Mode = require_mode();
+      var NumericData = require_numeric_data();
+      var AlphanumericData = require_alphanumeric_data();
+      var ByteData = require_byte_data();
+      var KanjiData = require_kanji_data();
+      var Regex = require_regex();
+      var Utils = require_utils();
+      var dijkstra = require_dijkstra();
+      function getStringByteLength(str) {
+        return unescape(encodeURIComponent(str)).length;
+      }
+      function getSegments(regex, mode, str) {
+        const segments = [];
+        let result;
+        while ((result = regex.exec(str)) !== null) {
+          segments.push({
+            data: result[0],
+            index: result.index,
+            mode,
+            length: result[0].length
+          });
+        }
+        return segments;
+      }
+      function getSegmentsFromString(dataStr) {
+        const numSegs = getSegments(Regex.NUMERIC, Mode.NUMERIC, dataStr);
+        const alphaNumSegs = getSegments(Regex.ALPHANUMERIC, Mode.ALPHANUMERIC, dataStr);
+        let byteSegs;
+        let kanjiSegs;
+        if (Utils.isKanjiModeEnabled()) {
+          byteSegs = getSegments(Regex.BYTE, Mode.BYTE, dataStr);
+          kanjiSegs = getSegments(Regex.KANJI, Mode.KANJI, dataStr);
+        } else {
+          byteSegs = getSegments(Regex.BYTE_KANJI, Mode.BYTE, dataStr);
+          kanjiSegs = [];
+        }
+        const segs = numSegs.concat(alphaNumSegs, byteSegs, kanjiSegs);
+        return segs.sort(function(s1, s2) {
+          return s1.index - s2.index;
+        }).map(function(obj) {
+          return {
+            data: obj.data,
+            mode: obj.mode,
+            length: obj.length
+          };
+        });
+      }
+      function getSegmentBitsLength(length, mode) {
+        switch (mode) {
+          case Mode.NUMERIC:
+            return NumericData.getBitsLength(length);
+          case Mode.ALPHANUMERIC:
+            return AlphanumericData.getBitsLength(length);
+          case Mode.KANJI:
+            return KanjiData.getBitsLength(length);
+          case Mode.BYTE:
+            return ByteData.getBitsLength(length);
+        }
+      }
+      function mergeSegments(segs) {
+        return segs.reduce(function(acc, curr) {
+          const prevSeg = acc.length - 1 >= 0 ? acc[acc.length - 1] : null;
+          if (prevSeg && prevSeg.mode === curr.mode) {
+            acc[acc.length - 1].data += curr.data;
+            return acc;
+          }
+          acc.push(curr);
+          return acc;
+        }, []);
+      }
+      function buildNodes(segs) {
+        const nodes = [];
+        for (let i = 0; i < segs.length; i++) {
+          const seg = segs[i];
+          switch (seg.mode) {
+            case Mode.NUMERIC:
+              nodes.push([
+                seg,
+                { data: seg.data, mode: Mode.ALPHANUMERIC, length: seg.length },
+                { data: seg.data, mode: Mode.BYTE, length: seg.length }
+              ]);
+              break;
+            case Mode.ALPHANUMERIC:
+              nodes.push([
+                seg,
+                { data: seg.data, mode: Mode.BYTE, length: seg.length }
+              ]);
+              break;
+            case Mode.KANJI:
+              nodes.push([
+                seg,
+                { data: seg.data, mode: Mode.BYTE, length: getStringByteLength(seg.data) }
+              ]);
+              break;
+            case Mode.BYTE:
+              nodes.push([
+                { data: seg.data, mode: Mode.BYTE, length: getStringByteLength(seg.data) }
+              ]);
+          }
+        }
+        return nodes;
+      }
+      function buildGraph(nodes, version) {
+        const table = {};
+        const graph = { start: {} };
+        let prevNodeIds = ["start"];
+        for (let i = 0; i < nodes.length; i++) {
+          const nodeGroup = nodes[i];
+          const currentNodeIds = [];
+          for (let j = 0; j < nodeGroup.length; j++) {
+            const node = nodeGroup[j];
+            const key = "" + i + j;
+            currentNodeIds.push(key);
+            table[key] = { node, lastCount: 0 };
+            graph[key] = {};
+            for (let n = 0; n < prevNodeIds.length; n++) {
+              const prevNodeId = prevNodeIds[n];
+              if (table[prevNodeId] && table[prevNodeId].node.mode === node.mode) {
+                graph[prevNodeId][key] = getSegmentBitsLength(table[prevNodeId].lastCount + node.length, node.mode) - getSegmentBitsLength(table[prevNodeId].lastCount, node.mode);
+                table[prevNodeId].lastCount += node.length;
+              } else {
+                if (table[prevNodeId]) table[prevNodeId].lastCount = node.length;
+                graph[prevNodeId][key] = getSegmentBitsLength(node.length, node.mode) + 4 + Mode.getCharCountIndicator(node.mode, version);
+              }
+            }
+          }
+          prevNodeIds = currentNodeIds;
+        }
+        for (let n = 0; n < prevNodeIds.length; n++) {
+          graph[prevNodeIds[n]].end = 0;
+        }
+        return { map: graph, table };
+      }
+      function buildSingleSegment(data, modesHint) {
+        let mode;
+        const bestMode = Mode.getBestModeForData(data);
+        mode = Mode.from(modesHint, bestMode);
+        if (mode !== Mode.BYTE && mode.bit < bestMode.bit) {
+          throw new Error('"' + data + '" cannot be encoded with mode ' + Mode.toString(mode) + ".\n Suggested mode is: " + Mode.toString(bestMode));
+        }
+        if (mode === Mode.KANJI && !Utils.isKanjiModeEnabled()) {
+          mode = Mode.BYTE;
+        }
+        switch (mode) {
+          case Mode.NUMERIC:
+            return new NumericData(data);
+          case Mode.ALPHANUMERIC:
+            return new AlphanumericData(data);
+          case Mode.KANJI:
+            return new KanjiData(data);
+          case Mode.BYTE:
+            return new ByteData(data);
+        }
+      }
+      exports.fromArray = function fromArray(array) {
+        return array.reduce(function(acc, seg) {
+          if (typeof seg === "string") {
+            acc.push(buildSingleSegment(seg, null));
+          } else if (seg.data) {
+            acc.push(buildSingleSegment(seg.data, seg.mode));
+          }
+          return acc;
+        }, []);
+      };
+      exports.fromString = function fromString(data, version) {
+        const segs = getSegmentsFromString(data, Utils.isKanjiModeEnabled());
+        const nodes = buildNodes(segs);
+        const graph = buildGraph(nodes, version);
+        const path = dijkstra.find_path(graph.map, "start", "end");
+        const optimizedSegs = [];
+        for (let i = 1; i < path.length - 1; i++) {
+          optimizedSegs.push(graph.table[path[i]].node);
+        }
+        return exports.fromArray(mergeSegments(optimizedSegs));
+      };
+      exports.rawSplit = function rawSplit(data) {
+        return exports.fromArray(
+          getSegmentsFromString(data, Utils.isKanjiModeEnabled())
+        );
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/core/qrcode.js
+  var require_qrcode = __commonJS({
+    "../../node_modules/qrcode/lib/core/qrcode.js"(exports) {
+      var Utils = require_utils();
+      var ECLevel = require_error_correction_level();
+      var BitBuffer = require_bit_buffer();
+      var BitMatrix = require_bit_matrix();
+      var AlignmentPattern = require_alignment_pattern();
+      var FinderPattern = require_finder_pattern();
+      var MaskPattern = require_mask_pattern();
+      var ECCode = require_error_correction_code();
+      var ReedSolomonEncoder = require_reed_solomon_encoder();
+      var Version = require_version();
+      var FormatInfo = require_format_info();
+      var Mode = require_mode();
+      var Segments = require_segments();
+      function setupFinderPattern(matrix, version) {
+        const size = matrix.size;
+        const pos = FinderPattern.getPositions(version);
+        for (let i = 0; i < pos.length; i++) {
+          const row = pos[i][0];
+          const col = pos[i][1];
+          for (let r = -1; r <= 7; r++) {
+            if (row + r <= -1 || size <= row + r) continue;
+            for (let c = -1; c <= 7; c++) {
+              if (col + c <= -1 || size <= col + c) continue;
+              if (r >= 0 && r <= 6 && (c === 0 || c === 6) || c >= 0 && c <= 6 && (r === 0 || r === 6) || r >= 2 && r <= 4 && c >= 2 && c <= 4) {
+                matrix.set(row + r, col + c, true, true);
+              } else {
+                matrix.set(row + r, col + c, false, true);
+              }
+            }
+          }
+        }
+      }
+      function setupTimingPattern(matrix) {
+        const size = matrix.size;
+        for (let r = 8; r < size - 8; r++) {
+          const value = r % 2 === 0;
+          matrix.set(r, 6, value, true);
+          matrix.set(6, r, value, true);
+        }
+      }
+      function setupAlignmentPattern(matrix, version) {
+        const pos = AlignmentPattern.getPositions(version);
+        for (let i = 0; i < pos.length; i++) {
+          const row = pos[i][0];
+          const col = pos[i][1];
+          for (let r = -2; r <= 2; r++) {
+            for (let c = -2; c <= 2; c++) {
+              if (r === -2 || r === 2 || c === -2 || c === 2 || r === 0 && c === 0) {
+                matrix.set(row + r, col + c, true, true);
+              } else {
+                matrix.set(row + r, col + c, false, true);
+              }
+            }
+          }
+        }
+      }
+      function setupVersionInfo(matrix, version) {
+        const size = matrix.size;
+        const bits = Version.getEncodedBits(version);
+        let row, col, mod;
+        for (let i = 0; i < 18; i++) {
+          row = Math.floor(i / 3);
+          col = i % 3 + size - 8 - 3;
+          mod = (bits >> i & 1) === 1;
+          matrix.set(row, col, mod, true);
+          matrix.set(col, row, mod, true);
+        }
+      }
+      function setupFormatInfo(matrix, errorCorrectionLevel, maskPattern) {
+        const size = matrix.size;
+        const bits = FormatInfo.getEncodedBits(errorCorrectionLevel, maskPattern);
+        let i, mod;
+        for (i = 0; i < 15; i++) {
+          mod = (bits >> i & 1) === 1;
+          if (i < 6) {
+            matrix.set(i, 8, mod, true);
+          } else if (i < 8) {
+            matrix.set(i + 1, 8, mod, true);
+          } else {
+            matrix.set(size - 15 + i, 8, mod, true);
+          }
+          if (i < 8) {
+            matrix.set(8, size - i - 1, mod, true);
+          } else if (i < 9) {
+            matrix.set(8, 15 - i - 1 + 1, mod, true);
+          } else {
+            matrix.set(8, 15 - i - 1, mod, true);
+          }
+        }
+        matrix.set(size - 8, 8, 1, true);
+      }
+      function setupData(matrix, data) {
+        const size = matrix.size;
+        let inc = -1;
+        let row = size - 1;
+        let bitIndex = 7;
+        let byteIndex = 0;
+        for (let col = size - 1; col > 0; col -= 2) {
+          if (col === 6) col--;
+          while (true) {
+            for (let c = 0; c < 2; c++) {
+              if (!matrix.isReserved(row, col - c)) {
+                let dark = false;
+                if (byteIndex < data.length) {
+                  dark = (data[byteIndex] >>> bitIndex & 1) === 1;
+                }
+                matrix.set(row, col - c, dark);
+                bitIndex--;
+                if (bitIndex === -1) {
+                  byteIndex++;
+                  bitIndex = 7;
+                }
+              }
+            }
+            row += inc;
+            if (row < 0 || size <= row) {
+              row -= inc;
+              inc = -inc;
+              break;
+            }
+          }
+        }
+      }
+      function createData(version, errorCorrectionLevel, segments) {
+        const buffer = new BitBuffer();
+        segments.forEach(function(data) {
+          buffer.put(data.mode.bit, 4);
+          buffer.put(data.getLength(), Mode.getCharCountIndicator(data.mode, version));
+          data.write(buffer);
+        });
+        const totalCodewords = Utils.getSymbolTotalCodewords(version);
+        const ecTotalCodewords = ECCode.getTotalCodewordsCount(version, errorCorrectionLevel);
+        const dataTotalCodewordsBits = (totalCodewords - ecTotalCodewords) * 8;
+        if (buffer.getLengthInBits() + 4 <= dataTotalCodewordsBits) {
+          buffer.put(0, 4);
+        }
+        while (buffer.getLengthInBits() % 8 !== 0) {
+          buffer.putBit(0);
+        }
+        const remainingByte = (dataTotalCodewordsBits - buffer.getLengthInBits()) / 8;
+        for (let i = 0; i < remainingByte; i++) {
+          buffer.put(i % 2 ? 17 : 236, 8);
+        }
+        return createCodewords(buffer, version, errorCorrectionLevel);
+      }
+      function createCodewords(bitBuffer, version, errorCorrectionLevel) {
+        const totalCodewords = Utils.getSymbolTotalCodewords(version);
+        const ecTotalCodewords = ECCode.getTotalCodewordsCount(version, errorCorrectionLevel);
+        const dataTotalCodewords = totalCodewords - ecTotalCodewords;
+        const ecTotalBlocks = ECCode.getBlocksCount(version, errorCorrectionLevel);
+        const blocksInGroup2 = totalCodewords % ecTotalBlocks;
+        const blocksInGroup1 = ecTotalBlocks - blocksInGroup2;
+        const totalCodewordsInGroup1 = Math.floor(totalCodewords / ecTotalBlocks);
+        const dataCodewordsInGroup1 = Math.floor(dataTotalCodewords / ecTotalBlocks);
+        const dataCodewordsInGroup2 = dataCodewordsInGroup1 + 1;
+        const ecCount = totalCodewordsInGroup1 - dataCodewordsInGroup1;
+        const rs = new ReedSolomonEncoder(ecCount);
+        let offset = 0;
+        const dcData = new Array(ecTotalBlocks);
+        const ecData = new Array(ecTotalBlocks);
+        let maxDataSize = 0;
+        const buffer = new Uint8Array(bitBuffer.buffer);
+        for (let b = 0; b < ecTotalBlocks; b++) {
+          const dataSize = b < blocksInGroup1 ? dataCodewordsInGroup1 : dataCodewordsInGroup2;
+          dcData[b] = buffer.slice(offset, offset + dataSize);
+          ecData[b] = rs.encode(dcData[b]);
+          offset += dataSize;
+          maxDataSize = Math.max(maxDataSize, dataSize);
+        }
+        const data = new Uint8Array(totalCodewords);
+        let index = 0;
+        let i, r;
+        for (i = 0; i < maxDataSize; i++) {
+          for (r = 0; r < ecTotalBlocks; r++) {
+            if (i < dcData[r].length) {
+              data[index++] = dcData[r][i];
+            }
+          }
+        }
+        for (i = 0; i < ecCount; i++) {
+          for (r = 0; r < ecTotalBlocks; r++) {
+            data[index++] = ecData[r][i];
+          }
+        }
+        return data;
+      }
+      function createSymbol(data, version, errorCorrectionLevel, maskPattern) {
+        let segments;
+        if (Array.isArray(data)) {
+          segments = Segments.fromArray(data);
+        } else if (typeof data === "string") {
+          let estimatedVersion = version;
+          if (!estimatedVersion) {
+            const rawSegments = Segments.rawSplit(data);
+            estimatedVersion = Version.getBestVersionForData(rawSegments, errorCorrectionLevel);
+          }
+          segments = Segments.fromString(data, estimatedVersion || 40);
+        } else {
+          throw new Error("Invalid data");
+        }
+        const bestVersion = Version.getBestVersionForData(segments, errorCorrectionLevel);
+        if (!bestVersion) {
+          throw new Error("The amount of data is too big to be stored in a QR Code");
+        }
+        if (!version) {
+          version = bestVersion;
+        } else if (version < bestVersion) {
+          throw new Error(
+            "\nThe chosen QR Code version cannot contain this amount of data.\nMinimum version required to store current data is: " + bestVersion + ".\n"
+          );
+        }
+        const dataBits = createData(version, errorCorrectionLevel, segments);
+        const moduleCount = Utils.getSymbolSize(version);
+        const modules = new BitMatrix(moduleCount);
+        setupFinderPattern(modules, version);
+        setupTimingPattern(modules);
+        setupAlignmentPattern(modules, version);
+        setupFormatInfo(modules, errorCorrectionLevel, 0);
+        if (version >= 7) {
+          setupVersionInfo(modules, version);
+        }
+        setupData(modules, dataBits);
+        if (isNaN(maskPattern)) {
+          maskPattern = MaskPattern.getBestMask(
+            modules,
+            setupFormatInfo.bind(null, modules, errorCorrectionLevel)
+          );
+        }
+        MaskPattern.applyMask(maskPattern, modules);
+        setupFormatInfo(modules, errorCorrectionLevel, maskPattern);
+        return {
+          modules,
+          version,
+          errorCorrectionLevel,
+          maskPattern,
+          segments
+        };
+      }
+      exports.create = function create(data, options) {
+        if (typeof data === "undefined" || data === "") {
+          throw new Error("No input text");
+        }
+        let errorCorrectionLevel = ECLevel.M;
+        let version;
+        let mask;
+        if (typeof options !== "undefined") {
+          errorCorrectionLevel = ECLevel.from(options.errorCorrectionLevel, ECLevel.M);
+          version = Version.from(options.version);
+          mask = MaskPattern.from(options.maskPattern);
+          if (options.toSJISFunc) {
+            Utils.setToSJISFunction(options.toSJISFunc);
+          }
+        }
+        return createSymbol(data, version, errorCorrectionLevel, mask);
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/renderer/utils.js
+  var require_utils2 = __commonJS({
+    "../../node_modules/qrcode/lib/renderer/utils.js"(exports) {
+      function hex2rgba(hex) {
+        if (typeof hex === "number") {
+          hex = hex.toString();
+        }
+        if (typeof hex !== "string") {
+          throw new Error("Color should be defined as hex string");
+        }
+        let hexCode = hex.slice().replace("#", "").split("");
+        if (hexCode.length < 3 || hexCode.length === 5 || hexCode.length > 8) {
+          throw new Error("Invalid hex color: " + hex);
+        }
+        if (hexCode.length === 3 || hexCode.length === 4) {
+          hexCode = Array.prototype.concat.apply([], hexCode.map(function(c) {
+            return [c, c];
+          }));
+        }
+        if (hexCode.length === 6) hexCode.push("F", "F");
+        const hexValue = parseInt(hexCode.join(""), 16);
+        return {
+          r: hexValue >> 24 & 255,
+          g: hexValue >> 16 & 255,
+          b: hexValue >> 8 & 255,
+          a: hexValue & 255,
+          hex: "#" + hexCode.slice(0, 6).join("")
+        };
+      }
+      exports.getOptions = function getOptions(options) {
+        if (!options) options = {};
+        if (!options.color) options.color = {};
+        const margin = typeof options.margin === "undefined" || options.margin === null || options.margin < 0 ? 4 : options.margin;
+        const width = options.width && options.width >= 21 ? options.width : void 0;
+        const scale = options.scale || 4;
+        return {
+          width,
+          scale: width ? 4 : scale,
+          margin,
+          color: {
+            dark: hex2rgba(options.color.dark || "#000000ff"),
+            light: hex2rgba(options.color.light || "#ffffffff")
+          },
+          type: options.type,
+          rendererOpts: options.rendererOpts || {}
+        };
+      };
+      exports.getScale = function getScale(qrSize, opts) {
+        return opts.width && opts.width >= qrSize + opts.margin * 2 ? opts.width / (qrSize + opts.margin * 2) : opts.scale;
+      };
+      exports.getImageWidth = function getImageWidth(qrSize, opts) {
+        const scale = exports.getScale(qrSize, opts);
+        return Math.floor((qrSize + opts.margin * 2) * scale);
+      };
+      exports.qrToImageData = function qrToImageData(imgData, qr, opts) {
+        const size = qr.modules.size;
+        const data = qr.modules.data;
+        const scale = exports.getScale(size, opts);
+        const symbolSize = Math.floor((size + opts.margin * 2) * scale);
+        const scaledMargin = opts.margin * scale;
+        const palette = [opts.color.light, opts.color.dark];
+        for (let i = 0; i < symbolSize; i++) {
+          for (let j = 0; j < symbolSize; j++) {
+            let posDst = (i * symbolSize + j) * 4;
+            let pxColor = opts.color.light;
+            if (i >= scaledMargin && j >= scaledMargin && i < symbolSize - scaledMargin && j < symbolSize - scaledMargin) {
+              const iSrc = Math.floor((i - scaledMargin) / scale);
+              const jSrc = Math.floor((j - scaledMargin) / scale);
+              pxColor = palette[data[iSrc * size + jSrc] ? 1 : 0];
+            }
+            imgData[posDst++] = pxColor.r;
+            imgData[posDst++] = pxColor.g;
+            imgData[posDst++] = pxColor.b;
+            imgData[posDst] = pxColor.a;
+          }
+        }
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/renderer/canvas.js
+  var require_canvas = __commonJS({
+    "../../node_modules/qrcode/lib/renderer/canvas.js"(exports) {
+      var Utils = require_utils2();
+      function clearCanvas(ctx, canvas, size) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!canvas.style) canvas.style = {};
+        canvas.height = size;
+        canvas.width = size;
+        canvas.style.height = size + "px";
+        canvas.style.width = size + "px";
+      }
+      function getCanvasElement() {
+        try {
+          return document.createElement("canvas");
+        } catch (e) {
+          throw new Error("You need to specify a canvas element");
+        }
+      }
+      exports.render = function render(qrData, canvas, options) {
+        let opts = options;
+        let canvasEl = canvas;
+        if (typeof opts === "undefined" && (!canvas || !canvas.getContext)) {
+          opts = canvas;
+          canvas = void 0;
+        }
+        if (!canvas) {
+          canvasEl = getCanvasElement();
+        }
+        opts = Utils.getOptions(opts);
+        const size = Utils.getImageWidth(qrData.modules.size, opts);
+        const ctx = canvasEl.getContext("2d");
+        const image = ctx.createImageData(size, size);
+        Utils.qrToImageData(image.data, qrData, opts);
+        clearCanvas(ctx, canvasEl, size);
+        ctx.putImageData(image, 0, 0);
+        return canvasEl;
+      };
+      exports.renderToDataURL = function renderToDataURL(qrData, canvas, options) {
+        let opts = options;
+        if (typeof opts === "undefined" && (!canvas || !canvas.getContext)) {
+          opts = canvas;
+          canvas = void 0;
+        }
+        if (!opts) opts = {};
+        const canvasEl = exports.render(qrData, canvas, opts);
+        const type = opts.type || "image/png";
+        const rendererOpts = opts.rendererOpts || {};
+        return canvasEl.toDataURL(type, rendererOpts.quality);
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/renderer/svg-tag.js
+  var require_svg_tag = __commonJS({
+    "../../node_modules/qrcode/lib/renderer/svg-tag.js"(exports) {
+      var Utils = require_utils2();
+      function getColorAttrib(color, attrib) {
+        const alpha = color.a / 255;
+        const str = attrib + '="' + color.hex + '"';
+        return alpha < 1 ? str + " " + attrib + '-opacity="' + alpha.toFixed(2).slice(1) + '"' : str;
+      }
+      function svgCmd(cmd, x, y) {
+        let str = cmd + x;
+        if (typeof y !== "undefined") str += " " + y;
+        return str;
+      }
+      function qrToPath(data, size, margin) {
+        let path = "";
+        let moveBy = 0;
+        let newRow = false;
+        let lineLength = 0;
+        for (let i = 0; i < data.length; i++) {
+          const col = Math.floor(i % size);
+          const row = Math.floor(i / size);
+          if (!col && !newRow) newRow = true;
+          if (data[i]) {
+            lineLength++;
+            if (!(i > 0 && col > 0 && data[i - 1])) {
+              path += newRow ? svgCmd("M", col + margin, 0.5 + row + margin) : svgCmd("m", moveBy, 0);
+              moveBy = 0;
+              newRow = false;
+            }
+            if (!(col + 1 < size && data[i + 1])) {
+              path += svgCmd("h", lineLength);
+              lineLength = 0;
+            }
+          } else {
+            moveBy++;
+          }
+        }
+        return path;
+      }
+      exports.render = function render(qrData, options, cb) {
+        const opts = Utils.getOptions(options);
+        const size = qrData.modules.size;
+        const data = qrData.modules.data;
+        const qrcodesize = size + opts.margin * 2;
+        const bg = !opts.color.light.a ? "" : "<path " + getColorAttrib(opts.color.light, "fill") + ' d="M0 0h' + qrcodesize + "v" + qrcodesize + 'H0z"/>';
+        const path = "<path " + getColorAttrib(opts.color.dark, "stroke") + ' d="' + qrToPath(data, size, opts.margin) + '"/>';
+        const viewBox = 'viewBox="0 0 ' + qrcodesize + " " + qrcodesize + '"';
+        const width = !opts.width ? "" : 'width="' + opts.width + '" height="' + opts.width + '" ';
+        const svgTag = '<svg xmlns="http://www.w3.org/2000/svg" ' + width + viewBox + ' shape-rendering="crispEdges">' + bg + path + "</svg>\n";
+        if (typeof cb === "function") {
+          cb(null, svgTag);
+        }
+        return svgTag;
+      };
+    }
+  });
+
+  // ../../node_modules/qrcode/lib/browser.js
+  var require_browser = __commonJS({
+    "../../node_modules/qrcode/lib/browser.js"(exports) {
+      var canPromise = require_can_promise();
+      var QRCode2 = require_qrcode();
+      var CanvasRenderer = require_canvas();
+      var SvgRenderer = require_svg_tag();
+      function renderCanvas(renderFunc, canvas, text, opts, cb) {
+        const args = [].slice.call(arguments, 1);
+        const argsNum = args.length;
+        const isLastArgCb = typeof args[argsNum - 1] === "function";
+        if (!isLastArgCb && !canPromise()) {
+          throw new Error("Callback required as last argument");
+        }
+        if (isLastArgCb) {
+          if (argsNum < 2) {
+            throw new Error("Too few arguments provided");
+          }
+          if (argsNum === 2) {
+            cb = text;
+            text = canvas;
+            canvas = opts = void 0;
+          } else if (argsNum === 3) {
+            if (canvas.getContext && typeof cb === "undefined") {
+              cb = opts;
+              opts = void 0;
+            } else {
+              cb = opts;
+              opts = text;
+              text = canvas;
+              canvas = void 0;
+            }
+          }
+        } else {
+          if (argsNum < 1) {
+            throw new Error("Too few arguments provided");
+          }
+          if (argsNum === 1) {
+            text = canvas;
+            canvas = opts = void 0;
+          } else if (argsNum === 2 && !canvas.getContext) {
+            opts = text;
+            text = canvas;
+            canvas = void 0;
+          }
+          return new Promise(function(resolve, reject) {
+            try {
+              const data = QRCode2.create(text, opts);
+              resolve(renderFunc(data, canvas, opts));
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }
+        try {
+          const data = QRCode2.create(text, opts);
+          cb(null, renderFunc(data, canvas, opts));
+        } catch (e) {
+          cb(e);
+        }
+      }
+      exports.create = QRCode2.create;
+      exports.toCanvas = renderCanvas.bind(null, CanvasRenderer.render);
+      exports.toDataURL = renderCanvas.bind(null, CanvasRenderer.renderToDataURL);
+      exports.toString = renderCanvas.bind(null, function(data, _, opts) {
+        return SvgRenderer.render(data, opts);
+      });
+    }
+  });
+
+  // src/widget-page/client/index.tsx
   var import_client = __toESM(require_client());
 
-  // src/mobile-page/client/App.tsx
+  // src/widget-page/client/widget-app.tsx
   var import_react6 = __toESM(require_react());
 
   // src/shared-client/steps.ts
@@ -24678,43 +26756,8 @@
     return qualifyingRows >= 6;
   }
 
-  // src/shared-client/phases/intro-phase.tsx
-  var import_react = __toESM(require_react());
-  var import_jsx_runtime = __toESM(require_jsx_runtime());
-  function IntroPhase({ steps, onStart }) {
-    const handleStart = (0, import_react.useCallback)(() => {
-      onStart();
-    }, [onStart]);
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex-1 flex flex-col justify-center px-6 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] max-w-[420px] mx-auto w-full", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { className: "text-2xl font-bold mb-2", children: "Verificaci\xF3n de Identidad" }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-500 text-sm mb-8", children: "Necesitamos verificar tu identidad. El proceso dura menos de un minuto." }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", { className: "list-none mb-10", children: steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-        "li",
-        {
-          className: `flex items-center gap-4 py-4${i < steps.length - 1 ? " border-b border-gray-100" : ""}`,
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "w-9 h-9 rounded-full bg-primary-50 text-primary-400 flex items-center justify-center font-bold text-sm shrink-0", children: i + 1 }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-sm", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { className: "block mb-0.5", children: step.introTitle }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-gray-500 text-xs", children: step.introDesc })
-            ] })
-          ]
-        },
-        step.key
-      )) }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-        "button",
-        {
-          className: "block w-full py-4 border-none rounded-xl text-base font-semibold cursor-pointer text-center bg-primary-400 text-white",
-          onClick: handleStart,
-          children: "Comenzar"
-        }
-      )
-    ] });
-  }
-
   // src/shared-client/phases/camera-phase.tsx
-  var import_react2 = __toESM(require_react());
+  var import_react = __toESM(require_react());
 
   // src/shared-client/detection.ts
   var barcodeDetectorPromise = null;
@@ -24848,31 +26891,31 @@
   }
 
   // src/shared-client/phases/camera-phase.tsx
-  var import_jsx_runtime2 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime = __toESM(require_jsx_runtime());
   var VIDEO_RECORD_DURATION_MS = 6e3;
   function CameraPhase({ step, stepIndex, totalSteps, onCapture, onBack, idData, onError }) {
-    const videoRef = (0, import_react2.useRef)(null);
-    const streamRef = (0, import_react2.useRef)(null);
-    const scanIdRef = (0, import_react2.useRef)(null);
-    const recorderRef = (0, import_react2.useRef)(null);
-    const faceCheckIntervalRef = (0, import_react2.useRef)(null);
-    const recordingAbortedRef = (0, import_react2.useRef)(false);
-    const activeRef = (0, import_react2.useRef)(true);
-    const [cameraSupported, setCameraSupported] = (0, import_react2.useState)(true);
-    const [detectStatus, setDetectStatus] = (0, import_react2.useState)("");
-    const [idMismatchError, setIdMismatchError] = (0, import_react2.useState)(null);
-    const [recordProgress, setRecordProgress] = (0, import_react2.useState)(0);
-    const [glassesDetected, setGlassesDetected] = (0, import_react2.useState)(false);
-    const [videoAspect, setVideoAspect] = (0, import_react2.useState)(void 0);
-    const startAutoDetectionRef = (0, import_react2.useRef)(() => {
+    const videoRef = (0, import_react.useRef)(null);
+    const streamRef = (0, import_react.useRef)(null);
+    const scanIdRef = (0, import_react.useRef)(null);
+    const recorderRef = (0, import_react.useRef)(null);
+    const faceCheckIntervalRef = (0, import_react.useRef)(null);
+    const recordingAbortedRef = (0, import_react.useRef)(false);
+    const activeRef = (0, import_react.useRef)(true);
+    const [cameraSupported, setCameraSupported] = (0, import_react.useState)(true);
+    const [detectStatus, setDetectStatus] = (0, import_react.useState)("");
+    const [idMismatchError, setIdMismatchError] = (0, import_react.useState)(null);
+    const [recordProgress, setRecordProgress] = (0, import_react.useState)(0);
+    const [glassesDetected, setGlassesDetected] = (0, import_react.useState)(false);
+    const [videoAspect, setVideoAspect] = (0, import_react.useState)(void 0);
+    const startAutoDetectionRef = (0, import_react.useRef)(() => {
     });
-    const stopScanning = (0, import_react2.useCallback)(() => {
+    const stopScanning = (0, import_react.useCallback)(() => {
       if (scanIdRef.current !== null) {
         cancelAnimationFrame(scanIdRef.current);
         scanIdRef.current = null;
       }
     }, []);
-    const stopCamera = (0, import_react2.useCallback)(() => {
+    const stopCamera = (0, import_react.useCallback)(() => {
       stopScanning();
       if (faceCheckIntervalRef.current) {
         clearInterval(faceCheckIntervalRef.current);
@@ -24887,7 +26930,7 @@
         streamRef.current = null;
       }
     }, [stopScanning]);
-    const doCapture = (0, import_react2.useCallback)(() => {
+    const doCapture = (0, import_react.useCallback)(() => {
       stopScanning();
       const video = videoRef.current;
       if (!video) return;
@@ -24906,7 +26949,7 @@
         onCapture(blob, URL.createObjectURL(blob));
       }, "image/jpeg", 0.85);
     }, [step.facing, stopScanning, stopCamera, onCapture]);
-    const doCaptureWithBarcodeValidation = (0, import_react2.useCallback)(() => {
+    const doCaptureWithBarcodeValidation = (0, import_react.useCallback)(() => {
       const video = videoRef.current;
       if (!video) return;
       const canvas = document.createElement("canvas");
@@ -24970,7 +27013,7 @@
         if (activeRef.current) startAutoDetectionRef.current();
       });
     }, [stopScanning, stopCamera, onCapture, idData, onError]);
-    const doVideoRecord = (0, import_react2.useCallback)(() => {
+    const doVideoRecord = (0, import_react.useCallback)(() => {
       stopScanning();
       const stream = streamRef.current;
       if (!stream) return;
@@ -25042,7 +27085,7 @@
         if (recorder.state === "recording") recorder.stop();
       }, VIDEO_RECORD_DURATION_MS);
     }, [stopScanning, stopCamera, onCapture]);
-    const startAutoDetection = (0, import_react2.useCallback)(() => {
+    const startAutoDetection = (0, import_react.useCallback)(() => {
       const video = videoRef.current;
       if (!video || !video.videoWidth) {
         setTimeout(() => {
@@ -25167,7 +27210,7 @@
       }
     }, [step.autoDetect, doCapture, doCaptureWithBarcodeValidation, doVideoRecord]);
     startAutoDetectionRef.current = startAutoDetection;
-    (0, import_react2.useEffect)(() => {
+    (0, import_react.useEffect)(() => {
       activeRef.current = true;
       setDetectStatus("");
       setCameraSupported(true);
@@ -25205,7 +27248,7 @@
         stopCamera();
       };
     }, [step.key]);
-    const handleManualCapture = (0, import_react2.useCallback)(() => {
+    const handleManualCapture = (0, import_react.useCallback)(() => {
       if (step.key === "selfie") {
         if (glassesDetected) return;
         doVideoRecord();
@@ -25213,7 +27256,7 @@
         doCapture();
       }
     }, [step.key, doCapture, doVideoRecord, glassesDetected]);
-    const handleFileChange = (0, import_react2.useCallback)(async (e) => {
+    const handleFileChange = (0, import_react.useCallback)(async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
       e.target.value = "";
@@ -25222,7 +27265,7 @@
       stopCamera();
       onCapture(blob, URL.createObjectURL(blob));
     }, [stopCamera, onCapture]);
-    const handleFileClick = (0, import_react2.useCallback)(() => {
+    const handleFileClick = (0, import_react.useCallback)(() => {
       document.getElementById("camera-file-input")?.click();
     }, []);
     const isSelfie = step.facing === "user";
@@ -25230,12 +27273,12 @@
     const ovalStroke = detectStatus === "recording" ? "#fa5252" : detectStatus === "detected" ? "#40c057" : "rgba(255,255,255,0.6)";
     const rectStroke = detectStatus === "detected" ? "#40c057" : "rgba(255,255,255,0.6)";
     if (!cameraSupported) {
-      return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex-1 flex flex-col justify-center items-center px-6 py-8 text-center max-w-[420px] mx-auto w-full", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h2", { className: "text-xl font-bold mb-2", children: step.title }),
-        isSelfie && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-500 text-sm", children: "Se necesita acceso a la c\xE1mara para tomar la selfie. Por favor habilit\xE1 el acceso a la c\xE1mara en los ajustes de tu navegador." }),
-        !isSelfie && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-500 text-sm mb-6", children: step.cameraHint }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex-1 flex flex-col justify-center items-center px-6 py-8 text-center max-w-[420px] mx-auto w-full", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { className: "text-xl font-bold mb-2", children: step.title }),
+        isSelfie && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-500 text-sm", children: "Se necesita acceso a la c\xE1mara para tomar la selfie. Por favor habilit\xE1 el acceso a la c\xE1mara en los ajustes de tu navegador." }),
+        !isSelfie && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-500 text-sm mb-6", children: step.cameraHint }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             "input",
             {
               type: "file",
@@ -25246,7 +27289,7 @@
               onChange: handleFileChange
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             "button",
             {
               className: "block w-full py-4 border-none rounded-xl text-base font-semibold cursor-pointer text-center bg-primary-400 text-white",
@@ -25257,9 +27300,9 @@
         ] })
       ] });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex-1 flex flex-col", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3 px-5 py-3 border-b border-gray-100", children: [
-        onBack && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex-1 flex flex-col", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-3 px-5 py-3 border-b border-gray-100", children: [
+        onBack && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "button",
           {
             className: "bg-transparent border-none text-gray-400 cursor-pointer p-0 text-lg leading-none",
@@ -25268,19 +27311,19 @@
             children: "\u2190"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "text-gray-400 text-xs uppercase tracking-widest", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-gray-400 text-xs uppercase tracking-widest", children: [
             "Paso ",
             stepIndex + 1,
             " de ",
             totalSteps
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "text-gray-800 text-[15px] font-semibold", children: step.title })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-gray-800 text-[15px] font-semibold", children: step.title })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ml-auto text-gray-400 text-xs text-right max-w-[45%]", children: hint })
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "ml-auto text-gray-400 text-xs text-right max-w-[45%]", children: hint })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative overflow-hidden rounded-xl mx-4 mt-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative overflow-hidden rounded-xl mx-4 mt-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "video",
           {
             ref: videoRef,
@@ -25294,7 +27337,7 @@
             }
           }
         ),
-        isSelfie && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+        isSelfie && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "svg",
           {
             viewBox: "0 0 200 300",
@@ -25307,7 +27350,7 @@
               height: "60%",
               pointerEvents: "none"
             },
-            children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+            children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               "ellipse",
               {
                 cx: "100",
@@ -25322,7 +27365,7 @@
             )
           }
         ),
-        !isSelfie && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+        !isSelfie && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "svg",
           {
             viewBox: "0 0 400 260",
@@ -25335,7 +27378,7 @@
               height: "70%",
               pointerEvents: "none"
             },
-            children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+            children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               "rect",
               {
                 x: "10",
@@ -25352,22 +27395,22 @@
             )
           }
         ),
-        (detectStatus === "face_lost" || glassesDetected) && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "absolute bottom-6 left-0 right-0 flex justify-center z-10", children: [
-          detectStatus === "face_lost" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white", children: "Manten\xE9 la mirada en la c\xE1mara" }),
-          glassesDetected && detectStatus !== "recording" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white", children: "Quit\xE1 los anteojos para continuar" })
+        (detectStatus === "face_lost" || glassesDetected) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "absolute bottom-6 left-0 right-0 flex justify-center z-10", children: [
+          detectStatus === "face_lost" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white", children: "Manten\xE9 la mirada en la c\xE1mara" }),
+          glassesDetected && detectStatus !== "recording" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white", children: "Quit\xE1 los anteojos para continuar" })
         ] }),
-        detectStatus === "recording" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "absolute bottom-6 left-0 right-0 flex justify-center z-10", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "w-32 h-1.5 rounded-full bg-white/20 overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+        detectStatus === "recording" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "absolute bottom-6 left-0 right-0 flex justify-center z-10", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "w-32 h-1.5 rounded-full bg-white/20 overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "div",
           {
             className: "h-full bg-red-500 rounded-full transition-all",
             style: { width: `${recordProgress}%` }
           }
         ) }) }),
-        idMismatchError && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-20 px-6 text-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "w-14 h-14 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-2xl mb-4", children: "\u2717" }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "text-white text-lg font-semibold mb-2", children: "Documento no v\xE1lido" }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-white/70 text-sm mb-6 max-w-[300px]", children: idMismatchError }),
-          onBack && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+        idMismatchError && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-20 px-6 text-center", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "w-14 h-14 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-2xl mb-4", children: "\u2717" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-white text-lg font-semibold mb-2", children: "Documento no v\xE1lido" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-white/70 text-sm mb-6 max-w-[300px]", children: idMismatchError }),
+          onBack && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             "button",
             {
               className: "py-3 px-8 rounded-xl border border-white/30 bg-transparent text-white text-sm font-medium cursor-pointer",
@@ -25381,22 +27424,22 @@
   }
 
   // src/shared-client/phases/intermediate-phase.tsx
-  var import_react3 = __toESM(require_react());
-  var import_jsx_runtime3 = __toESM(require_jsx_runtime());
+  var import_react2 = __toESM(require_react());
+  var import_jsx_runtime2 = __toESM(require_jsx_runtime());
   function IntermediatePhase({ prevStep, nextStep, onContinue }) {
-    const handleContinue = (0, import_react3.useCallback)(() => {
+    const handleContinue = (0, import_react2.useCallback)(() => {
       onContinue();
     }, [onContinue]);
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "flex-1 flex flex-col justify-center items-center px-6 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center max-w-[420px] mx-auto w-full", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "w-14 h-14 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-3xl mb-5", children: "\u2713" }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("h2", { className: "text-xl font-bold mb-2", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex-1 flex flex-col justify-center items-center px-6 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center max-w-[420px] mx-auto w-full", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "w-14 h-14 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-3xl mb-5", children: "\u2713" }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h2", { className: "text-xl font-bold mb-2", children: [
         prevStep.title,
         " lista"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("p", { className: "text-gray-500 text-sm mb-1", children: "Siguiente paso" }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("p", { className: "text-lg font-semibold mb-2", children: nextStep.title }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("p", { className: "text-gray-500 text-sm mb-8 leading-relaxed", children: prevStep.nextDesc }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-500 text-sm mb-1", children: "Siguiente paso" }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-lg font-semibold mb-2", children: nextStep.title }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-500 text-sm mb-8 leading-relaxed", children: prevStep.nextDesc }),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
         "button",
         {
           className: "block w-full py-4 border-none rounded-xl text-base font-semibold cursor-pointer text-center bg-primary-400 text-white",
@@ -25408,19 +27451,19 @@
   }
 
   // src/shared-client/phases/preview-phase.tsx
-  var import_react4 = __toESM(require_react());
-  var import_jsx_runtime4 = __toESM(require_jsx_runtime());
+  var import_react3 = __toESM(require_react());
+  var import_jsx_runtime3 = __toESM(require_jsx_runtime());
   function PreviewPhase({ step, blob, previewUrl, uploading, onConfirm, onRetake }) {
-    const handleConfirm = (0, import_react4.useCallback)(() => {
+    const handleConfirm = (0, import_react3.useCallback)(() => {
       onConfirm();
     }, [onConfirm]);
-    const handleRetake = (0, import_react4.useCallback)(() => {
+    const handleRetake = (0, import_react3.useCallback)(() => {
       onRetake();
     }, [onRetake]);
     const isSelfie = step.key === "selfie";
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex-1 flex flex-col", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "relative", children: [
-        isSelfie && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "flex-1 flex flex-col", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "relative", children: [
+        isSelfie && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
           "video",
           {
             src: previewUrl,
@@ -25431,11 +27474,11 @@
             className: "block w-full"
           }
         ),
-        !isSelfie && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("img", { src: previewUrl, alt: "Preview", className: "block w-full" }),
-        uploading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "absolute bottom-0 left-0 right-0 text-center text-white text-sm py-2 bg-primary-400/80", children: "Subiendo foto..." })
+        !isSelfie && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("img", { src: previewUrl, alt: "Preview", className: "block w-full" }),
+        uploading && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "absolute bottom-0 left-0 right-0 text-center text-white text-sm py-2 bg-primary-400/80", children: "Subiendo foto..." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex gap-3 p-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { className: "flex gap-3 p-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
           "button",
           {
             className: "flex-1 py-3.5 rounded-xl border border-gray-200 text-base font-semibold cursor-pointer bg-white text-gray-700 disabled:opacity-50",
@@ -25444,7 +27487,7 @@
             children: "Volver a tomar"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
           "button",
           {
             className: "flex-1 py-3.5 rounded-xl border-none text-base font-semibold cursor-pointer bg-primary-400 text-white disabled:bg-gray-300 disabled:text-gray-500",
@@ -25458,30 +27501,114 @@
   }
 
   // src/shared-client/phases/done-phase.tsx
-  var import_jsx_runtime5 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime4 = __toESM(require_jsx_runtime());
   function DonePhase() {
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex-1 flex flex-col justify-center items-center px-6 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "w-[72px] h-[72px] rounded-full bg-green-100 text-green-700 flex items-center justify-center text-4xl mb-5", children: "\u2713" }),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("h2", { className: "text-[22px] font-bold mb-2", children: "\xA1Verificaci\xF3n enviada!" }),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("p", { className: "text-gray-500 text-sm leading-relaxed", children: "Ya pod\xE9s volver a tu computadora. Te notificaremos cuando se complete la revisi\xF3n." })
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex-1 flex flex-col justify-center items-center px-6 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "w-[72px] h-[72px] rounded-full bg-green-100 text-green-700 flex items-center justify-center text-4xl mb-5", children: "\u2713" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("h2", { className: "text-[22px] font-bold mb-2", children: "\xA1Verificaci\xF3n enviada!" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("p", { className: "text-gray-500 text-sm leading-relaxed", children: "Ya pod\xE9s volver a tu computadora. Te notificaremos cuando se complete la revisi\xF3n." })
     ] });
   }
 
   // src/shared-client/components/error-toast.tsx
-  var import_react5 = __toESM(require_react());
-  var import_jsx_runtime6 = __toESM(require_jsx_runtime());
+  var import_react4 = __toESM(require_react());
+  var import_jsx_runtime5 = __toESM(require_jsx_runtime());
   function ErrorToast({ message, onDismiss }) {
-    (0, import_react5.useEffect)(() => {
+    (0, import_react4.useEffect)(() => {
       const timer = setTimeout(onDismiss, 5e3);
       return () => clearTimeout(timer);
     }, [message, onDismiss]);
-    return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "fixed bottom-6 left-4 right-4 bg-red-600 text-white py-3 px-4 rounded-xl text-sm text-center z-[100] animate-[slideUp_0.3s_ease]", children: message });
+    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "fixed bottom-6 left-4 right-4 bg-red-600 text-white py-3 px-4 rounded-xl text-sm text-center z-[100] animate-[slideUp_0.3s_ease]", children: message });
   }
 
-  // src/mobile-page/client/App.tsx
+  // src/widget-page/client/qr-fallback.tsx
+  var import_react5 = __toESM(require_react());
+  var import_qrcode = __toESM(require_browser());
+  var import_jsx_runtime6 = __toESM(require_jsx_runtime());
+  var POLL_INTERVAL_MS = 3e3;
+  function QrFallback({ token, api, onCompleted, onBack }) {
+    const [qrDataUrl, setQrDataUrl] = (0, import_react5.useState)(null);
+    const [status, setStatus] = (0, import_react5.useState)("waiting");
+    const [uploadedCount, setUploadedCount] = (0, import_react5.useState)(0);
+    const [error, setError] = (0, import_react5.useState)(null);
+    const pollRef = (0, import_react5.useRef)(null);
+    (0, import_react5.useEffect)(() => {
+      const verifyUrl = `${api}/verify/${token}`;
+      import_qrcode.default.toDataURL(verifyUrl, {
+        errorCorrectionLevel: "M",
+        margin: 1,
+        width: 280
+      }).then(setQrDataUrl).catch(() => setError("Error generando c\xF3digo QR"));
+    }, [api, token]);
+    const pollStatus = (0, import_react5.useCallback)(async () => {
+      try {
+        const res = await fetch(`${api}/widget/session-status`, {
+          headers: { "x-session-token": token }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setStatus(data.status);
+        const count = [data.idFrontUrl, data.idBackUrl, data.selfieUrl].filter(Boolean).length;
+        setUploadedCount(count);
+        if (data.status === "completed") {
+          if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+          onCompleted();
+        }
+      } catch {
+      }
+    }, [api, token, onCompleted]);
+    (0, import_react5.useEffect)(() => {
+      pollRef.current = setInterval(pollStatus, POLL_INTERVAL_MS);
+      return () => {
+        if (pollRef.current) {
+          clearInterval(pollRef.current);
+          pollRef.current = null;
+        }
+      };
+    }, [pollStatus]);
+    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex-1 flex flex-col justify-center items-center px-6 py-8 text-center max-w-[420px] mx-auto w-full", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h2", { className: "text-xl font-bold mb-2", children: "Verific\xE1 tu identidad" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "text-gray-500 text-sm mb-6", children: "Escane\xE1 el c\xF3digo QR con tu celular para continuar con la verificaci\xF3n." }),
+      error && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "text-red-500 text-sm mb-4", children: error }),
+      qrDataUrl && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "img",
+        {
+          src: qrDataUrl,
+          alt: "QR Code",
+          className: "w-[280px] h-[280px] mb-6 rounded-lg"
+        }
+      ),
+      status === "waiting" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "py-2 px-5 rounded-3xl text-sm font-semibold bg-gray-100 text-gray-600", children: "Esperando..." }),
+      status === "uploading" && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex flex-col items-center gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "py-2 px-5 rounded-3xl text-sm font-semibold bg-blue-100 text-blue-700", children: "Subiendo fotos..." }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("p", { className: "text-xs text-gray-500", children: [
+          uploadedCount,
+          "/3 fotos subidas"
+        ] })
+      ] }),
+      status === "completed" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "py-2 px-5 rounded-3xl text-sm font-semibold bg-green-100 text-green-700", children: "Verificaci\xF3n completada \u2713" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "button",
+        {
+          className: "mt-6 bg-transparent border-none text-primary-500 text-sm cursor-pointer underline",
+          onClick: onBack,
+          children: "Volver"
+        }
+      )
+    ] });
+  }
+
+  // src/widget-page/client/widget-app.tsx
   var import_jsx_runtime7 = __toESM(require_jsx_runtime());
-  function App({ token, api }) {
+  function WidgetApp({ token: initialToken, api, locale, config, onEvent }) {
     const [phase, setPhase] = (0, import_react6.useState)("intro");
+    const [mode, setMode] = (0, import_react6.useState)("camera");
+    const [sessionToken, setSessionToken] = (0, import_react6.useState)(initialToken);
+    const idData = config?.idData || void 0;
+    const [creatingSession, setCreatingSession] = (0, import_react6.useState)(false);
     const [currentStep, setCurrentStep] = (0, import_react6.useState)(0);
     const [uploads, setUploads] = (0, import_react6.useState)({
       idFront: null,
@@ -25495,19 +27622,65 @@
     const fingerprintSentRef = (0, import_react6.useRef)(false);
     const deviceFingerprintRef = (0, import_react6.useRef)(collectDeviceFingerprint());
     const geolocationRef = (0, import_react6.useRef)(null);
+    const hasCameraApi = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
     const showError = (0, import_react6.useCallback)((msg) => {
       let message = msg;
       if (message === "Load failed" || message === "Failed to fetch") {
         message = "No se pudo conectar con el servidor. Verific\xE1 tu conexi\xF3n a internet.";
       }
       setError(message);
-    }, []);
-    const handleStart = (0, import_react6.useCallback)(() => {
-      collectGeolocation().then((geo) => {
-        geolocationRef.current = geo;
-      });
-      setPhase("camera");
-    }, []);
+      onEvent("kyc:error", { message, code: "upload_failed" });
+    }, [onEvent]);
+    const createSession = (0, import_react6.useCallback)(async () => {
+      if (sessionToken) return sessionToken;
+      if (!config) return null;
+      setCreatingSession(true);
+      try {
+        const headers = { "Content-Type": "application/json" };
+        if (config.apiKey) {
+          headers["x-publishable-key"] = String(config.apiKey);
+        } else if (config.token) {
+          headers["Authorization"] = `Bearer ${String(config.token)}`;
+        }
+        const res = await fetch(`${api}/widget/sessions`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            userId: config.userId,
+            idData: config.idData || null,
+            callbackUrl: config.callbackUrl || null,
+            callbackSecret: config.callbackSecret || null
+          })
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ message: "Session creation failed" }));
+          throw new Error(err.message || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        setSessionToken(data.token);
+        return data.token;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Session creation failed";
+        showError(message);
+        return null;
+      } finally {
+        setCreatingSession(false);
+      }
+    }, [sessionToken, config, api, showError]);
+    const handleStart = (0, import_react6.useCallback)(async () => {
+      const [token] = await Promise.all([
+        createSession(),
+        collectGeolocation().then((geo) => {
+          geolocationRef.current = geo;
+        })
+      ]);
+      if (!token) return;
+      if (mode === "qr") {
+        setPhase("qr");
+      } else {
+        setPhase("camera");
+      }
+    }, [mode, createSession]);
     const handleCapture = (0, import_react6.useCallback)((blob, previewUrl) => {
       setCapturedBlob(blob);
       setCapturedPreviewUrl(previewUrl);
@@ -25526,20 +27699,23 @@
       const key = step2.key;
       setUploading(true);
       try {
-        const url = await uploadFile(capturedBlob, key, token, api);
+        const url = await uploadFile(capturedBlob, key, sessionToken, api);
         const preview = capturedPreviewUrl ?? "";
         const newUploads = { ...uploads, [key]: { url, preview } };
         setUploads(newUploads);
         setCapturedBlob(null);
         setCapturedPreviewUrl(null);
+        const uploaded = [newUploads.idFront, newUploads.idBack, newUploads.selfie].filter(Boolean).length;
+        onEvent("kyc:step-completed", { step: key, uploaded, total: 3 });
         const allDone = newUploads.idFront && newUploads.idBack && newUploads.selfie;
         if (allDone) {
-          await patchSession(token, api, {
+          await patchSession(sessionToken, api, {
             status: "completed",
             idFrontUrl: newUploads.idFront.url,
             idBackUrl: newUploads.idBack.url,
             selfieUrl: newUploads.selfie.url
           });
+          onEvent("kyc:completed", { sessionId: sessionToken });
           setPhase("done");
         } else {
           const patchBody = {
@@ -25553,7 +27729,7 @@
             };
             fingerprintSentRef.current = true;
           }
-          await patchSession(token, api, patchBody);
+          await patchSession(sessionToken, api, patchBody);
           setCurrentStep((s) => s + 1);
           setPhase("intermediate");
         }
@@ -25562,21 +27738,96 @@
       } finally {
         setUploading(false);
       }
-    }, [capturedBlob, capturedPreviewUrl, uploading, currentStep, uploads, token, api, showError]);
+    }, [capturedBlob, capturedPreviewUrl, uploading, currentStep, uploads, sessionToken, api, showError, onEvent]);
     const handleContinue = (0, import_react6.useCallback)(() => {
       setPhase("camera");
     }, []);
+    const handleQrCompleted = (0, import_react6.useCallback)(() => {
+      onEvent("kyc:completed", { sessionId: sessionToken });
+      setPhase("done");
+    }, [onEvent, sessionToken]);
+    const handleBackToIntro = (0, import_react6.useCallback)(() => {
+      setPhase("intro");
+      setCurrentStep(0);
+    }, []);
+    const handleCameraError = (0, import_react6.useCallback)((err) => {
+      onEvent("kyc:error", err);
+    }, [onEvent]);
     const step = STEPS[currentStep];
     const prevStep = STEPS[currentStep - 1];
-    return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "flex-1 flex flex-col", children: [
-      phase === "intro" && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(IntroPhase, { steps: STEPS, onStart: handleStart }),
+    const segmentedBtn = "flex-1 py-2 text-sm font-medium text-center rounded-lg cursor-pointer border-none bg-transparent relative z-10 transition-colors duration-200";
+    return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "flex-1 flex flex-col", style: { fontFamily: "system-ui, -apple-system, sans-serif" }, children: [
+      phase === "intro" && /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "flex-1 flex flex-col justify-center px-6 py-8 max-w-[420px] mx-auto w-full", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("h1", { className: "text-2xl font-bold mb-2", children: "Verificaci\xF3n de Identidad" }),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("p", { className: "text-gray-500 text-sm mb-6", children: "Necesitamos verificar tu identidad. El proceso dura menos de un minuto." }),
+        hasCameraApi && /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "relative flex p-1 bg-gray-100 rounded-xl mb-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+            "div",
+            {
+              className: "absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out",
+              style: {
+                width: "calc(50% - 4px)",
+                left: mode === "camera" ? "4px" : "calc(50% + 0px)"
+              }
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+            "button",
+            {
+              className: `${segmentedBtn} ${mode === "camera" ? "text-gray-800" : "text-gray-500"}`,
+              onClick: () => setMode("camera"),
+              children: "Usar c\xE1mara"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+            "button",
+            {
+              className: `${segmentedBtn} ${mode === "qr" ? "text-gray-800" : "text-gray-500"}`,
+              onClick: () => setMode("qr"),
+              children: "Escanear QR"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "text-xs text-gray-500 mb-6 min-h-[2.5rem]", children: [
+          mode === "qr" && "Se generar\xE1 un c\xF3digo QR para que completes la verificaci\xF3n desde tu celular.",
+          mode === "camera" && "Vas a usar la c\xE1mara de este dispositivo para tomar las fotos del DNI y la selfie.",
+          !hasCameraApi && "No se detect\xF3 c\xE1mara. Se generar\xE1 un c\xF3digo QR para verificar desde tu celular."
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("ul", { className: "list-none mb-8", children: STEPS.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
+          "li",
+          {
+            className: `flex items-center gap-4 py-4${i < STEPS.length - 1 ? " border-b border-gray-100" : ""}`,
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "w-9 h-9 rounded-full bg-primary-50 text-primary-400 flex items-center justify-center font-bold text-sm shrink-0", children: i + 1 }),
+              /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { className: "text-sm", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("strong", { className: "block mb-0.5", children: s.introTitle }),
+                /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "text-gray-500 text-xs", children: s.introDesc })
+              ] })
+            ]
+          },
+          s.key
+        )) }),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+          "button",
+          {
+            className: "block w-full py-4 border-none rounded-xl text-base font-semibold cursor-pointer text-center bg-primary-400 text-white disabled:opacity-50",
+            onClick: handleStart,
+            disabled: creatingSession,
+            children: creatingSession ? "Iniciando..." : "Comenzar"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("p", { className: "text-gray-400 text-[11px] text-center mt-4 leading-relaxed", children: "Al continuar, se solicitar\xE1 acceso a tu c\xE1mara y ubicaci\xF3n para verificar tu identidad. Tu ubicaci\xF3n se usa \xFAnicamente con fines de seguridad." })
+      ] }),
       phase === "camera" && step && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
         CameraPhase,
         {
           step,
           stepIndex: currentStep,
           totalSteps: STEPS.length,
-          onCapture: handleCapture
+          onCapture: handleCapture,
+          onBack: currentStep === 0 ? handleBackToIntro : void 0,
+          idData: step.key === "idFront" ? idData : void 0,
+          onError: handleCameraError
         }
       ),
       phase === "intermediate" && step && prevStep && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
@@ -25598,23 +27849,157 @@
           onRetake: handleRetake
         }
       ),
+      phase === "qr" && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+        QrFallback,
+        {
+          token: sessionToken,
+          api,
+          onCompleted: handleQrCompleted,
+          onBack: handleBackToIntro
+        }
+      ),
       phase === "done" && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(DonePhase, {}),
       error !== "" && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(ErrorToast, { message: error, onDismiss: () => setError("") })
     ] });
   }
 
-  // src/mobile-page/client/index.tsx
+  // src/widget-page/client/index.tsx
   var import_jsx_runtime8 = __toESM(require_jsx_runtime());
-  var container = document.getElementById("app");
-  (0, import_client.createRoot)(container).render(
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-      App,
-      {
-        token: window.__TOKEN,
-        api: window.__API
+  var KycWidgetElement = class extends HTMLElement {
+    constructor() {
+      super(...arguments);
+      this.root = null;
+      this.mountPoint = null;
+      this.emitEvent = (name, detail) => {
+        this.dispatchEvent(new CustomEvent(name, { bubbles: true, detail }));
+      };
+    }
+    connectedCallback() {
+      const shadow = this.attachShadow({ mode: "open" });
+      const style = document.createElement("style");
+      style.textContent = true ? `/*! tailwindcss v4.2.1 | MIT License | https://tailwindcss.com */
+@layer properties{@supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b)))){*,:before,:after,::backdrop{--tw-rotate-x:initial;--tw-rotate-y:initial;--tw-rotate-z:initial;--tw-skew-x:initial;--tw-skew-y:initial;--tw-space-y-reverse:0;--tw-border-style:solid;--tw-leading:initial;--tw-font-weight:initial;--tw-tracking:initial;--tw-shadow:0 0 #0000;--tw-shadow-color:initial;--tw-shadow-alpha:100%;--tw-inset-shadow:0 0 #0000;--tw-inset-shadow-color:initial;--tw-inset-shadow-alpha:100%;--tw-ring-color:initial;--tw-ring-shadow:0 0 #0000;--tw-inset-ring-color:initial;--tw-inset-ring-shadow:0 0 #0000;--tw-ring-inset:initial;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-offset-shadow:0 0 #0000;--tw-outline-style:solid;--tw-blur:initial;--tw-brightness:initial;--tw-contrast:initial;--tw-grayscale:initial;--tw-hue-rotate:initial;--tw-invert:initial;--tw-opacity:initial;--tw-saturate:initial;--tw-sepia:initial;--tw-drop-shadow:initial;--tw-drop-shadow-color:initial;--tw-drop-shadow-alpha:100%;--tw-drop-shadow-size:initial;--tw-duration:initial;--tw-ease:initial}}}@layer theme{:root,:host{--font-sans:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";--font-mono:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;--color-red-50:oklch(97.1% .013 17.38);--color-red-100:oklch(93.6% .032 17.717);--color-red-300:oklch(80.8% .114 19.571);--color-red-400:oklch(70.4% .191 22.216);--color-red-500:oklch(63.7% .237 25.331);--color-red-600:oklch(57.7% .245 27.325);--color-red-700:oklch(50.5% .213 27.518);--color-orange-500:oklch(70.5% .213 47.604);--color-green-100:oklch(96.2% .044 156.743);--color-green-500:oklch(72.3% .219 149.579);--color-green-700:oklch(52.7% .154 150.069);--color-blue-100:oklch(93.2% .032 255.585);--color-blue-700:oklch(48.8% .243 264.376);--color-gray-50:oklch(98.5% .002 247.839);--color-gray-100:oklch(96.7% .003 264.542);--color-gray-200:oklch(92.8% .006 264.531);--color-gray-300:oklch(87.2% .01 258.338);--color-gray-400:oklch(70.7% .022 261.325);--color-gray-500:oklch(55.1% .027 264.364);--color-gray-600:oklch(44.6% .03 256.802);--color-gray-700:oklch(37.3% .034 259.733);--color-gray-800:oklch(27.8% .033 256.848);--color-gray-900:oklch(21% .034 264.665);--color-black:#000;--color-white:#fff;--spacing:.25rem;--container-2xl:42rem;--text-xs:.75rem;--text-xs--line-height:calc(1 / .75);--text-sm:.875rem;--text-sm--line-height:calc(1.25 / .875);--text-base:1rem;--text-base--line-height:calc(1.5 / 1);--text-lg:1.125rem;--text-lg--line-height:calc(1.75 / 1.125);--text-xl:1.25rem;--text-xl--line-height:calc(1.75 / 1.25);--text-2xl:1.5rem;--text-2xl--line-height:calc(2 / 1.5);--text-3xl:1.875rem;--text-3xl--line-height:calc(2.25 / 1.875);--text-4xl:2.25rem;--text-4xl--line-height:calc(2.5 / 2.25);--font-weight-medium:500;--font-weight-semibold:600;--font-weight-bold:700;--tracking-widest:.1em;--leading-snug:1.375;--leading-relaxed:1.625;--radius-lg:.5rem;--radius-xl:.75rem;--radius-3xl:1.5rem;--ease-in-out:cubic-bezier(.4, 0, .2, 1);--animate-pulse:pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;--default-transition-duration:.15s;--default-transition-timing-function:cubic-bezier(.4, 0, .2, 1);--default-font-family:var(--font-sans);--default-mono-font-family:var(--font-mono);--color-primary-50:#e6fcf5;--color-primary-400:#15aabf;--color-primary-500:#1098ad}}@layer base{*,:after,:before,::backdrop{box-sizing:border-box;border:0 solid;margin:0;padding:0}::file-selector-button{box-sizing:border-box;border:0 solid;margin:0;padding:0}html,:host{-webkit-text-size-adjust:100%;tab-size:4;line-height:1.5;font-family:var(--default-font-family,ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji");font-feature-settings:var(--default-font-feature-settings,normal);font-variation-settings:var(--default-font-variation-settings,normal);-webkit-tap-highlight-color:transparent}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;-webkit-text-decoration:inherit;-webkit-text-decoration:inherit;-webkit-text-decoration:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,samp,pre{font-family:var(--default-mono-font-family,ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);font-feature-settings:var(--default-mono-font-feature-settings,normal);font-variation-settings:var(--default-mono-font-variation-settings,normal);font-size:1em}small{font-size:80%}sub,sup{vertical-align:baseline;font-size:75%;line-height:0;position:relative}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}:-moz-focusring{outline:auto}progress{vertical-align:baseline}summary{display:list-item}ol,ul,menu{list-style:none}img,svg,video,canvas,audio,iframe,embed,object{vertical-align:middle;display:block}img,video{max-width:100%;height:auto}button,input,select,optgroup,textarea{font:inherit;font-feature-settings:inherit;font-variation-settings:inherit;letter-spacing:inherit;color:inherit;opacity:1;background-color:#0000;border-radius:0}::file-selector-button{font:inherit;font-feature-settings:inherit;font-variation-settings:inherit;letter-spacing:inherit;color:inherit;opacity:1;background-color:#0000;border-radius:0}:where(select:is([multiple],[size])) optgroup{font-weight:bolder}:where(select:is([multiple],[size])) optgroup option{padding-inline-start:20px}::file-selector-button{margin-inline-end:4px}::placeholder{opacity:1}@supports (not ((-webkit-appearance:-apple-pay-button))) or (contain-intrinsic-size:1px){::placeholder{color:currentColor}@supports (color:color-mix(in lab, red, red)){::placeholder{color:color-mix(in oklab, currentcolor 50%, transparent)}}}textarea{resize:vertical}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-date-and-time-value{min-height:1lh;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-datetime-edit{padding-block:0}::-webkit-datetime-edit-year-field{padding-block:0}::-webkit-datetime-edit-month-field{padding-block:0}::-webkit-datetime-edit-day-field{padding-block:0}::-webkit-datetime-edit-hour-field{padding-block:0}::-webkit-datetime-edit-minute-field{padding-block:0}::-webkit-datetime-edit-second-field{padding-block:0}::-webkit-datetime-edit-millisecond-field{padding-block:0}::-webkit-datetime-edit-meridiem-field{padding-block:0}::-webkit-calendar-picker-indicator{line-height:1}:-moz-ui-invalid{box-shadow:none}button,input:where([type=button],[type=reset],[type=submit]){appearance:button}::file-selector-button{appearance:button}::-webkit-inner-spin-button{height:auto}::-webkit-outer-spin-button{height:auto}[hidden]:where(:not([hidden=until-found])){display:none!important}}@layer components;@layer utilities{.visible{visibility:visible}.absolute{position:absolute}.fixed{position:fixed}.relative{position:relative}.static{position:static}.inset-0{inset:calc(var(--spacing) * 0)}.start{inset-inline-start:var(--spacing)}.end{inset-inline-end:var(--spacing)}.top-0{top:calc(var(--spacing) * 0)}.top-1{top:calc(var(--spacing) * 1)}.right-0{right:calc(var(--spacing) * 0)}.right-4{right:calc(var(--spacing) * 4)}.bottom-0{bottom:calc(var(--spacing) * 0)}.bottom-1{bottom:calc(var(--spacing) * 1)}.bottom-6{bottom:calc(var(--spacing) * 6)}.left-0{left:calc(var(--spacing) * 0)}.left-4{left:calc(var(--spacing) * 4)}.z-10{z-index:10}.z-20{z-index:20}.z-50{z-index:50}.z-\\[100\\]{z-index:100}.container{width:100%}@media (min-width:40rem){.container{max-width:40rem}}@media (min-width:48rem){.container{max-width:48rem}}@media (min-width:64rem){.container{max-width:64rem}}@media (min-width:80rem){.container{max-width:80rem}}@media (min-width:96rem){.container{max-width:96rem}}.mx-4{margin-inline:calc(var(--spacing) * 4)}.mx-auto{margin-inline:auto}.mt-1{margin-top:calc(var(--spacing) * 1)}.mt-2{margin-top:calc(var(--spacing) * 2)}.mt-4{margin-top:calc(var(--spacing) * 4)}.mt-6{margin-top:calc(var(--spacing) * 6)}.mb-0{margin-bottom:calc(var(--spacing) * 0)}.mb-0\\.5{margin-bottom:calc(var(--spacing) * .5)}.mb-1{margin-bottom:calc(var(--spacing) * 1)}.mb-2{margin-bottom:calc(var(--spacing) * 2)}.mb-4{margin-bottom:calc(var(--spacing) * 4)}.mb-5{margin-bottom:calc(var(--spacing) * 5)}.mb-6{margin-bottom:calc(var(--spacing) * 6)}.mb-8{margin-bottom:calc(var(--spacing) * 8)}.mb-10{margin-bottom:calc(var(--spacing) * 10)}.ml-auto{margin-left:auto}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.inline{display:inline}.table{display:table}.h-1{height:calc(var(--spacing) * 1)}.h-1\\.5{height:calc(var(--spacing) * 1.5)}.h-9{height:calc(var(--spacing) * 9)}.h-14{height:calc(var(--spacing) * 14)}.h-\\[72px\\]{height:72px}.h-\\[280px\\]{height:280px}.h-full{height:100%}.max-h-\\[90vh\\]{max-height:90vh}.min-h-\\[2\\.5rem\\]{min-height:2.5rem}.min-h-dvh{min-height:100dvh}.w-9{width:calc(var(--spacing) * 9)}.w-14{width:calc(var(--spacing) * 14)}.w-32{width:calc(var(--spacing) * 32)}.w-\\[72px\\]{width:72px}.w-\\[280px\\]{width:280px}.w-full{width:100%}.max-w-2xl{max-width:var(--container-2xl)}.max-w-\\[45\\%\\]{max-width:45%}.max-w-\\[300px\\]{max-width:300px}.max-w-\\[420px\\]{max-width:420px}.flex-1{flex:1}.shrink-0{flex-shrink:0}.border-collapse{border-collapse:collapse}.transform{transform:var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,)}.animate-\\[slideUp_0\\.3s_ease\\]{animation:.3s slideUp}.animate-pulse{animation:var(--animate-pulse)}.cursor-pointer{cursor:pointer}.resize{resize:both}.resize-y{resize:vertical}.list-none{list-style-type:none}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-between{justify-content:space-between}.justify-center{justify-content:center}.gap-1{gap:calc(var(--spacing) * 1)}.gap-2{gap:calc(var(--spacing) * 2)}.gap-3{gap:calc(var(--spacing) * 3)}.gap-4{gap:calc(var(--spacing) * 4)}:where(.space-y-0>:not(:last-child)){--tw-space-y-reverse:0;margin-block-start:calc(calc(var(--spacing) * 0) * var(--tw-space-y-reverse));margin-block-end:calc(calc(var(--spacing) * 0) * calc(1 - var(--tw-space-y-reverse)))}:where(.space-y-0\\.5>:not(:last-child)){--tw-space-y-reverse:0;margin-block-start:calc(calc(var(--spacing) * .5) * var(--tw-space-y-reverse));margin-block-end:calc(calc(var(--spacing) * .5) * calc(1 - var(--tw-space-y-reverse)))}:where(.space-y-2>:not(:last-child)){--tw-space-y-reverse:0;margin-block-start:calc(calc(var(--spacing) * 2) * var(--tw-space-y-reverse));margin-block-end:calc(calc(var(--spacing) * 2) * calc(1 - var(--tw-space-y-reverse)))}:where(.space-y-3>:not(:last-child)){--tw-space-y-reverse:0;margin-block-start:calc(calc(var(--spacing) * 3) * var(--tw-space-y-reverse));margin-block-end:calc(calc(var(--spacing) * 3) * calc(1 - var(--tw-space-y-reverse)))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.rounded{border-radius:.25rem}.rounded-3xl{border-radius:var(--radius-3xl)}.rounded-full{border-radius:3.40282e38px}.rounded-lg{border-radius:var(--radius-lg)}.rounded-xl{border-radius:var(--radius-xl)}.border{border-style:var(--tw-border-style);border-width:1px}.border-4{border-style:var(--tw-border-style);border-width:4px}.border-b{border-bottom-style:var(--tw-border-style);border-bottom-width:1px}.border-none{--tw-border-style:none;border-style:none}.border-gray-100{border-color:var(--color-gray-100)}.border-gray-200{border-color:var(--color-gray-200)}.border-gray-300{border-color:var(--color-gray-300)}.border-red-300{border-color:var(--color-red-300)}.border-white{border-color:var(--color-white)}.border-white\\/30{border-color:#ffffff4d}@supports (color:color-mix(in lab, red, red)){.border-white\\/30{border-color:color-mix(in oklab, var(--color-white) 30%, transparent)}}.bg-black{background-color:var(--color-black)}.bg-black\\/50{background-color:#00000080}@supports (color:color-mix(in lab, red, red)){.bg-black\\/50{background-color:color-mix(in oklab, var(--color-black) 50%, transparent)}}.bg-black\\/80{background-color:#000c}@supports (color:color-mix(in lab, red, red)){.bg-black\\/80{background-color:color-mix(in oklab, var(--color-black) 80%, transparent)}}.bg-blue-100{background-color:var(--color-blue-100)}.bg-gray-50{background-color:var(--color-gray-50)}.bg-gray-100{background-color:var(--color-gray-100)}.bg-green-100{background-color:var(--color-green-100)}.bg-green-500{background-color:var(--color-green-500)}.bg-orange-500{background-color:var(--color-orange-500)}.bg-orange-500\\/90{background-color:#fe6e00e6}@supports (color:color-mix(in lab, red, red)){.bg-orange-500\\/90{background-color:color-mix(in oklab, var(--color-orange-500) 90%, transparent)}}.bg-primary-50{background-color:var(--color-primary-50)}.bg-primary-400{background-color:var(--color-primary-400)}.bg-primary-400\\/80{background-color:#15aabfcc}@supports (color:color-mix(in lab, red, red)){.bg-primary-400\\/80{background-color:color-mix(in oklab, var(--color-primary-400) 80%, transparent)}}.bg-red-50{background-color:var(--color-red-50)}.bg-red-100{background-color:var(--color-red-100)}.bg-red-500{background-color:var(--color-red-500)}.bg-red-500\\/20{background-color:#fb2c3633}@supports (color:color-mix(in lab, red, red)){.bg-red-500\\/20{background-color:color-mix(in oklab, var(--color-red-500) 20%, transparent)}}.bg-red-600{background-color:var(--color-red-600)}.bg-transparent{background-color:#0000}.bg-white{background-color:var(--color-white)}.bg-white\\/20{background-color:#fff3}@supports (color:color-mix(in lab, red, red)){.bg-white\\/20{background-color:color-mix(in oklab, var(--color-white) 20%, transparent)}}.object-contain{object-fit:contain}.object-cover{object-fit:cover}.p-0{padding:calc(var(--spacing) * 0)}.p-1{padding:calc(var(--spacing) * 1)}.p-2{padding:calc(var(--spacing) * 2)}.p-3{padding:calc(var(--spacing) * 3)}.p-4{padding:calc(var(--spacing) * 4)}.p-6{padding:calc(var(--spacing) * 6)}.px-1{padding-inline:calc(var(--spacing) * 1)}.px-1\\.5{padding-inline:calc(var(--spacing) * 1.5)}.px-2{padding-inline:calc(var(--spacing) * 2)}.px-3{padding-inline:calc(var(--spacing) * 3)}.px-4{padding-inline:calc(var(--spacing) * 4)}.px-5{padding-inline:calc(var(--spacing) * 5)}.px-6{padding-inline:calc(var(--spacing) * 6)}.px-8{padding-inline:calc(var(--spacing) * 8)}.py-0{padding-block:calc(var(--spacing) * 0)}.py-0\\.5{padding-block:calc(var(--spacing) * .5)}.py-1{padding-block:calc(var(--spacing) * 1)}.py-1\\.5{padding-block:calc(var(--spacing) * 1.5)}.py-2{padding-block:calc(var(--spacing) * 2)}.py-3{padding-block:calc(var(--spacing) * 3)}.py-3\\.5{padding-block:calc(var(--spacing) * 3.5)}.py-4{padding-block:calc(var(--spacing) * 4)}.py-8{padding-block:calc(var(--spacing) * 8)}.pb-4{padding-bottom:calc(var(--spacing) * 4)}.pb-\\[calc\\(2rem\\+env\\(safe-area-inset-bottom\\)\\)\\]{padding-bottom:calc(2rem + env(safe-area-inset-bottom))}.text-center{text-align:center}.text-left{text-align:left}.text-right{text-align:right}.font-\\[-apple-system\\,BlinkMacSystemFont\\,\\\\\\'Segoe_UI\\\\\\'\\,Roboto\\,sans-serif\\]{font-family:-apple-system,BlinkMacSystemFont,"'Segoe UI'",Roboto,sans-serif}.text-2xl{font-size:var(--text-2xl);line-height:var(--tw-leading,var(--text-2xl--line-height))}.text-3xl{font-size:var(--text-3xl);line-height:var(--tw-leading,var(--text-3xl--line-height))}.text-4xl{font-size:var(--text-4xl);line-height:var(--tw-leading,var(--text-4xl--line-height))}.text-base{font-size:var(--text-base);line-height:var(--tw-leading,var(--text-base--line-height))}.text-lg{font-size:var(--text-lg);line-height:var(--tw-leading,var(--text-lg--line-height))}.text-sm{font-size:var(--text-sm);line-height:var(--tw-leading,var(--text-sm--line-height))}.text-xl{font-size:var(--text-xl);line-height:var(--tw-leading,var(--text-xl--line-height))}.text-xs{font-size:var(--text-xs);line-height:var(--tw-leading,var(--text-xs--line-height))}.text-\\[11px\\]{font-size:11px}.text-\\[15px\\]{font-size:15px}.text-\\[22px\\]{font-size:22px}.leading-none{--tw-leading:1;line-height:1}.leading-relaxed{--tw-leading:var(--leading-relaxed);line-height:var(--leading-relaxed)}.leading-snug{--tw-leading:var(--leading-snug);line-height:var(--leading-snug)}.font-bold{--tw-font-weight:var(--font-weight-bold);font-weight:var(--font-weight-bold)}.font-medium{--tw-font-weight:var(--font-weight-medium);font-weight:var(--font-weight-medium)}.font-semibold{--tw-font-weight:var(--font-weight-semibold);font-weight:var(--font-weight-semibold)}.tracking-widest{--tw-tracking:var(--tracking-widest);letter-spacing:var(--tracking-widest)}.text-blue-700{color:var(--color-blue-700)}.text-gray-400{color:var(--color-gray-400)}.text-gray-500{color:var(--color-gray-500)}.text-gray-600{color:var(--color-gray-600)}.text-gray-700{color:var(--color-gray-700)}.text-gray-800{color:var(--color-gray-800)}.text-gray-900{color:var(--color-gray-900)}.text-green-700{color:var(--color-green-700)}.text-primary-400{color:var(--color-primary-400)}.text-primary-500{color:var(--color-primary-500)}.text-red-400{color:var(--color-red-400)}.text-red-500{color:var(--color-red-500)}.text-red-600{color:var(--color-red-600)}.text-red-700{color:var(--color-red-700)}.text-white{color:var(--color-white)}.text-white\\/70{color:#ffffffb3}@supports (color:color-mix(in lab, red, red)){.text-white\\/70{color:color-mix(in oklab, var(--color-white) 70%, transparent)}}.capitalize{text-transform:capitalize}.lowercase{text-transform:lowercase}.uppercase{text-transform:uppercase}.underline{text-decoration-line:underline}.shadow,.shadow-sm{--tw-shadow:0 1px 3px 0 var(--tw-shadow-color,#0000001a), 0 1px 2px -1px var(--tw-shadow-color,#0000001a);box-shadow:var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow)}.outline{outline-style:var(--tw-outline-style);outline-width:1px}.blur{--tw-blur:blur(8px);filter:var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,)}.filter{filter:var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,)}.transition{transition-property:color,background-color,border-color,outline-color,text-decoration-color,fill,stroke,--tw-gradient-from,--tw-gradient-via,--tw-gradient-to,opacity,box-shadow,transform,translate,scale,rotate,filter,-webkit-backdrop-filter,backdrop-filter,display,content-visibility,overlay,pointer-events;transition-timing-function:var(--tw-ease,var(--default-transition-timing-function));transition-duration:var(--tw-duration,var(--default-transition-duration))}.transition\\!{transition-property:color,background-color,border-color,outline-color,text-decoration-color,fill,stroke,--tw-gradient-from,--tw-gradient-via,--tw-gradient-to,opacity,box-shadow,transform,translate,scale,rotate,filter,-webkit-backdrop-filter,backdrop-filter,display,content-visibility,overlay,pointer-events!important;transition-timing-function:var(--tw-ease,var(--default-transition-timing-function))!important;transition-duration:var(--tw-duration,var(--default-transition-duration))!important}.transition-all{transition-property:all;transition-timing-function:var(--tw-ease,var(--default-transition-timing-function));transition-duration:var(--tw-duration,var(--default-transition-duration))}.transition-colors{transition-property:color,background-color,border-color,outline-color,text-decoration-color,fill,stroke,--tw-gradient-from,--tw-gradient-via,--tw-gradient-to;transition-timing-function:var(--tw-ease,var(--default-transition-timing-function));transition-duration:var(--tw-duration,var(--default-transition-duration))}.duration-200{--tw-duration:.2s;transition-duration:.2s}.duration-300{--tw-duration:.3s;transition-duration:.3s}.ease-in-out{--tw-ease:var(--ease-in-out);transition-timing-function:var(--ease-in-out)}@media (hover:hover){.hover\\:bg-gray-50:hover{background-color:var(--color-gray-50)}}.disabled\\:bg-gray-300:disabled{background-color:var(--color-gray-300)}.disabled\\:text-gray-500:disabled{color:var(--color-gray-500)}.disabled\\:opacity-50:disabled{opacity:.5}}@keyframes slideUp{0%{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@property --tw-rotate-x{syntax:"*";inherits:false}@property --tw-rotate-y{syntax:"*";inherits:false}@property --tw-rotate-z{syntax:"*";inherits:false}@property --tw-skew-x{syntax:"*";inherits:false}@property --tw-skew-y{syntax:"*";inherits:false}@property --tw-space-y-reverse{syntax:"*";inherits:false;initial-value:0}@property --tw-border-style{syntax:"*";inherits:false;initial-value:solid}@property --tw-leading{syntax:"*";inherits:false}@property --tw-font-weight{syntax:"*";inherits:false}@property --tw-tracking{syntax:"*";inherits:false}@property --tw-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000}@property --tw-shadow-color{syntax:"*";inherits:false}@property --tw-shadow-alpha{syntax:"<percentage>";inherits:false;initial-value:100%}@property --tw-inset-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000}@property --tw-inset-shadow-color{syntax:"*";inherits:false}@property --tw-inset-shadow-alpha{syntax:"<percentage>";inherits:false;initial-value:100%}@property --tw-ring-color{syntax:"*";inherits:false}@property --tw-ring-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000}@property --tw-inset-ring-color{syntax:"*";inherits:false}@property --tw-inset-ring-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000}@property --tw-ring-inset{syntax:"*";inherits:false}@property --tw-ring-offset-width{syntax:"<length>";inherits:false;initial-value:0}@property --tw-ring-offset-color{syntax:"*";inherits:false;initial-value:#fff}@property --tw-ring-offset-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000}@property --tw-outline-style{syntax:"*";inherits:false;initial-value:solid}@property --tw-blur{syntax:"*";inherits:false}@property --tw-brightness{syntax:"*";inherits:false}@property --tw-contrast{syntax:"*";inherits:false}@property --tw-grayscale{syntax:"*";inherits:false}@property --tw-hue-rotate{syntax:"*";inherits:false}@property --tw-invert{syntax:"*";inherits:false}@property --tw-opacity{syntax:"*";inherits:false}@property --tw-saturate{syntax:"*";inherits:false}@property --tw-sepia{syntax:"*";inherits:false}@property --tw-drop-shadow{syntax:"*";inherits:false}@property --tw-drop-shadow-color{syntax:"*";inherits:false}@property --tw-drop-shadow-alpha{syntax:"<percentage>";inherits:false;initial-value:100%}@property --tw-drop-shadow-size{syntax:"*";inherits:false}@property --tw-duration{syntax:"*";inherits:false}@property --tw-ease{syntax:"*";inherits:false}@keyframes pulse{50%{opacity:.5}}` : "";
+      shadow.appendChild(style);
+      this.mountPoint = document.createElement("div");
+      this.mountPoint.setAttribute("id", "kyc-widget-root");
+      this.mountPoint.style.display = "flex";
+      this.mountPoint.style.flexDirection = "column";
+      this.mountPoint.style.width = "100%";
+      this.mountPoint.style.minHeight = "500px";
+      shadow.appendChild(this.mountPoint);
+      this.root = (0, import_client.createRoot)(this.mountPoint);
+      this.renderApp();
+      this.dispatchEvent(new CustomEvent("kyc:ready", {
+        bubbles: true,
+        detail: { version: "1.0" }
+      }));
+    }
+    disconnectedCallback() {
+      if (this.root) {
+        this.root.unmount();
+        this.root = null;
       }
-    )
-  );
+    }
+    attributeChangedCallback() {
+      this.renderApp();
+    }
+    renderApp() {
+      if (!this.root) return;
+      const token = this.getAttribute("token") || "";
+      const api = this.getAttribute("api") || "";
+      const locale = this.getAttribute("locale") || "es";
+      let config;
+      try {
+        const configAttr = this.getAttribute("config");
+        if (configAttr) config = JSON.parse(configAttr);
+      } catch {
+      }
+      this.root.render(
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          WidgetApp,
+          {
+            token,
+            api,
+            locale,
+            config,
+            onEvent: this.emitEvent
+          }
+        )
+      );
+    }
+  };
+  KycWidgetElement.observedAttributes = ["token", "api", "locale", "config"];
+  if (!customElements.get("kyc-widget")) {
+    customElements.define("kyc-widget", KycWidgetElement);
+  }
+  function detectApiUrl() {
+    if (typeof document !== "undefined" && document.currentScript) {
+      const src = document.currentScript.src;
+      if (src) {
+        const url = new URL(src);
+        return url.origin;
+      }
+    }
+    return "";
+  }
+  var detectedApiUrl = detectApiUrl();
+  function initWidget(options) {
+    const api = options.api || detectedApiUrl;
+    if (!api) {
+      throw new Error("KycWidget: api URL is required");
+    }
+    if (!options.apiKey && !options.token) {
+      throw new Error("KycWidget: either apiKey or token is required");
+    }
+    if (!options.userId) {
+      throw new Error("KycWidget: userId is required");
+    }
+    if (!options.idData) {
+      throw new Error("KycWidget: idData is required \u2014 identity verification requires data to compare the scanned ID against");
+    }
+    if (!options.idData.dniNumber && !options.idData.firstName && !options.idData.lastName) {
+      throw new Error("KycWidget: idData must contain at least dniNumber, firstName, or lastName");
+    }
+    const containerEl = typeof options.container === "string" ? document.querySelector(options.container) : options.container;
+    if (!containerEl) {
+      throw new Error(`KycWidget: container "${options.container}" not found`);
+    }
+    const widget = document.createElement("kyc-widget");
+    widget.setAttribute("api", api);
+    widget.setAttribute("locale", options.locale || "es");
+    widget.setAttribute("config", JSON.stringify({
+      apiKey: options.apiKey,
+      token: options.token,
+      userId: options.userId,
+      idData: options.idData || null,
+      callbackUrl: options.callbackUrl || null,
+      callbackSecret: options.callbackSecret || null
+    }));
+    if (options.onCompleted) {
+      widget.addEventListener("kyc:completed", (e) => {
+        options.onCompleted(e.detail);
+      });
+    }
+    if (options.onError) {
+      widget.addEventListener("kyc:error", (e) => {
+        options.onError(e.detail);
+      });
+    }
+    if (options.onReady) {
+      widget.addEventListener("kyc:ready", () => {
+        options.onReady();
+      });
+    }
+    containerEl.appendChild(widget);
+    return {
+      destroy() {
+        if (widget.parentNode) {
+          widget.parentNode.removeChild(widget);
+        }
+      }
+    };
+  }
+  window.KycWidget = { init: initWidget };
 })();
 /*! Bundled license information:
 

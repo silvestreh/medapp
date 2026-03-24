@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { StepDef } from '../../steps';
+import { StepDef } from '../steps';
 
 interface Props {
   prevStep: StepDef;

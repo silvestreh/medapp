@@ -1,7 +1,7 @@
 import multer from 'multer';
 import exifr from 'exifr';
 import { Application } from './declarations';
-import { scanDniBarcode, validateDniAgainstPersonalData, DniScanData } from './scan-dni-barcode';
+import { scanDniBarcode, validateDniAgainstIdData, DniScanData } from './scan-dni-barcode';
 import { compareFaces } from './compare-faces';
 import logger from './logger';
 
@@ -58,19 +58,19 @@ export function setupRunChecks(app: Application): void {
         return res.status(400).json({ message: 'idFront and selfie files are required' });
       }
 
-      let personalData: {
+      let idData: {
         firstName?: string | null;
         lastName?: string | null;
-        documentValue?: string | null;
+        dniNumber?: string | null;
         birthDate?: string | null;
         gender?: string | null;
       } = {};
 
-      if (req.body.personalData) {
+      if (req.body.idData) {
         try {
-          personalData = JSON.parse(req.body.personalData);
+          idData = JSON.parse(req.body.idData);
         } catch {
-          return res.status(400).json({ message: 'personalData must be valid JSON' });
+          return res.status(400).json({ message: 'idData must be valid JSON' });
         }
       }
 
@@ -93,7 +93,7 @@ export function setupRunChecks(app: Application): void {
         const dniScanData = await scanDniBarcode(idFrontBuffer);
         result.dniScanData = dniScanData;
 
-        const validationErrors = validateDniAgainstPersonalData(dniScanData, personalData);
+        const validationErrors = validateDniAgainstIdData(dniScanData, idData);
         result.dniScanMatch = validationErrors.length === 0;
         result.dniScanErrors = validationErrors.length > 0 ? validationErrors.join('; ') : null;
       } catch (err: unknown) {

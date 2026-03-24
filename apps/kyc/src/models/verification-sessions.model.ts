@@ -52,8 +52,16 @@ export default function (app: Application): typeof Model {
       type: DataTypes.JSONB,
       allowNull: true,
     },
-    personalData: {
+    idData: {
       type: DataTypes.JSONB,
+      allowNull: true,
+    },
+    callbackUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    callbackSecret: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
   }, {

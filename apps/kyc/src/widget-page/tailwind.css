@@ -1,8 +1,7 @@
 @import "tailwindcss";
 
-@source "./client/**/*.tsx";
 @source "../shared-client/**/*.tsx";
-@source "./template.ts";
+@source "./client/**/*.tsx";
 
 @theme {
   --color-primary-50: #e6fcf5;

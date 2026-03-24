@@ -16,7 +16,6 @@
   "dependencies": {
     "@athelas/brand": "workspace:*",
     "@athelas/encounter-schemas": "workspace:*",
-    "@athelas/kyc-utils": "workspace:*",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@feathersjs/authentication-client": "^5.0.40",
