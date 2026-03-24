@@ -18,14 +18,17 @@ export const setupTwoFactor = () => async (context: HookContext) => {
     secret,
   });
 
-  // Store temp secret internally (bypasses protect hook)
-  await app.service('users').patch(id!, { twoFactorTempSecret: secret }, { provider: undefined });
+  // Store temp secret via Sequelize directly to avoid triggering hook cycle
+  const sequelize = app.get('sequelizeClient');
+  await sequelize.models.users.update(
+    { twoFactorTempSecret: secret },
+    { where: { id } },
+  );
 
-  // Attach setup data to result — protect() won't strip this custom field
-  context.result = {
-    ...result,
-    twoFactorSetup: { secret, otpauthUri },
-  };
+  // Attach setup data to both result and dispatch
+  const setupData = { secret, otpauthUri };
+  context.result = { ...result, twoFactorSetup: setupData };
+  context.dispatch = { ...context.dispatch || context.result, twoFactorSetup: setupData };
 
   return context;
 };
