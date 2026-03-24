@@ -96,7 +96,6 @@ export const meta: MetaFunction = () => {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const { client, user } = await getAuthenticatedClient(request);
-    const profile = await client.service('profile').get('me');
     const fullUser = await client.service('users').get(user.id);
     const currentOrganizationId = await getCurrentOrganizationId(request);
     const orgs = (fullUser as any).organizations as
@@ -275,7 +274,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json({
       username: user.username,
-      twoFactorEnabled: Boolean(profile.twoFactorEnabled),
+      twoFactorEnabled: Boolean((fullUser as any).twoFactorEnabled),
       user: fullUser,
       isMedic,
       isPrescriber,

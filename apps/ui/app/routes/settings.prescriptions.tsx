@@ -88,9 +88,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const intent = String(formData.get('intent') || '');
 
   let client;
+  let userId: string;
   try {
     const authenticated = await getAuthenticatedClient(request);
     client = authenticated.client;
+    userId = (authenticated.user as any).id;
   } catch (error) {
     throw redirect('/login');
   }
@@ -112,9 +114,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (intent === 'update-recetario-profile') {
       const recetarioProvince = String(formData.get('recetarioProvince') || '');
       const signatureImage = String(formData.get('signatureImage') || '');
-      await client.service('profile').create({
-        action: 'update-profile',
-        mdSettings: {
+      await client.service('users').patch(userId, {
+        settings: {
           recetarioProvince: recetarioProvince || undefined,
           signatureImage: signatureImage || undefined,
         },

@@ -8,6 +8,12 @@ import { parseFormJson } from '~/utils/parse-form-json';
 import { ProfileForm } from '~/components/profile-form';
 import type { loader as profileLoader } from '~/routes/settings';
 
+type ActionPayload = {
+  personalData?: Record<string, unknown>;
+  contactData?: Record<string, unknown>;
+  mdSettings?: Record<string, unknown>;
+};
+
 function buildSelectOptions(obj: Record<string, string>) {
   return Object.entries(obj).map(([value, label]) => ({ value, label }));
 }
@@ -17,26 +23,25 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const intent = String(formData.get('intent') || '');
 
   let client;
+  let userId: string;
   try {
     const authenticated = await getAuthenticatedClient(request);
     client = authenticated.client;
+    userId = (authenticated.user as any).id;
   } catch (error) {
     throw redirect('/login');
   }
 
   try {
     if (intent === 'update-profile') {
-      const payload = parseFormJson<{
-        personalData?: Record<string, unknown>;
-        contactData?: Record<string, unknown>;
-        mdSettings?: Record<string, unknown>;
-      }>(formData.get('payload'));
-      await client.service('profile').create({
-        action: 'update-profile',
+      const payload = parseFormJson<ActionPayload>(formData.get('payload'));
+
+      await client.service('users').patch(userId, {
         personalData: payload.personalData,
         contactData: payload.contactData,
         mdSettings: payload.mdSettings,
       });
+
       return json({ ok: true, intent });
     }
 
