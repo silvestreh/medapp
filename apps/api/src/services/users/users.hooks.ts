@@ -4,15 +4,17 @@ import { BadRequest } from '@feathersjs/errors';
 import createPersonalData from '../../hooks/create-personal-data';
 import createContactData from '../../hooks/create-contact-data';
 import patchPersonalData from '../../hooks/patch-personal-data';
+import patchContactData from '../../hooks/patch-contact-data';
 import includeData from '../../hooks/include-data';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { lowerCase } from '../../hooks/lowerCase';
+import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from '../../utils/validate-password';
+import { patchMdSettings } from './hooks/patch-md-settings';
 import populateUser from './hooks/populate-user';
 import { prepareSignupOrganization, handleSignupOrganization } from './hooks/handle-signup-organization';
 import { scopeUsersToOrganization } from './hooks/scope-users-to-organization';
 import { restrictUserToOrganization } from './hooks/restrict-user-to-organization';
 import { disallow } from 'feathers-hooks-common';
-import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from '../../utils/validate-password';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = feathersAuthentication.hooks;
@@ -90,6 +92,8 @@ export default {
     update: [],
     patch: [
       patchPersonalData('user'),
+      patchContactData('user'),
+      patchMdSettings(),
     ],
     remove: []
   },

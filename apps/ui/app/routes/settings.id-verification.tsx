@@ -123,8 +123,8 @@ export default function SettingsIdVerification() {
     setUpdating(true);
 
     try {
-      await (client as any).service('profile').create({
-        action: 'update-profile',
+      const userId = (parentData?.user as any)?.id;
+      await (client as any).service('users').patch(userId, {
         personalData: {
           firstName: scanned.firstName,
           lastName: scanned.lastName,
