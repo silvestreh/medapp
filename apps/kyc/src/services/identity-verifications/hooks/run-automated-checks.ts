@@ -2,7 +2,7 @@ import { Hook, HookContext } from '@feathersjs/feathers';
 import axios from 'axios';
 import { decryptFileFromDisk } from '../../../file-storage';
 import { encryptJson } from '../../../encryption';
-import { scanDniBarcode, validateDniAgainstPersonalData } from '../../../scan-dni-barcode';
+import { scanDniBarcode, validateDniAgainstIdData } from '../../../scan-dni-barcode';
 import logger from '../../../logger';
 
 /**
@@ -16,7 +16,7 @@ export const runAutomatedChecks = (): Hook => {
     const verification = context.result;
     if (!verification) return context;
 
-    const { id, idFrontUrl, selfieUrl, personalData } = verification;
+    const { id, idFrontUrl, selfieUrl, idData } = verification;
 
     setImmediate(async () => {
       const app = context.app;
@@ -60,7 +60,7 @@ export const runAutomatedChecks = (): Hook => {
         const dniScanData = await scanDniBarcode(idFrontBuffer);
         updates.dniScanData = encryptJson(dniScanData);
 
-        const validationErrors = validateDniAgainstPersonalData(dniScanData, personalData || {});
+        const validationErrors = validateDniAgainstIdData(dniScanData, idData || {});
         updates.dniScanMatch = validationErrors.length === 0;
         updates.dniScanErrors = validationErrors.length > 0 ? validationErrors.join('; ') : null;
       } catch (err: unknown) {

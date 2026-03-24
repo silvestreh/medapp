@@ -105,7 +105,7 @@ export default function (app: Application): typeof Model {
       type: DataTypes.JSONB,
       allowNull: true,
     },
-    personalData: {
+    idData: {
       type: DataTypes.JSONB,
       allowNull: true,
     },

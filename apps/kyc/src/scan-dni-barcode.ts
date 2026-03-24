@@ -76,46 +76,46 @@ export function parseDniBarcodeText(text: string): DniScanData {
 }
 
 /**
- * Cross-validates DNI barcode data against personal data from the database.
+ * Cross-validates DNI barcode data against ID data from the database.
  * Returns an array of error messages. Empty array means all checks passed.
  */
-export function validateDniAgainstPersonalData(
+export function validateDniAgainstIdData(
   dniData: DniScanData,
-  personalData: {
+  idData: {
     firstName?: string | null;
     lastName?: string | null;
-    documentValue?: string | null;
+    dniNumber?: string | null;
     birthDate?: string | null;
     gender?: string | null;
   }
 ): string[] {
   const errors: string[] = [];
 
-  if (personalData.documentValue) {
-    const dbDni = personalData.documentValue.replace(/\D/g, '');
+  if (idData.dniNumber) {
+    const dbDni = idData.dniNumber.replace(/\D/g, '');
     const scannedDni = dniData.dniNumber.replace(/\D/g, '');
     if (dbDni !== scannedDni) {
       errors.push(`DNI number mismatch: scanned ${scannedDni}, DB has ${dbDni}`);
     }
   }
 
-  if (personalData.lastName) {
+  if (idData.lastName) {
     const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-    if (normalize(dniData.lastName) !== normalize(personalData.lastName)) {
-      errors.push(`Last name mismatch: scanned "${dniData.lastName}", DB has "${personalData.lastName}"`);
+    if (normalize(dniData.lastName) !== normalize(idData.lastName)) {
+      errors.push(`Last name mismatch: scanned "${dniData.lastName}", DB has "${idData.lastName}"`);
     }
   }
 
-  if (personalData.firstName) {
+  if (idData.firstName) {
     const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-    if (normalize(dniData.firstName) !== normalize(personalData.firstName)) {
-      errors.push(`First name mismatch: scanned "${dniData.firstName}", DB has "${personalData.firstName}"`);
+    if (normalize(dniData.firstName) !== normalize(idData.firstName)) {
+      errors.push(`First name mismatch: scanned "${dniData.firstName}", DB has "${idData.firstName}"`);
     }
   }
 
-  if (personalData.birthDate) {
+  if (idData.birthDate) {
     const scannedDate = dayjs(dniData.birthDate, 'DD/MM/YYYY', true);
-    const dbDate = dayjs(personalData.birthDate);
+    const dbDate = dayjs(idData.birthDate);
     if (scannedDate.isValid() && dbDate.isValid()) {
       if (!scannedDate.isSame(dbDate, 'day')) {
         errors.push(`Birth date mismatch: scanned ${dniData.birthDate}, DB has ${dbDate.format('YYYY-MM-DD')}`);
@@ -123,11 +123,11 @@ export function validateDniAgainstPersonalData(
     }
   }
 
-  if (personalData.gender) {
+  if (idData.gender) {
     const genderMap: Record<string, string> = { M: 'male', F: 'female' };
     const scannedGender = genderMap[dniData.gender.toUpperCase()] || dniData.gender.toLowerCase();
-    if (scannedGender !== personalData.gender) {
-      errors.push(`Gender mismatch: scanned "${dniData.gender}", DB has "${personalData.gender}"`);
+    if (scannedGender !== idData.gender) {
+      errors.push(`Gender mismatch: scanned "${dniData.gender}", DB has "${idData.gender}"`);
     }
   }
 

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { StepDef } from '../../steps';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { StepDef } from '../steps';
 import { getBarcodeDetector, getFaceLandmarker, getVideoImageData, detectMrzText } from '../detection';
 import { compressImage } from '../utils';
+import { parseDniBarcodeText, validateBarcodeAgainstIdData, type IdData } from '../barcode-validation';
 
 type DetectStatus = '' | 'scanning' | 'detected' | 'recording' | 'face_lost';
 
@@ -12,9 +13,12 @@ interface Props {
   stepIndex: number;
   totalSteps: number;
   onCapture: (blob: Blob, previewUrl: string) => void;
+  onBack?: () => void;
+  idData?: IdData;
+  onError?: (error: { message: string; code: string; data?: Record<string, unknown> }) => void;
 }
 
-export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
+export function CameraPhase({ step, stepIndex, totalSteps, onCapture, onBack, idData, onError }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanIdRef = useRef<number | null>(null);
@@ -26,8 +30,10 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
 
   const [cameraSupported, setCameraSupported] = useState(true);
   const [detectStatus, setDetectStatus] = useState<DetectStatus>('');
+  const [idMismatchError, setIdMismatchError] = useState<string | null>(null);
   const [recordProgress, setRecordProgress] = useState(0);
   const [glassesDetected, setGlassesDetected] = useState(false);
+  const [videoAspect, setVideoAspect] = useState<string | undefined>(undefined);
 
   // Keep a stable ref to startAutoDetection so recordVideo's onstop can restart it
   const startAutoDetectionRef = useRef<() => void>(() => {});
@@ -76,6 +82,79 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
       onCapture(blob, URL.createObjectURL(blob));
     }, 'image/jpeg', 0.85);
   }, [step.facing, stopScanning, stopCamera, onCapture]);
+
+  // Capture, validate barcode on the still, and check against idData.
+  // If barcode not readable → silently retry.
+  // If barcode doesn't match idData → fire onIdMismatch and stop.
+  const doCaptureWithBarcodeValidation = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(video, 0, 0);
+
+    const cropY = Math.floor(canvas.height * 0.45);
+    const cropCanvas = document.createElement('canvas');
+    cropCanvas.width = canvas.width;
+    cropCanvas.height = canvas.height - cropY;
+    const cropCtx = cropCanvas.getContext('2d');
+    if (!cropCtx) { startAutoDetectionRef.current(); return; }
+    cropCtx.drawImage(canvas, 0, cropY, canvas.width, cropCanvas.height, 0, 0, canvas.width, cropCanvas.height);
+    const imgData = cropCtx.getImageData(0, 0, cropCanvas.width, cropCanvas.height);
+
+    getBarcodeDetector().then(detector => {
+      detector.detect(imgData).then(results => {
+        if (!activeRef.current) return;
+        const validResult = results?.find(r => r.rawValue && r.rawValue.length > 50);
+        if (!validResult) {
+          // Barcode not readable on still — keep scanning
+          setDetectStatus('scanning');
+          startAutoDetectionRef.current();
+          return;
+        }
+
+        // Parse barcode data and validate against idData
+        if (idData) {
+          const barcodeData = parseDniBarcodeText(validResult.rawValue);
+          if (barcodeData) {
+            const errors = validateBarcodeAgainstIdData(barcodeData, idData);
+            if (errors.length > 0) {
+              stopScanning();
+              stopCamera();
+              setIdMismatchError('El DNI escaneado no coincide con los datos registrados.');
+              if (onError) onError({
+                message: 'El DNI escaneado no coincide con los datos registrados.',
+                code: 'id_mismatch',
+                data: {
+                  firstName: barcodeData.firstName,
+                  lastName: barcodeData.lastName,
+                  dniNumber: barcodeData.dniNumber,
+                  birthDate: barcodeData.birthDate,
+                  gender: barcodeData.gender,
+                },
+              });
+              return;
+            }
+          }
+        }
+
+        // Barcode valid and matches idData — proceed to preview
+        stopScanning();
+        stopCamera();
+        canvas.toBlob(blob => {
+          if (!blob || !activeRef.current) return;
+          onCapture(blob, URL.createObjectURL(blob));
+        }, 'image/jpeg', 0.85);
+      }).catch(() => {
+        if (activeRef.current) startAutoDetectionRef.current();
+      });
+    }).catch(() => {
+      if (activeRef.current) startAutoDetectionRef.current();
+    });
+  }, [stopScanning, stopCamera, onCapture, idData, onError]);
 
   const doVideoRecord = useCallback(() => {
     stopScanning();
@@ -174,7 +253,7 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
 
     if (activeRef.current) setDetectStatus('scanning');
 
-    const requiredDetections = step.autoDetect === 'text' ? 5 : 3;
+    const requiredDetections = step.autoDetect === 'text' ? 3 : 1;
     let consecutiveDetections = 0;
     let frameCount = 0;
 
@@ -207,7 +286,7 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
                 consecutiveDetections++;
                 if (consecutiveDetections >= requiredDetections) {
                   setDetectStatus('detected');
-                  setTimeout(doCapture, 300);
+                  setTimeout(doCaptureWithBarcodeValidation, 300);
                   return;
                 }
               } else {
@@ -276,7 +355,7 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
       };
       scanIdRef.current = requestAnimationFrame(scanFrame);
     }
-  }, [step.autoDetect, doCapture, doVideoRecord]);
+  }, [step.autoDetect, doCapture, doCaptureWithBarcodeValidation, doVideoRecord]);
 
   // Keep the ref up to date so onstop can call the latest version
   startAutoDetectionRef.current = startAutoDetection;
@@ -303,7 +382,13 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
         if (video) {
           video.srcObject = stream;
           video.play()
-            .then(() => { if (activeRef.current) startAutoDetectionRef.current(); })
+            .then(() => {
+              if (!activeRef.current) return;
+              if (video.videoWidth && video.videoHeight) {
+                setVideoAspect(`${video.videoWidth} / ${video.videoHeight}`);
+              }
+              startAutoDetectionRef.current();
+            })
             .catch(() => {});
         }
       })
@@ -341,8 +426,7 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
   }, []);
 
   const isSelfie = step.facing === 'user';
-  const isAutoDetect = step.autoDetect !== 'none';
-  const hint = isAutoDetect && detectStatus === 'scanning' ? step.cameraHintAuto : step.cameraHint;
+  const hint = step.cameraHint;
 
   const ovalStroke =
     detectStatus === 'recording' ? '#fa5252' : detectStatus === 'detected' ? '#40c057' : 'rgba(255,255,255,0.6)';
@@ -382,14 +466,40 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-black relative">
+    <div className="flex-1 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-100">
+          {onBack && (
+            <button
+              className="bg-transparent border-none text-gray-400 cursor-pointer p-0 text-lg leading-none"
+              onClick={onBack}
+              aria-label="Volver"
+            >
+              ←
+            </button>
+          )}
+          <div>
+            <div className="text-gray-400 text-xs uppercase tracking-widest">
+              Paso {stepIndex + 1} de {totalSteps}
+            </div>
+            <div className="text-gray-800 text-[15px] font-semibold">{step.title}</div>
+          </div>
+          <div className="ml-auto text-gray-400 text-xs text-right max-w-[45%]">
+            {hint}
+          </div>
+        </div>
+
+      <div className="relative overflow-hidden rounded-xl mx-4 mt-2">
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
-        className="flex-1 w-full object-contain"
-        style={isSelfie ? { transform: 'scaleX(-1)' } : undefined}
+        className="block w-full"
+        style={{
+          aspectRatio: videoAspect,
+          ...(isSelfie ? { transform: 'scaleX(-1)' } : undefined),
+        }}
       />
 
       {/* Guide overlay */}
@@ -414,7 +524,7 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
           viewBox="0 0 400 260"
           style={{
             position: 'absolute', top: '50%', left: '50%',
-            transform: 'translate(-50%,-50%)', width: '85%', height: '45%', pointerEvents: 'none',
+            transform: 'translate(-50%,-50%)', width: '92%', height: '70%', pointerEvents: 'none',
           }}
         >
           <rect
@@ -425,93 +535,53 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture }: Props) {
         </svg>
       )}
 
-      {/* Top overlay */}
-      <div
-        className="absolute top-0 left-0 right-0 z-10"
-        style={{
-          padding: 'calc(1rem + env(safe-area-inset-top)) 1.25rem 1rem',
-          background: 'linear-gradient(to bottom,rgba(0,0,0,0.5),transparent)',
-        }}
-      >
-        <div className="text-white/70 text-xs uppercase tracking-widest mb-1">
-          Paso {stepIndex + 1} de {totalSteps}
-        </div>
-        <div className="text-white text-[17px] font-semibold">{step.title}</div>
-      </div>
 
-      {/* Bottom overlay */}
-      <div
-        className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-3 z-10"
-        style={{
-          padding: '1rem 1.25rem calc(4rem + env(safe-area-inset-bottom))',
-          background: 'linear-gradient(to top,rgba(0,0,0,0.6),transparent)',
-        }}
-      >
-        <div className="text-white text-sm text-center" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-          {hint}
-        </div>
-
-        {detectStatus === 'face_lost' && (
-          <div className="py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white">
-            Mantené la mirada en la cámara
-          </div>
-        )}
-
-        {glassesDetected && detectStatus !== 'recording' && (
-          <div className="py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white">
-            Quitá los anteojos para continuar
-          </div>
-        )}
-
-        {detectStatus === 'recording' && (
-          <div className="flex flex-col items-center gap-2">
-            <div className="py-2 px-5 rounded-3xl text-sm font-semibold bg-red-500/90 text-white">
-              Verificando...
+      {/* Floating warnings */}
+      {(detectStatus === 'face_lost' || glassesDetected) && (
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center z-10">
+          {detectStatus === 'face_lost' && (
+            <div className="py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white">
+              Mantené la mirada en la cámara
             </div>
-            <div className="w-32 h-1.5 rounded-full bg-white/20 overflow-hidden">
-              <div
-                className="h-full bg-red-500 rounded-full transition-all"
-                style={{ width: `${recordProgress}%` }}
-              />
+          )}
+          {glassesDetected && detectStatus !== 'recording' && (
+            <div className="py-2 px-5 rounded-3xl text-sm font-semibold bg-orange-500/90 text-white">
+              Quitá los anteojos para continuar
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
-        {detectStatus === 'detected' && (
-          <div className="py-2 px-5 rounded-3xl text-sm font-semibold bg-green-500/90 text-white">Listo ✓</div>
-        )}
-
-        {detectStatus === 'scanning' && (
-          <div className="py-2 px-5 rounded-3xl text-sm font-semibold bg-white/15 text-white animate-pulse">
-            Verificando...
-          </div>
-        )}
-
-        {detectStatus !== 'recording' && detectStatus !== 'face_lost' && (
-          <button
-            className="w-[72px] h-[72px] rounded-full border-4 border-white bg-white/25 cursor-pointer active:bg-white/50"
-            onClick={handleManualCapture}
-          />
-        )}
-
-        {!isSelfie && detectStatus !== 'recording' && detectStatus !== 'face_lost' && (
-          <div className="flex gap-4">
-            <input
-              type="file"
-              id="camera-file-input"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={handleFileChange}
+      {/* Recording progress */}
+      {detectStatus === 'recording' && (
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center z-10">
+          <div className="w-32 h-1.5 rounded-full bg-white/20 overflow-hidden">
+            <div
+              className="h-full bg-red-500 rounded-full transition-all"
+              style={{ width: `${recordProgress}%` }}
             />
-            <button
-              className="bg-transparent border-none text-white/80 text-xs cursor-pointer py-1 px-2"
-              onClick={handleFileClick}
-            >
-              Subir desde galería
-            </button>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* ID mismatch error overlay */}
+      {idMismatchError && (
+        <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-20 px-6 text-center">
+          <div className="w-14 h-14 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-2xl mb-4">
+            ✗
+          </div>
+          <div className="text-white text-lg font-semibold mb-2">Documento no válido</div>
+          <p className="text-white/70 text-sm mb-6 max-w-[300px]">{idMismatchError}</p>
+          {onBack && (
+            <button
+              className="py-3 px-8 rounded-xl border border-white/30 bg-transparent text-white text-sm font-medium cursor-pointer"
+              onClick={onBack}
+            >
+              Volver
+            </button>
+          )}
+        </div>
+      )}
       </div>
     </div>
   );

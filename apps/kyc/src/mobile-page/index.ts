@@ -138,9 +138,9 @@ export function setupMobilePage(app: Application): void {
               clientIp: s.clientIp || null,
               clientUserAgent: s.clientUserAgent || null,
               deviceFingerprint: s.deviceFingerprint || null,
-              personalData: s.personalData || null,
+              idData: s.idData || null,
             }, { provider: undefined } as any);
-            logger.info('[mobile-page] Auto-created identity verification for session %s', s.id);
+            logger.info('[mobile-page] Auto-created identity verification for session %s (idData: %j)', s.id, s.idData);
           } catch (err: unknown) {
             const message = err instanceof Error ? err.message : String(err);
             logger.error('[mobile-page] Failed to create identity verification: %s', message);
