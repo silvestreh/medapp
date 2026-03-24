@@ -139,7 +139,7 @@ export default function SettingsIdVerification() {
     } finally {
       setUpdating(false);
     }
-  }, [scanned, client, revalidator]);
+  }, [scanned, client, revalidator, parentData?.user]);
 
   const handleDismissError = useCallback(() => {
     setError(null);
