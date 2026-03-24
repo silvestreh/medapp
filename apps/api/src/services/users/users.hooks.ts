@@ -10,6 +10,9 @@ import { verifyOrganizationMembership } from '../../hooks/verify-organization-me
 import { lowerCase } from '../../hooks/lowerCase';
 import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from '../../utils/validate-password';
 import { patchMdSettings } from './hooks/patch-md-settings';
+import { setupTwoFactor } from './hooks/setup-two-factor';
+import { enableTwoFactor } from './hooks/enable-two-factor';
+import { changePassword } from './hooks/change-password';
 import populateUser from './hooks/populate-user';
 import { prepareSignupOrganization, handleSignupOrganization } from './hooks/handle-signup-organization';
 import { scopeUsersToOrganization } from './hooks/scope-users-to-organization';
@@ -32,6 +35,28 @@ const stripSuperAdmin = () => (context: any) => {
   if (context.data) {
     delete context.data.isSuperAdmin;
   }
+  return context;
+};
+
+/**
+ * Extract action fields from patch data into params so hooks can read them,
+ * then strip them from data so Sequelize doesn't try to save them as columns.
+ */
+const extractPatchActions = () => (context: any) => {
+  if (!context.data) return context;
+
+  if (context.data.twoFactorSetup) {
+    context.params._twoFactorSetup = true;
+    delete context.data.twoFactorSetup;
+  }
+
+  if (context.data.twoFactorCode) {
+    context.params._twoFactorCode = context.data.twoFactorCode;
+    delete context.data.twoFactorCode;
+  }
+
+  // changePassword is handled in its own before hook which replaces context.data
+
   return context;
 };
 
@@ -63,6 +88,8 @@ export default {
     patch: [
       authenticate('jwt'),
       stripSuperAdmin(),
+      changePassword(),
+      extractPatchActions(),
       lowerCase('username'),
       hashPassword('password'),
     ],
@@ -94,6 +121,8 @@ export default {
       patchPersonalData('user'),
       patchContactData('user'),
       patchMdSettings(),
+      setupTwoFactor(),
+      enableTwoFactor(),
     ],
     remove: []
   },
