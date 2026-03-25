@@ -1,5 +1,5 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
-import { omit } from 'lodash';
+import { omit, merge } from 'lodash';
 
 type Entity = 'user' | 'patient';
 
@@ -27,13 +27,13 @@ const patchPersonalData = (entity: Entity): Hook => async (context: HookContext)
     }) as any[];
 
     if (existing.length > 0 && existing[0].id !== joinData[0].personalDataId) {
-      // Update the existing record with the other fields, then re-associate
       const rest = omit(personalData, 'documentValue');
 
       if (Object.keys(rest).length > 0) {
+        const merged = merge({}, existing[0], rest);
         await app.service('personal-data').patch(
           existing[0].id,
-          rest,
+          merged,
           { provider: undefined }
         );
       }
@@ -46,9 +46,16 @@ const patchPersonalData = (entity: Entity): Hook => async (context: HookContext)
     }
   }
 
+  const currentRecord = await app.service('personal-data').get(
+    joinData[0].personalDataId,
+    { provider: undefined },
+  );
+
+  const merged = merge({}, currentRecord, personalData);
+
   await app.service('personal-data').patch(
     joinData[0].personalDataId,
-    personalData,
+    merged,
     { provider: undefined }
   );
 

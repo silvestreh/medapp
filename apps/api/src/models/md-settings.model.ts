@@ -60,6 +60,10 @@ export default function (app: Application): typeof Model {
       type: DataTypes.DATE,
       allowNull: true,
     },
+    licenseVerificationError: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     scheduleAllWeekCustomTime: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

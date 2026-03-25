@@ -18,6 +18,8 @@ import channels from './channels';
 import authentication from './authentication';
 import { setupUploadProxy } from './upload-proxy';
 import { setupMobilePage } from './mobile-page';
+import { setupWidgetPage } from './widget-page';
+import { setupAdminPage } from './admin-page';
 import { setupValidatePhoto } from './validate-photo';
 import { setupRunChecks } from './run-checks';
 import { setupAutoCheckProgress } from './auto-check-progress';
@@ -77,8 +79,10 @@ app.get('/healthz', (_req: any, res: any) => {
   }
 });
 
-// Mobile page, upload proxy, and photo validation (before feathers middleware)
+// Mobile page, widget, upload proxy, and photo validation (before feathers middleware)
 setupMobilePage(app);
+setupWidgetPage(app);
+setupAdminPage(app);
 setupUploadProxy(app);
 setupValidatePhoto(app);
 setupRunChecks(app);

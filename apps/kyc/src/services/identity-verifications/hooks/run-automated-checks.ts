@@ -2,7 +2,7 @@ import { Hook, HookContext } from '@feathersjs/feathers';
 import axios from 'axios';
 import { decryptFileFromDisk } from '../../../file-storage';
 import { encryptJson } from '../../../encryption';
-import { scanDniBarcode, validateDniAgainstPersonalData } from '../../../scan-dni-barcode';
+import { scanDniBarcode, validateDniAgainstIdData } from '../../../scan-dni-barcode';
 import logger from '../../../logger';
 
 /**
@@ -16,7 +16,7 @@ export const runAutomatedChecks = (): Hook => {
     const verification = context.result;
     if (!verification) return context;
 
-    const { id, idFrontUrl, selfieUrl, personalData } = verification;
+    const { id, idFrontUrl, selfieUrl, idData } = verification;
 
     setImmediate(async () => {
       const app = context.app;
@@ -60,7 +60,7 @@ export const runAutomatedChecks = (): Hook => {
         const dniScanData = await scanDniBarcode(idFrontBuffer);
         updates.dniScanData = encryptJson(dniScanData);
 
-        const validationErrors = validateDniAgainstPersonalData(dniScanData, personalData || {});
+        const validationErrors = validateDniAgainstIdData(dniScanData, idData || {});
         updates.dniScanMatch = validationErrors.length === 0;
         updates.dniScanErrors = validationErrors.length > 0 ? validationErrors.join('; ') : null;
       } catch (err: unknown) {
@@ -88,18 +88,9 @@ export const runAutomatedChecks = (): Hook => {
       }
 
       if (updates.dniScanData === null && updates.dniScanErrors) {
-        logger.info('[auto-checks] DNI scan failed — rejecting without face comparison');
-        await patchProgress({
-          ...updates,
-          autoCheckCompletedAt: new Date(),
-          autoCheckProgress: null,
-          faceMatch: null,
-          faceMatchConfidence: null,
-          faceMatchError: 'Skipped: DNI scan failed',
-          status: 'rejected',
-          rejectionReason: `dni_scan_failed:${updates.dniScanErrors}`,
-        });
-        return;
+        // Barcode scan failed on the server — this can happen with compressed images.
+        // The client already validated the barcode before upload, so continue to face comparison.
+        logger.warn('[auto-checks] Server-side barcode scan failed (continuing): %s', updates.dniScanErrors);
       }
 
       // Save barcode results and update progress

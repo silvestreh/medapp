@@ -30,7 +30,6 @@ const ALLOWED_PATHS = new Set([
   'prepagas',
   'referring-doctors',
   'user-roles',
-  'profile',
   'passkey-credentials',
   'webauthn',
   'organizations',

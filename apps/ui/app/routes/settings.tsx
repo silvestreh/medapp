@@ -33,6 +33,7 @@ type MdSettingsProfile = {
   stateLicense: string | null;
   stateLicenseNumber: string | null;
   isVerified: boolean;
+  licenseVerificationError: string | null;
   recetarioTitle: string | null;
   recetarioProvince: string | null;
   signatureImage: string | null;
@@ -96,7 +97,6 @@ export const meta: MetaFunction = () => {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const { client, user } = await getAuthenticatedClient(request);
-    const profile = await client.service('profile').get('me');
     const fullUser = await client.service('users').get(user.id);
     const currentOrganizationId = await getCurrentOrganizationId(request);
     const orgs = (fullUser as any).organizations as
@@ -119,6 +119,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           stateLicenseNumber?: string | null;
           isVerified?: boolean;
           recetarioTitle?: string | null;
+          licenseVerificationError?: string | null;
           recetarioProvince?: string | null;
           signatureImage?: string | null;
         };
@@ -130,6 +131,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           stateLicense: s.stateLicense ?? null,
           stateLicenseNumber: s.stateLicenseNumber ?? null,
           isVerified: s.isVerified ?? false,
+          licenseVerificationError: s.licenseVerificationError ?? null,
           recetarioTitle: s.recetarioTitle ?? null,
           recetarioProvince: s.recetarioProvince ?? null,
           signatureImage: s.signatureImage ?? null,
@@ -150,6 +152,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             stateLicense: first.stateLicense ?? null,
             stateLicenseNumber: first.stateLicenseNumber ?? null,
             isVerified: (first as any).isVerified ?? false,
+            licenseVerificationError: (first as any).licenseVerificationError ?? null,
             recetarioTitle: (first as any).recetarioTitle ?? null,
             recetarioProvince: (first as any).recetarioProvince ?? null,
             signatureImage: (first as any).signatureImage ?? null,
@@ -275,7 +278,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json({
       username: user.username,
-      twoFactorEnabled: Boolean(profile.twoFactorEnabled),
+      twoFactorEnabled: Boolean((fullUser as any).twoFactorEnabled),
       user: fullUser,
       isMedic,
       isPrescriber,

@@ -20,7 +20,6 @@ import timeOffEvents from './time-off-events/time-off-events.service';
 import prepagas from './prepagas/prepagas.service';
 import referringDoctors from './referring-doctors/referring-doctors.service';
 import userRoles from './user-roles/user-roles.service';
-import profile from './profile/profile.service';
 import passkeyCredentials from './passkey-credentials/passkey-credentials.service';
 import webauthn from './webauthn/webauthn.service';
 import organizations from './organizations/organizations.service';
@@ -88,7 +87,6 @@ export default function (app: Application): void {
   app.configure(prepagas);
   app.configure(referringDoctors);
   app.configure(userRoles);
-  app.configure(profile);
   app.configure(passkeyCredentials);
   app.configure(webauthn);
   app.configure(organizations);

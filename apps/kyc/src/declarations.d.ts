@@ -17,7 +17,7 @@ export interface VerificationSession {
   clientIp: string | null;
   clientUserAgent: string | null;
   deviceFingerprint: Record<string, unknown> | null;
-  personalData: Record<string, unknown> | null;
+  idData: Record<string, unknown> | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,7 +45,7 @@ export interface IdentityVerification {
   clientIp: string | null;
   clientUserAgent: string | null;
   deviceFingerprint: Record<string, unknown> | null;
-  personalData: Record<string, unknown> | null;
+  idData: Record<string, unknown> | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -86,6 +86,7 @@ class FrameResult(BaseModel):
     verified: bool
     distance: float
     similarity_percent: float
+    glasses_detected: bool = False
 
 
 class CompareResponse(BaseModel):
@@ -94,6 +95,7 @@ class CompareResponse(BaseModel):
     similarity_percent: float
     frames_analyzed: int
     frames_matched: int
+    glasses_detected: bool = False
     per_frame: list[FrameResult]
 
 
@@ -201,10 +203,12 @@ def _process_single_job(job: dict[str, Any]) -> dict[str, Any]:
                 "verified": result["verified"],
                 "distance": result["distance"],
                 "similarity_percent": result["similarity_percent"],
+                "glasses_detected": result.get("glasses_detected", False),
             })
             logger.info(
-                "Job %s frame %d: verified=%s, distance=%.4f, similarity=%.2f%%",
+                "Job %s frame %d: verified=%s, distance=%.4f, similarity=%.2f%%, glasses=%s",
                 job["job_id"], i + 1, result["verified"], result["distance"], result["similarity_percent"],
+                result.get("glasses_detected", False),
             )
         except Exception as e:
             logger.warning("Job %s frame %d: face detection failed (%s), skipping", job["job_id"], i + 1, e, exc_info=True)
@@ -223,12 +227,17 @@ def _process_single_job(job: dict[str, Any]) -> dict[str, Any]:
     avg_distance = round(sum(distances) / len(distances), 6)
     avg_similarity = round(sum(similarities) / len(similarities), 2)
 
+    # Glasses detected if majority of frames detect glasses
+    glasses_frames = sum(1 for f in per_frame if f.get("glasses_detected"))
+    glasses_detected = glasses_frames > len(per_frame) / 2
+
     return {
         "verified": verified,
         "distance": avg_distance,
         "similarity_percent": avg_similarity,
         "frames_analyzed": len(per_frame),
         "frames_matched": frames_matched,
+        "glasses_detected": glasses_detected,
         "per_frame": per_frame,
     }
 
@@ -387,6 +396,64 @@ def _extract_frames(video_bytes: bytes, num_frames: int = 5) -> list[np.ndarray]
     return [usable[i] for i in indices]
 
 
+def _detect_glasses(img: np.ndarray, face: Any) -> bool:
+    """
+    Detect glasses by analyzing the eye region of a face for horizontal edge patterns.
+    Glasses frames produce strong horizontal edges above and below the eyes.
+
+    Uses the face keypoints (kps): [left_eye, right_eye, nose, left_mouth, right_mouth]
+    """
+    try:
+        kps = face.kps.astype(int)  # 5 keypoints
+        left_eye = kps[0]
+        right_eye = kps[1]
+
+        # Calculate eye region dimensions
+        eye_width = int(np.linalg.norm(right_eye - left_eye))
+        eye_center_y = int((left_eye[1] + right_eye[1]) / 2)
+        eye_center_x = int((left_eye[0] + right_eye[0]) / 2)
+
+        # Crop a strip around the eyes (wider than the eye span, vertically centered)
+        pad_x = int(eye_width * 0.3)
+        pad_y = int(eye_width * 0.4)
+        x1 = max(0, eye_center_x - eye_width // 2 - pad_x)
+        x2 = min(img.shape[1], eye_center_x + eye_width // 2 + pad_x)
+        y1 = max(0, eye_center_y - pad_y)
+        y2 = min(img.shape[0], eye_center_y + pad_y)
+
+        eye_region = img[y1:y2, x1:x2]
+        if eye_region.size == 0:
+            return False
+
+        # Convert to grayscale and detect edges
+        gray = cv2.cvtColor(eye_region, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 50, 150)
+
+        # Detect horizontal lines using HoughLinesP
+        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=30, minLineLength=eye_width // 3, maxLineGap=10)
+        if lines is None:
+            return False
+
+        # Count roughly horizontal lines (angle within 20 degrees of horizontal)
+        horizontal_count = 0
+        for line in lines:
+            x1l, y1l, x2l, y2l = line[0]
+            angle = abs(np.degrees(np.arctan2(y2l - y1l, x2l - x1l)))
+            if angle < 20 or angle > 160:
+                horizontal_count += 1
+
+        # Glasses frames typically produce 4+ strong horizontal lines
+        # (top and bottom of each lens frame)
+        detected = horizontal_count >= 4
+        if detected:
+            logger.info("Glasses detected: %d horizontal lines in eye region", horizontal_count)
+        return detected
+
+    except Exception as e:
+        logger.warning("Glasses detection failed: %s", e)
+        return False
+
+
 def _get_best_embedding(face_app: FaceAnalysis, img: np.ndarray, label: str) -> np.ndarray:
     """
     Detect faces in img and return the L2-normed embedding of the highest-confidence face.
@@ -412,21 +479,31 @@ def _compare_faces(id_img: np.ndarray, frame_img: np.ndarray) -> dict[str, Any]:
     Run InsightFace buffalo_l verification between two BGR numpy arrays.
     buffalo_l uses SCRFD for detection and ArcFace R100 for recognition.
     normed_embedding is L2-normalized so cosine similarity = dot product.
+    Also detects glasses on the video frame face.
     """
     face_app = _get_face_app()
 
     id_embedding = _get_best_embedding(face_app, id_img, "ID image")
-    frame_embedding = _get_best_embedding(face_app, frame_img, "video frame")
+
+    # Get frame faces for both embedding and glasses detection
+    frame_faces = face_app.get(frame_img)
+    if not frame_faces:
+        raise ValueError("No face detected in video frame")
+    best_frame_face = max(frame_faces, key=lambda f: f.det_score)
+    frame_embedding = best_frame_face.normed_embedding
 
     similarity = float(np.dot(id_embedding, frame_embedding))
     distance = round(1.0 - similarity, 6)
     similarity_percent = round(similarity * 100, 2)
     verified = similarity >= SIMILARITY_THRESHOLD
 
+    glasses = _detect_glasses(frame_img, best_frame_face)
+
     return {
         "verified": verified,
         "distance": distance,
         "similarity_percent": similarity_percent,
+        "glasses_detected": glasses,
     }
 
 

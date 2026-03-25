@@ -12,6 +12,7 @@ interface ProgressPayload {
     similarity_percent: number;
     frames_analyzed: number;
     frames_matched: number;
+    glasses_detected?: boolean;
     per_frame: unknown[];
   } | null;
   error?: string | null;
@@ -90,6 +91,23 @@ async function handleDone(
     rejectionReasons.push(`dni_mismatch:${verification.dniScanErrors}`);
   } else if (verification.dniScanData === null && verification.dniScanErrors) {
     rejectionReasons.push(`dni_scan_failed:${verification.dniScanErrors}`);
+  }
+
+  // If glasses detected, always request selfie retry (regardless of face match)
+  if (result.glasses_detected && rejectionReasons.length === 0) {
+    updates.status = 'selfie_retry';
+    updates.autoCheckCompletedAt = null;
+    updates.autoCheckProgress = { step: 'selfie_retry', reason: 'glasses_detected' };
+    updates.rejectionReason = 'glasses_detected';
+
+    await app.service('identity-verifications').patch(
+      verificationId,
+      updates,
+      { provider: undefined } as any,
+    );
+
+    logger.info('[auto-check-progress] Glasses detected on %s — requesting selfie retry', verificationId);
+    return;
   }
 
   if (!result.verified) {

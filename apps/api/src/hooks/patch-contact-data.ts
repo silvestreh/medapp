@@ -1,4 +1,5 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
+import merge from 'lodash/merge';
 
 type Entity = 'user' | 'patient';
 
@@ -13,9 +14,16 @@ const patchContactData = (entity: Entity): Hook => async (context: HookContext) 
   }) as any[];
 
   if (joinData[0]?.contactDataId) {
+    const existing = await app.service('contact-data').get(
+      joinData[0].contactDataId,
+      { provider: undefined },
+    );
+
+    const merged = merge({}, existing, contactData);
+
     await app.service('contact-data').patch(
       joinData[0].contactDataId,
-      contactData,
+      merged,
       { provider: undefined }
     );
   }

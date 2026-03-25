@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { STEPS } from '../steps';
-import { uploadFile, patchSession } from './api';
-import { collectDeviceFingerprint, collectGeolocation } from './utils';
-import type { GeolocationData } from './utils';
-import { IntroPhase } from './phases/IntroPhase';
-import { CameraPhase } from './phases/CameraPhase';
-import { IntermediatePhase } from './phases/IntermediatePhase';
-import { PreviewPhase } from './phases/PreviewPhase';
-import { DonePhase } from './phases/DonePhase';
-import { ErrorToast } from './components/ErrorToast';
+import { STEPS } from '../../shared-client/steps';
+import { uploadFile, patchSession } from '../../shared-client/api';
+import { collectDeviceFingerprint, collectGeolocation } from '../../shared-client/utils';
+import type { GeolocationData } from '../../shared-client/utils';
+import { IntroPhase } from '../../shared-client/phases/intro-phase';
+import { CameraPhase } from '../../shared-client/phases/camera-phase';
+import { IntermediatePhase } from '../../shared-client/phases/intermediate-phase';
+import { PreviewPhase } from '../../shared-client/phases/preview-phase';
+import { DonePhase } from '../../shared-client/phases/done-phase';
+import { ErrorToast } from '../../shared-client/components/error-toast';
 
 type Phase = 'intro' | 'camera' | 'intermediate' | 'preview' | 'done';
 type UploadKey = 'idFront' | 'idBack' | 'selfie';
@@ -40,12 +40,6 @@ export function App({ token, api }: Props) {
   const deviceFingerprintRef = useRef(collectDeviceFingerprint());
   const geolocationRef = useRef<GeolocationData | null>(null);
 
-  useEffect(() => {
-    collectGeolocation().then((geo) => {
-      geolocationRef.current = geo;
-    });
-  }, []);
-
   const showError = useCallback((msg: string) => {
     let message = msg;
     if (message === 'Load failed' || message === 'Failed to fetch') {
@@ -55,6 +49,9 @@ export function App({ token, api }: Props) {
   }, []);
 
   const handleStart = useCallback(() => {
+    collectGeolocation().then((geo) => {
+      geolocationRef.current = geo;
+    });
     setPhase('camera');
   }, []);
 

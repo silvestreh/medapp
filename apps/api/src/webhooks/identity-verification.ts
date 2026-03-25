@@ -1,7 +1,4 @@
-import axios from 'axios';
 import { Application } from '../declarations';
-
-const VERIFICATION_API_URL = process.env.VERIFICATION_API_URL || 'http://localhost:3032';
 
 interface VerificationWebhookPayload {
   event: string;
@@ -60,7 +57,8 @@ export function setupIdentityVerificationWebhook(app: Application): void {
       }
 
       if (event === 'verification.verified') {
-        // Auto-checks passed — run SSSalud validation
+        // KYC identity checks passed — run SSSalud license validation
+        // This only affects md_settings.isVerified, NOT the KYC verification record
         try {
           const practitionerVerification = app.service('practitioner-verification') as any;
           await practitionerVerification.verifyByUserId(verification.userId);
@@ -68,19 +66,7 @@ export function setupIdentityVerificationWebhook(app: Application): void {
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : String(err);
           console.error('[webhook] SSSalud verification failed for user %s: %s', verification.userId, message);
-          // Revert: reject the identity verification since license is invalid
-          // Call KYC directly (the proxy service requires a JWT we don't have here)
-          try {
-            await axios.patch(
-              `${VERIFICATION_API_URL}/identity-verifications/${verification.id}`,
-              { status: 'rejected', rejectionReason: `license_invalid:${message}` },
-              { headers: { 'x-webhook-secret': webhookSecret } }
-            );
-            console.log('[webhook] Reverted verification %s to rejected (SSSalud failed)', verification.id);
-          } catch (revertErr: unknown) {
-            const revertMessage = revertErr instanceof Error ? revertErr.message : String(revertErr);
-            console.error('[webhook] Failed to revert verification %s: %s', verification.id, revertMessage);
-          }
+          // Error is already stored on md_settings by verifyByUserId
         }
       }
 

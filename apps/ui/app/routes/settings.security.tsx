@@ -26,23 +26,25 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const intent = String(formData.get('intent') || '');
 
   let client;
+  let userId: string;
   try {
     const authenticated = await getAuthenticatedClient(request);
     client = authenticated.client;
+    userId = (authenticated.user as any).id;
   } catch (error) {
     throw redirect('/login');
   }
 
   try {
     if (intent === 'setup-2fa') {
-      const result = await client.service('profile').create({ action: 'setup-2fa' });
-      const setup = await buildTwoFactorSetupPayload(result);
+      const result = await client.service('users').patch(userId, { twoFactorSetup: true });
+      const setup = await buildTwoFactorSetupPayload((result as any).twoFactorSetup);
       return json({ ok: true, intent, result: setup });
     }
 
     if (intent === 'enable-2fa') {
       const twoFactorCode = String(formData.get('twoFactorCode') || '');
-      const result = await client.service('profile').create({ action: 'enable-2fa', twoFactorCode });
+      const result = await client.service('users').patch(userId, { twoFactorCode });
       return json({ ok: true, intent, result });
     }
 
@@ -51,11 +53,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const newPassword = String(formData.get('newPassword') || '');
       const twoFactorCode = String(formData.get('twoFactorCode') || '');
 
-      const result = await client.service('profile').create({
-        action: 'change-password',
-        currentPassword,
-        newPassword,
-        twoFactorCode,
+      const result = await client.service('users').patch(userId, {
+        changePassword: { currentPassword, newPassword, twoFactorCode },
       });
 
       return json({ ok: true, intent, result });
