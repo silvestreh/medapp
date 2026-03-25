@@ -1205,6 +1205,12 @@ export const es = {
     delegations_empty_prescriber: 'Ningún médico le ha delegado acceso aún.',
     no_delegations_hint:
       'Ningún médico le ha otorgado acceso para prescribir. Solicite a un médico que lo agregue en su configuración.',
+    partial_insurance_match_title: 'Coincidencia parcial',
+    partial_insurance_match:
+      'Se encontró una coincidencia parcial: "{{matchedName}}". Confirmá o seleccioná la obra social correcta.',
+    no_insurance_match_title: 'Sin coincidencia',
+    no_insurance_match:
+      'No se encontró una coincidencia para "{{shortName}}" en Recetario. Seleccioná la obra social correcta de la lista.',
   },
   identity_verification: {
     title: 'Verificación de Identidad',

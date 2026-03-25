@@ -1200,6 +1200,12 @@ export const en: typeof es = {
     delegations_empty_medic: 'No prescribers have been granted access yet.',
     delegations_empty_prescriber: 'No medics have delegated to you yet.',
     no_delegations_hint: 'No medics have granted you prescription access. Ask a medic to add you in their settings.',
+    partial_insurance_match_title: 'Partial match',
+    partial_insurance_match:
+      'A partial match was found: "{{matchedName}}". Please confirm or select the correct health insurance.',
+    no_insurance_match_title: 'No match found',
+    no_insurance_match:
+      'No match found for "{{shortName}}" in Recetario. Please select the correct health insurance from the list.',
   },
   identity_verification: {
     title: 'Identity Verification',

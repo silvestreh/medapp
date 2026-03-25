@@ -1,5 +1,6 @@
 import * as authentication from '@feathersjs/authentication';
 import { searchPrepagas } from './hooks/search-prepagas';
+import { checkPermissions } from '../../hooks/check-permissions';
 
 const { authenticate } = authentication.hooks;
 
@@ -10,7 +11,7 @@ export default {
     get: [authenticate('jwt')],
     create: [],
     update: [],
-    patch: [],
+    patch: [authenticate('jwt'), checkPermissions({ scopeToOrganization: false })],
     remove: []
   },
 

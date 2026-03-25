@@ -21,12 +21,13 @@ import {
   Divider,
   Anchor,
   Tooltip,
+  Alert,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { showNotification } from '@mantine/notifications';
 import { useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { PlusIcon, TrashIcon, MagnifyingGlassIcon, PencilIcon } from '@phosphor-icons/react';
+import { PlusIcon, TrashIcon, MagnifyingGlassIcon, PencilIcon, WarningIcon } from '@phosphor-icons/react';
 import { AsYouType, type CountryCode } from 'libphonenumber-js';
 import { DateInput } from '@mantine/dates';
 import dayjs from 'dayjs';
@@ -47,6 +48,8 @@ import {
 } from '~/components/practice-selector';
 import PatientSearch from '~/components/patient-search';
 import { useFeathers, useGet } from '~/components/provider';
+import { RecetarioInsuranceSelector } from '~/components/recetario-insurance-selector';
+import { matchInsurance, type RecetarioInsurance } from '~/utils/match-insurance';
 import { trackAction } from '~/utils/breadcrumbs';
 
 const COUNTRY_PHONE_OPTIONS = [
@@ -315,6 +318,13 @@ export function PrescribeModal({
   const [orderDiagnosis, setOrderDiagnosis] = useState('');
   const [missingPatientFields, setMissingPatientFields] = useState<Set<string>>(new Set());
 
+  // Recetario insurance matching state
+  const [recetarioInsurances, setRecetarioInsurances] = useState<RecetarioInsurance[]>([]);
+  const [insuranceMatchStatus, setInsuranceMatchStatus] = useState<
+    'idle' | 'loading' | 'exact' | 'partial' | 'none' | 'resolved'
+  >('idle');
+  const [insuranceMatchName, setInsuranceMatchName] = useState('');
+
   const patientForm = useForm({
     initialValues: {
       documentValue: '',
@@ -407,6 +417,18 @@ export function PrescribeModal({
   useEffect(() => {
     if (opened) {
       trackAction('Opened prescribe modal');
+      // Fetch Recetario insurance list (if not already loaded)
+      if (recetarioInsurances.length === 0) {
+        feathersClient
+          .service('recetario' as any)
+          .create({ action: 'sync-insurances' })
+          .then((res: any) => {
+            if (res?.insurances) setRecetarioInsurances(res.insurances);
+          })
+          .catch(() => {
+            // non-fatal — matching will be unavailable
+          });
+      }
       if (initialPrescriptionResult) {
         setPrescriptionResult(initialPrescriptionResult);
         setStep(2);
@@ -449,6 +471,88 @@ export function PrescribeModal({
       patientFetcher.submit({ intent: 'get-patient-data', data: JSON.stringify({ patientId }) }, { method: 'post' });
     },
     [feathersClient, fillPatientForm, patientFetcher]
+  );
+
+  // Run insurance matching when a prepaga is selected
+  const handlePrepagaSelected = useCallback(
+    (prepaga: { id: string; shortName: string; recetarioHealthInsuranceName?: string | null }) => {
+      // Already mapped → use it directly
+      if (prepaga.recetarioHealthInsuranceName) {
+        patientForm.setFieldValue('healthInsuranceName', prepaga.recetarioHealthInsuranceName);
+        setInsuranceMatchStatus('resolved');
+        setInsuranceMatchName(prepaga.recetarioHealthInsuranceName);
+        return;
+      }
+
+      // Insurance list not loaded yet — defer matching
+      if (recetarioInsurances.length === 0) {
+        patientForm.setFieldValue('healthInsuranceName', prepaga.shortName);
+        setInsuranceMatchStatus('loading');
+        return;
+      }
+
+      const result = matchInsurance(prepaga.shortName, recetarioInsurances);
+      if (result.matchType === 'exact' && result.matchedName) {
+        patientForm.setFieldValue('healthInsuranceName', result.matchedName);
+        setInsuranceMatchStatus('exact');
+        setInsuranceMatchName(result.matchedName);
+        // Persist the mapping
+        feathersClient
+          .service('prepagas' as any)
+          .patch(prepaga.id, { recetarioHealthInsuranceName: result.matchedName })
+          .catch(() => {});
+      } else if (result.matchType === 'partial' && result.matchedName) {
+        setInsuranceMatchStatus('partial');
+        setInsuranceMatchName(result.matchedName);
+        patientForm.setFieldValue('healthInsuranceName', result.matchedName);
+      } else {
+        setInsuranceMatchStatus('none');
+        setInsuranceMatchName('');
+        patientForm.setFieldValue('healthInsuranceName', '');
+      }
+    },
+    [recetarioInsurances, feathersClient, patientForm]
+  );
+
+  // Re-run matching when insurance list loads while status is 'loading'
+  useEffect(() => {
+    if (insuranceMatchStatus !== 'loading' || recetarioInsurances.length === 0) return;
+    const medicareId = patientForm.values.medicareId;
+    if (!medicareId || !selectedInsurer) return;
+
+    const prepaga = selectedInsurer as {
+      id: string;
+      shortName: string;
+      recetarioHealthInsuranceName?: string | null;
+    };
+    handlePrepagaSelected(prepaga);
+  }, [recetarioInsurances, insuranceMatchStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Update display value as user types in the insurance autocomplete
+  const handleInsuranceInputChange = useCallback(
+    (name: string) => {
+      setInsuranceMatchName(name);
+    },
+    []
+  );
+
+  // Confirm insurance selection from the autocomplete dropdown
+  const handleInsuranceConfirm = useCallback(
+    (name: string) => {
+      patientForm.setFieldValue('healthInsuranceName', name);
+      setInsuranceMatchName(name);
+
+      // Persist to the prepaga record
+      const prepagaId = patientForm.values.medicareId;
+      if (prepagaId && name) {
+        feathersClient
+          .service('prepagas' as any)
+          .patch(prepagaId, { recetarioHealthInsuranceName: name })
+          .catch(() => {});
+        setInsuranceMatchStatus('resolved');
+      }
+    },
+    [feathersClient, patientForm]
   );
 
   // Gap-fill from fetcher (mhsPatientData / recetarioData)
@@ -609,6 +713,8 @@ export function PrescribeModal({
       setEditingRepeatOrderDiagnosis(false);
       setSelectedPractices([]);
       setPracticesLoaded(false);
+      setInsuranceMatchStatus('idle');
+      setInsuranceMatchName('');
     }
   }, [opened]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -883,13 +989,16 @@ export function PrescribeModal({
                         if (!id) {
                           patientForm.setFieldValue('healthInsuranceName', '');
                           patientForm.setFieldValue('insuranceNumber', '');
+                          setInsuranceMatchStatus('idle');
+                          setInsuranceMatchName('');
                         }
                       }}
                       onSelectPrepaga={p => {
-                        patientForm.setFieldValue(
-                          'healthInsuranceName',
-                          (p as any).recetarioHealthInsuranceName || (p as any).shortName
-                        );
+                        handlePrepagaSelected(p as {
+                          id: string;
+                          shortName: string;
+                          recetarioHealthInsuranceName?: string | null;
+                        });
                       }}
                     />
                     {!!pv.medicareId && (
@@ -900,6 +1009,38 @@ export function PrescribeModal({
                       />
                     )}
                   </SimpleGrid>
+
+                  {insuranceMatchStatus === 'partial' && (
+                    <Alert
+                      color="yellow"
+                      icon={<WarningIcon size={16} />}
+                      title={t('recetario.partial_insurance_match_title')}
+                    >
+                      {t('recetario.partial_insurance_match', { matchedName: insuranceMatchName })}
+                      <RecetarioInsuranceSelector
+                        insurances={recetarioInsurances}
+                        value={insuranceMatchName}
+                        onChange={handleInsuranceInputChange}
+                        onSelect={handleInsuranceConfirm}
+                      />
+                    </Alert>
+                  )}
+
+                  {insuranceMatchStatus === 'none' && (
+                    <Alert
+                      color="orange"
+                      icon={<WarningIcon size={16} />}
+                      title={t('recetario.no_insurance_match_title')}
+                    >
+                      {t('recetario.no_insurance_match', { shortName: insurerShortName })}
+                      <RecetarioInsuranceSelector
+                        insurances={recetarioInsurances}
+                        value={insuranceMatchName}
+                        onChange={handleInsuranceInputChange}
+                        onSelect={handleInsuranceConfirm}
+                      />
+                    </Alert>
+                  )}
                 </>
               )}
 
@@ -907,7 +1048,14 @@ export function PrescribeModal({
                 <Button variant="default" onClick={onClose}>
                   {t('common.cancel')}
                 </Button>
-                <Button onClick={handleNextStep} disabled={!hasPatient}>
+                <Button
+                  onClick={handleNextStep}
+                  disabled={
+                    !hasPatient ||
+                    insuranceMatchStatus === 'partial' ||
+                    insuranceMatchStatus === 'none'
+                  }
+                >
                   {t('common.next')}
                 </Button>
               </Group>

@@ -171,6 +171,7 @@
       "practice-codes:patch",
       "practice-codes:remove",
       "prepagas:find",
+      "prepagas:patch.recetarioHealthInsuranceName",
       "patients:find",
       "patients:get:all",
       "users:find",
