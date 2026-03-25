@@ -1,6 +1,7 @@
-import { useMemo, useCallback } from 'react';
-import { Autocomplete, Checkbox, Text } from '@mantine/core';
+import { useState, useMemo, useCallback } from 'react';
+import { ActionIcon, Autocomplete, Checkbox, Group, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import { PencilSimpleIcon } from '@phosphor-icons/react';
 import { styled } from '~/styled-system/jsx';
 import PatientSearch from '~/components/patient-search';
 import { useFind } from '~/components/provider';
@@ -43,6 +44,7 @@ interface StudyMetadataFormProps {
   patientId?: string | null;
   onPatientChange?: (patientId: string) => void;
   patient?: StudyPatientInfo;
+  patientEditable?: boolean;
   referringDoctor?: string;
   onReferringDoctorChange?: (value: string) => void;
   medicId?: string | null;
@@ -108,6 +110,7 @@ export function StudyMetadataForm({
   dateReadOnly,
   onPatientChange,
   patient,
+  patientEditable = false,
   referringDoctor,
   onReferringDoctorChange,
   onMedicIdChange,
@@ -116,6 +119,19 @@ export function StudyMetadataForm({
 }: StudyMetadataFormProps) {
   const { t } = useTranslation();
   const isCreateMode = mode === 'create';
+  const [isChangingPatient, setIsChangingPatient] = useState(false);
+
+  const handlePatientSelected = useCallback(
+    (id: string) => {
+      onPatientChange?.(id);
+      setIsChangingPatient(false);
+    },
+    [onPatientChange]
+  );
+
+  const handleStartChangingPatient = useCallback(() => {
+    setIsChangingPatient(true);
+  }, []);
 
   const { response: doctorsResponse } = useFind('referring-doctors');
   const doctors: any[] = useMemo(() => (Array.isArray(doctorsResponse) ? doctorsResponse : []), [doctorsResponse]);
@@ -147,11 +163,30 @@ export function StudyMetadataForm({
           </FieldRow>
         )}
 
-        {!isCreateMode && (
+        {!isCreateMode && !isChangingPatient && (
           <FieldRow label={t('studies.patient')}>
-            <StyledTextInput
-              value={patient ? `${patient.personalData?.firstName || ''} ${patient.personalData?.lastName || ''}` : '—'}
-              readOnly
+            <Group gap="xs" wrap="nowrap" style={{ flex: 1 }}>
+              <StyledTextInput
+                value={patient ? `${patient.personalData?.firstName || ''} ${patient.personalData?.lastName || ''}` : '—'}
+                readOnly
+                style={{ flex: 1 }}
+              />
+              {patientEditable && (
+                <ActionIcon variant="subtle" size="sm" onClick={handleStartChangingPatient}>
+                  <PencilSimpleIcon size={16} />
+                </ActionIcon>
+              )}
+            </Group>
+          </FieldRow>
+        )}
+
+        {!isCreateMode && isChangingPatient && (
+          <FieldRow label={t('studies.patient')}>
+            <PatientSearch
+              onChange={handlePatientSelected}
+              onBlur={() => {}}
+              placeholder={t('studies.patient_search_placeholder')}
+              autoFocus
             />
           </FieldRow>
         )}

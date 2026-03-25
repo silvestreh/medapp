@@ -147,6 +147,7 @@ export default function StudyDetail() {
   const [emergency, setEmergency] = useState<boolean | undefined>(undefined);
   const [selectedStudies, setSelectedStudies] = useState<string[] | undefined>(undefined);
   const [date, setDate] = useState<Date | null | undefined>(undefined);
+  const [patientId, setPatientId] = useState<string | undefined>(undefined);
 
   // Initialize local state from study data once loaded
   if (study?.id && comment === undefined) {
@@ -155,10 +156,23 @@ export default function StudyDetail() {
     setEmergency(study.emergency ?? false);
     setSelectedStudies(study.studies || []);
     setDate(study.date ? new Date(study.date) : new Date());
+    setPatientId(study.patientId);
   }
 
-  const patient = study?.patient;
   const results: any[] = study?.results || [];
+  const isPatientChanged = !!patientId && patientId !== study?.patientId;
+  const patientEditable = results.length === 0 && isVerified;
+
+  // Fetch new patient data when patient is changed (same pattern as studies.new.tsx)
+  const { data: fetchedPatient } = useGet('patients', patientId!, {
+    enabled: !!patientId && isPatientChanged,
+  });
+  const patient = isPatientChanged && fetchedPatient ? fetchedPatient : study?.patient;
+
+  const handlePatientChange = useCallback((newPatientId: string) => {
+    setPatientId(newPatientId);
+    setMetaDirty(true);
+  }, []);
 
   const toggleStudy = useCallback((key: string) => {
     setSelectedStudies(prev => {
@@ -189,8 +203,14 @@ export default function StudyDetail() {
       results: Object.entries(resultDrafts).map(([type, data]) => ({ type, data })),
     };
 
+    // Include patientId and insurerId when patient was reassigned
+    if (isPatientChanged) {
+      payload.patientId = patientId;
+      payload.insurerId = (patient as any)?.medicareId || null;
+    }
+
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
-  }, [studyId, comment, noOrder, emergency, selectedStudies, date, study, resultDrafts, fetcher]);
+  }, [studyId, comment, noOrder, emergency, selectedStudies, date, study, resultDrafts, fetcher, isPatientChanged, patientId, patient]);
 
   const handleResultDraftChange = useCallback(
     (type: string) => (data: StudyResultData) => {
@@ -298,6 +318,8 @@ export default function StudyDetail() {
         date={extractionDate}
         dateReadOnly
         patient={patient}
+        patientEditable={patientEditable}
+        onPatientChange={handlePatientChange}
         referringDoctor={study.referringDoctor ?? ''}
         readOnly={!isVerified}
       />

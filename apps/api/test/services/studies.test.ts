@@ -2,12 +2,14 @@ import assert from 'assert';
 import app from '../../src/app';
 import { Study, StudyResult, User, Patient } from '../../src/declarations';
 import { createTestUser, createTestOrganization } from '../test-helpers';
+import { getUserPermissions } from '../../src/utils/get-user-permissions';
 
 describe('\'studies\' service', () => {
   let medic: User;
   let patient: Patient;
   let study: Study;
   let prepaga: any;
+  let org: any;
 
   before(async () => {
     await app.service('roles').create({
@@ -15,12 +17,18 @@ describe('\'studies\' service', () => {
       permissions: ['studies:create', 'studies:patch', 'studies:get', 'studies:find']
     }).catch(() => null);
 
-    const org = await createTestOrganization();
+    org = await createTestOrganization();
     medic = await createTestUser({
       username: 'medic1',
       password: 'Password123!',
       roleIds: ['medic'],
       organizationId: org.id,
+    });
+
+    await app.service('md-settings').create({
+      userId: medic.id,
+      encounterDuration: 20,
+      isVerified: true,
     });
 
     patient = await app.service('patients').create({
@@ -221,6 +229,72 @@ describe('\'studies\' service', () => {
       const ids = result.data.map((s: Study) => s.id);
       assert.ok(ids.includes(protoStudy.id), 'Study found by protocol');
       assert.ok(ids.includes(dniStudy.id), 'Study found by documentValue');
+    });
+  });
+
+  describe('prevent patient change with results', () => {
+    const authenticatedParams = () => ({
+      provider: 'rest',
+      authenticated: true,
+      user: medic,
+      organizationId: org.id,
+    } as any);
+
+    it('allows changing patientId when study has no results', async () => {
+      const newPatient = await app.service('patients').create({
+        medicare: 'medicare-reassign',
+        medicareNumber: '111111111',
+        medicarePlan: 'planX',
+      }) as Patient;
+
+      const emptyStudy = await app.service('studies').create({
+        date: new Date(),
+        studies: ['anemia'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+      });
+
+      const params = authenticatedParams();
+      params.orgPermissions = await getUserPermissions(app, String(medic.id), String(org.id));
+
+      const patched = await app.service('studies').patch(emptyStudy.id, {
+        patientId: newPatient.id,
+      }, params);
+
+      assert.strictEqual(patched.patientId, newPatient.id);
+    });
+
+    it('rejects changing patientId when study has results', async () => {
+      const newPatient = await app.service('patients').create({
+        medicare: 'medicare-reject',
+        medicareNumber: '222222222',
+        medicarePlan: 'planY',
+      }) as Patient;
+
+      const params = authenticatedParams();
+      params.orgPermissions = await getUserPermissions(app, String(medic.id), String(org.id));
+
+      try {
+        await app.service('studies').patch(study.id, {
+          patientId: newPatient.id,
+        }, params);
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.strictEqual(error.code, 400);
+        assert.ok(error.message.includes('Cannot change patient'));
+      }
+    });
+
+    it('allows patching other fields on a study with results', async () => {
+      const params = authenticatedParams();
+      params.orgPermissions = await getUserPermissions(app, String(medic.id), String(org.id));
+
+      const patched = await app.service('studies').patch(study.id, {
+        noOrder: true,
+      }, params);
+
+      assert.strictEqual(patched.noOrder, true);
     });
   });
 

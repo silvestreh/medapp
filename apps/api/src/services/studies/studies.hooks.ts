@@ -18,6 +18,7 @@ import populateInsurer from './hooks/populate-insurer';
 import { setCost } from '../practice-costs/hooks/set-cost';
 import { updateCost } from '../practice-costs/hooks/update-cost';
 import { logAccess } from '../../hooks/log-access';
+import preventPatientChangeWithResults from './hooks/prevent-patient-change-with-results';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -47,6 +48,7 @@ export default {
     patch: [
       requireVerifiedLicense(),
       restrictToMedic(),
+      preventPatientChangeWithResults(),
       clearReferringDoctor(),
       extractStudyResults()
     ],
