@@ -333,7 +333,7 @@ export class Recetario {
       } catch (retryError) {
         await this.app.service('prescriptions').patch(
           (prescriptionRecord as any).id,
-          { status: 'error' } as any,
+          { status: 'error' },
           this.internal()
         );
         throw retryError;
@@ -411,7 +411,7 @@ export class Recetario {
       } catch (retryError) {
         await this.app.service('prescriptions').patch(
           (prescriptionRecord as any).id,
-          { status: 'error' } as any,
+          { status: 'error' },
           this.internal()
         );
         throw retryError;

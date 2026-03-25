@@ -102,6 +102,9 @@ export default function (app: Application): void {
             BEGIN ALTER TYPE "enum_access_logs_action" ADD VALUE IF NOT EXISTS 'deny'; EXCEPTION WHEN duplicate_object THEN NULL; END;
             BEGIN ALTER TYPE "enum_access_logs_action" ADD VALUE IF NOT EXISTS 'execute'; EXCEPTION WHEN duplicate_object THEN NULL; END;
           END IF;
+          IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_prescriptions_status') THEN
+            BEGIN ALTER TYPE "enum_prescriptions_status" ADD VALUE IF NOT EXISTS 'error'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+          END IF;
         END $$`);
         await sequelize.query('ALTER TABLE "access_logs" ALTER COLUMN "patientId" DROP NOT NULL');
         await sequelize.query('ALTER TABLE "access_logs" ALTER COLUMN "userId" DROP NOT NULL');

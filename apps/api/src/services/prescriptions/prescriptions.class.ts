@@ -11,7 +11,7 @@ export interface Prescription {
   type: 'prescription' | 'order';
   quickLinkUrl: string | null;
   quickLinkExpiresAt: Date | null;
-  status: 'pending' | 'completed' | 'cancelled' | 'expired';
+  status: 'pending' | 'completed' | 'cancelled' | 'expired' | 'error';
   sharedVia: string | null;
   sharedTo: string | null;
   content: {

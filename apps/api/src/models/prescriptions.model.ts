@@ -57,7 +57,7 @@ export default function (app: Application): typeof Model {
       allowNull: true,
     },
     status: {
-      type: DataTypes.ENUM('pending', 'completed', 'cancelled', 'expired'),
+      type: DataTypes.ENUM('pending', 'completed', 'cancelled', 'expired', 'error'),
       allowNull: false,
       defaultValue: 'pending',
     },
