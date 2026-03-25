@@ -3,7 +3,6 @@ import {
   Modal,
   Stepper,
   SegmentedControl,
-  Textarea,
   NumberInput,
   Checkbox,
   Button,
@@ -302,6 +301,7 @@ export function PrescribeModal({
   const [editingRepeatDiagnosis, setEditingRepeatDiagnosis] = useState(false);
   const [orderDiagnosisId, setOrderDiagnosisId] = useState('');
   const [orderDiagnosis, setOrderDiagnosis] = useState('');
+  const [missingPatientFields, setMissingPatientFields] = useState<Set<string>>(new Set());
 
   const patientForm = useForm({
     initialValues: {
@@ -367,7 +367,7 @@ export function PrescribeModal({
     const cd = p.contactData || {};
     const email = cd.email || '';
     const phone = (cd.phoneNumber || '').replace(/^tel:/i, '');
-    patientForm.setValues({
+    const values = {
       documentValue: pd.documentValue || '',
       documentType: pd.documentType || 'DNI',
       firstName: pd.firstName || '',
@@ -379,7 +379,13 @@ export function PrescribeModal({
       medicareId: p.medicareId || '',
       healthInsuranceName: '',
       insuranceNumber: p.medicareNumber || '',
-    });
+    };
+    patientForm.setValues(values);
+    const missing = new Set<string>();
+    for (const key of ['documentValue', 'gender', 'birthDate', 'email', 'phone'] as const) {
+      if (!values[key]) missing.add(key);
+    }
+    setMissingPatientFields(missing);
     setShareEmail(email);
     setSharePhone(phone);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -429,41 +435,62 @@ export function PrescribeModal({
   useEffect(() => {
     if (patientFetcher.state !== 'idle' || !patientFetcher.data) return;
     const { recetarioData, matchedPrepagaId, mhsPatientData } = patientFetcher.data;
+    const filledByGapFill: string[] = [];
     if (mhsPatientData) {
-      patientForm.setValues((prev: any) => ({
-        ...prev,
-        documentValue: prev.documentValue || mhsPatientData.documentValue || '',
-        documentType: prev.documentType || mhsPatientData.documentType || 'DNI',
-        firstName: prev.firstName || mhsPatientData.firstName || '',
-        lastName: prev.lastName || mhsPatientData.lastName || '',
-        gender:
-          prev.gender ||
-          ({ male: 'm', female: 'f', other: 'o' } as any)[mhsPatientData.gender] ||
-          mhsPatientData.gender ||
-          '',
-        birthDate: prev.birthDate || mhsPatientData.birthDate || '',
-        email: prev.email || mhsPatientData.email || '',
-        phone: prev.phone || mhsPatientData.phone || '',
-        medicareId: prev.medicareId || mhsPatientData.medicareId || '',
-        insuranceNumber: prev.insuranceNumber || mhsPatientData.insuranceNumber || '',
-      }));
+      patientForm.setValues((prev: any) => {
+        const next = {
+          ...prev,
+          documentValue: prev.documentValue || mhsPatientData.documentValue || '',
+          documentType: prev.documentType || mhsPatientData.documentType || 'DNI',
+          firstName: prev.firstName || mhsPatientData.firstName || '',
+          lastName: prev.lastName || mhsPatientData.lastName || '',
+          gender:
+            prev.gender ||
+            ({ male: 'm', female: 'f', other: 'o' } as any)[mhsPatientData.gender] ||
+            mhsPatientData.gender ||
+            '',
+          birthDate: prev.birthDate || mhsPatientData.birthDate || '',
+          email: prev.email || mhsPatientData.email || '',
+          phone: prev.phone || mhsPatientData.phone || '',
+          medicareId: prev.medicareId || mhsPatientData.medicareId || '',
+          insuranceNumber: prev.insuranceNumber || mhsPatientData.insuranceNumber || '',
+        };
+        for (const key of ['documentValue', 'gender', 'birthDate', 'email', 'phone']) {
+          if (!prev[key] && next[key]) filledByGapFill.push(key);
+        }
+        return next;
+      });
       setShareEmail(prev => prev || mhsPatientData.email || '');
       setSharePhone(prev => prev || mhsPatientData.phone || '');
     }
-    if (!recetarioData) return;
-    patientForm.setValues((prev: any) => ({
-      ...prev,
-      gender: prev.gender || recetarioData.gender,
-      birthDate: prev.birthDate || recetarioData.birthDate,
-      email: prev.email || recetarioData.email,
-      phone: prev.phone || recetarioData.phone,
-      insuranceNumber: prev.insuranceNumber || recetarioData.insuranceNumber,
-      medicareId: prev.medicareId || matchedPrepagaId || '',
-      healthInsuranceName:
-        prev.medicareId || matchedPrepagaId ? prev.healthInsuranceName : recetarioData.healthInsuranceName,
-    }));
-    setShareEmail(prev => prev || recetarioData.email || '');
-    setSharePhone(prev => prev || recetarioData.phone || '');
+    if (recetarioData) {
+      patientForm.setValues((prev: any) => {
+        const next = {
+          ...prev,
+          gender: prev.gender || recetarioData.gender,
+          birthDate: prev.birthDate || recetarioData.birthDate,
+          email: prev.email || recetarioData.email,
+          phone: prev.phone || recetarioData.phone,
+          insuranceNumber: prev.insuranceNumber || recetarioData.insuranceNumber,
+          medicareId: prev.medicareId || matchedPrepagaId || '',
+          healthInsuranceName:
+            prev.medicareId || matchedPrepagaId ? prev.healthInsuranceName : recetarioData.healthInsuranceName,
+        };
+        for (const key of ['documentValue', 'gender', 'birthDate', 'email', 'phone']) {
+          if (!prev[key] && next[key]) filledByGapFill.push(key);
+        }
+        return next;
+      });
+      setShareEmail(prev => prev || recetarioData.email || '');
+      setSharePhone(prev => prev || recetarioData.phone || '');
+    }
+    if (filledByGapFill.length > 0) {
+      setMissingPatientFields(prev => {
+        const next = new Set(prev);
+        for (const key of filledByGapFill) next.delete(key);
+        return next;
+      });
+    }
   }, [patientFetcher.state, patientFetcher.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch practices and accounting settings when entering step 1
@@ -473,9 +500,11 @@ export function PrescribeModal({
 
     const fetchPractices = async () => {
       try {
+        const codesQuery: Record<string, any> = { $limit: 500 };
+        if (medicId) codesQuery.userId = medicId;
         const [practicesRes, codesRes] = await Promise.all([
           feathersClient.service('practices' as any).find({ query: { $limit: 200 } }),
-          feathersClient.service('practice-codes' as any).find({ query: { $limit: 500 } }),
+          feathersClient.service('practice-codes' as any).find({ query: codesQuery }),
         ]);
         if (cancelled) return;
 
@@ -494,7 +523,7 @@ export function PrescribeModal({
     return () => {
       cancelled = true;
     };
-  }, [step, practicesLoaded, feathersClient]);
+  }, [step, practicesLoaded, feathersClient, medicId]);
 
   const handleAddPractice = useCallback(
     (practiceId: string) => {
@@ -542,6 +571,7 @@ export function PrescribeModal({
       setStep(0);
       setSelectedPatientId(null);
       setPrescriptionResult(null);
+      setMissingPatientFields(new Set());
       setShareEmail('');
       setSharePhoneCountry('54');
       setSharePhone('');
@@ -748,11 +778,11 @@ export function PrescribeModal({
         (() => {
           const pv = patientForm.values;
           const hasPatient = !!selectedPatientId || !!patient;
-          const showDocumentValue = !pv.documentValue;
-          const showGender = !pv.gender;
-          const showBirthDate = !pv.birthDate;
-          const showEmail = !pv.email;
-          const showPhone = !pv.phone;
+          const showDocumentValue = missingPatientFields.has('documentValue');
+          const showGender = missingPatientFields.has('gender');
+          const showBirthDate = missingPatientFields.has('birthDate');
+          const showEmail = missingPatientFields.has('email');
+          const showPhone = missingPatientFields.has('phone');
           const hasMissingFields = showDocumentValue || showGender || showBirthDate || showEmail || showPhone;
 
           return (
