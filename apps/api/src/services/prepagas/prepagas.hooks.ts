@@ -1,4 +1,5 @@
 import * as authentication from '@feathersjs/authentication';
+import { disallow } from 'feathers-hooks-common';
 import { searchPrepagas } from './hooks/search-prepagas';
 import { checkPermissions } from '../../hooks/check-permissions';
 
@@ -7,12 +8,18 @@ const { authenticate } = authentication.hooks;
 export default {
   before: {
     all: [],
-    find: [authenticate('jwt'), searchPrepagas()],
+    find: [
+      authenticate('jwt'),
+      searchPrepagas()
+    ],
     get: [authenticate('jwt')],
-    create: [],
-    update: [],
-    patch: [authenticate('jwt'), checkPermissions({ scopeToOrganization: false })],
-    remove: []
+    create: [disallow('external')],
+    update: [disallow('external')],
+    patch: [
+      authenticate('jwt'),
+      checkPermissions({ scopeToOrganization: false })
+    ],
+    remove: [disallow('external')]
   },
 
   after: {
