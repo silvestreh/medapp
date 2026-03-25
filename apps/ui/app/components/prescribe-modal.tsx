@@ -776,6 +776,11 @@ export function PrescribeModal({
   const handleNextStep = useCallback(() => {
     if (patientForm.validate().hasErrors) return;
 
+    // Auto-confirm partial insurance match on Next
+    if (insuranceMatchStatus === 'partial' && insuranceMatchName) {
+      handleInsuranceConfirm(insuranceMatchName);
+    }
+
     // Patch patient with form data (only fields the form manages)
     const pv = patientForm.values;
     const patientId = selectedPatientId || patient?.id;
@@ -804,7 +809,7 @@ export function PrescribeModal({
     }
 
     setStep(1);
-  }, [patientForm, selectedPatientId, patient, updatePatientFetcher]);
+  }, [patientForm, selectedPatientId, patient, updatePatientFetcher, insuranceMatchStatus, insuranceMatchName, handleInsuranceConfirm]);
 
   const handlePrescriptionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1081,7 +1086,6 @@ export function PrescribeModal({
                   onClick={handleNextStep}
                   disabled={
                     !hasPatient ||
-                    insuranceMatchStatus === 'partial' ||
                     insuranceMatchStatus === 'none'
                   }
                 >
