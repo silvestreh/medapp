@@ -3,6 +3,7 @@ import Sentry from './sentry';
 import app from './app';
 import { scheduleAppointmentCleanup } from './cron/cleanup-appointments';
 import { scheduleLicenseRevalidation } from './cron/license-revalidation';
+import { scheduleSolanaAnchoring } from './cron/solana-anchoring';
 
 
 const port = app.get('port');
@@ -17,6 +18,7 @@ server.on('listening', () => {
   logger.info('Feathers application started on http://%s:%d', app.get('host'), port);
   scheduleAppointmentCleanup(app);
   scheduleLicenseRevalidation(app);
+  scheduleSolanaAnchoring(app);
 
 
   app.service('access-logs').create({

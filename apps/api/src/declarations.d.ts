@@ -513,3 +513,32 @@ export interface EncounterAiChatMessage {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export type SolanaAnchorChainType = 'encounters' | 'access_logs';
+export type SolanaAnchorStatus = 'pending' | 'confirmed' | 'failed';
+
+export interface SolanaAnchor {
+  id: Id;
+  merkleRoot: string;
+  leafCount: number;
+  chainType: SolanaAnchorChainType;
+  status: SolanaAnchorStatus;
+  txSignature: string | null;
+  slot: number | null;
+  network: string;
+  batchStartDate: Date;
+  batchEndDate: Date;
+  errorMessage: string | null;
+  retryCount: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface SolanaAnchorLeaf {
+  id: Id;
+  anchorId: Id;
+  recordId: string;
+  recordHash: string;
+  leafIndex: number;
+  createdAt?: Date;
+}

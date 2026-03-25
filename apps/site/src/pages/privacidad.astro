@@ -11,7 +11,7 @@ import Footer from '../components/footer.astro';
   <Nav />
   <main class="container legal">
     <h1>Política de Privacidad</h1>
-    <p class="updated">Última actualización: 17 de marzo de 2026</p>
+    <p class="updated">Última actualización: 25 de marzo de 2026</p>
 
     <section>
       <h2>Resumen</h2>
@@ -67,8 +67,15 @@ import Footer from '../components/footer.astro';
       </ul>
       <p>
         Los datos clínicos están cifrados con AES-256 en reposo y en tránsito.
-        Cada registro médico forma parte de una cadena de integridad verificable con hash SHA-256.
+        Cada registro médico forma parte de una cadena de integridad verificable con hash criptográfico.
         El acceso está controlado por rol y registrado en logs de auditoría inmutables.
+      </p>
+      <p>
+        Periódicamente, la integridad de las cadenas de registros médicos se ancla en la
+        blockchain pública de Solana. Esto genera una prueba independiente e inmutable de que
+        los registros no fueron alterados. <strong>Ningún dato personal o clínico se almacena
+        en la blockchain</strong> — solo huellas criptográficas (hashes) que permiten verificar
+        la integridad sin revelar contenido.
       </p>
     </section>
 
@@ -81,6 +88,7 @@ import Footer from '../components/footer.astro';
         <li>Autenticación multifactor (2FA) con TOTP y WebAuthn.</li>
         <li>Control de acceso granular por rol, organización y campo.</li>
         <li>Registros de auditoría inmutables con identificación de dispositivo.</li>
+        <li>Anclaje periódico de integridad en blockchain (Solana), sin almacenar datos personales en la cadena.</li>
         <li>Verificación de identidad con documento y selfie para profesionales.</li>
       </ul>
     </section>
