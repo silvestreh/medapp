@@ -8,8 +8,8 @@ import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
 import { ClipboardTextIcon, PlusIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
-
 import Joyride from 'react-joyride';
+import '@mantine/dates/styles.css';
 
 import { getAuthenticatedClient, authenticatedLoader, getCurrentOrgRoleIds } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
@@ -212,7 +212,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   if (intent === 'create-prescription') {
-    const { diagnosis, medications, hiv, patientData, patientId, medicId, date } = parseFormJson(formData.get('data')) as any;
+    const { diagnosis, medications, hiv, patientData, patientId, medicId, date } = parseFormJson(
+      formData.get('data')
+    ) as any;
     const result = await client.service('recetario' as any).create({
       action: 'prescribe',
       patientId,
@@ -448,7 +450,11 @@ export default function PrescriptionsPage() {
   });
 
   const tourSteps = getPrescriptionsSteps(t);
-  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('prescriptions', tourSteps);
+  const {
+    run: tourRun,
+    stepIndex: tourStepIndex,
+    handleCallback: tourHandleCallback,
+  } = useSectionTour('prescriptions', tourSteps);
 
   return (
     <>
@@ -480,7 +486,12 @@ export default function PrescriptionsPage() {
             <div data-tour="prescriptions-patient-search">
               <PatientSearch onChange={handlePatientSelected} onBlur={handlePatientCleared} variant="filled" />
             </div>
-            <Button data-tour="prescriptions-new" leftSection={<PlusIcon size={16} />} onClick={openPrescribe} disabled={!selectedMedicId}>
+            <Button
+              data-tour="prescriptions-new"
+              leftSection={<PlusIcon size={16} />}
+              onClick={openPrescribe}
+              disabled={!selectedMedicId}
+            >
               {t('recetario.new_prescription')}
             </Button>
           </Group>
@@ -574,11 +585,7 @@ export default function PrescriptionsPage() {
                   <Table.Td>
                     <CellText style={{ color: 'var(--mantine-color-dimmed)' }}>{getMedicineSummary(rx)}</CellText>
                   </Table.Td>
-                  <Table.Td>
-                    {rx.status === 'completed' && (
-                      <RepeatButton rx={rx} onRepeat={handleRepeat} />
-                    )}
-                  </Table.Td>
+                  <Table.Td>{rx.status === 'completed' && <RepeatButton rx={rx} onRepeat={handleRepeat} />}</Table.Td>
                 </Table.Tr>
                 {expandedId === rx.id && (
                   <Table.Tr style={{ '--tr-hover-bg': 'transparent', background: 'var(--mantine-color-gray-0)' }}>
