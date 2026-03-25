@@ -128,7 +128,7 @@ export default function NewStudy() {
     setSelectedStudies(prev => (prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]));
   }, []);
 
-  const canSave = patientId && selectedStudies.length > 0 && date;
+  const canSave = patientId && selectedStudies.length > 0 && date && (medicId || referringDoctor.trim());
   const isSaving = fetcher.state !== 'idle';
 
   const handleBack = useCallback(() => navigate('/studies'), [navigate]);

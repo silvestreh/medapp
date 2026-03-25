@@ -64,6 +64,12 @@ export class ReferringDoctors {
     const userRows = await sequelize.models.users.findAll({
       where: { id: { [Op.in]: medicUserIds } },
       attributes: ['id'],
+      include: [{
+        model: sequelize.models.md_settings,
+        attributes: [],
+        where: { isVerified: true },
+        required: true,
+      }],
       raw: true,
     }) as unknown as { id: string }[];
 

@@ -148,6 +148,8 @@ export default function StudyDetail() {
   const [selectedStudies, setSelectedStudies] = useState<string[] | undefined>(undefined);
   const [date, setDate] = useState<Date | null | undefined>(undefined);
   const [patientId, setPatientId] = useState<string | undefined>(undefined);
+  const [referringDoctor, setReferringDoctor] = useState<string | undefined>(undefined);
+  const [medicId, setMedicId] = useState<string | null | undefined>(undefined);
 
   // Initialize local state from study data once loaded
   if (study?.id && comment === undefined) {
@@ -157,6 +159,8 @@ export default function StudyDetail() {
     setSelectedStudies(study.studies || []);
     setDate(study.date ? new Date(study.date) : new Date());
     setPatientId(study.patientId);
+    setReferringDoctor(study.referringDoctor ?? '');
+    setMedicId(study.medicId ?? null);
   }
 
   const results: any[] = study?.results || [];
@@ -171,6 +175,16 @@ export default function StudyDetail() {
 
   const handlePatientChange = useCallback((newPatientId: string) => {
     setPatientId(newPatientId);
+    setMetaDirty(true);
+  }, []);
+
+  const handleReferringDoctorChange = useCallback((value: string) => {
+    setReferringDoctor(value);
+    setMetaDirty(true);
+  }, []);
+
+  const handleMedicIdChange = useCallback((value: string | null) => {
+    setMedicId(value);
     setMetaDirty(true);
   }, []);
 
@@ -209,8 +223,33 @@ export default function StudyDetail() {
       payload.insurerId = (patient as any)?.medicareId || null;
     }
 
+    // Include referring doctor if changed
+    const currentReferringDoctor = referringDoctor ?? study.referringDoctor ?? '';
+    const currentMedicId = medicId !== undefined ? medicId : (study.medicId ?? null);
+    if (currentMedicId) {
+      payload.medicId = currentMedicId;
+    } else {
+      payload.referringDoctor = currentReferringDoctor || undefined;
+      payload.medicId = null;
+    }
+
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
-  }, [studyId, comment, noOrder, emergency, selectedStudies, date, study, resultDrafts, fetcher, isPatientChanged, patientId, patient]);
+  }, [
+    studyId,
+    comment,
+    noOrder,
+    emergency,
+    selectedStudies,
+    date,
+    study,
+    resultDrafts,
+    fetcher,
+    isPatientChanged,
+    patientId,
+    patient,
+    referringDoctor,
+    medicId,
+  ]);
 
   const handleResultDraftChange = useCallback(
     (type: string) => (data: StudyResultData) => {
@@ -320,7 +359,9 @@ export default function StudyDetail() {
         patient={patient}
         patientEditable={patientEditable}
         onPatientChange={handlePatientChange}
-        referringDoctor={study.referringDoctor ?? ''}
+        referringDoctor={referringDoctor ?? study.referringDoctor ?? ''}
+        onReferringDoctorChange={handleReferringDoctorChange}
+        onMedicIdChange={handleMedicIdChange}
         readOnly={!isVerified}
       />
 

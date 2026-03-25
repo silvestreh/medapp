@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { ActionIcon, Autocomplete, Checkbox, Group, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { PencilSimpleIcon } from '@phosphor-icons/react';
@@ -120,6 +120,11 @@ export function StudyMetadataForm({
   const { t } = useTranslation();
   const isCreateMode = mode === 'create';
   const [isChangingPatient, setIsChangingPatient] = useState(false);
+  const [isEditingDoctor, setIsEditingDoctor] = useState(false);
+
+  const handleStartEditingDoctor = useCallback(() => {
+    setIsEditingDoctor(true);
+  }, []);
 
   const handlePatientSelected = useCallback(
     (id: string) => {
@@ -138,10 +143,25 @@ export function StudyMetadataForm({
   const autocompleteData = useMemo(() => doctors.map((d: any) => d.name), [doctors]);
   const doctorsByName = useMemo(() => new Map(doctors.map((d: any) => [d.name, d.medicId])), [doctors]);
 
+  // Auto-prefill when there's exactly one medic in the system
+  const singleMedic = useMemo(() => {
+    const medics = doctors.filter((d: any) => d.medicId);
+    return medics.length === 1 ? medics[0] : null;
+  }, [doctors]);
+
+  useEffect(() => {
+    if (isCreateMode && singleMedic && !referringDoctor) {
+      onReferringDoctorChange?.(singleMedic.name);
+      onMedicIdChange?.(singleMedic.medicId);
+    }
+  }, [isCreateMode, singleMedic, referringDoctor, onReferringDoctorChange, onMedicIdChange]);
+
   const handleReferringDoctorChange = useCallback(
     (value: string) => {
-      onReferringDoctorChange?.(value);
-      onMedicIdChange?.(doctorsByName.get(value) ?? null);
+      // Strip non-standard characters (en/em dashes, special punctuation, etc.)
+      const sanitized = value.replace(/[^\w\s.,()áéíóúàèìòùäëïöüâêîôûñçÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑÇ'-]/g, '');
+      onReferringDoctorChange?.(sanitized);
+      onMedicIdChange?.(doctorsByName.get(sanitized) ?? null);
     },
     [onReferringDoctorChange, onMedicIdChange, doctorsByName]
   );
@@ -167,7 +187,9 @@ export function StudyMetadataForm({
           <FieldRow label={t('studies.patient')}>
             <Group gap="xs" wrap="nowrap" style={{ flex: 1 }}>
               <StyledTextInput
-                value={patient ? `${patient.personalData?.firstName || ''} ${patient.personalData?.lastName || ''}` : '—'}
+                value={
+                  patient ? `${patient.personalData?.firstName || ''} ${patient.personalData?.lastName || ''}` : '—'
+                }
                 readOnly
                 style={{ flex: 1 }}
               />
@@ -192,15 +214,25 @@ export function StudyMetadataForm({
         )}
 
         <FieldRow label={t('studies.referring_doctor')}>
-          {isCreateMode && (
+          {(isCreateMode || isEditingDoctor) && (
             <StyledAutocomplete
               placeholder={t('studies.referring_doctor_placeholder')}
               value={referringDoctor || ''}
               onChange={handleReferringDoctorChange}
               data={autocompleteData}
+              autoFocus={isEditingDoctor}
             />
           )}
-          {!isCreateMode && <StyledTextInput value={referringDoctor || '—'} readOnly disabled />}
+          {!isCreateMode && !isEditingDoctor && (
+            <Group gap="xs" wrap="nowrap" style={{ flex: 1 }}>
+              <StyledTextInput value={referringDoctor || '—'} readOnly style={{ flex: 1 }} />
+              {!readOnly && onReferringDoctorChange && (
+                <ActionIcon variant="subtle" size="sm" onClick={handleStartEditingDoctor}>
+                  <PencilSimpleIcon size={16} />
+                </ActionIcon>
+              )}
+            </Group>
+          )}
         </FieldRow>
 
         <FieldRow label={t('studies.insurance')}>

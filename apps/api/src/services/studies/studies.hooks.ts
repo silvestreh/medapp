@@ -10,6 +10,7 @@ import autoProtocol from './hooks/auto-protocol';
 import extractStudyResults from './hooks/extract-study-results';
 import upsertStudyResults from './hooks/upsert-study-results';
 import { clearReferringDoctor, populateReferringDoctor } from './hooks/resolve-referring-doctor';
+import sanitizeReferringDoctor from './hooks/sanitize-referring-doctor';
 import restrictToMedic from './hooks/restrict-to-medic';
 import { sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import searchStudies from './hooks/search-studies';
@@ -40,6 +41,7 @@ export default {
     create: [
       requireVerifiedLicense(),
       restrictToMedic(),
+      sanitizeReferringDoctor(),
       clearReferringDoctor(),
       autoProtocol(),
       extractStudyResults()
@@ -49,6 +51,7 @@ export default {
       requireVerifiedLicense(),
       restrictToMedic(),
       preventPatientChangeWithResults(),
+      sanitizeReferringDoctor(),
       clearReferringDoctor(),
       extractStudyResults()
     ],

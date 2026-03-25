@@ -1,21 +1,23 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { useLoaderData, useRouteLoaderData } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, type LinksFunction } from '@remix-run/node';
-import { Title, Text, Alert } from '@mantine/core';
+import { Button, Title, Text, Alert } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import '@mantine/dates/styles.css';
+import { CalendarDotsIcon, PrinterIcon } from '@phosphor-icons/react';
 
 import AppointmentsList from '~/components/appointments-list';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import RouteErrorFallback from '~/components/route-error-fallback';
 import { generateSlots, formatInLocale } from '~/utils';
+import { printAppointments } from '~/utils/print-appointments';
+import { Fab } from '~/components/fab';
 import { styled } from '~/styled-system/jsx';
 import { css } from '~/styled-system/css';
 import { media } from '~/media';
-import type { Account } from '~/declarations';
-import { CalendarDotsIcon } from '@phosphor-icons/react';
+import type { Account, Slot } from '~/declarations';
 
 export const links: LinksFunction = () => [];
 
@@ -100,11 +102,21 @@ export default function AppointmentsForDate() {
   );
   const isPastDate = dayjs(date).startOf('day').isBefore(dayjs().startOf('day'));
 
+  const handlePrint = useCallback(() => {
+    printAppointments(slots as Slot[], title, t('appointments.free'), t('appointments.private'));
+  }, [slots, title, t]);
+
   return (
     <Container>
-      <Title order={2} mb="lg" display={isTablet ? 'block' : 'none'}>
-        {title}
-      </Title>
+      {isTablet && (
+        <styled.div display="flex" alignItems="center" mb="4">
+          <Title flex={1}>{title}</Title>
+          <Button variant="outline" onClick={handlePrint} leftSection={<PrinterIcon size={20} />} aria-label="Print">
+            {t('print_pdf.print')}
+          </Button>
+        </styled.div>
+      )}
+      {!isTablet && <Fab icon={<PrinterIcon size={22} />} onClick={handlePrint} />}
       {hasTimeOff && (
         <Text variant="light" ta="center" py="xl">
           {t('appointments.time_off_day')}
