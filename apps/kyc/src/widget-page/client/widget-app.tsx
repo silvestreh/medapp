@@ -7,11 +7,10 @@ import type { GeolocationData } from '../../shared-client/utils';
 import { CameraPhase } from '../../shared-client/phases/camera-phase';
 import { IntermediatePhase } from '../../shared-client/phases/intermediate-phase';
 import { PreviewPhase } from '../../shared-client/phases/preview-phase';
-import { DonePhase } from '../../shared-client/phases/done-phase';
 import { ErrorToast } from '../../shared-client/components/error-toast';
 import { QrFallback } from './qr-fallback';
 
-type Phase = 'intro' | 'camera' | 'intermediate' | 'preview' | 'done' | 'qr';
+type Phase = 'intro' | 'camera' | 'intermediate' | 'preview' | 'done' | 'qr' | 'selfie_retry' | 'selfie_retry_camera' | 'selfie_retry_preview' | 'processing';
 type UploadKey = 'idFront' | 'idBack' | 'selfie';
 type Mode = 'camera' | 'qr';
 
@@ -29,12 +28,47 @@ interface Props {
 }
 
 export function WidgetApp({ token: initialToken, api, locale, config, onEvent }: Props) {
-  const [phase, setPhase] = useState<Phase>('intro');
+  const [phase, setPhase] = useState<Phase | 'loading'>('loading');
   const [mode, setMode] = useState<Mode>('camera');
   const [sessionToken, setSessionToken] = useState(initialToken);
 
   const idData = (config?.idData as IdData | undefined) || undefined;
   const [creatingSession, setCreatingSession] = useState(false);
+
+  const [idDataChanged, setIdDataChanged] = useState(false);
+
+  // Check if user already has a verified identity on mount
+  useEffect(() => {
+    const userId = config?.userId;
+    if (!userId || !api) { setPhase('intro'); return; }
+
+    const headers: Record<string, string> = {};
+    if (config?.apiKey) headers['x-publishable-key'] = String(config.apiKey);
+    else if (config?.token) headers['Authorization'] = `Bearer ${String(config.token)}`;
+
+    fetch(`${api}/widget/user-verification-status?userId=${encodeURIComponent(String(userId))}`, { headers })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.status === 'verified') {
+          // Compare idData from the verification with what was passed during init
+          if (idData && data.idData) {
+            const changed =
+              (idData.dniNumber && data.idData.dniNumber && idData.dniNumber !== data.idData.dniNumber) ||
+              (idData.firstName && data.idData.firstName && idData.firstName.toLowerCase() !== data.idData.firstName.toLowerCase()) ||
+              (idData.lastName && data.idData.lastName && idData.lastName.toLowerCase() !== data.idData.lastName.toLowerCase());
+            if (changed) {
+              setIdDataChanged(true);
+              setPhase('intro');
+              return;
+            }
+          }
+          setPhase('done');
+        } else {
+          setPhase('intro');
+        }
+      })
+      .catch(() => setPhase('intro'));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [currentStep, setCurrentStep] = useState(0);
   const [uploads, setUploads] = useState<Record<UploadKey, UploadedFile | null>>({
     idFront: null,
@@ -159,8 +193,7 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
           idBackUrl: newUploads.idBack!.url,
           selfieUrl: newUploads.selfie!.url,
         });
-        onEvent('kyc:completed', { sessionId: sessionToken });
-        setPhase('done');
+        setPhase('processing');
       } else {
         const patchBody: Record<string, unknown> = {
           status: 'uploading',
@@ -189,9 +222,8 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
   }, []);
 
   const handleQrCompleted = useCallback(() => {
-    onEvent('kyc:completed', { sessionId: sessionToken });
-    setPhase('done');
-  }, [onEvent, sessionToken]);
+    setPhase('processing');
+  }, []);
 
   const handleBackToIntro = useCallback(() => {
     setPhase('intro');
@@ -202,6 +234,80 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
     onEvent('kyc:error', err);
   }, [onEvent]);
 
+  const [verificationId, setVerificationId] = useState<string | null>(null);
+  const [selfieRetryBlob, setSelfieRetryBlob] = useState<Blob | null>(null);
+  const [selfieRetryPreview, setSelfieRetryPreview] = useState<string | null>(null);
+
+  // Poll verification status after all photos submitted
+  useEffect(() => {
+    if (phase !== 'processing') return;
+    if (!sessionToken) return;
+
+    const poll = setInterval(async () => {
+      try {
+        const res = await fetch(`${api}/widget/verification-status`, {
+          headers: { 'x-session-token': sessionToken },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.verificationId) setVerificationId(data.verificationId);
+
+        if (data.status === 'verified') {
+          clearInterval(poll);
+          onEvent('kyc:completed', { sessionId: sessionToken });
+          setPhase('done');
+        } else if (data.status === 'selfie_retry') {
+          clearInterval(poll);
+          setPhase('selfie_retry');
+        } else if (data.status === 'rejected') {
+          clearInterval(poll);
+          onEvent('kyc:error', { message: data.rejectionReason || 'Verification rejected', code: 'rejected' });
+          setPhase('done');
+        }
+      } catch { /* continue polling */ }
+    }, 3000);
+
+    return () => clearInterval(poll);
+  }, [phase, sessionToken, api, onEvent]);
+
+  const handleSelfieRetryCapture = useCallback((blob: Blob, previewUrl: string) => {
+    setSelfieRetryBlob(blob);
+    setSelfieRetryPreview(previewUrl);
+    setPhase('selfie_retry_preview');
+  }, []);
+
+  const handleSelfieRetryRetake = useCallback(() => {
+    if (selfieRetryPreview) URL.revokeObjectURL(selfieRetryPreview);
+    setSelfieRetryBlob(null);
+    setSelfieRetryPreview(null);
+    setPhase('selfie_retry_camera');
+  }, [selfieRetryPreview]);
+
+  const handleSelfieRetryConfirm = useCallback(async () => {
+    if (!selfieRetryBlob || !verificationId || !sessionToken || uploading) return;
+    setUploading(true);
+    try {
+      // Upload new selfie
+      const url = await uploadFile(selfieRetryBlob, 'selfie', sessionToken, api);
+
+      // Resubmit for face comparison
+      await fetch(`${api}/widget/resubmit-selfie/${verificationId}`, {
+        method: 'POST',
+        headers: { 'x-session-token': sessionToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selfieUrl: url }),
+      });
+
+      setSelfieRetryBlob(null);
+      setSelfieRetryPreview(null);
+      setPhase('processing');
+    } catch (err: unknown) {
+      showError(err instanceof Error ? err.message : 'Error re-submitting selfie');
+    } finally {
+      setUploading(false);
+    }
+  }, [selfieRetryBlob, verificationId, sessionToken, uploading, api, showError]);
+
   const step = STEPS[currentStep];
   const prevStep = STEPS[currentStep - 1];
 
@@ -209,8 +315,19 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
 
   return (
     <div className="flex-1 flex flex-col" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      {phase === 'loading' && (
+        <div className="flex-1 flex flex-col justify-center items-center py-8">
+          <div className="w-8 h-8 border-3 border-gray-200 border-t-primary-500 rounded-full animate-spin" />
+        </div>
+      )}
+
       {phase === 'intro' && (
         <div className="flex-1 flex flex-col justify-center px-6 py-8 max-w-[420px] mx-auto w-full">
+          {idDataChanged && (
+            <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-800">
+              Tus datos personales cambiaron desde la última verificación. Necesitás verificar tu identidad nuevamente.
+            </div>
+          )}
           <h1 className="text-2xl font-bold mb-2">Verificación de Identidad</h1>
           <p className="text-gray-500 text-sm mb-6">
             Necesitamos verificar tu identidad. El proceso dura menos de un minuto.
@@ -322,8 +439,63 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
         />
       )}
 
+      {phase === 'processing' && (
+        <div className="flex-1 flex flex-col justify-center items-center px-6 py-8 text-center">
+          <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mb-4" />
+          <p className="text-gray-500 text-sm">Verificando tu identidad...</p>
+        </div>
+      )}
+
+      {phase === 'selfie_retry' && (
+        <div className="flex-1 flex flex-col justify-center items-center px-6 py-8 text-center max-w-[420px] mx-auto w-full">
+          <div className="w-14 h-14 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center text-2xl mb-4">
+            !
+          </div>
+          <h2 className="text-xl font-bold mb-2">Se detectaron anteojos</h2>
+          <p className="text-gray-500 text-sm mb-6">
+            Para completar la verificación, necesitamos una selfie sin anteojos.
+            Por favor, retirá los anteojos y volvé a tomar la selfie.
+          </p>
+          <button
+            className="block w-full py-4 border-none rounded-xl text-base font-semibold cursor-pointer text-center bg-primary-400 text-white"
+            onClick={() => setPhase('selfie_retry_camera')}
+          >
+            Re-tomar selfie
+          </button>
+        </div>
+      )}
+
+      {phase === 'selfie_retry_camera' && (
+        <CameraPhase
+          step={STEPS[2]}
+          stepIndex={2}
+          totalSteps={3}
+          onCapture={handleSelfieRetryCapture}
+          onBack={() => setPhase('selfie_retry')}
+        />
+      )}
+
+      {phase === 'selfie_retry_preview' && selfieRetryPreview && selfieRetryBlob && (
+        <PreviewPhase
+          step={STEPS[2]}
+          blob={selfieRetryBlob}
+          previewUrl={selfieRetryPreview}
+          uploading={uploading}
+          onConfirm={handleSelfieRetryConfirm}
+          onRetake={handleSelfieRetryRetake}
+        />
+      )}
+
       {phase === 'done' && (
-        <DonePhase />
+        <div className="flex-1 flex flex-col justify-center items-center px-6 py-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-3xl mb-4">
+            ✓
+          </div>
+          <h2 className="text-xl font-bold mb-2">Identidad verificada</h2>
+          <p className="text-gray-500 text-sm">
+            Tu identidad ha sido verificada correctamente.
+          </p>
+        </div>
       )}
 
       {error !== '' && (

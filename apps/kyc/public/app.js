@@ -24726,31 +24726,8 @@
     }
     return barcodeDetectorPromise;
   }
-  var EYE_BLENDSHAPE_NAMES = /* @__PURE__ */ new Set([
-    "eyeBlinkLeft",
-    "eyeBlinkRight",
-    "eyeSquintLeft",
-    "eyeSquintRight",
-    "eyeLookDownLeft",
-    "eyeLookDownRight",
-    "eyeLookUpLeft",
-    "eyeLookUpRight",
-    "eyeLookInLeft",
-    "eyeLookInRight",
-    "eyeLookOutLeft",
-    "eyeLookOutRight",
-    "eyeWideLeft",
-    "eyeWideRight"
-  ]);
-  var GLASSES_THRESHOLD = 0.03;
-  function detectGlasses(blendshapes) {
-    let eyeScoreSum = 0;
-    for (const bs of blendshapes) {
-      if (EYE_BLENDSHAPE_NAMES.has(bs.categoryName)) {
-        eyeScoreSum += bs.score;
-      }
-    }
-    return eyeScoreSum < GLASSES_THRESHOLD;
+  function detectGlasses() {
+    return false;
   }
   var MAX_YAW_DEG = 20;
   var MAX_PITCH_DEG = 15;
@@ -24782,7 +24759,7 @@
               if (!result.faceLandmarks || result.faceLandmarks.length === 0) {
                 return { detected: false, lookingAtCamera: false, wearingGlasses: false };
               }
-              const wearingGlasses = result.faceBlendshapes && result.faceBlendshapes.length > 0 ? detectGlasses(result.faceBlendshapes[0].categories) : false;
+              const wearingGlasses = result.faceBlendshapes && result.faceBlendshapes.length > 0 ? detectGlasses() : false;
               const matrices = result.facialTransformationMatrixes;
               if (!matrices || matrices.length === 0) {
                 return { detected: true, lookingAtCamera: true, wearingGlasses };

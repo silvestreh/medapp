@@ -206,6 +206,7 @@ export interface MdSettings {
   recetarioProvince: string | null;
   signatureImage: string | null;
   recetarioUserId: number | null;
+  licenseVerificationError: string | null;
 }
 
 export interface AccountingSettings {

@@ -19,7 +19,7 @@ export default function (app: Application): typeof Model {
       allowNull: true,
     },
     status: {
-      type: DataTypes.ENUM('pending', 'verified', 'rejected'),
+      type: DataTypes.ENUM('pending', 'verified', 'rejected', 'selfie_retry'),
       allowNull: false,
       defaultValue: 'pending',
     },
