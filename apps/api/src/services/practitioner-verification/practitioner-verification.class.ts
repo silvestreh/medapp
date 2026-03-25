@@ -79,11 +79,22 @@ export class PractitionerVerification {
     const formData = new URLSearchParams();
     formData.append('txtnrodoc', dni);
 
-    const response = await axios.post(SSSALUD_URL, formData.toString(), {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-      },
-    });
+    let response;
+    try {
+      response = await axios.post(SSSALUD_URL, formData.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+        },
+        timeout: 15000,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err: any) {
+      throw new GeneralError('sssalud_unreachable');
+    }
+
+    if (response.status !== 200) {
+      throw new GeneralError('sssalud_unreachable');
+    }
 
     const scraped = scrapeSssaludHtml(response.data);
     if (!scraped) {
@@ -111,15 +122,47 @@ export class PractitionerVerification {
     return personalData.documentValue;
   }
 
+  private async storeLicenseError(userId: string, message: string): Promise<void> {
+    try {
+      const mdSettings = await this.app.service('md-settings').find({
+        query: { userId, $limit: 1 },
+        paginate: false,
+      }) as any[];
+      if (mdSettings.length > 0) {
+        await this.app.service('md-settings').patch(mdSettings[0].id, {
+          licenseVerificationError: message,
+          isVerified: false,
+        });
+      }
+    } catch (err) {
+      console.error('[practitioner-verification] Failed to store license error:', err);
+    }
+  }
+
   async verifyByUserId(userId: string): Promise<VerificationResult> {
-    const dni = await this.getDniForUser(userId);
-    const scrapedData = await this.fetchAndScrape(dni);
+    let dni: string;
+    try {
+      dni = await this.getDniForUser(userId);
+    } catch (err: any) {
+      await this.storeLicenseError(userId, err.message);
+      throw err;
+    }
+
+    let scrapedData;
+    try {
+      scrapedData = await this.fetchAndScrape(dni);
+    } catch (err: any) {
+      await this.storeLicenseError(userId, err.message);
+      throw err;
+    }
 
     const expirationDate = parseExpirationDate(scrapedData.expirationDate);
     const now = new Date();
 
     if (expirationDate < now) {
-      throw new BadRequest(`License expired on ${scrapedData.expirationDate}`);
+      const msg = `License expired on ${scrapedData.expirationDate}`;
+      await this.storeLicenseError(userId, msg);
+      throw new BadRequest(msg);
     }
 
     // YYYY-MM-DD format for DATEONLY column
@@ -133,6 +176,7 @@ export class PractitionerVerification {
     const patchData: Record<string, unknown> = {
       isVerified: true,
       licenseExpirationDate,
+      licenseVerificationError: null,
       verificationRetries: 0,
       nextVerificationRetry: null,
     };

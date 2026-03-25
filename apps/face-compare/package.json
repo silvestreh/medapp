@@ -3,6 +3,10 @@
   "private": true,
   "scripts": {
     "dev": "source venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
-    "install:python": "python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
+    "install:python": "python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt",
+    "build": "docker build -t face-compare .",
+    "postbuild": "npm start",
+    "prestart": "docker kill $(docker ps -q --filter ancestor=face-compare) 2>/dev/null || true",
+    "start": "docker run --rm -p 8000:8000 --add-host=host.docker.internal:host-gateway --env-file .env face-compare"
   }
 }

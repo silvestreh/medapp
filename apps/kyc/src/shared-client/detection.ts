@@ -32,26 +32,11 @@ export interface FaceDetectResult {
   wearingGlasses: boolean;
 }
 
-const EYE_BLENDSHAPE_NAMES = new Set([
-  'eyeBlinkLeft', 'eyeBlinkRight',
-  'eyeSquintLeft', 'eyeSquintRight',
-  'eyeLookDownLeft', 'eyeLookDownRight',
-  'eyeLookUpLeft', 'eyeLookUpRight',
-  'eyeLookInLeft', 'eyeLookInRight',
-  'eyeLookOutLeft', 'eyeLookOutRight',
-  'eyeWideLeft', 'eyeWideRight',
-]);
-
-const GLASSES_THRESHOLD = 0.03;
-
-function detectGlasses(blendshapes: Array<{ categoryName: string; score: number }>): boolean {
-  let eyeScoreSum = 0;
-  for (const bs of blendshapes) {
-    if (EYE_BLENDSHAPE_NAMES.has(bs.categoryName)) {
-      eyeScoreSum += bs.score;
-    }
-  }
-  return eyeScoreSum < GLASSES_THRESHOLD;
+// Glasses detection via blendshapes doesn't work reliably for prescription glasses —
+// the model tracks eyes fine through clear lenses. Disabled until we have a proper
+// glasses detection model (e.g. face mesh landmark-based frame detection).
+function detectGlasses(): boolean {
+  return false;
 }
 
 interface FaceLandmarkerInstance {
@@ -97,7 +82,7 @@ export function getFaceLandmarker(): Promise<FaceLandmarkerInstance> {
             }
 
             const wearingGlasses = result.faceBlendshapes && result.faceBlendshapes.length > 0
-              ? detectGlasses(result.faceBlendshapes[0].categories)
+              ? detectGlasses()
               : false;
 
             const matrices = result.facialTransformationMatrixes;

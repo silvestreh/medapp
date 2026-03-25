@@ -88,18 +88,9 @@ export const runAutomatedChecks = (): Hook => {
       }
 
       if (updates.dniScanData === null && updates.dniScanErrors) {
-        logger.info('[auto-checks] DNI scan failed — rejecting without face comparison');
-        await patchProgress({
-          ...updates,
-          autoCheckCompletedAt: new Date(),
-          autoCheckProgress: null,
-          faceMatch: null,
-          faceMatchConfidence: null,
-          faceMatchError: 'Skipped: DNI scan failed',
-          status: 'rejected',
-          rejectionReason: `dni_scan_failed:${updates.dniScanErrors}`,
-        });
-        return;
+        // Barcode scan failed on the server — this can happen with compressed images.
+        // The client already validated the barcode before upload, so continue to face comparison.
+        logger.warn('[auto-checks] Server-side barcode scan failed (continuing): %s', updates.dniScanErrors);
       }
 
       // Save barcode results and update progress

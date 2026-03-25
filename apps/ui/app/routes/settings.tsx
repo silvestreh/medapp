@@ -33,6 +33,7 @@ type MdSettingsProfile = {
   stateLicense: string | null;
   stateLicenseNumber: string | null;
   isVerified: boolean;
+  licenseVerificationError: string | null;
   recetarioTitle: string | null;
   recetarioProvince: string | null;
   signatureImage: string | null;
@@ -118,6 +119,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           stateLicenseNumber?: string | null;
           isVerified?: boolean;
           recetarioTitle?: string | null;
+          licenseVerificationError?: string | null;
           recetarioProvince?: string | null;
           signatureImage?: string | null;
         };
@@ -129,6 +131,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           stateLicense: s.stateLicense ?? null,
           stateLicenseNumber: s.stateLicenseNumber ?? null,
           isVerified: s.isVerified ?? false,
+          licenseVerificationError: s.licenseVerificationError ?? null,
           recetarioTitle: s.recetarioTitle ?? null,
           recetarioProvince: s.recetarioProvince ?? null,
           signatureImage: s.signatureImage ?? null,
@@ -149,6 +152,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
             stateLicense: first.stateLicense ?? null,
             stateLicenseNumber: first.stateLicenseNumber ?? null,
             isVerified: (first as any).isVerified ?? false,
+            licenseVerificationError: (first as any).licenseVerificationError ?? null,
             recetarioTitle: (first as any).recetarioTitle ?? null,
             recetarioProvince: (first as any).recetarioProvince ?? null,
             signatureImage: (first as any).signatureImage ?? null,

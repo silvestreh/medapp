@@ -46,6 +46,8 @@ export default function SettingsIdVerification() {
 
   const status = parentData?.identityVerification?.status;
   const autoCheckCompletedAt = parentData?.identityVerification?.autoCheckCompletedAt;
+  const isLicenseVerified = parentData?.mdSettings?.isVerified === true;
+  const licenseError = parentData?.mdSettings?.licenseVerificationError;
 
   const idData = useMemo(() => {
     const user = parentData?.user as any;
@@ -117,6 +119,19 @@ export default function SettingsIdVerification() {
     setError(err);
   }, []);
 
+  const [retryingLicense, setRetryingLicense] = useState(false);
+  const handleRetryLicense = useCallback(async () => {
+    setRetryingLicense(true);
+    try {
+      await (client as any).service('practitioner-verification').create({});
+      revalidator.revalidate();
+    } catch {
+      revalidator.revalidate();
+    } finally {
+      setRetryingLicense(false);
+    }
+  }, [client, revalidator]);
+
   const handleUpdateRecords = useCallback(async () => {
     if (!scanned) return;
 
@@ -147,16 +162,6 @@ export default function SettingsIdVerification() {
 
   if (!parentData || !parentData.isMedic) return null;
 
-  if (status === 'verified') {
-    return (
-      <Stack align="center" py="xl">
-        <Text c="green" size="lg" fw={600}>
-          {t('identity_verification.status_verified')}
-        </Text>
-      </Stack>
-    );
-  }
-
   if (status === 'pending' && autoChecksRunning) {
     return (
       <Stack align="center" py="xl">
@@ -166,6 +171,37 @@ export default function SettingsIdVerification() {
         <Text c="dimmed" size="sm">
           {t('identity_verification.auto_checking')}
         </Text>
+      </Stack>
+    );
+  }
+
+  if (status === 'rejected') {
+    const rejectionReason = parentData.identityVerification?.rejectionReason;
+    return (
+      <Stack gap="md" py="xl" mx="auto">
+        <Alert color="red" title={t('identity_verification.status_rejected', 'Verificación rechazada')}>
+          <Text size="sm">
+            {rejectionReason?.includes('license_invalid')
+              ? t(
+                  'identity_verification.rejection_license_invalid',
+                  'No se encontró tu matrícula en el registro de SSSalud.'
+                )
+              : rejectionReason?.includes('dni_mismatch')
+                ? t('identity_verification.rejection_dni_mismatch', 'Los datos del DNI no coinciden con los registros.')
+                : rejectionReason?.includes('face_match_failed')
+                  ? t('identity_verification.rejection_face_mismatch', 'No se pudo verificar la coincidencia facial.')
+                  : t('identity_verification.rejection_generic', 'La verificación fue rechazada. Intentá nuevamente.')}
+          </Text>
+        </Alert>
+        <KycWidget
+          key={JSON.stringify(idData)}
+          apiKey={KYC_PUBLISHABLE_KEY}
+          apiUrl={KYC_API_URL}
+          userId={userId}
+          idData={idData!}
+          onCompleted={handleCompleted}
+          onError={handleError}
+        />
       </Stack>
     );
   }
@@ -225,7 +261,63 @@ export default function SettingsIdVerification() {
         </Alert>
       )}
 
+      {status === 'verified' && (
+        <Stack gap="md">
+          {isLicenseVerified && (
+            <Alert color="green" title={t('identity_verification.license_verified', 'Matrícula verificada')}>
+              <Text size="sm">
+                {t(
+                  'identity_verification.license_verified_desc',
+                  'Tu identidad y matrícula profesional han sido verificadas correctamente.'
+                )}
+              </Text>
+            </Alert>
+          )}
+          {!isLicenseVerified && licenseError && licenseError !== 'sssalud_unreachable' && (
+            <Alert color="red" title={t('identity_verification.license_failed', 'Matrícula no verificada')}>
+              <Text size="sm">
+                {licenseError.includes('not found')
+                  ? t(
+                      'identity_verification.license_not_found',
+                      'No se encontró tu matrícula en el registro de SSSalud.'
+                    )
+                  : licenseError.includes('expired')
+                    ? t('identity_verification.license_expired', 'Tu matrícula profesional se encuentra vencida.')
+                    : t('identity_verification.license_error', 'No pudimos verificar tu matrícula profesional.')}
+              </Text>
+            </Alert>
+          )}
+          {!isLicenseVerified && (licenseError === 'sssalud_unreachable' || !licenseError) && (
+            <Alert
+              color="yellow"
+              title={t('identity_verification.license_pending', 'Validación de matrícula pendiente')}
+            >
+              <Stack gap="xs">
+                <Text size="sm">
+                  {t(
+                    'identity_verification.license_pending_desc',
+                    'No pudimos conectar con SSSalud. Reintentaremos automáticamente.'
+                  )}
+                </Text>
+                <Group>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="yellow"
+                    loading={retryingLicense}
+                    onClick={handleRetryLicense}
+                  >
+                    {t('identity_verification.retry_license', 'Reintentar ahora')}
+                  </Button>
+                </Group>
+              </Stack>
+            </Alert>
+          )}
+        </Stack>
+      )}
+
       <KycWidget
+        key={JSON.stringify(idData)}
         apiKey={KYC_PUBLISHABLE_KEY}
         apiUrl={KYC_API_URL}
         userId={userId}
