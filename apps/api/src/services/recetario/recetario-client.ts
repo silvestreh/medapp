@@ -262,8 +262,24 @@ function createClient(): AxiosInstance {
 
   instance.interceptors.request.use((config) => {
     console.log(`[Recetario] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    if (config.data) {
+      console.log('[Recetario] Payload:', JSON.stringify(config.data, null, 2));
+    }
     return config;
   });
+
+  instance.interceptors.response.use(
+    (response) => {
+      console.log(`[Recetario] Response ${response.status}:`, JSON.stringify(response.data, null, 2));
+      return response;
+    },
+    (error) => {
+      if (error.response) {
+        console.error(`[Recetario] Error ${error.response.status}:`, JSON.stringify(error.response.data, null, 2));
+      }
+      return Promise.reject(error);
+    }
+  );
 
   return instance;
 }
@@ -364,6 +380,7 @@ export interface RecetarioPatient {
   insuranceNumber?: string;
   email?: string;
   phone?: string;
+  healthCenterId?: number;
 }
 
 export async function getPatients(): Promise<RecetarioPatient[]> {

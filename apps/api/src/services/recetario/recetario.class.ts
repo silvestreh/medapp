@@ -266,24 +266,27 @@ export class Recetario {
     const effectiveMedicId = await this.resolveEffectiveMedicId(data, params);
     const doctor = await this.getDoctorData(effectiveMedicId);
     if (process.env.NODE_ENV !== 'production') {
-      const originalEmail = doctor.contactData?.email || 'unknown';
-      doctor.contactData = { ...doctor.contactData, email: `${originalEmail}@recetario.com.ar` };
+      const localPart = (doctor.contactData?.email || 'unknown').split('@')[0];
+      doctor.contactData = { ...doctor.contactData, email: `${localPart}@recetario.com.ar` };
     }
     const { resolved: patient, mhsPatient } = await this.resolvePatientWithOverride(patientId, patientOverride);
-    await this.upsertRecetarioPatient(patient);
-    await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
     const orgSettings = await this.getOrgRecetarioSettings(params);
+    await this.upsertRecetarioPatient(patient, orgSettings.healthCenterId ?? undefined);
+    await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
 
     const reference = `${APP_SLUG}-${randomUUID()}`;
     const recetarioUserId = doctor.mdSettings.recetarioUserId as number | null | undefined;
 
+    const isProduction = process.env.NODE_ENV === 'production';
+    const useUserId = isProduction && recetarioUserId;
+
     const doctorPayload = mapDoctorForAPI(doctor);
-    if (orgSettings.healthCenterId && !recetarioUserId) {
+    if (orgSettings.healthCenterId && !useUserId) {
       doctorPayload.healthCenterId = orgSettings.healthCenterId;
     }
 
     const payload: recetarioClient.PrescriptionPayload = {
-      ...(recetarioUserId ? { userId: recetarioUserId } : { doctor: doctorPayload }),
+      ...(useUserId ? { userId: recetarioUserId } : { doctor: doctorPayload }),
       date: date || dayjs().format('YYYY-MM-DD'),
       patient: mapPatientForAPI(patient),
       method: 'manual',
@@ -362,24 +365,27 @@ export class Recetario {
     const effectiveMedicId = await this.resolveEffectiveMedicId(data, params);
     const doctor = await this.getDoctorData(effectiveMedicId);
     if (process.env.NODE_ENV !== 'production') {
-      const originalEmail = doctor.contactData?.email || 'unknown';
-      doctor.contactData = { ...doctor.contactData, email: `${originalEmail}@recetario.com.ar` };
+      const localPart = (doctor.contactData?.email || 'unknown').split('@')[0];
+      doctor.contactData = { ...doctor.contactData, email: `${localPart}@recetario.com.ar` };
     }
     const { resolved: patient, mhsPatient } = await this.resolvePatientWithOverride(patientId, patientOverride);
-    await this.upsertRecetarioPatient(patient);
-    await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
     const orgSettings = await this.getOrgRecetarioSettings(params);
+    await this.upsertRecetarioPatient(patient, orgSettings.healthCenterId ?? undefined);
+    await this.patchAthelasPatientIfChanged(patientId, mhsPatient, patientOverride);
 
     const reference = `${APP_SLUG}-${randomUUID()}`;
     const recetarioUserId = doctor.mdSettings.recetarioUserId as number | null | undefined;
 
+    const isProduction = process.env.NODE_ENV === 'production';
+    const useUserId = isProduction && recetarioUserId;
+
     const doctorPayload = mapDoctorForAPI(doctor);
-    if (orgSettings.healthCenterId && !recetarioUserId) {
+    if (orgSettings.healthCenterId && !useUserId) {
       doctorPayload.healthCenterId = orgSettings.healthCenterId;
     }
 
     const payload: recetarioClient.OrderPayload = {
-      ...(recetarioUserId ? { userId: recetarioUserId } : { doctor: doctorPayload }),
+      ...(useUserId ? { userId: recetarioUserId } : { doctor: doctorPayload }),
       date: date || dayjs().format('YYYY-MM-DD'),
       patient: mapPatientForAPI(patient),
       medicine: content,
@@ -434,18 +440,26 @@ export class Recetario {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async handleCancel(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {
-    const { prescriptionId, recetarioDocumentId } = data;
-    if (!prescriptionId && !recetarioDocumentId) {
-      throw new BadRequest('prescriptionId or recetarioDocumentId is required');
+    const { prescriptionId } = data;
+    if (!prescriptionId) {
+      throw new BadRequest('prescriptionId is required');
     }
 
-    if (recetarioDocumentId) {
-      await recetarioClient.cancelPrescription(recetarioDocumentId);
+    const record = await this.app.service('prescriptions').get(prescriptionId, this.internal());
+    const docIds = (record as any).recetarioDocumentIds || [];
+
+    // Only call Recetario cancel API for prescriptions (orders have no cancel endpoint)
+    for (const doc of docIds) {
+      if (doc.type === 'prescription' && doc.id) {
+        await recetarioClient.cancelPrescription(doc.id);
+      }
     }
 
-    if (prescriptionId) {
-      await this.app.service('prescriptions').remove(prescriptionId, this.internal());
-    }
+    await this.app.service('prescriptions').patch(
+      prescriptionId,
+      { status: 'cancelled' } as any,
+      this.internal()
+    );
 
     return { success: true };
   }
@@ -540,7 +554,15 @@ export class Recetario {
     const { search } = data;
     if (!search || search.length < 3) throw new BadRequest('Search term must be at least 3 characters long');
     const medications = await recetarioClient.getMedications(search);
-    return { success: true, medications };
+    // Flatten so each package becomes its own selectable entry with the correct externalId
+    const flattened = medications.flatMap((med: any) => {
+      const packages = Array.isArray(med.packages) ? med.packages : med.packages ? [med.packages] : [];
+      if (packages.length === 0) {
+        return [{ ...med, packages: undefined }];
+      }
+      return packages.map((pkg: any) => ({ ...med, packages: pkg }));
+    });
+    return { success: true, medications: flattened };
   }
 
   private async handleRegisterHealthCenter(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {
@@ -685,7 +707,7 @@ export class Recetario {
     return { resolved, mhsPatient };
   }
 
-  private async upsertRecetarioPatient(resolved: any): Promise<void> {
+  private async upsertRecetarioPatient(resolved: any, healthCenterId?: number): Promise<void> {
     const docNum = sanitizeDocumentNumber(resolved.personalData.documentValue);
     if (!docNum) return;
 
@@ -699,6 +721,7 @@ export class Recetario {
         healthInsurance: resolved.insurerName || 'PARTICULAR',
         insuranceNumber: resolved.medicareNumber || undefined,
         email: resolved.contactData.email || undefined,
+        healthCenterId: healthCenterId || undefined,
       });
     } catch {
       // non-fatal
@@ -737,6 +760,10 @@ export class Recetario {
   private async handleRegisterUser(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {
     const effectiveMedicId = await this.resolveEffectiveMedicId(data, params);
     const doctor = await this.getDoctorData(effectiveMedicId);
+    if (process.env.NODE_ENV !== 'production') {
+      const localPart = (doctor.contactData?.email || 'unknown').split('@')[0];
+      doctor.contactData = { ...doctor.contactData, email: `${localPart}@recetario.com.ar` };
+    }
     const readiness = checkDoctorReadiness(doctor);
 
     if (!readiness.ready) {

@@ -152,7 +152,7 @@ export function mapDoctorData(doctor: DoctorInput): QuickLinkPayload['profession
     nationalLicenseNumber: md.nationalLicenseNumber || '',
     stateLicenseNumber: md.stateLicenseNumber || undefined,
     stateLicenseName: md.stateLicense || undefined,
-    specialty: md.medicalSpecialty || '',
+    specialty: (md.medicalSpecialty || '').split(',')[0].trim(),
     province: mapProvince(md.recetarioProvince),
     signatureImage: md.signatureImage || undefined,
   };
@@ -194,7 +194,7 @@ export function mapDoctorForAPI(doctor: DoctorInput): DoctorPayload {
     documentNumber: sanitizeDocumentNumber(pd.documentValue),
     province: mapProvince(md.recetarioProvince),
     title: md.recetarioTitle || 'Dr',
-    specialty: md.medicalSpecialty || '',
+    specialty: (md.medicalSpecialty || '').split(',')[0].trim(),
     signature: md.signatureImage || undefined,
     profile: {
       legend: licenseNumber,
@@ -215,7 +215,7 @@ export function mapPatientForAPI(patient: PatientInput): PatientPayload {
     surname: pd.lastName || '',
     documentNumber: sanitizeDocumentNumber(pd.documentValue),
     email: cd.email || undefined,
-    phone: cd.phoneNumber || undefined,
+    phone: (cd.phoneNumber || '').replace(/^tel:/i, '') || undefined,
     gender: mapGender(pd.gender),
     birthDate: formatBirthDate(pd.birthDate),
   };

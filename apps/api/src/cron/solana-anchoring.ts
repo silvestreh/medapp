@@ -23,7 +23,7 @@ const LOW_BALANCE_THRESHOLD = 0.01;
 
 async function acquireLock(sequelize: Sequelize): Promise<boolean> {
   try {
-    await sequelize.query("SELECT pg_advisory_lock(hashtext('solana-anchoring'))", {
+    await sequelize.query('SELECT pg_advisory_lock(hashtext(\'solana-anchoring\'))', {
       type: QueryTypes.SELECT,
     });
     return true;
@@ -34,7 +34,7 @@ async function acquireLock(sequelize: Sequelize): Promise<boolean> {
 
 async function releaseLock(sequelize: Sequelize): Promise<void> {
   try {
-    await sequelize.query("SELECT pg_advisory_unlock(hashtext('solana-anchoring'))", {
+    await sequelize.query('SELECT pg_advisory_unlock(hashtext(\'solana-anchoring\'))', {
       type: QueryTypes.SELECT,
     });
   } catch {
@@ -241,7 +241,7 @@ async function runAnchoring(app: Application, submitFn: SubmitFn): Promise<Ancho
       });
     }
     if (balance === 0) {
-      const err = new Error(`Solana anchoring: wallet is out of funds (0 SOL)`);
+      const err = new Error('Solana anchoring: wallet is out of funds (0 SOL)');
       logger.error(err.message);
       Sentry.captureException(err, {
         tags: { component: 'solana-anchoring' },

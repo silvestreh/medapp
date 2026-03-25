@@ -10,6 +10,9 @@ export const logAuthSuccess = (): Hook => {
     const clientInfo = getClientInfo(context);
     const strategy = context.data?.strategy || 'unknown';
 
+    // JWT authentications are token validations, not actual logins — skip logging
+    if (strategy === 'jwt') return context;
+
     context.app.service('access-logs').create({
       userId: String(userId),
       organizationId: null,

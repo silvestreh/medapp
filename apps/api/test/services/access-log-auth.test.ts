@@ -41,6 +41,45 @@ describe('Authentication event logging', () => {
     assert.strictEqual(logs[0].purpose, 'operations');
   });
 
+  it('does not log a login event for JWT token validations', async () => {
+    const authResult = await app.service('authentication').create({
+      strategy: 'local',
+      username: user.username,
+      password: 'SuperSecret1!',
+    }, { provider: 'rest' });
+
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const logsBefore = await app.service('access-logs').find({
+      query: {
+        userId: user.id,
+        resource: 'authentication',
+        action: 'login',
+      },
+      paginate: false,
+    } as any) as any[];
+    const countBefore = logsBefore.length;
+
+    // Authenticate with JWT (token validation, not a login)
+    await app.service('authentication').create({
+      strategy: 'jwt',
+      accessToken: authResult.accessToken,
+    }, { provider: 'rest' });
+
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const logsAfter = await app.service('access-logs').find({
+      query: {
+        userId: user.id,
+        resource: 'authentication',
+        action: 'login',
+      },
+      paginate: false,
+    } as any) as any[];
+
+    assert.strictEqual(logsAfter.length, countBefore, 'JWT auth should not create a login log');
+  });
+
   it('logs a failed login attempt', async () => {
     try {
       await app.service('authentication').create({

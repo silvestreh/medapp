@@ -96,12 +96,17 @@ interface RecetarioMed {
     name: string;
     externalId: string;
     shape?: string;
+    power?: { value: string; unit: string };
   };
 }
 
 interface RecetarioSelectedMedication {
   externalId: string;
   text: string;
+  drug: string;
+  brand: string;
+  packageName: string;
+  power: string;
   requiresDuplicate: boolean;
 }
 
@@ -135,8 +140,18 @@ function RecetarioMedicinePicker({ value, onChange }: RecetarioMedicinePickerPro
 
   const handleSelect = useCallback(
     (med: RecetarioMed) => {
-      const text = [med.brand, med.packages?.name].filter(Boolean).join(' - ') || med.drug;
-      onChange({ externalId: med.packages?.externalId || '', text, requiresDuplicate: med.requiresDuplicate });
+      const packageName = med.packages?.name || '';
+      const power = med.packages?.power ? `${med.packages.power.value} ${med.packages.power.unit}` : '';
+      const text = [med.drug, packageName, `(${med.brand})`, power ? `- ${power}` : ''].filter(Boolean).join(' ');
+      onChange({
+        externalId: med.packages?.externalId || '',
+        text,
+        drug: med.drug,
+        brand: med.brand,
+        packageName,
+        power,
+        requiresDuplicate: med.requiresDuplicate,
+      });
       setSearch(text);
       setOpened(false);
     },
@@ -167,7 +182,7 @@ function RecetarioMedicinePicker({ value, onChange }: RecetarioMedicinePickerPro
             setSearch(e.currentTarget.value);
             if (!opened) setOpened(true);
             if (!opened || !value) {
-              onChange({ externalId: '', text: e.currentTarget.value, requiresDuplicate: false });
+              onChange({ externalId: '', text: e.currentTarget.value, drug: '', brand: '', packageName: '', power: '', requiresDuplicate: false });
             }
           }}
           onFocus={() => {
@@ -821,15 +836,22 @@ export function PrescribeModal({
     setRxDiagnosisError('');
     if (rxErrors.hasErrors) return;
 
-    const medications = rxForm.values.medicines.map(m => ({
-      externalId: m.medication?.externalId || undefined,
-      text: m.medication?.text || '',
-      requiresDuplicate: m.medication?.requiresDuplicate || false,
-      quantity: m.quantity,
-      posology: m.posology,
-      longTermTreatment: m.longTerm,
-      genericOnly: m.genericOnly,
-    }));
+    const medications = rxForm.values.medicines.map(m => {
+      const baseText = m.medication?.text || '';
+      const qty = m.quantity;
+      const spanishNum = ['cero', 'una', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'][qty] || String(qty);
+      const qtyLabel = qty === 1 ? `(${qty} = ${spanishNum} caja)` : `(${qty} = ${spanishNum} cajas)`;
+      const text = `${baseText} ${qtyLabel}`.trim();
+      return {
+        externalId: m.medication?.externalId || undefined,
+        text,
+        requiresDuplicate: m.medication?.requiresDuplicate || false,
+        quantity: m.quantity,
+        posology: m.posology,
+        longTermTreatment: m.longTerm,
+        genericOnly: m.genericOnly,
+      };
+    });
 
     const healthInsuranceName = patientForm.values.medicareId ? patientForm.values.healthInsuranceName : 'PARTICULAR';
 
