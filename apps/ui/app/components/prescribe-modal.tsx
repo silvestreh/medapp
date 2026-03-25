@@ -453,25 +453,9 @@ export function PrescribeModal({
           rxForm.setValues({ medicines: repeatData.medicines || [defaultMedicine()], hiv: false });
           setActiveTab('prescription');
         }
-        if (patient) setStep(1);
       }
     }
   }, [opened]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Handle patient selected from PatientSearch
-  const handlePatientSelected = useCallback(
-    async (patientId: string) => {
-      setSelectedPatientId(patientId);
-      try {
-        const p = await feathersClient.service('patients').get(patientId);
-        fillPatientForm(p);
-      } catch {
-        // fallback: fetch via action for gap-fill
-      }
-      patientFetcher.submit({ intent: 'get-patient-data', data: JSON.stringify({ patientId }) }, { method: 'post' });
-    },
-    [feathersClient, fillPatientForm, patientFetcher]
-  );
 
   // Run insurance matching when a prepaga is selected
   const handlePrepagaSelected = useCallback(
@@ -514,6 +498,29 @@ export function PrescribeModal({
     [recetarioInsurances, feathersClient, patientForm]
   );
 
+  // Handle patient selected from PatientSearch
+  const handlePatientSelected = useCallback(
+    async (patientId: string) => {
+      setSelectedPatientId(patientId);
+      try {
+        const p = await feathersClient.service('patients').get(patientId);
+        fillPatientForm(p);
+        // Trigger insurance matching if patient has a prepaga
+        if (p.medicareId && p.insurer) {
+          handlePrepagaSelected({
+            id: p.insurer.id,
+            shortName: p.insurer.shortName || p.insurer.denomination || '',
+            recetarioHealthInsuranceName: p.insurer.recetarioHealthInsuranceName ?? null,
+          });
+        }
+      } catch {
+        // fallback: fetch via action for gap-fill
+      }
+      patientFetcher.submit({ intent: 'get-patient-data', data: JSON.stringify({ patientId }) }, { method: 'post' });
+    },
+    [feathersClient, fillPatientForm, patientFetcher, handlePrepagaSelected]
+  );
+
   // Re-run matching when insurance list loads while status is 'loading'
   useEffect(() => {
     if (insuranceMatchStatus !== 'loading' || recetarioInsurances.length === 0) return;
@@ -527,6 +534,28 @@ export function PrescribeModal({
     };
     handlePrepagaSelected(prepaga);
   }, [recetarioInsurances, insuranceMatchStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-trigger insurance matching when the patient's prepaga loads
+  useEffect(() => {
+    if (!opened || !selectedInsurer || insuranceMatchStatus !== 'idle') return;
+    handlePrepagaSelected(selectedInsurer as {
+      id: string;
+      shortName: string;
+      recetarioHealthInsuranceName?: string | null;
+    });
+  }, [opened, selectedInsurer, insuranceMatchStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // For repeat: auto-advance to step 1 once insurance is resolved (or not needed)
+  useEffect(() => {
+    if (!opened || !repeatData || !patient || step !== 0) return;
+    if (!patient.medicareId) {
+      setStep(1);
+      return;
+    }
+    if (insuranceMatchStatus === 'exact' || insuranceMatchStatus === 'resolved') {
+      setStep(1);
+    }
+  }, [opened, repeatData, patient, step, insuranceMatchStatus]);
 
   // Update display value as user types in the insurance autocomplete
   const handleInsuranceInputChange = useCallback(

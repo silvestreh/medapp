@@ -12,6 +12,7 @@ export function matchInsurance(
   shortName: string,
   insurances: RecetarioInsurance[]
 ): InsuranceMatchResult {
+  if (!shortName) return { matchType: 'none', matchedName: null };
   const needle = shortName.toLowerCase().trim();
 
   // Exact match (case-insensitive)

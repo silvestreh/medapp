@@ -22,6 +22,7 @@ import { Fab } from '~/components/fab';
 import { PrescribeModal, type RepeatData } from '~/components/prescribe-modal';
 import { PrescriptionDetail } from '~/components/prescription-detail';
 import PatientSearch from '~/components/patient-search';
+import { MedicareDisplay, getMedicareLabel } from '~/components/medicare-display';
 import { getPageTitle } from '~/utils/meta';
 import RouteErrorFallback from '~/components/route-error-fallback';
 import { styled } from '~/styled-system/jsx';
@@ -546,6 +547,9 @@ export default function PrescriptionsPage() {
               <Table.Th style={thStyle()} fw={500} fz="md" py="0.5em">
                 {t('recetario.step_patient')}
               </Table.Th>
+              <Table.Th style={thStyle()} fw={500} fz="md" py="0.5em">
+                {t('overview.insurance')}
+              </Table.Th>
               <Table.Th w={120} style={thStyle()} fw={500} fz="md" py="0.5em">
                 {t('recetario.type')}
               </Table.Th>
@@ -573,6 +577,13 @@ export default function PrescriptionsPage() {
                     <CellText style={{ fontWeight: 600 }}>{getPatientName(rx)}</CellText>
                   </Table.Td>
                   <Table.Td>
+                    {rx.patient && (
+                      <CellText>
+                        <MedicareDisplay patient={rx.patient} size="sm" />
+                      </CellText>
+                    )}
+                  </Table.Td>
+                  <Table.Td>
                     <Badge size="xs" variant="outline" color={rx.type === 'prescription' ? 'green' : 'blue'}>
                       {t(`recetario.type_${rx.type}` as any)}
                     </Badge>
@@ -589,7 +600,7 @@ export default function PrescriptionsPage() {
                 </Table.Tr>
                 {expandedId === rx.id && (
                   <Table.Tr style={{ '--tr-hover-bg': 'transparent', background: 'var(--mantine-color-gray-0)' }}>
-                    <Table.Td colSpan={6} p="xl">
+                    <Table.Td colSpan={7} p="xl">
                       <PrescriptionDetail prescription={rx} onCancelled={() => setExpandedId(null)} />
                     </Table.Td>
                   </Table.Tr>
@@ -611,6 +622,9 @@ export default function PrescriptionsPage() {
                 <Text size="xs" c="dimmed">
                   {dayjs(rx.createdAt).format('DD/MM/YY')}
                 </Text>
+              </CardRow>
+              <CardRow style={{ marginTop: 4 }}>
+                {rx.patient && <MedicareDisplay patient={rx.patient} size="xs" />}
               </CardRow>
               <CardRow style={{ marginTop: 4 }}>
                 <Badge size="xs" variant="outline">

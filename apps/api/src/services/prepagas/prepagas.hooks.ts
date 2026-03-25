@@ -2,6 +2,7 @@ import * as authentication from '@feathersjs/authentication';
 import { disallow } from 'feathers-hooks-common';
 import { searchPrepagas } from './hooks/search-prepagas';
 import { checkPermissions } from '../../hooks/check-permissions';
+import { allowPatchFields } from '../../hooks/allow-patch-fields';
 
 const { authenticate } = authentication.hooks;
 
@@ -17,6 +18,7 @@ export default {
     update: [disallow('external')],
     patch: [
       authenticate('jwt'),
+      allowPatchFields('recetarioHealthInsuranceName'),
       checkPermissions({ scopeToOrganization: false })
     ],
     remove: [disallow('external')]
