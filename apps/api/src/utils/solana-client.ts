@@ -16,17 +16,18 @@ let cachedKeypair: Keypair | null = null;
 
 function resolveRpcUrl(network: string): string {
   switch (network) {
-    case 'devnet':
-      return 'https://api.devnet.solana.com';
-    case 'mainnet-beta':
-      return 'https://api.mainnet-beta.solana.com';
-    default:
-      return network;
+  case 'devnet':
+    return 'https://api.devnet.solana.com';
+  case 'mainnet-beta':
+    return 'https://api.mainnet-beta.solana.com';
+  default:
+    return network;
   }
 }
 
 export function getSolanaNetwork(): string {
-  return process.env.SOLANA_NETWORK || 'devnet';
+  if (process.env.SOLANA_NETWORK) return process.env.SOLANA_NETWORK;
+  return process.env.NODE_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 }
 
 export function getSolanaConnection(): Connection {
