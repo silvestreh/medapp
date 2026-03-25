@@ -805,6 +805,7 @@ export const es = {
     passkeys_add: 'Agregar llave de acceso',
     passkeys_add_success: 'Llave de acceso registrada exitosamente.',
     passkeys_add_error: 'Error al registrar llave de acceso.',
+    passkeys_extension_error: 'Una extensión del navegador interfirió con el registro. Desactive extensiones de contraseñas e intente de nuevo.',
     passkeys_remove: 'Eliminar',
     passkeys_remove_confirm: '¿Está seguro que desea eliminar esta llave de acceso?',
     passkeys_remove_success: 'Llave de acceso eliminada.',

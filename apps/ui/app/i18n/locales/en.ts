@@ -802,6 +802,7 @@ export const en: typeof es = {
     passkeys_add: 'Add passkey',
     passkeys_add_success: 'Passkey registered successfully.',
     passkeys_add_error: 'Failed to register passkey.',
+    passkeys_extension_error: 'A browser extension interfered with passkey registration. Try disabling password manager extensions and retry.',
     passkeys_remove: 'Remove',
     passkeys_remove_confirm: 'Are you sure you want to remove this passkey?',
     passkeys_remove_success: 'Passkey removed.',

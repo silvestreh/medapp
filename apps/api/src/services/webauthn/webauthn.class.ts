@@ -151,7 +151,8 @@ export class WebAuthn {
       };
     } catch (error: any) {
       if (error instanceof BadRequest || error instanceof NotAuthenticated) throw error;
-      throw new BadRequest('Registration verification failed');
+      console.error('WebAuthn registration verification error:', error?.message || error);
+      throw new BadRequest(`Registration verification failed: ${error?.message || 'unknown error'}`);
     }
   }
 

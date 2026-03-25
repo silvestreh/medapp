@@ -359,7 +359,11 @@ export function ProfileSecurity({
       fetcher.submit(revalidateForm, { method: 'post' });
     } catch (error: any) {
       if (error?.name !== 'AbortError') {
-        showNotification({ color: 'red', message: t('profile.passkeys_add_error') });
+        const isExtensionError =
+          error?.message?.includes('Permission denied') || error?.message?.includes('getAuthenticatorData');
+        const message = isExtensionError ? t('profile.passkeys_extension_error') : t('profile.passkeys_add_error');
+        showNotification({ color: 'red', message: <>{message}</> });
+        console.error('Passkey registration error:', error);
       }
     } finally {
       setIsRegisteringPasskey(false);
