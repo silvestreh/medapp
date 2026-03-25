@@ -11,7 +11,7 @@ import Footer from '../components/footer.astro';
   <Nav />
   <main class="container legal">
     <h1>Términos y Condiciones</h1>
-    <p class="updated">Última actualización: 17 de marzo de 2026</p>
+    <p class="updated">Última actualización: 25 de marzo de 2026</p>
 
     <section>
       <h2>1. Aceptación</h2>
@@ -71,6 +71,21 @@ import Footer from '../components/footer.astro';
         Athelas actúa como encargado del tratamiento de datos, no como titular.
         No usamos datos clínicos para fines propios más allá de la prestación del servicio.
       </p>
+    </section>
+
+    <section>
+      <h2>5 bis. Verificación de integridad con blockchain</h2>
+      <p>
+        La Plataforma utiliza tecnología blockchain para verificar la integridad de los registros médicos.
+        Periódicamente, se generan huellas criptográficas (hashes) de los registros y se anclan
+        en la blockchain pública de Solana.
+      </p>
+      <ul>
+        <li><strong>No se almacena información personal ni clínica en la blockchain.</strong> Solo huellas criptográficas que permiten verificar que los registros no fueron alterados.</li>
+        <li>Las huellas criptográficas son irreversibles: no es posible reconstruir los datos originales a partir de ellas.</li>
+        <li>Este mecanismo genera una prueba independiente, pública y permanente de la integridad de los registros.</li>
+        <li>La verificación puede ser realizada por auditores o autoridades sin necesidad de acceder a datos clínicos.</li>
+      </ul>
     </section>
 
     <section>

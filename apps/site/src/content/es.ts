@@ -115,9 +115,9 @@ export const content = {
         icon: 'lock-key',
       },
       {
-        title: 'Registros inmutables',
+        title: 'Registros inmutables con blockchain',
         description:
-          'Cada encuentro médico se enlaza con un hash SHA-256 al anterior, formando una cadena inalterable. Cualquier manipulación se detecta al instante.',
+          'Cada consulta se enlaza criptográficamente a la anterior, formando una cadena inalterable. Periódicamente, la integridad de estas cadenas se ancla en la blockchain de Solana, creando una prueba independiente e inmutable de que los registros no fueron modificados.',
         icon: 'link-simple',
       },
       {

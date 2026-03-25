@@ -2,7 +2,7 @@ import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from '@rem
 import { NavLink as RemixNavLink, Outlet, useLoaderData } from '@remix-run/react';
 import { Flex, NavLink } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheckIcon, ScrollIcon, BuildingsIcon } from '@phosphor-icons/react';
+import { ShieldCheckIcon, ScrollIcon, BuildingsIcon, LinkSimpleIcon } from '@phosphor-icons/react';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
 import { FormContainer } from '~/components/forms/styles';
@@ -100,6 +100,14 @@ function AdminTabs() {
         to="/admin/organizations"
         label={t('admin.tab_organizations')}
         leftSection={<BuildingsIcon size={16} />}
+        variant="light"
+        style={navLinkStyle}
+      />
+      <NavLink
+        component={RemixNavLink}
+        to="/admin/anchors"
+        label={t('admin.tab_anchors')}
+        leftSection={<LinkSimpleIcon size={16} />}
         variant="light"
         style={navLinkStyle}
       />
