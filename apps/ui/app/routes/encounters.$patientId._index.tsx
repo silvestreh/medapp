@@ -113,16 +113,16 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   }
 
   if (intent === 'search-recetario-medications') {
-    const { search } = parseFormJson(formData.get('data'));
+    const { search } = parseFormJson(formData.get('data')) as any;
     const result = await client.service('recetario' as any).create({ action: 'search-medications', search });
     return json({ intent: 'search-recetario-medications', medications: (result as any).medications });
   }
 
   if (intent === 'create-prescription') {
-    const { diagnosis, medications, hiv, patientData } = parseFormJson(formData.get('data'));
+    const { diagnosis, medications, hiv, patientData, date } = parseFormJson(formData.get('data')) as any;
     const result = await client
       .service('recetario' as any)
-      .create({ action: 'prescribe', patientId, diagnosis, medications, hiv, patientData });
+      .create({ action: 'prescribe', patientId, diagnosis, medications, hiv, patientData, date });
     return json({
       intent: 'create-prescription',
       success: true,
@@ -133,10 +133,10 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   }
 
   if (intent === 'create-order') {
-    const { diagnosis, content, patientData } = parseFormJson(formData.get('data'));
+    const { diagnosis, content, patientData, date } = parseFormJson(formData.get('data')) as any;
     const result = await client
       .service('recetario' as any)
-      .create({ action: 'order', patientId, diagnosis, content, patientData });
+      .create({ action: 'order', patientId, diagnosis, content, patientData, date });
     return json({
       intent: 'create-order',
       success: true,
@@ -441,12 +441,16 @@ export default function PatientEncounterDetail() {
       ? selectedEncounter.data?.attachments?.[activeAttachmentIndex]
       : null;
 
+  const tourSteps = getEncounterDetailSteps(t);
+  const {
+    run: tourRun,
+    stepIndex: tourStepIndex,
+    handleCallback: tourHandleCallback,
+  } = useSectionTour('encounter-detail', tourSteps);
+
   if (!data) {
     return null;
   }
-
-  const tourSteps = getEncounterDetailSteps(t);
-  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('encounter-detail', tourSteps);
 
   return (
     <Container className="encounters-container">
@@ -497,7 +501,12 @@ export default function PatientEncounterDetail() {
                 {t('ai_chat.title')}
               </Button>
               {data.isVerified && (
-                <Button data-tour="encounter-new" component={Link} to={`/encounters/${data.patient.id}/new`} leftSection={<PlusIcon size={16} />}>
+                <Button
+                  data-tour="encounter-new"
+                  component={Link}
+                  to={`/encounters/${data.patient.id}/new`}
+                  leftSection={<PlusIcon size={16} />}
+                >
                   {t('encounters.new')}
                 </Button>
               )}

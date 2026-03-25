@@ -28,6 +28,8 @@ import { useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { PlusIcon, TrashIcon, MagnifyingGlassIcon, PencilIcon } from '@phosphor-icons/react';
 import { AsYouType, type CountryCode } from 'libphonenumber-js';
+import { DateInput } from '@mantine/dates';
+import dayjs from 'dayjs';
 
 import { Icd10Selector } from '~/components/icd10-selector';
 import { HighlightedTextarea } from '~/components/highlighted-textarea';
@@ -249,6 +251,13 @@ const formatDate = (d: string | Date | null | undefined) => {
   return date.toISOString().split('T')[0];
 };
 
+const parseDate = (d: string | Date | null | undefined): Date | null => {
+  if (!d) return null;
+  if (d instanceof Date) return d;
+  const parsed = new Date(String(d).split('T')[0] + 'T00:00:00');
+  return isNaN(parsed.getTime()) ? null : parsed;
+};
+
 export interface PrescriptionResult {
   prescriptionId: string | null;
   recetarioDocumentId: number | null;
@@ -258,8 +267,10 @@ export interface PrescriptionResult {
 }
 
 export interface RepeatData {
+  type: 'prescription' | 'order';
   diagnosis: string;
-  medicines: MedicineRow[];
+  medicines?: MedicineRow[];
+  orderContent?: string;
 }
 
 interface PrescribeModalProps {
@@ -299,6 +310,7 @@ export function PrescribeModal({
   const [rxDiagnosisId, setRxDiagnosisId] = useState('');
   const [rxDiagnosis, setRxDiagnosis] = useState('');
   const [editingRepeatDiagnosis, setEditingRepeatDiagnosis] = useState(false);
+  const [editingRepeatOrderDiagnosis, setEditingRepeatOrderDiagnosis] = useState(false);
   const [orderDiagnosisId, setOrderDiagnosisId] = useState('');
   const [orderDiagnosis, setOrderDiagnosis] = useState('');
   const [missingPatientFields, setMissingPatientFields] = useState<Set<string>>(new Set());
@@ -310,7 +322,7 @@ export function PrescribeModal({
       firstName: '',
       lastName: '',
       gender: '',
-      birthDate: '',
+      birthDate: null as Date | null,
       email: '',
       phone: '',
       medicareId: '',
@@ -350,6 +362,7 @@ export function PrescribeModal({
   const [rxDiagnosisError, setRxDiagnosisError] = useState('');
   const [orderDiagnosisError, setOrderDiagnosisError] = useState('');
   const [activeTab, setActiveTab] = useState('prescription');
+  const [prescriptionDate, setPrescriptionDate] = useState<Date | null>(new Date());
 
   // Practices state for order tab
   const [practices, setPractices] = useState<Practice[]>([]);
@@ -373,7 +386,7 @@ export function PrescribeModal({
       firstName: pd.firstName || '',
       lastName: pd.lastName || '',
       gender: ({ male: 'm', female: 'f', other: 'o' } as any)[pd.gender] || pd.gender || '',
-      birthDate: pd.birthDate ? formatDate(pd.birthDate) : '',
+      birthDate: parseDate(pd.birthDate),
       email,
       phone,
       medicareId: p.medicareId || '',
@@ -407,10 +420,17 @@ export function PrescribeModal({
         );
       }
       if (repeatData) {
-        setRxDiagnosis(repeatData.diagnosis);
-        setEditingRepeatDiagnosis(false);
-        rxForm.setValues({ medicines: repeatData.medicines, hiv: false });
-        setActiveTab('prescription');
+        if (repeatData.type === 'order') {
+          setOrderDiagnosis(repeatData.diagnosis);
+          setEditingRepeatOrderDiagnosis(false);
+          orderForm.setFieldValue('content', repeatData.orderContent || '');
+          setActiveTab('order');
+        } else {
+          setRxDiagnosis(repeatData.diagnosis);
+          setEditingRepeatDiagnosis(false);
+          rxForm.setValues({ medicines: repeatData.medicines || [defaultMedicine()], hiv: false });
+          setActiveTab('prescription');
+        }
         if (patient) setStep(1);
       }
     }
@@ -449,7 +469,7 @@ export function PrescribeModal({
             ({ male: 'm', female: 'f', other: 'o' } as any)[mhsPatientData.gender] ||
             mhsPatientData.gender ||
             '',
-          birthDate: prev.birthDate || mhsPatientData.birthDate || '',
+          birthDate: prev.birthDate || parseDate(mhsPatientData.birthDate),
           email: prev.email || mhsPatientData.email || '',
           phone: prev.phone || mhsPatientData.phone || '',
           medicareId: prev.medicareId || mhsPatientData.medicareId || '',
@@ -468,7 +488,7 @@ export function PrescribeModal({
         const next = {
           ...prev,
           gender: prev.gender || recetarioData.gender,
-          birthDate: prev.birthDate || recetarioData.birthDate,
+          birthDate: prev.birthDate || parseDate(recetarioData.birthDate),
           email: prev.email || recetarioData.email,
           phone: prev.phone || recetarioData.phone,
           insuranceNumber: prev.insuranceNumber || recetarioData.insuranceNumber,
@@ -572,6 +592,7 @@ export function PrescribeModal({
       setSelectedPatientId(null);
       setPrescriptionResult(null);
       setMissingPatientFields(new Set());
+      setPrescriptionDate(new Date());
       setShareEmail('');
       setSharePhoneCountry('54');
       setSharePhone('');
@@ -584,6 +605,8 @@ export function PrescribeModal({
       setOrderDiagnosis('');
       setRxDiagnosisError('');
       setOrderDiagnosisError('');
+      setEditingRepeatDiagnosis(false);
+      setEditingRepeatOrderDiagnosis(false);
       setSelectedPractices([]);
       setPracticesLoaded(false);
     }
@@ -630,7 +653,7 @@ export function PrescribeModal({
             patientId,
             personalData: {
               gender: genderMap[pv.gender] || pv.gender || undefined,
-              birthDate: pv.birthDate || undefined,
+              birthDate: pv.birthDate ? formatDate(pv.birthDate) : undefined,
               documentValue: pv.documentValue || undefined,
             },
             contactData: {
@@ -677,7 +700,12 @@ export function PrescribeModal({
           diagnosis: rxDiagnosis,
           medications,
           hiv: rxForm.values.hiv,
-          patientData: { ...patientForm.values, healthInsuranceName },
+          date: prescriptionDate ? dayjs(prescriptionDate).format('YYYY-MM-DD') : undefined,
+          patientData: {
+            ...patientForm.values,
+            healthInsuranceName,
+            birthDate: formatDate(patientForm.values.birthDate) || undefined,
+          },
           ...((selectedPatientId || patient?.id) && { patientId: selectedPatientId || patient?.id }),
           ...(medicId && { medicId }),
         }),
@@ -704,7 +732,12 @@ export function PrescribeModal({
         data: JSON.stringify({
           diagnosis: orderDiagnosis,
           content: orderForm.values.content,
-          patientData: { ...patientForm.values, healthInsuranceName },
+          date: prescriptionDate ? dayjs(prescriptionDate).format('YYYY-MM-DD') : undefined,
+          patientData: {
+            ...patientForm.values,
+            healthInsuranceName,
+            birthDate: formatDate(patientForm.values.birthDate) || undefined,
+          },
           ...((selectedPatientId || patient?.id) && { patientId: selectedPatientId || patient?.id }),
           ...(medicId && { medicId }),
         }),
@@ -827,10 +860,11 @@ export function PrescribeModal({
                         />
                       )}
                       {showBirthDate && (
-                        <TextInput
+                        <DateInput
                           label={t('recetario.birth_date')}
                           required
-                          placeholder="YYYY-MM-DD"
+                          valueFormat="YYYY-MM-DD"
+                          clearable
                           {...patientForm.getInputProps('birthDate')}
                         />
                       )}
@@ -884,18 +918,29 @@ export function PrescribeModal({
       {/* Step 1 — Prescription / Order */}
       {step === 1 && (
         <>
-          {!repeatData && (
-            <SegmentedControl
-              value={activeTab}
-              onChange={setActiveTab}
-              mb="md"
-              w="300px"
-              data={[
-                { label: t('recetario.type_prescription'), value: 'prescription' },
-                { label: t('recetario.type_order'), value: 'order' },
-              ]}
+          <Group gap="md" mb="md" align="flex-end">
+            {!repeatData && (
+              <SegmentedControl
+                value={activeTab}
+                onChange={setActiveTab}
+                w="300px"
+                data={[
+                  { label: t('recetario.type_prescription'), value: 'prescription' },
+                  { label: t('recetario.type_order'), value: 'order' },
+                ]}
+              />
+            )}
+            <DateInput
+              label={t('common.date')}
+              required
+              valueFormat="DD/MM/YYYY"
+              value={prescriptionDate}
+              onChange={v => setPrescriptionDate(v as Date | null)}
+              maxDate={new Date()}
+              w={160}
+              ml="auto"
             />
-          )}
+          </Group>
 
           {activeTab === 'prescription' && (
             <form onSubmit={handlePrescriptionSubmit}>
@@ -1013,17 +1058,27 @@ export function PrescribeModal({
                   <Text size="sm" fw={500} mb={4}>
                     {t('recetario.diagnosis')} <span style={{ color: 'var(--mantine-color-red-6)' }}>*</span>
                   </Text>
-                  <Icd10Selector
-                    value={orderDiagnosisId}
-                    onChange={v => {
-                      const id = Array.isArray(v) ? v[0] || '' : v;
-                      setOrderDiagnosisId(id);
-                      if (!id) setOrderDiagnosis('');
-                    }}
-                    onSelectNode={node => setOrderDiagnosis(`${node.id} - ${node.name}`)}
-                    error={orderDiagnosisError}
-                    variant="default"
-                  />
+                  {repeatData && repeatData.type === 'order' && !editingRepeatOrderDiagnosis ? (
+                    <Group gap="xs">
+                      <TextInput value={orderDiagnosis} readOnly variant="default" style={{ flex: 1 }} />
+                      <ActionIcon variant="subtle" color="gray" onClick={() => setEditingRepeatOrderDiagnosis(true)}>
+                        <PencilIcon size={16} />
+                      </ActionIcon>
+                    </Group>
+                  ) : (
+                    <Icd10Selector
+                      value={orderDiagnosisId}
+                      onChange={v => {
+                        const id = Array.isArray(v) ? v[0] || '' : v;
+                        setOrderDiagnosisId(id);
+                        if (!id) setOrderDiagnosis('');
+                      }}
+                      onSelectNode={node => setOrderDiagnosis(`${node.id} - ${node.name}`)}
+                      error={orderDiagnosisError}
+                      variant="default"
+                      autoFocus={editingRepeatOrderDiagnosis}
+                    />
+                  )}
                 </Box>
                 {practices.length > 0 && (
                   <PracticeSelector
@@ -1047,7 +1102,11 @@ export function PrescribeModal({
                   error={orderForm.errors.content}
                 />
                 <Group justify="flex-end" mt="sm">
-                  <Button variant="default" onClick={() => setStep(0)} disabled={submitting}>
+                  <Button
+                    variant="default"
+                    onClick={repeatData && patient ? onClose : () => setStep(0)}
+                    disabled={submitting}
+                  >
                     {t('common.cancel')}
                   </Button>
                   <Button type="submit" loading={submitting}>

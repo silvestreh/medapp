@@ -212,7 +212,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   if (intent === 'create-prescription') {
-    const { diagnosis, medications, hiv, patientData, patientId, medicId } = parseFormJson(formData.get('data')) as any;
+    const { diagnosis, medications, hiv, patientData, patientId, medicId, date } = parseFormJson(formData.get('data')) as any;
     const result = await client.service('recetario' as any).create({
       action: 'prescribe',
       patientId,
@@ -221,6 +221,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       hiv,
       patientData,
       medicId,
+      date,
     });
     return json({
       intent: 'create-prescription',
@@ -232,7 +233,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   if (intent === 'create-order') {
-    const { diagnosis, content, patientData, patientId, medicId } = parseFormJson(formData.get('data')) as any;
+    const { diagnosis, content, patientData, patientId, medicId, date } = parseFormJson(formData.get('data')) as any;
     const result = await client.service('recetario' as any).create({
       action: 'order',
       patientId,
@@ -240,6 +241,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       content,
       patientData,
       medicId,
+      date,
     });
     return json({
       intent: 'create-order',
@@ -409,7 +411,17 @@ export default function PrescriptionsPage() {
   const repeatData: RepeatData | undefined = useMemo(() => {
     if (!repeatPrescription?.content) return undefined;
     const c = repeatPrescription.content;
+
+    if (repeatPrescription.type === 'order') {
+      return {
+        type: 'order' as const,
+        diagnosis: c.diagnosis || '',
+        orderContent: c.orderText || '',
+      };
+    }
+
     return {
+      type: 'prescription' as const,
       diagnosis: c.diagnosis || '',
       medicines: (c.medicines || []).map((m: any) => ({
         medication: m.text
@@ -563,7 +575,7 @@ export default function PrescriptionsPage() {
                     <CellText style={{ color: 'var(--mantine-color-dimmed)' }}>{getMedicineSummary(rx)}</CellText>
                   </Table.Td>
                   <Table.Td>
-                    {rx.status === 'completed' && rx.type === 'prescription' && (
+                    {rx.status === 'completed' && (
                       <RepeatButton rx={rx} onRepeat={handleRepeat} />
                     )}
                   </Table.Td>
@@ -609,7 +621,7 @@ export default function PrescriptionsPage() {
               {expandedId === rx.id && (
                 <div role="presentation" style={{ marginTop: 8 }} onClick={e => e.stopPropagation()}>
                   <PrescriptionDetail prescription={rx} onCancelled={() => setExpandedId(null)} />
-                  {rx.status === 'completed' && rx.type === 'prescription' && (
+                  {rx.status === 'completed' && (
                     <Group justify="flex-end" mt="xs">
                       <RepeatButton rx={rx} onRepeat={handleRepeat} />
                     </Group>

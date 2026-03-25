@@ -48,6 +48,7 @@ export interface RecetarioCreateData {
   documentIds?: number[];
   pdfUrl?: string;
   medicId?: string;
+  date?: string;
   healthCenter?: any;
   search?: string;
 }
@@ -258,7 +259,7 @@ export class Recetario {
   }
 
   private async handlePrescribe(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {
-    const { patientId, medications, diagnosis, recurring, hiv, patientData: patientOverride } = data;
+    const { patientId, medications, diagnosis, recurring, hiv, patientData: patientOverride, date } = data;
     if (!patientId) throw new BadRequest('patientId is required');
     if (!medications || medications.length === 0) throw new BadRequest('At least one medication is required');
 
@@ -283,7 +284,7 @@ export class Recetario {
 
     const payload: recetarioClient.PrescriptionPayload = {
       ...(recetarioUserId ? { userId: recetarioUserId } : { doctor: doctorPayload }),
-      date: dayjs().format('YYYY-MM-DD'),
+      date: date || dayjs().format('YYYY-MM-DD'),
       patient: mapPatientForAPI(patient),
       method: 'manual',
       diagnosis: diagnosis || '',
@@ -354,7 +355,7 @@ export class Recetario {
   }
 
   private async handleOrder(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {
-    const { patientId, content, diagnosis, patientData: patientOverride } = data;
+    const { patientId, content, diagnosis, patientData: patientOverride, date } = data;
     if (!patientId) throw new BadRequest('patientId is required');
     if (!content) throw new BadRequest('Order content is required');
 
@@ -379,7 +380,7 @@ export class Recetario {
 
     const payload: recetarioClient.OrderPayload = {
       ...(recetarioUserId ? { userId: recetarioUserId } : { doctor: doctorPayload }),
-      date: dayjs().format('YYYY-MM-DD'),
+      date: date || dayjs().format('YYYY-MM-DD'),
       patient: mapPatientForAPI(patient),
       medicine: content,
       diagnosis: diagnosis || '',
