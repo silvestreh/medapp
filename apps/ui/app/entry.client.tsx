@@ -27,6 +27,17 @@ Sentry.init({
   replaysOnErrorSampleRate: 1,
 });
 
+// Safety net: if a single-fetch .data request returns non-turbo-stream data
+// (e.g. HTML from a reverse proxy error page or an auth redirect the browser
+// followed transparently), recover by forcing a full document navigation.
+window.addEventListener('unhandledrejection', event => {
+  const msg = event.reason?.message;
+  if (typeof msg === 'string' && msg.includes('Unable to decode turbo-stream')) {
+    event.preventDefault();
+    window.location.reload();
+  }
+});
+
 async function main() {
   const i18nInstance = i18next;
   await i18nInstance

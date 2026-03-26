@@ -19,8 +19,7 @@ export async function requireAuth(request: Request) {
   const token = await getToken(request);
 
   if (!token) {
-    const url = new URL(request.url);
-    throw redirect(`/login?redirect=${url.pathname}`);
+    throwLoginRedirect(request);
   }
 
   return token;
@@ -69,11 +68,16 @@ export async function getUser(request: Request) {
   }
 }
 
+function throwLoginRedirect(request: Request): never {
+  const url = new URL(request.url);
+  throw redirect(`/login?redirect=${url.pathname}`);
+}
+
 export async function getAuthenticatedClient(request: Request): Promise<{ client: Application; user: Account }> {
   const token = await getToken(request);
 
   if (!token) {
-    throw new Error('Token is required to authenticate the client');
+    throwLoginRedirect(request);
   }
 
   let organizationId = await getCurrentOrganizationId(request);
@@ -96,7 +100,9 @@ export async function getAuthenticatedClient(request: Request): Promise<{ client
 
     return { client, user };
   } catch (error) {
-    throw new Error('Failed to authenticate the client');
+    // Token exists but is invalid/expired — redirect to login instead of
+    // throwing a plain Error (which can break single-fetch turbo-stream encoding)
+    throwLoginRedirect(request);
   }
 }
 
