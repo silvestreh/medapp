@@ -753,6 +753,7 @@ export const es = {
     back_to_list: 'Volver a la lista',
     patient: 'Paciente',
     save_changes: 'Guardar cambios',
+    send_to_sire: 'Enviar a SIRE',
     results: 'Resultados',
     comments_and_conclusion: 'Comentarios y Conclusión',
     comments_label: 'Comentarios:',

@@ -1,15 +1,15 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useFetcher, useLoaderData, useNavigate, useParams } from '@remix-run/react';
+import { useFetcher, useLoaderData, useNavigate, useParams, Link } from '@remix-run/react';
 import { Group, Button, Tabs, Text, Loader, Modal } from '@mantine/core';
 import { useMediaQuery, useDisclosure, useHotkeys } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
-import { PrinterIcon, FloppyDiskIcon } from '@phosphor-icons/react';
+import { PrinterIcon, FloppyDiskIcon, DropIcon } from '@phosphor-icons/react';
 
 import { getCurrentOrganizationId } from '~/session';
 import { parseFormJson } from '~/utils/parse-form-json';
-import { useGet, useFeathers } from '~/components/provider';
+import { useGet, useFind, useFeathers } from '~/components/provider';
 import Portal from '~/components/portal';
 import { styled } from '~/styled-system/jsx';
 import { studySchemas } from '~/components/forms/study-schemas';
@@ -110,8 +110,9 @@ export default function StudyDetail() {
 
   const { data: study, isLoading: studyLoading } = useGet('studies', studyId!);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [activeTab, setActiveTab] = useState<string | null>(null);
 
-  const handleBack = useCallback(() => navigate(-1), [navigate]);
+  const handleBack = useCallback(() => navigate('/studies'), [navigate]);
 
   const handlePrint = useCallback(async () => {
     if (!client || !studyId || !study?.patientId) return;
@@ -282,6 +283,43 @@ export default function StudyDetail() {
     onSave: handleSave,
   });
 
+  // SIRE integration: fetch active treatment for this patient (must be before early return)
+  const anticoagResult = results.find((r: any) => r.type === 'anticoagulation');
+  const anticoagData = resultDrafts['anticoagulation'] ?? anticoagResult?.data;
+  const hasAnticoagDataForFetch = !!anticoagData && !!(anticoagData.rin || anticoagData.complex_2_7_9_10);
+
+  const { response: sireTreatments } = useFind(
+    'sire-treatments',
+    { patientId: study?.patientId, status: 'active', $limit: 1 },
+    { enabled: !!study?.patientId && hasAnticoagDataForFetch }
+  );
+
+  const isSavingMeta = fetcher.state !== 'idle';
+  const currentStudies = selectedStudies || study.studies || [];
+  const extractionDate = date ?? (study.date ? new Date(study.date) : null);
+  const canEditResults = !!study.id && isVerified;
+
+  // SIRE integration: build link when anticoagulation result has data
+  const effectiveTab = activeTab ?? currentStudies[0];
+  const hasAnticoagData = hasAnticoagDataForFetch;
+  const hasActiveSireTreatment = Array.isArray(sireTreatments)
+    ? sireTreatments.length > 0
+    : ((sireTreatments as any)?.data?.length ?? 0) > 0;
+
+  const sireLink = useMemo(() => {
+    if (!study?.patientId || !hasAnticoagData) return null;
+    const params = new URLSearchParams();
+    params.set('intent', hasActiveSireTreatment ? 'new-control' : 'new-treatment');
+    const rin = anticoagData.rin;
+    const pct = anticoagData.complex_2_7_9_10;
+    const rinVal = typeof rin === 'object' ? rin?.value : rin;
+    const pctVal = typeof pct === 'object' ? pct?.value : pct;
+    if (rinVal) params.set('inr', String(rinVal));
+    if (pctVal) params.set('percentage', String(pctVal));
+    params.set('callbackUrl', `/studies/${studyId}`);
+    return `/patients/${study.patientId}/sire?${params.toString()}`;
+  }, [study?.patientId, studyId, hasAnticoagData, hasActiveSireTreatment, anticoagData]);
+
   if (studyLoading || !study?.id) {
     return (
       <PageContainer>
@@ -292,11 +330,6 @@ export default function StudyDetail() {
     );
   }
 
-  const isSavingMeta = fetcher.state !== 'idle';
-  const currentStudies = selectedStudies || study.studies || [];
-  const extractionDate = date ?? (study.date ? new Date(study.date) : null);
-  const canEditResults = !!study.id && isVerified;
-
   return (
     <PageContainer>
       <Portal id="toolbar">
@@ -306,6 +339,11 @@ export default function StudyDetail() {
       {isDesktop && (
         <Portal id="form-actions">
           <Group>
+            {sireLink && (
+              <Button component={Link} to={sireLink} variant="light" color="teal" leftSection={<DropIcon size={16} />}>
+                {t('studies.send_to_sire')}
+              </Button>
+            )}
             <Button variant="light" onClick={handlePrint} loading={isPrinting} leftSection={<PrinterIcon size={16} />}>
               {t('print_pdf.print')}
             </Button>
@@ -323,6 +361,12 @@ export default function StudyDetail() {
 
       {!isDesktop && (
         <Fab open={fabOpen} onToggle={toggleFab} onClose={closeFab}>
+          {sireLink && (
+            <FabItem onClick={() => navigate(sireLink)} index={2}>
+              <DropIcon size={18} />
+              {t('studies.send_to_sire')}
+            </FabItem>
+          )}
           <FabItem onClick={handleFabPrint} index={1}>
             <PrinterIcon size={18} />
             {t('print_pdf.print')}
@@ -369,7 +413,7 @@ export default function StudyDetail() {
       {currentStudies.length > 0 && canEditResults && (
         <>
           <StyledTitle>{t('studies.results')}</StyledTitle>
-          <Tabs defaultValue={currentStudies[0]} variant="pills" keepMounted>
+          <Tabs value={effectiveTab} onChange={setActiveTab} variant="pills" keepMounted>
             <Tabs.List mb="sm" bd="1px solid var(--mantine-color-gray-2)" bdrs={4}>
               {currentStudies.map((type: string) => {
                 const schema = studySchemas[type];

@@ -25,6 +25,7 @@ interface SireControlFormProps {
     nextControlDate: string | null;
   }) => void;
   onDelete?: () => void;
+  prefill?: { inr?: number; percentage?: number } | null;
 }
 
 export function SireControlForm({
@@ -34,13 +35,14 @@ export function SireControlForm({
   nextControlDate,
   onSubmit,
   onDelete,
+  prefill,
 }: SireControlFormProps) {
   const form = useForm({
     initialValues: {
       // Reading fields
       date: initialReading?.date ? new Date(initialReading.date) : new Date(),
-      inr: (initialReading?.inr ?? '') as number | '',
-      percentage: (initialReading?.percentage ?? '') as number | '',
+      inr: (initialReading?.inr ?? prefill?.inr ?? '') as number | '',
+      percentage: (initialReading?.percentage ?? prefill?.percentage ?? '') as number | '',
       // Dose schedule fields
       includeDose: !!initialSchedule,
       monday: (initialSchedule?.schedule?.monday ?? '') as number | '',

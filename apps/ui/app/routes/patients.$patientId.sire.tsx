@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useLoaderData, useFetcher } from '@remix-run/react';
+import { useLoaderData, useFetcher, useNavigate, useSearchParams } from '@remix-run/react';
 import { Stack, Group, Button, Title, Text, Table, Badge, ActionIcon } from '@mantine/core';
 import { PlusIcon, PillIcon, PencilSimpleIcon, ArrowLeftIcon } from '@phosphor-icons/react';
 
@@ -167,13 +167,42 @@ function getInrStatus(inr: number, min: number, max: number) {
 export default function SireManagement() {
   const { treatments, readings, schedules } = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [view, setView] = useState<View>('list');
-  const [editingReading, setEditingReading] = useState<any>(null);
+  // Read QS params from the initial navigation (works during SSR)
+  const qsIntent = searchParams.get('intent');
+  const qsInr = searchParams.get('inr');
+  const qsPercentage = searchParams.get('percentage');
+  const callbackUrlRef = useRef(searchParams.get('callbackUrl'));
 
+  const prefillData = useMemo(() => {
+    if (!qsIntent) return null;
+    return {
+      inr: qsInr ? parseFloat(qsInr) : undefined,
+      percentage: qsPercentage ? parseFloat(qsPercentage) : undefined,
+    };
+  }, [qsIntent, qsInr, qsPercentage]);
+
+  // Must be computed before the view state initializer
   const activeTreatment = useMemo(() => {
     return (treatments as any[]).find((tr: any) => tr.status === 'active') || null;
   }, [treatments]);
+
+  // Initialize view from QS intent directly — no useEffect flash
+  const [view, setView] = useState<View>(() => {
+    if (qsIntent === 'new-treatment' && !activeTreatment) return 'treatment';
+    if (qsIntent === 'new-control' && activeTreatment) return 'control';
+    return 'list';
+  });
+  const [editingReading, setEditingReading] = useState<any>(null);
+
+  // Silently strip QS params from the URL without triggering a Remix navigation
+  useEffect(() => {
+    if (qsIntent) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const findScheduleForReading = useCallback(
     (reading: any) => {
@@ -203,9 +232,13 @@ export default function SireManagement() {
         { data: JSON.stringify({ intent: 'create-initial-treatment', ...data }) },
         { method: 'post' }
       );
-      setView('list');
+      if (callbackUrlRef.current) {
+        navigate(callbackUrlRef.current);
+      } else {
+        setView('list');
+      }
     },
-    [fetcher]
+    [fetcher, navigate]
   );
 
   const handleSubmitControl = useCallback(
@@ -214,10 +247,14 @@ export default function SireManagement() {
         { data: JSON.stringify({ intent: 'save-control', ...data, treatmentId: activeTreatment?.id }) },
         { method: 'post' }
       );
-      setView('list');
-      setEditingReading(null);
+      if (callbackUrlRef.current) {
+        navigate(callbackUrlRef.current);
+      } else {
+        setView('list');
+        setEditingReading(null);
+      }
     },
-    [fetcher, activeTreatment]
+    [fetcher, activeTreatment, navigate]
   );
 
   const handleDeleteReading = useCallback(() => {
@@ -263,7 +300,7 @@ export default function SireManagement() {
           />
         )}
         {!activeTreatment && (
-          <SireInitialTreatmentForm onSubmit={handleSubmitInitialTreatment} />
+          <SireInitialTreatmentForm onSubmit={handleSubmitInitialTreatment} prefill={prefillData} />
         )}
       </Stack>
     );
@@ -287,6 +324,7 @@ export default function SireManagement() {
             nextControlDate={activeTreatment.nextControlDate}
             onSubmit={handleSubmitControl}
             onDelete={editingReading?.id ? handleDeleteReading : undefined}
+            prefill={prefillData}
           />
         )}
       </Stack>

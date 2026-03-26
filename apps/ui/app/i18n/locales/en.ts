@@ -751,6 +751,7 @@ export const en: typeof es = {
     back_to_list: 'Back to list',
     patient: 'Patient',
     save_changes: 'Save changes',
+    send_to_sire: 'Send to SIRE',
     results: 'Results',
     comments_and_conclusion: 'Comments and Conclusion',
     comments_label: 'Comments:',

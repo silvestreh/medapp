@@ -20,9 +20,10 @@ interface SireInitialTreatmentFormProps {
     schedule: Record<string, any>;
     nextControlDate: string | null;
   }) => void;
+  prefill?: { inr?: number; percentage?: number } | null;
 }
 
-export function SireInitialTreatmentForm({ onSubmit }: SireInitialTreatmentFormProps) {
+export function SireInitialTreatmentForm({ onSubmit, prefill }: SireInitialTreatmentFormProps) {
   const form = useForm({
     initialValues: {
       medication: 'Acenocumarol',
@@ -31,8 +32,8 @@ export function SireInitialTreatmentForm({ onSubmit }: SireInitialTreatmentFormP
       targetInrMax: 3.0 as number,
       startDate: new Date(),
       // Initial reading
-      inr: '' as number | '',
-      percentage: '' as number | '',
+      inr: (prefill?.inr ?? '') as number | '',
+      percentage: (prefill?.percentage ?? '') as number | '',
       // Dose schedule
       monday: '' as number | '',
       tuesday: '' as number | '',
@@ -60,7 +61,11 @@ export function SireInitialTreatmentForm({ onSubmit }: SireInitialTreatmentFormP
   const handleSubmit = useCallback(() => {
     if (form.validate().hasErrors) return;
 
-    const formatDate = (d: Date | null) => (d ? d.toISOString().split('T')[0] : null);
+    const formatDate = (d: Date | string | null) => {
+      if (!d) return null;
+      if (d instanceof Date) return d.toISOString().split('T')[0];
+      return String(d);
+    };
     const startDate = formatDate(form.values.startDate)!;
 
     const weekSchedule: Record<string, number | null> = {};

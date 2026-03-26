@@ -1,5 +1,7 @@
 import { ActionIcon, Title, Text } from '@mantine/core';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
+import { useCallback } from 'react';
+import { useNavigate } from '@remix-run/react';
 
 import { styled } from '~/styled-system/jsx';
 
@@ -26,13 +28,24 @@ interface ToolbarTitleProps {
   title: string;
   subTitle?: string;
   onBack?: () => void;
+  backPath?: string;
 }
 
-export function ToolbarTitle({ title, subTitle, onBack }: ToolbarTitleProps) {
+export function ToolbarTitle({ title, subTitle, onBack, backPath }: ToolbarTitleProps) {
+  const navigate = useNavigate();
+
+  const handleBack = useCallback(() => {
+    if (onBack) {
+      onBack();
+    } else if (backPath) {
+      navigate(backPath);
+    }
+  }, [onBack, backPath, navigate]);
+
   return (
     <TitleGroup maxW={{ base: 'calc(100vw - 11rem)', md: 'none' }}>
-      {onBack && (
-        <ActionIcon variant="subtle" color="dark" size="lg" onClick={onBack}>
+      {(onBack || backPath) && (
+        <ActionIcon variant="subtle" color="dark" size="lg" onClick={handleBack}>
           <ArrowLeftIcon size={20} />
         </ActionIcon>
       )}
