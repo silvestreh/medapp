@@ -244,6 +244,12 @@ export default function Login() {
           <Button type="submit" fullWidth>
             {t('auth.sign_in')}
           </Button>
+
+          <Text size="sm" ta="center" mt="md">
+            <Anchor component={Link} to="/forgot-password" fw={500}>
+              {t('auth.forgot_password')}
+            </Anchor>
+          </Text>
         </Form>
 
         {!requireTwoFactor && supportsPasskeys && (

@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+import { exec } from 'child_process';
 import type { Application } from '../../declarations';
 
 import * as orgInviteTemplate from './templates/org-invite';
@@ -5,6 +8,7 @@ import * as orgInviteNewUserTemplate from './templates/org-invite-new-user';
 import * as medicalHistoryExportTemplate from './templates/medical-history-export';
 import * as prescriptionShareTemplate from './templates/prescription-share';
 import * as identityVerificationPendingTemplate from './templates/identity-verification-pending';
+import * as passwordResetTemplate from './templates/password-reset';
 
 const templates: Record<string, { render: (data: any) => string }> = {
   'org-invite': orgInviteTemplate,
@@ -12,6 +16,7 @@ const templates: Record<string, { render: (data: any) => string }> = {
   'medical-history-export': medicalHistoryExportTemplate,
   'prescription-share': prescriptionShareTemplate,
   'identity-verification-pending': identityVerificationPendingTemplate,
+  'password-reset': passwordResetTemplate,
 };
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -53,6 +58,16 @@ export class Mailer {
 
     if (!isProduction) {
       console.log(`[Mailer/dev] Would send "${subject}" to ${to}`);
+
+      if (process.env.NODE_ENV !== 'test') {
+        const tmpDir = path.join(require('os').tmpdir(), 'athelas-emails');
+        fs.mkdirSync(tmpDir, { recursive: true });
+        const filename = `${template}-${Date.now()}.html`;
+        const filepath = path.join(tmpDir, filename);
+        fs.writeFileSync(filepath, html);
+        exec(`open "${filepath}"`);
+      }
+
       return { sent: false, html };
     }
 
