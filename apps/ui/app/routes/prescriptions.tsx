@@ -22,7 +22,7 @@ import { Fab } from '~/components/fab';
 import { PrescribeModal, type RepeatData } from '~/components/prescribe-modal';
 import { PrescriptionDetail } from '~/components/prescription-detail';
 import PatientSearch from '~/components/patient-search';
-import { MedicareDisplay, getMedicareLabel } from '~/components/medicare-display';
+import { MedicareDisplay } from '~/components/medicare-display';
 import { getPageTitle } from '~/utils/meta';
 import RouteErrorFallback from '~/components/route-error-fallback';
 import { styled } from '~/styled-system/jsx';
@@ -428,7 +428,15 @@ export default function PrescriptionsPage() {
       diagnosis: c.diagnosis || '',
       medicines: (c.medicines || []).map((m: any) => ({
         medication: m.text
-          ? { externalId: m.externalId || '', text: m.text, drug: m.drug || '', brand: m.brand || '', packageName: m.packageName || '', power: m.power || '', requiresDuplicate: m.requiresDuplicate || false }
+          ? {
+              externalId: m.externalId || '',
+              text: m.text,
+              drug: m.drug || '',
+              brand: m.brand || '',
+              packageName: m.packageName || '',
+              power: m.power || '',
+              requiresDuplicate: m.requiresDuplicate || false,
+            }
           : null,
         quantity: m.quantity || 1,
         posology: m.posology || '',

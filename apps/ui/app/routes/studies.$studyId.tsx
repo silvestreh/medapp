@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useLoaderData, useNavigate, useParams, Link } from '@remix-run/react';
@@ -284,9 +284,16 @@ export default function StudyDetail() {
   });
 
   // SIRE integration: fetch active treatment for this patient (must be before early return)
+  // Use a ref to keep the latest anticoag values across save cycles (drafts get cleared on save
+  // before the server data is refetched, which would briefly lose the values).
   const anticoagResult = results.find((r: any) => r.type === 'anticoagulation');
   const anticoagData = resultDrafts['anticoagulation'] ?? anticoagResult?.data;
-  const hasAnticoagDataForFetch = !!anticoagData && !!(anticoagData.rin || anticoagData.complex_2_7_9_10);
+  const latestAnticoagRef = useRef(anticoagData);
+  if (anticoagData && (anticoagData.rin || anticoagData.complex_2_7_9_10)) {
+    latestAnticoagRef.current = anticoagData;
+  }
+  const sireAnticoagData = latestAnticoagRef.current;
+  const hasAnticoagDataForFetch = !!sireAnticoagData && !!(sireAnticoagData.rin || sireAnticoagData.complex_2_7_9_10);
 
   const { response: sireTreatments } = useFind(
     'sire-treatments',
@@ -310,14 +317,15 @@ export default function StudyDetail() {
     if (!study?.patientId || !hasAnticoagData) return null;
     const params = new URLSearchParams();
     params.set('intent', hasActiveSireTreatment ? 'new-control' : 'new-treatment');
-    const rin = anticoagData.rin;
-    const pct = anticoagData.complex_2_7_9_10;
+    const rin = sireAnticoagData.rin;
+    const pct = sireAnticoagData.complex_2_7_9_10;
     const rinVal = typeof rin === 'object' ? rin?.value : rin;
     const pctVal = typeof pct === 'object' ? pct?.value : pct;
     if (rinVal) params.set('inr', String(rinVal));
     if (pctVal) params.set('percentage', String(pctVal));
     params.set('callbackUrl', `/studies/${studyId}`);
     return `/patients/${study.patientId}/sire?${params.toString()}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [study?.patientId, studyId, hasAnticoagData, hasActiveSireTreatment, anticoagData]);
 
   if (studyLoading || !study?.id) {
