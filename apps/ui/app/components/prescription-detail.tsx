@@ -64,7 +64,7 @@ export function PrescriptionDetail({ prescription: rx, onCancelled }: Prescripti
     onCancelled?.();
   }, [cancelFetcher.state, cancelFetcher.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const canCancel = rx.status !== 'cancelled' && rx.status !== 'expired';
+  const canCancel = rx.status !== 'cancelled' && rx.status !== 'expired' && rx.status !== 'completed';
 
   const sharePrescriptionResult: PrescriptionResult = {
     prescriptionId: rx.id,
