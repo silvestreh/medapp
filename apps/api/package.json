@@ -39,10 +39,9 @@
     "cuadros-to-prepagas": "ts-node scripts/cuadros-to-prepagas.ts",
     "dev": "ts-node-dev --no-notify src/",
     "lint": "eslint src/. test/. --config .eslintrc.json --ext .ts --fix",
-    "mocha": "NODE_ENV=test nyc mocha",
     "pretest": "NODE_ENV=test ts-node scripts/reset-db.ts",
     "start": "node lib/",
-    "test": "npm run lint && npm run compile && npm run mocha"
+    "test": "npm run lint && npm run compile && NODE_ENV=test nyc mocha"
   },
   "standard": {
     "env": [

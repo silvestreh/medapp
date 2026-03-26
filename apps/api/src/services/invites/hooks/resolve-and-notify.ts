@@ -45,30 +45,17 @@ const resolveAndNotify = (): Hook => async (context: HookContext): Promise<HookC
     await app.service('invites').patch(invite.id, { userId: existingUserId }, { provider: undefined } as any);
   } else {
     isNewUser = true;
-    const emailPrefix = invite.email.split('@')[0].replace(/[^a-zA-Z0-9._-]/g, '');
-    username = emailPrefix;
-
-    const existingByUsername = await app.service('users').find({
-      query: { username, $limit: 1 },
-      provider: undefined,
-    } as any) as any;
-
-    const usernameCount = existingByUsername?.total ?? (Array.isArray(existingByUsername) ? existingByUsername.length : 0);
-
-    if (usernameCount > 0) {
-      username = `${emailPrefix}.${crypto.randomBytes(3).toString('hex')}`;
-    }
-
     const tempPassword = generateTempPassword();
 
     const newUser = await app.service('users').create(
       {
-        username,
+        email: invite.email,
         password: tempPassword,
-        contactData: { email: invite.email },
       },
       { provider: undefined } as any
     );
+
+    username = newUser.username;
 
     await app.service('invites').patch(invite.id, { userId: newUser.id, isNewUser: true }, { provider: undefined } as any);
   }

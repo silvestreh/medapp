@@ -68,6 +68,87 @@ describe('\'users\' service', () => {
     });
   });
 
+  describe('generate-username hook', () => {
+    it('infers username from email when no username provided', async () => {
+      const userData = {
+        email: 'generate.test@example.com',
+        password: 'Password123!',
+      };
+
+      user = await app.service('users').create(userData as any);
+
+      assert.equal(user.username, 'generate.test');
+
+      const ucd = await app.service('user-contact-data').find({
+        query: { ownerId: user.id },
+      });
+      assert.equal(ucd.total, 1);
+
+      const cd = await app.service('contact-data').get(ucd.data[0].contactDataId);
+      assert.equal(cd.email, 'generate.test@example.com');
+    });
+
+    it('appends readable suffix when username prefix is taken', async () => {
+      const first = await app.service('users').create({
+        email: 'duplicate.prefix@one.com',
+        password: 'Password123!',
+      } as any);
+
+      assert.equal(first.username, 'duplicate.prefix');
+
+      const second = await app.service('users').create({
+        email: 'duplicate.prefix@two.com',
+        password: 'Password123!',
+      } as any);
+
+      assert.ok(second.username.startsWith('duplicate.prefix-'), `Expected suffix, got: ${second.username}`);
+      assert.notEqual(second.username, 'duplicate.prefix');
+    });
+
+    it('keeps explicit username when both username and email are provided', async () => {
+      const userData = {
+        username: 'explicit-user',
+        email: 'explicit@example.com',
+        password: 'Password123!',
+      };
+
+      user = await app.service('users').create(userData as any);
+
+      assert.equal(user.username, 'explicit-user');
+    });
+
+    it('rejects invalid email format', async () => {
+      try {
+        await app.service('users').create({
+          email: 'not-an-email',
+          password: 'Password123!',
+        } as any);
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 400);
+        assert.ok(error.message.includes('Invalid email'));
+      }
+    });
+
+    it('rejects signup with already-used email', async () => {
+      await app.service('users').create({
+        email: 'taken@example.com',
+        password: 'Password123!',
+      } as any);
+
+      try {
+        await app.service('users').create({
+          email: 'taken@example.com',
+          password: 'Password123!',
+        } as any);
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 400);
+        assert.ok(error.message.includes('already exists'));
+      }
+    });
+  });
+
   describe('handle-personal-data hook', () => {
     it('creates personal data and association when personalData is provided', async () => {
       const userData = {

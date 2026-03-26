@@ -17,6 +17,7 @@ import { validatePassword } from './hooks/validate-password';
 import { stripSuperAdmin } from './hooks/strip-super-admin';
 import populateUser from './hooks/populate-user';
 import { prepareSignupOrganization, handleSignupOrganization } from './hooks/handle-signup-organization';
+import generateUsername from './hooks/generate-username';
 import { scopeUsersToOrganization } from './hooks/scope-users-to-organization';
 import { restrictUserToOrganization } from './hooks/restrict-user-to-organization';
 import { mergePreferences } from './hooks/merge-preferences';
@@ -39,6 +40,7 @@ export default {
     ],
     create: [
       stripSuperAdmin(),
+      generateUsername(),
       lowerCase('username'),
       validatePassword(),
       prepareSignupOrganization(),

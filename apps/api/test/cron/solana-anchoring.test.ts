@@ -4,8 +4,10 @@ import { Sequelize } from 'sequelize';
 import { createHash } from 'crypto';
 import { runAnchoring } from '../../src/cron/solana-anchoring';
 import { createTestUser, createTestOrganization } from '../test-helpers';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { buildMerkleTree, verifyMerkleProof, getMerkleProof } from '../../src/utils/merkle-tree';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function sha256(input: string): string {
   return createHash('sha256').update(input).digest('hex');
 }
@@ -53,8 +55,10 @@ describe('Solana anchoring cron', function () {
     });
 
     let submittedRoot: string | null = null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let submittedMeta: any = null;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const mockSubmit = async (merkleRoot: string, metadata: { type: string; count: number }) => {
       submittedRoot = merkleRoot;
       submittedMeta = metadata;
@@ -81,6 +85,7 @@ describe('Solana anchoring cron', function () {
   it('skips when there are no unanchored records', async () => {
     let submitCallCount = 0;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const mockSubmit = async (merkleRoot: string, metadata: { type: string; count: number }) => {
       submitCallCount++;
       return { signature: 'should-not-happen', slot: 0 };
@@ -89,6 +94,7 @@ describe('Solana anchoring cron', function () {
     // Run anchoring twice — second run should find nothing new
     // (first run anchors everything, second run finds 0 unanchored)
     await runAnchoring(app, mockSubmit);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const countAfterFirst = submitCallCount;
 
     await runAnchoring(app, mockSubmit);
@@ -120,6 +126,7 @@ describe('Solana anchoring cron', function () {
     });
 
     let callCount = 0;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const failingSubmit = async (merkleRoot: string, metadata: { type: string; count: number }) => {
       callCount++;
       if (callCount <= 1) {

@@ -28,21 +28,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export const action: ActionFunction = async ({ request }) => {
   const session = await getSession(request.headers.get('Cookie'));
   const formData = await request.formData();
-  const username = formData.get('username');
+  const email = formData.get('email');
   const password = formData.get('password');
   const organizationName = formData.get('organizationName');
   const client = createFeathersClient(process.env.API_URL ?? 'http://localhost:3030');
 
   try {
     const user: any = await client.service('users').create({
-      username,
+      email,
       password,
       signupOrganization: organizationName,
     });
 
     const { accessToken } = await client.authenticate({
       strategy: 'local',
-      username,
+      username: user.username,
       password,
     });
 
@@ -93,9 +93,10 @@ export default function Login() {
             mb="md"
           />
           <TextInput
-            label={t('auth.username')}
-            name="username"
-            placeholder={t('auth.username_placeholder')}
+            label={t('auth.email')}
+            name="email"
+            type="email"
+            placeholder={t('auth.email_placeholder')}
             required
             mb="md"
           />

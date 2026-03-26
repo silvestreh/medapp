@@ -65,4 +65,60 @@ describe('authentication', () => {
       await app.service('users').remove(user.id);
     });
   });
+
+  describe('login with email', () => {
+    const email = 'authtest-email@example.com';
+    const password = 'SuperSecret1!';
+    let emailUser: User;
+
+    before(async () => {
+      emailUser = await app.service('users').create({
+        email,
+        password,
+      } as any);
+    });
+
+    it('authenticates using email address', async () => {
+      const { accessToken } = await app.service('authentication').create({
+        strategy: 'local',
+        username: email,
+        password,
+      }, {});
+
+      assert.ok(accessToken, 'Created access token via email login');
+    });
+
+    it('authenticates using email with different casing', async () => {
+      const { accessToken } = await app.service('authentication').create({
+        strategy: 'local',
+        username: 'AuthTest-Email@Example.COM',
+        password,
+      }, {});
+
+      assert.ok(accessToken, 'Created access token via mixed-case email');
+    });
+
+    it('rejects non-existent email', async () => {
+      try {
+        await app.service('authentication').create({
+          strategy: 'local',
+          username: 'nobody-exists@example.com',
+          password,
+        }, {});
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 401);
+      }
+    });
+
+    it('still authenticates using username', async () => {
+      const { accessToken } = await app.service('authentication').create({
+        strategy: 'local',
+        username: emailUser.username,
+        password,
+      }, {});
+
+      assert.ok(accessToken, 'Created access token via username');
+    });
+  });
 });

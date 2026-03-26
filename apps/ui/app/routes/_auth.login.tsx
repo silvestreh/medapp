@@ -193,9 +193,9 @@ export default function Login() {
 
           <div style={{ display: requireTwoFactor ? 'none' : undefined }}>
             <TextInput
-              label={t('auth.username')}
+              label={t('auth.username_or_email')}
               name="username"
-              placeholder={t('auth.username_placeholder')}
+              placeholder={t('auth.username_or_email_placeholder')}
               required={!requireTwoFactor}
               mb="md"
             />

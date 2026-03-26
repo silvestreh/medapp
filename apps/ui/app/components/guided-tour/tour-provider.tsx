@@ -20,11 +20,8 @@ async function persistCompletedTours(
   completedTours: Record<string, boolean>
 ) {
   try {
-    // Fetch fresh preferences to avoid overwriting other keys (e.g. chatHeads)
-    const currentUser = await client.service('users').get(userId);
-    const currentPrefs = (currentUser as any)?.preferences ?? {};
     await client.service('users').patch(userId, {
-      preferences: { ...currentPrefs, completedTours },
+      preferences: { completedTours },
     } as any);
   } catch (err) {
     console.error('[tour] Failed to persist completedTours:', err);
