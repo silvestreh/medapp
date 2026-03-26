@@ -19,6 +19,7 @@ import populateUser from './hooks/populate-user';
 import { prepareSignupOrganization, handleSignupOrganization } from './hooks/handle-signup-organization';
 import { scopeUsersToOrganization } from './hooks/scope-users-to-organization';
 import { restrictUserToOrganization } from './hooks/restrict-user-to-organization';
+import { mergePreferences } from './hooks/merge-preferences';
 
 const { authenticate } = feathersAuthentication.hooks;
 const { hashPassword, protect } = local.hooks;
@@ -55,6 +56,7 @@ export default {
       extractPatchActions(),
       lowerCase('username'),
       hashPassword('password'),
+      mergePreferences(),
     ],
     remove: [authenticate('jwt')],
   },
