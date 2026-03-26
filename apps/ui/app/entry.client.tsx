@@ -25,6 +25,14 @@ Sentry.init({
 
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1,
+
+  beforeSend(event) {
+    const message = event.exception?.values?.[0]?.value ?? '';
+    if (message.includes('manifest version mismatch')) {
+      return null;
+    }
+    return event;
+  },
 });
 
 // Safety net: if a single-fetch .data request returns non-turbo-stream data
