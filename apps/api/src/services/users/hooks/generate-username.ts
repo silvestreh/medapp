@@ -41,6 +41,8 @@ const generateUsername = (): Hook => async (context: HookContext): Promise<HookC
 
   // Move email to contactData and remove from top-level data
   context.data.contactData = { ...context.data.contactData, email: normalizedEmail };
+  context.data.emailConfirmed = context.data.emailConfirmed ?? false;
+  context.params._signupEmail = normalizedEmail;
   delete context.data.email;
 
   // If username was explicitly provided, keep it

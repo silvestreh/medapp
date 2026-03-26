@@ -1,12 +1,15 @@
 import { Hook, HookContext, HooksObject } from '@feathersjs/feathers';
 import { disallow } from 'feathers-hooks-common';
-import prepareReset from './hooks/prepare-reset';
-import sendResetEmail from './hooks/send-reset-email';
+import prepareConfirmation from './hooks/prepare-confirmation';
+import sendConfirmationEmail from './hooks/send-confirmation-email';
 import handleReset from './hooks/handle-reset';
+import handleEmailConfirmation from './hooks/handle-email-confirmation';
 
-const allowPublicResetPatch = (): Hook => async (context: HookContext): Promise<HookContext> => {
+const ALLOWED_ACTIONS = ['reset', 'confirm-email'];
+
+const allowPublicPatch = (): Hook => async (context: HookContext): Promise<HookContext> => {
   const { data, params } = context;
-  if (data?.action === 'reset' && params.provider) {
+  if (ALLOWED_ACTIONS.includes(data?.action) && params.provider) {
     context.params = { ...params, authenticated: true };
   }
   return context;
@@ -17,9 +20,9 @@ export default {
     all: [],
     find: [disallow('external')],
     get: [disallow('external')],
-    create: [prepareReset()],
+    create: [prepareConfirmation()],
     update: [disallow('external')],
-    patch: [allowPublicResetPatch(), handleReset()],
+    patch: [allowPublicPatch(), handleReset(), handleEmailConfirmation()],
     remove: [disallow('external')]
   },
 
@@ -27,7 +30,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [sendResetEmail()],
+    create: [sendConfirmationEmail()],
     update: [],
     patch: [],
     remove: []

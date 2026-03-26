@@ -131,7 +131,7 @@ describe('\'stats\' service', () => {
       date: new Date(),
       studies: ['anemia', 'hemostasis'],
       noOrder: false,
-      medicId: null,
+      referringDoctor: 'Dr. Stats Test',
       patientId: patient1.id,
       organizationId: org.id,
     } as any);
@@ -140,7 +140,7 @@ describe('\'stats\' service', () => {
       date: new Date(),
       studies: ['anemia'],
       noOrder: true,
-      medicId: null,
+      referringDoctor: 'Dr. Stats Test',
       patientId: patient2.id,
       organizationId: org.id,
     } as any);
@@ -149,7 +149,7 @@ describe('\'stats\' service', () => {
       date: dayjs().subtract(2, 'year').toDate(),
       studies: ['thrombophilia'],
       noOrder: false,
-      medicId: null,
+      referringDoctor: 'Dr. Stats Test',
       patientId: patient1.id,
       organizationId: org.id,
     } as any);

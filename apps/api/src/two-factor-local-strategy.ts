@@ -82,6 +82,12 @@ export class TwoFactorLocalStrategy extends LocalStrategy {
       raw: true,
     });
 
+    if (persistedUser?.emailConfirmed === false) {
+      throw new NotAuthenticated('Email not confirmed', {
+        reason: 'email_not_confirmed',
+      });
+    }
+
     if (!persistedUser?.twoFactorEnabled) {
       return result;
     }

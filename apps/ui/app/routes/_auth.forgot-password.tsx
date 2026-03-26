@@ -29,7 +29,7 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   try {
-    await client.service('password-resets').create({ email });
+    await client.service('confirmations').create({ email, type: 'password-reset' });
   } catch {
     // Silently succeed to avoid email enumeration
   }

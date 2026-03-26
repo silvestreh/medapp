@@ -17,15 +17,18 @@ describe('\'solana-anchors\' service', function () {
   });
 
   it('allows internal create', async () => {
-    const anchor = await app.service('solana-anchors').create({
-      merkleRoot: 'a'.repeat(64),
-      leafCount: 5,
-      chainType: 'encounters',
-      status: 'pending',
-      network: 'devnet',
-      batchStartDate: new Date('2025-01-01'),
-      batchEndDate: new Date('2025-01-02'),
-    });
+    const anchor = await app.service('solana-anchors').create(
+      {
+        merkleRoot: 'a'.repeat(64),
+        leafCount: 5,
+        chainType: 'encounters',
+        status: 'pending',
+        network: 'devnet',
+        batchStartDate: new Date('2025-01-01'),
+        batchEndDate: new Date('2025-01-02'),
+      },
+      { user: { isSuperAdmin: true } }
+    );
 
     assert.ok(anchor.id);
     assert.strictEqual(anchor.merkleRoot, 'a'.repeat(64));

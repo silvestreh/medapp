@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { redirect, type ActionFunction, type LoaderFunctionArgs } from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
-import { TextInput, PasswordInput, Button, Paper, Title, Container } from '@mantine/core';
+import { json, redirect, type ActionFunction, type LoaderFunctionArgs } from '@remix-run/node';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { TextInput, PasswordInput, Button, Paper, Title, Text, Container } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
 import createFeathersClient from '~/feathers';
@@ -12,7 +12,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get('Cookie'));
 
   if (session.has('feathers-jwt')) {
-    // Redirect to the home page if they are already signed in.
     return redirect('/');
   }
 
@@ -26,7 +25,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export const action: ActionFunction = async ({ request }) => {
-  const session = await getSession(request.headers.get('Cookie'));
   const formData = await request.formData();
   const email = formData.get('email');
   const password = formData.get('password');
@@ -34,41 +32,22 @@ export const action: ActionFunction = async ({ request }) => {
   const client = createFeathersClient(process.env.API_URL ?? 'http://localhost:3030');
 
   try {
-    const user: any = await client.service('users').create({
+    await client.service('users').create({
       email,
       password,
       signupOrganization: organizationName,
     });
 
-    const { accessToken } = await client.authenticate({
-      strategy: 'local',
-      username: user.username,
-      password,
-    });
-
-    session.set('feathers-jwt', accessToken);
-    if (user.signupOrganizationId) {
-      session.set('currentOrganizationId', user.signupOrganizationId);
-    }
-
-    return redirect('/', {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
-  } catch (error) {
-    session.flash('error', 'Invalid username/password');
-
-    return redirect('/login', {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
+    return json({ success: true });
+  } catch (error: any) {
+    const message = error?.response?.data?.message || error?.data?.message || error?.message || '';
+    return json({ success: false, errorMessage: message });
   }
 };
 
-export default function Login() {
+export default function Signup() {
   const { error } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
   const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [isPasswordValid, setIsPasswordValid] = useState(false);
@@ -76,6 +55,23 @@ export default function Login() {
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.currentTarget.value);
   }, []);
+
+  const success = actionData?.success ?? false;
+
+  if (success) {
+    return (
+      <Container size={420} my={40}>
+        <Title ta="center" order={1}>
+          {t('auth.check_your_email')}
+        </Title>
+        <Paper withBorder shadow="md" p={30} mt={30} radius="md">
+          <Text ta="center">
+            {t('auth.check_your_email_description')}
+          </Text>
+        </Paper>
+      </Container>
+    );
+  }
 
   return (
     <Container size={420} my={40}>
@@ -111,7 +107,11 @@ export default function Login() {
           />
           <PasswordChecklist password={password} onValidityChange={setIsPasswordValid} />
 
-          {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{t('auth.invalid_credentials')}</div>}
+          {(error || actionData?.errorMessage) && (
+            <Text c="red" size="sm" mb="md">
+              {actionData?.errorMessage || t('auth.invalid_credentials')}
+            </Text>
+          )}
 
           <Button type="submit" fullWidth disabled={!isPasswordValid} mt="md">
             {t('auth.sign_up')}

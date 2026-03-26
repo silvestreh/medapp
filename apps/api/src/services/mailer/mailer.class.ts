@@ -9,6 +9,7 @@ import * as medicalHistoryExportTemplate from './templates/medical-history-expor
 import * as prescriptionShareTemplate from './templates/prescription-share';
 import * as identityVerificationPendingTemplate from './templates/identity-verification-pending';
 import * as passwordResetTemplate from './templates/password-reset';
+import * as emailConfirmationTemplate from './templates/email-confirmation';
 
 const templates: Record<string, { render: (data: any) => string }> = {
   'org-invite': orgInviteTemplate,
@@ -17,6 +18,7 @@ const templates: Record<string, { render: (data: any) => string }> = {
   'prescription-share': prescriptionShareTemplate,
   'identity-verification-pending': identityVerificationPendingTemplate,
   'password-reset': passwordResetTemplate,
+  'email-confirmation': emailConfirmationTemplate,
 };
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -60,6 +62,7 @@ export class Mailer {
       console.log(`[Mailer/dev] Would send "${subject}" to ${to}`);
 
       if (process.env.NODE_ENV !== 'test') {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const tmpDir = path.join(require('os').tmpdir(), 'athelas-emails');
         fs.mkdirSync(tmpDir, { recursive: true });
         const filename = `${template}-${Date.now()}.html`;

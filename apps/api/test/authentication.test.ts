@@ -62,6 +62,9 @@ describe('authentication', () => {
         await app.service('access-logs').remove(log.id);
       }
 
+      const sequelize = app.get('sequelizeClient');
+      await sequelize.models.confirmations.destroy({ where: { userId: user.id } });
+
       await app.service('users').remove(user.id);
     });
   });
@@ -75,6 +78,7 @@ describe('authentication', () => {
       emailUser = await app.service('users').create({
         email,
         password,
+        emailConfirmed: true,
       } as any);
     });
 

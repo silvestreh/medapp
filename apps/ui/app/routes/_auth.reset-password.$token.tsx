@@ -44,7 +44,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     // We need to find the reset record by token to get its id
     // The service uses id-based patch, so we query internally
     // Instead, we'll use a custom approach: pass token in the data
-    await client.service('password-resets').patch(null, {
+    await client.service('confirmations').patch(null, {
       action: 'reset',
       token,
       password,

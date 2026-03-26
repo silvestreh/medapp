@@ -3,7 +3,7 @@ import { Application } from '../declarations';
 
 export default function (app: Application): typeof Model {
   const sequelizeClient: Sequelize = app.get('sequelizeClient');
-  const password_resets = sequelizeClient.define('password_resets', {
+  const confirmations = sequelizeClient.define('confirmations', {
     id: {
       type: DataTypes.STRING,
       primaryKey: true,
@@ -16,6 +16,10 @@ export default function (app: Application): typeof Model {
         model: 'users',
         key: 'id'
       }
+    },
+    type: {
+      type: DataTypes.ENUM('password-reset', 'email-verification'),
+      allowNull: false
     },
     token: {
       type: DataTypes.STRING,
@@ -33,9 +37,9 @@ export default function (app: Application): typeof Model {
     }
   });
 
-  (password_resets as any).associate = function (models: any): void {
-    password_resets.belongsTo(models.users, { foreignKey: 'userId' });
+  (confirmations as any).associate = function (models: any): void {
+    confirmations.belongsTo(models.users, { foreignKey: 'userId' });
   };
 
-  return password_resets;
+  return confirmations;
 }

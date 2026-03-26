@@ -15,8 +15,19 @@ function sha256(input: string): string {
 describe('Solana anchoring cron', function () {
   this.timeout(30000);
   let medic: any;
+  let originalKeypair: string | undefined;
 
   before(async () => {
+    // Ensure SOLANA_KEYPAIR is set so runAnchoring doesn't bail early
+    originalKeypair = process.env.SOLANA_KEYPAIR;
+    if (!process.env.SOLANA_KEYPAIR) {
+      // Generate a throwaway keypair for testing
+      const { Keypair } = await import('@solana/web3.js');
+      const bs58 = await import('bs58');
+      const kp = Keypair.generate();
+      process.env.SOLANA_KEYPAIR = bs58.default.encode(kp.secretKey);
+    }
+
     // Ensure new tables are synced in the test DB
     const sequelize: Sequelize = app.get('sequelizeClient');
     await sequelize.models.solana_anchors?.sync({ alter: true });
@@ -30,6 +41,15 @@ describe('Solana anchoring cron', function () {
       roleIds: ['medic'],
       organizationId: org.id,
     });
+  });
+
+  after(() => {
+    // Restore original SOLANA_KEYPAIR
+    if (originalKeypair === undefined) {
+      delete process.env.SOLANA_KEYPAIR;
+    } else {
+      process.env.SOLANA_KEYPAIR = originalKeypair;
+    }
   });
 
   it('anchors unanchored encounters with a mock submit function', async () => {

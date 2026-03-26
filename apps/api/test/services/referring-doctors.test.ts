@@ -6,20 +6,24 @@ describe('\'referring-doctors\' service', () => {
   let medic: any;
   let patient: any;
   let org: any;
+  const suffix = Date.now().toString(36);
 
   before(async () => {
+    app.setup();
+    await app.get('sequelizeSync');
+
     org = await createTestOrganization({
       name: 'Referring Docs Clinic',
-      slug: `ref-docs-test-${Date.now()}`,
+      slug: `ref-docs-test-${suffix}`,
     });
 
     medic = await app.service('users').create({
-      username: 'refdoc.medic',
+      username: `refdoc.medic.${suffix}`,
       password: 'SuperSecret1!',
       personalData: {
         firstName: 'Carlos',
         lastName: 'Gomez',
-        documentValue: 'REFDOC001'
+        documentValue: `REFDOC-${suffix}`
       }
     } as any);
 
@@ -34,9 +38,16 @@ describe('\'referring-doctors\' service', () => {
       organizationId: org.id,
     } as any);
 
+    await app.service('md-settings').create({
+      userId: medic.id,
+      organizationId: org.id,
+      isVerified: true,
+      encounterDuration: 30,
+    } as any);
+
     patient = await app.service('patients').create({
-      medicare: 'REFDOC_OSDE',
-      medicareNumber: '55667788'
+      medicare: `REFDOC_OSDE_${suffix}`,
+      medicareNumber: `5566-${suffix}`
     });
 
     await app.service('studies').create({

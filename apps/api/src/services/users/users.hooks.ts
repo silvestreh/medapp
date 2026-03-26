@@ -17,6 +17,7 @@ import { validatePassword } from './hooks/validate-password';
 import { stripSuperAdmin } from './hooks/strip-super-admin';
 import populateUser from './hooks/populate-user';
 import { prepareSignupOrganization, handleSignupOrganization } from './hooks/handle-signup-organization';
+import sendConfirmationEmail from './hooks/send-confirmation-email';
 import generateUsername from './hooks/generate-username';
 import { scopeUsersToOrganization } from './hooks/scope-users-to-organization';
 import { restrictUserToOrganization } from './hooks/restrict-user-to-organization';
@@ -81,6 +82,7 @@ export default {
     create: [
       createPersonalData('user'),
       createContactData('user'),
+      sendConfirmationEmail(),
       handleSignupOrganization(),
     ],
     update: [],

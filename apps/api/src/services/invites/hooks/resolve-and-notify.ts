@@ -51,6 +51,7 @@ const resolveAndNotify = (): Hook => async (context: HookContext): Promise<HookC
       {
         email: invite.email,
         password: tempPassword,
+        emailConfirmed: true,
       },
       { provider: undefined } as any
     );

@@ -1,15 +1,16 @@
 import { Service, SequelizeServiceOptions } from 'feathers-sequelize';
 import type { Application } from '../../declarations';
 
-export interface PasswordReset {
+export interface Confirmation {
   id: string;
   userId: string;
+  type: 'password-reset' | 'email-verification';
   token: string;
   status: 'pending' | 'used' | 'expired';
   expiresAt: Date;
 }
 
-export class PasswordResets extends Service<PasswordReset> {
+export class Confirmations extends Service<Confirmation> {
   app: Application;
 
   constructor(options: Partial<SequelizeServiceOptions>, app: Application) {

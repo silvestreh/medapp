@@ -4,17 +4,27 @@ import { BadRequest } from '@feathersjs/errors';
 import { Op } from 'sequelize';
 import { encryptValue } from '../../../hooks/encryption';
 
-const prepareReset = (): Hook => async (context: HookContext): Promise<HookContext> => {
+const EXPIRY_HOURS: Record<string, number> = {
+  'password-reset': 1,
+  'email-verification': 24,
+};
+
+const prepareConfirmation = (): Hook => async (context: HookContext): Promise<HookContext> => {
   const { app, data } = context;
   const email = data?.email?.trim()?.toLowerCase();
+  const type = data?.type || 'password-reset';
 
   if (!email) {
     throw new BadRequest('Email is required');
   }
 
+  if (!EXPIRY_HOURS[type]) {
+    throw new BadRequest('Invalid confirmation type');
+  }
+
   // Find user by email via contact_data → user_contact_data
   const sequelize = app.get('sequelizeClient');
-  const { contact_data, user_contact_data, users } = sequelize.models;
+  const { contact_data, user_contact_data } = sequelize.models;
   const encryptedEmail = encryptValue(email);
 
   const contactRecords = await contact_data.findAll({
@@ -41,24 +51,23 @@ const prepareReset = (): Hook => async (context: HookContext): Promise<HookConte
     return context;
   }
 
-  // Expire any existing pending resets for this user
-  const passwordResets = sequelize.models.password_resets;
-  await passwordResets.update(
+  // Expire any existing pending confirmations of the same type for this user
+  const confirmations = sequelize.models.confirmations;
+  await confirmations.update(
     { status: 'expired' },
-    { where: { userId, status: 'pending' } }
+    { where: { userId, status: 'pending', type } }
   );
 
-  // Generate token and set expiry (1 hour)
+  // Generate token and set expiry
   const token = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + EXPIRY_HOURS[type] * 60 * 60 * 1000);
 
-  context.data = { userId, token, status: 'pending', expiresAt };
+  context.data = { userId, type, token, status: 'pending', expiresAt };
 
-  // Store email and user for the after hook (sending email)
-  context.params._resetEmail = email;
-  context.params._resetUserId = userId;
+  // Store email for the after hook (sending email)
+  context.params._confirmationEmail = email;
 
   return context;
 };
 
-export default prepareReset;
+export default prepareConfirmation;

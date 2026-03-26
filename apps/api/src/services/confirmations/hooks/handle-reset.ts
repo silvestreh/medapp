@@ -22,12 +22,11 @@ const handleReset = (): Hook => async (context: HookContext): Promise<HookContex
     throw new BadRequest(PASSWORD_POLICY_MESSAGE);
   }
 
-  // Look up the reset record by token
   const sequelize = app.get('sequelizeClient');
-  const passwordResets = sequelize.models.password_resets;
+  const confirmations = sequelize.models.confirmations;
 
-  const resetRecord = await passwordResets.findOne({
-    where: { token },
+  const resetRecord = await confirmations.findOne({
+    where: { token, type: 'password-reset' },
     raw: true,
   });
 
@@ -36,11 +35,10 @@ const handleReset = (): Hook => async (context: HookContext): Promise<HookContex
   }
 
   if (new Date(resetRecord.expiresAt) < new Date()) {
-    await passwordResets.update({ status: 'expired' }, { where: { id: resetRecord.id } });
+    await confirmations.update({ status: 'expired' }, { where: { id: resetRecord.id } });
     throw new BadRequest('This reset link has expired');
   }
 
-  // Check if user has 2FA enabled
   const usersModel = sequelize.models.users;
   const user = await usersModel.findOne({
     where: { id: resetRecord.userId },
@@ -61,15 +59,13 @@ const handleReset = (): Hook => async (context: HookContext): Promise<HookContex
     }
   }
 
-  // Hash and update password via the users service (which runs hashPassword hook)
   await app.service('users').patch(
     resetRecord.userId,
     { password },
     { provider: undefined, authenticated: true }
   );
 
-  // Mark reset as used
-  await passwordResets.update({ status: 'used' }, { where: { id: resetRecord.id } });
+  await confirmations.update({ status: 'used' }, { where: { id: resetRecord.id } });
 
   context.result = { id: resetRecord.id, status: 'used' };
 

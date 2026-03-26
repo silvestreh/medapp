@@ -47,6 +47,11 @@ export default function (app: Application): typeof Model {
       type: DataTypes.JSONB,
       allowNull: false,
       defaultValue: {}
+    },
+    emailConfirmed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     hooks: {

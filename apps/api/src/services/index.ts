@@ -65,7 +65,7 @@ import practices from './practices/practices.service';
 import practiceCodes from './practice-codes/practice-codes.service';
 import solanaAnchors from './solana-anchors/solana-anchors.service';
 import solanaAnchorVerification from './solana-anchor-verification/solana-anchor-verification.service';
-import passwordResets from './password-resets/password-resets.service';
+import confirmations from './confirmations/confirmations.service';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -135,5 +135,5 @@ export default function (app: Application): void {
   app.configure(practiceCodes);
   app.configure(solanaAnchors);
   app.configure(solanaAnchorVerification);
-  app.configure(passwordResets);
+  app.configure(confirmations);
 }

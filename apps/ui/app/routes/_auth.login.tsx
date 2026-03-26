@@ -107,6 +107,10 @@ export const action: ActionFunction = async ({ request }) => {
       message.includes('invalid_2fa_code') ||
       message.includes('invalid 2fa code');
 
+    if (errorReason === 'email_not_confirmed' || message.includes('email not confirmed')) {
+      return json({ requireTwoFactor: false, errorKey: 'auth.email_not_confirmed' });
+    }
+
     if (isTwoFactorRequired) {
       return json({ requireTwoFactor: true, error: null });
     }
