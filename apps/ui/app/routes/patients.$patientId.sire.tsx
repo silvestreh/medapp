@@ -11,6 +11,7 @@ import { parseFormJson } from '~/utils/parse-form-json';
 import { styled } from '~/styled-system/jsx';
 import { SireTreatmentForm } from '~/components/forms/sire-treatment-form';
 import { SireControlForm } from '~/components/forms/sire-control-form';
+import { SireInitialTreatmentForm } from '~/components/forms/sire-initial-treatment-form';
 import { getPageTitle } from '~/utils/meta';
 
 type View = 'list' | 'treatment' | 'control';
@@ -59,6 +60,34 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
         medicId: user.id,
       });
       return json({ ok: true });
+
+    case 'create-initial-treatment': {
+      const treatmentId = ((await client.service('sire-treatments').create({
+        ...payload.treatment,
+        patientId,
+        organizationId,
+        medicId: user.id,
+        nextControlDate: payload.nextControlDate,
+      })) as any).id;
+
+      const readingId = ((await client.service('sire-readings').create({
+        ...payload.reading,
+        treatmentId,
+        patientId,
+        organizationId,
+      })) as any).id;
+
+      if (payload.schedule) {
+        await client.service('sire-dose-schedules').create({
+          ...payload.schedule,
+          treatmentId,
+          readingId,
+          createdById: user.id,
+        });
+      }
+
+      return json({ ok: true });
+    }
 
     case 'patch-treatment':
       await client.service('sire-treatments').patch(payload.id, payload.data);
@@ -168,6 +197,17 @@ export default function SireManagement() {
     [fetcher, activeTreatment]
   );
 
+  const handleSubmitInitialTreatment = useCallback(
+    (data: { treatment: Record<string, any>; reading: Record<string, any>; schedule: Record<string, any>; nextControlDate: string | null }) => {
+      fetcher.submit(
+        { data: JSON.stringify({ intent: 'create-initial-treatment', ...data }) },
+        { method: 'post' }
+      );
+      setView('list');
+    },
+    [fetcher]
+  );
+
   const handleSubmitControl = useCallback(
     (data: { reading: Record<string, any>; schedule: Record<string, any> | null; nextControlDate: string | null }) => {
       fetcher.submit(
@@ -215,11 +255,16 @@ export default function SireManagement() {
           </ActionIcon>
           <Title order={4}>{activeTreatment ? 'Editar tratamiento' : 'Nuevo tratamiento'}</Title>
         </Group>
-        <SireTreatmentForm
-          patientId={String((treatments as any[])[0]?.patientId || '')}
-          initialData={activeTreatment}
-          onSubmit={handleSubmitTreatment}
-        />
+        {activeTreatment && (
+          <SireTreatmentForm
+            patientId={String((treatments as any[])[0]?.patientId || '')}
+            initialData={activeTreatment}
+            onSubmit={handleSubmitTreatment}
+          />
+        )}
+        {!activeTreatment && (
+          <SireInitialTreatmentForm onSubmit={handleSubmitInitialTreatment} />
+        )}
       </Stack>
     );
   }

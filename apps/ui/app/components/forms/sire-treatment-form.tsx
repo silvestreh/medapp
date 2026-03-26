@@ -41,7 +41,10 @@ export function SireTreatmentForm({ patientId, initialData, onSubmit }: SireTrea
         label="Medicación"
         data={[
           { value: 'Acenocumarol', label: 'Acenocumarol (Sintrom)' },
-          { value: 'Warfarina', label: 'Warfarina (Coumadin)' },
+          { value: 'Warfarina', label: 'Warfarina (Circuvit)' },
+          { value: 'Apixabán', label: 'Apixabán (Eliquis)' },
+          { value: 'Rivaroxabán', label: 'Rivaroxabán (Xarelto)' },
+          { value: 'Dabigatrán', label: 'Dabigatrán (Pradaxa)' },
         ]}
         {...form.getInputProps('medication')}
       />
