@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
@@ -143,21 +143,23 @@ export interface StudyFormProps {
 
 export function StudyForm({ schema, initialData, onChange, readOnly }: StudyFormProps) {
   const { t } = useTranslation();
+
+  // Keep onChange/readOnly in refs so the onValuesChange callback is always fresh
+  // without needing to be a useEffect dependency (which caused re-triggers on every
+  // parent render due to the unstable curried handleResultDraftChange(type) callback).
+  const onChangeRef = useRef(onChange);
+  const readOnlyRef = useRef(readOnly);
+  onChangeRef.current = onChange;
+  readOnlyRef.current = readOnly;
+
   const form = useForm<StudyResultData>({
     initialValues: buildInitialValues(schema, initialData),
+    onValuesChange: (values) => {
+      if (!readOnlyRef.current) {
+        onChangeRef.current(values);
+      }
+    },
   });
-
-  const prevRef = useRef<string>(JSON.stringify(form.values));
-
-  useEffect(() => {
-    if (readOnly) return;
-
-    const serialised = JSON.stringify(form.values);
-    if (serialised !== prevRef.current) {
-      prevRef.current = serialised;
-      onChange(form.values);
-    }
-  }, [form.values, onChange, readOnly]);
 
   const handleFieldChange = useCallback(
     (fieldName: string) => (value: string | StudySelectValue) => {

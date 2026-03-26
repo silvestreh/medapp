@@ -369,7 +369,7 @@ export default function StudyDetail() {
       {currentStudies.length > 0 && canEditResults && (
         <>
           <StyledTitle>{t('studies.results')}</StyledTitle>
-          <Tabs defaultValue={currentStudies[0]} variant="pills">
+          <Tabs defaultValue={currentStudies[0]} variant="pills" keepMounted>
             <Tabs.List mb="sm" bd="1px solid var(--mantine-color-gray-2)" bdrs={4}>
               {currentStudies.map((type: string) => {
                 const schema = studySchemas[type];
