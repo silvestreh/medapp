@@ -12,6 +12,7 @@ import { json, type LoaderFunctionArgs, type LinksFunction } from '@remix-run/no
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
+import * as Sentry from '@sentry/remix';
 import { useChangeLanguage } from 'remix-i18next/react';
 import { useEffect, useRef } from 'react';
 import '~/global.css';
@@ -150,6 +151,13 @@ export default function App() {
   const prevPathRef = useRef(location.pathname);
 
   useChangeLanguage(locale);
+
+  useEffect(() => {
+    const user = data?.initialUser;
+    if (user) {
+      Sentry.setUser({ id: user.id, email: user.contactData?.email, username: user.username });
+    }
+  }, [data?.initialUser]);
 
   useEffect(() => {
     if (location.pathname === prevPathRef.current) return;
