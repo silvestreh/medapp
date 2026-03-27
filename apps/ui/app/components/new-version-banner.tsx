@@ -1,16 +1,39 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Anchor, CloseButton, Stack, Text } from '@mantine/core';
 import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
+declare global {
+  interface Window {
+    __remixManifest?: { version: string };
+  }
+}
+
+const POLL_INTERVAL = 5_000;
+
 export function NewVersionBanner() {
   const [visible, setVisible] = useState(false);
   const { t } = useTranslation();
+  const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
-    const handleNewVersion = () => setVisible(true);
-    window.addEventListener('remix:new-version', handleNewVersion);
-    return () => window.removeEventListener('remix:new-version', handleNewVersion);
+    const version = window.__remixManifest?.version;
+    if (!version) return;
+
+    const checkVersion = async () => {
+      try {
+        const res = await fetch(`/__manifest?version=${version}`);
+        if (res.status === 204) {
+          setVisible(true);
+          clearInterval(intervalRef.current);
+        }
+      } catch {
+        // Network error — skip this check
+      }
+    };
+
+    intervalRef.current = setInterval(checkVersion, POLL_INTERVAL);
+    return () => clearInterval(intervalRef.current);
   }, []);
 
   const handleReload = useCallback(() => {

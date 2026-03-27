@@ -35,24 +35,12 @@ Sentry.init({
   },
 });
 
-// Intercept Remix errors that would otherwise force a full page reload.
+// Safety net: if a single-fetch .data request returns non-turbo-stream data
+// (e.g. HTML from a reverse proxy error page or an auth redirect the browser
+// followed transparently), recover by forcing a full document navigation.
 window.addEventListener('unhandledrejection', event => {
   const msg = event.reason?.message;
-  if (typeof msg !== 'string') return;
-
-  // When a new deployment lands the server manifest changes. Instead of
-  // letting Remix hard-reload mid-workflow, surface a banner so the user
-  // can choose when to refresh.
-  if (msg.includes('manifest version mismatch')) {
-    event.preventDefault();
-    window.dispatchEvent(new CustomEvent('remix:new-version'));
-    return;
-  }
-
-  // Safety net: if a single-fetch .data request returns non-turbo-stream data
-  // (e.g. HTML from a reverse proxy error page or an auth redirect the browser
-  // followed transparently), recover by forcing a full document navigation.
-  if (msg.includes('Unable to decode turbo-stream')) {
+  if (typeof msg === 'string' && msg.includes('Unable to decode turbo-stream')) {
     event.preventDefault();
     window.location.reload();
   }
