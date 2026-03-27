@@ -91,6 +91,16 @@ const StyledInput = styled('input', {
   },
 });
 
+function isValidIcd10Id(id: string): boolean {
+  if (id.length > 7) return false;
+  if (!/^[A-Za-z0-9.\-]+$/.test(id)) return false;
+  const letterCount = (id.match(/[A-Za-z]/g) || []).length;
+  if (letterCount > 2) return false;
+  const specialCount = (id.match(/[.\-]/g) || []).length;
+  if (specialCount > 1) return false;
+  return true;
+}
+
 interface Icd10Node {
   id: string;
   name: string;
@@ -206,9 +216,12 @@ export function Icd10Selector({
         const missingIds = values.filter(id => !selectedNames[id]);
         if (missingIds.length === 0) return;
 
+        const validIds = missingIds.filter(isValidIcd10Id);
+        const legacyIds = missingIds.filter(id => !isValidIcd10Id(id));
+
         try {
           const results = await Promise.all(
-            missingIds.map(id =>
+            validIds.map(id =>
               client
                 .service('icd-10')
                 .get(id)
@@ -219,12 +232,15 @@ export function Icd10Selector({
           setSelectedNames(prev => {
             const next = { ...prev };
             results.forEach((node, index) => {
-              const id = missingIds[index];
+              const id = validIds[index];
               if (node) {
                 next[id] = `${node.id} - ${node.name}`;
               } else {
                 next[id] = id;
               }
+            });
+            legacyIds.forEach(id => {
+              next[id] = id;
             });
             return next;
           });
