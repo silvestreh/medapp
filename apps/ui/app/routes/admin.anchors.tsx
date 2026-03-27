@@ -253,13 +253,14 @@ export default function AdminAnchors() {
   const hasAnyVerification = verifiedCount > 0 || inconclusiveCount > 0 || mismatchCount > 0;
 
   // Poll for updates while there are unverified confirmed anchors (background verify-all in progress)
+  // Poll while any confirmed anchor is still unverified (background verify-all in progress)
   useEffect(() => {
-    if (hasUnverified && verifyAllResult?.ok) {
+    if (hasUnverified) {
       intervalRef.current = setInterval(() => {
         if (revalidator.state === 'idle') {
           revalidator.revalidate();
         }
-      }, 3000);
+      }, 1500);
     }
 
     return () => {
@@ -268,7 +269,7 @@ export default function AdminAnchors() {
         intervalRef.current = null;
       }
     };
-  }, [hasUnverified, verifyAllResult?.ok, revalidator]);
+  }, [hasUnverified, revalidator]);
 
   // Revalidate after a single verify completes
   useEffect(() => {
