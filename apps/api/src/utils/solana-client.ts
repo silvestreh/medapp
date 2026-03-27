@@ -5,12 +5,12 @@ import {
   TransactionInstruction,
   PublicKey,
   sendAndConfirmTransaction,
-} from "@solana/web3.js";
-import bs58 from "bs58";
-import logger from "../logger";
+} from '@solana/web3.js';
+import bs58 from 'bs58';
+import logger from '../logger';
 
 const MEMO_PROGRAM_ID = new PublicKey(
-  "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+  'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
 );
 
 let cachedConnection: Connection | null = null;
@@ -18,24 +18,24 @@ let cachedKeypair: Keypair | null = null;
 
 function resolveRpcUrl(network: string): string {
   switch (network) {
-    case "devnet":
-      return "https://api.devnet.solana.com";
-    case "mainnet-beta":
-      return "https://api.mainnet-beta.solana.com";
-    default:
-      return network;
+  case 'devnet':
+    return 'https://api.devnet.solana.com';
+  case 'mainnet-beta':
+    return 'https://api.mainnet-beta.solana.com';
+  default:
+    return network;
   }
 }
 
 export function getSolanaNetwork(): string {
   if (process.env.SOLANA_NETWORK) return process.env.SOLANA_NETWORK;
-  return process.env.NODE_ENV === "production" ? "mainnet-beta" : "devnet";
+  return process.env.NODE_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 }
 
 export function getSolanaConnection(): Connection {
   if (cachedConnection) return cachedConnection;
   const rpcUrl = resolveRpcUrl(getSolanaNetwork());
-  cachedConnection = new Connection(rpcUrl, "confirmed");
+  cachedConnection = new Connection(rpcUrl, 'confirmed');
   return cachedConnection;
 }
 
@@ -51,7 +51,7 @@ export function getSolanaKeypair(): Keypair | null {
     return cachedKeypair;
   } catch {
     logger.warn(
-      "Solana anchoring: SOLANA_KEYPAIR is malformed, anchoring disabled",
+      'Solana anchoring: SOLANA_KEYPAIR is malformed, anchoring disabled',
     );
     return null;
   }
@@ -68,7 +68,7 @@ export async function submitMemoTransaction(
 ): Promise<MemoSubmissionResult> {
   const keypair = getSolanaKeypair();
   if (!keypair) {
-    throw new Error("Solana keypair not available");
+    throw new Error('Solana keypair not available');
   }
 
   const connection = getSolanaConnection();
@@ -83,7 +83,7 @@ export async function submitMemoTransaction(
   const instruction = new TransactionInstruction({
     keys: [{ pubkey: keypair.publicKey, isSigner: true, isWritable: false }],
     programId: MEMO_PROGRAM_ID,
-    data: Buffer.from(memoData, "utf-8"),
+    data: Buffer.from(memoData, 'utf-8'),
   });
 
   const transaction = new Transaction().add(instruction);
@@ -92,12 +92,12 @@ export async function submitMemoTransaction(
     transaction,
     [keypair],
     {
-      commitment: "confirmed",
+      commitment: 'confirmed',
     },
   );
 
   const tx = await connection.getTransaction(signature, {
-    commitment: "confirmed",
+    commitment: 'confirmed',
     maxSupportedTransactionVersion: 0,
   });
 
@@ -109,14 +109,14 @@ export async function submitMemoTransaction(
 
 export interface MemoVerificationResult {
   verified: boolean;
-  reason?: "not_found" | "mismatch";
+  reason?: 'not_found' | 'mismatch';
   slot: number;
   blockTime: number | null;
 }
 
 async function fetchTransaction(connection: Connection, signature: string) {
   const tx = await connection.getTransaction(signature, {
-    commitment: "confirmed",
+    commitment: 'confirmed',
     maxSupportedTransactionVersion: 0,
   });
   if (tx) return tx;
@@ -124,7 +124,7 @@ async function fetchTransaction(connection: Connection, signature: string) {
   // Retry once after 500ms — public RPCs may rate-limit with a null response
   await new Promise((r) => setTimeout(r, 500));
   return connection.getTransaction(signature, {
-    commitment: "confirmed",
+    commitment: 'confirmed',
     maxSupportedTransactionVersion: 0,
   });
 }
@@ -132,7 +132,7 @@ async function fetchTransaction(connection: Connection, signature: string) {
 function matchMerkleRootInTx(tx: any, expectedMerkleRoot: string): boolean {
   const logMessages = tx.meta?.logMessages || [];
   const memoLog = logMessages.find((log: string) =>
-    log.startsWith("Program log: Memo"),
+    log.startsWith('Program log: Memo'),
   );
 
   if (!memoLog) {
@@ -140,7 +140,7 @@ function matchMerkleRootInTx(tx: any, expectedMerkleRoot: string): boolean {
     const instructions = message.compiledInstructions || [];
     for (const ix of instructions) {
       try {
-        const data = Buffer.from(ix.data).toString("utf-8");
+        const data = Buffer.from(ix.data).toString('utf-8');
         const parsed = JSON.parse(data);
         if (parsed.root === expectedMerkleRoot) return true;
       } catch {
@@ -164,13 +164,13 @@ export async function verifyMemoTransaction(
   const tx = await fetchTransaction(connection, signature);
 
   if (!tx) {
-    return { verified: false, reason: "not_found", slot: 0, blockTime: null };
+    return { verified: false, reason: 'not_found', slot: 0, blockTime: null };
   }
 
   const verified = matchMerkleRootInTx(tx, expectedMerkleRoot);
   return {
     verified,
-    reason: verified ? undefined : "mismatch",
+    reason: verified ? undefined : 'mismatch',
     slot: tx.slot,
     blockTime: tx.blockTime ?? null,
   };
