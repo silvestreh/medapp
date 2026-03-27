@@ -10,6 +10,7 @@ import SideNav from '~/components/side-nav';
 import TopNav from '~/components/top-nav';
 import { useAccount, useOrganization } from '~/components/provider';
 import { VerificationBanner } from '~/components/verification-banner';
+import { NewVersionBanner } from '~/components/new-version-banner';
 import { ChatManagerProvider } from '~/components/chat-manager';
 import { ChatHeadsContainer } from '~/components/chat-heads';
 import { ChatProvider } from '~/components/chat/chat-provider';
@@ -117,6 +118,7 @@ const MainLayout: React.FC<PropsWithChildren> = ({ children }) => {
           <Box flex={1}>
             <VerificationBanner isVerified={isVerified} />
             <TopNav />
+            <NewVersionBanner />
             {!isOrgActive && (
               <Alert color="orange" icon={<ShieldWarningIcon size={18} />} py="sm" px="md" radius={0}>
                 {t(

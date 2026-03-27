@@ -201,7 +201,9 @@ export class PatientOtp {
       console.error('[Patient OTP] Failed to send WhatsApp message:', err);
     }
 
-    console.log(`[Patient OTP] Code for document ${documentNumber}: ${code}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[Patient OTP] Code for document ${documentNumber}: ${code}`);
+    }
 
     return { action: 'request-otp', status: 'otp_sent', maskedPhone: this.maskPhone(result.phone) };
   }

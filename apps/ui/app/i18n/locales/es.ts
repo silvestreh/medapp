@@ -35,6 +35,8 @@ export const es = {
     error_go_back: 'Volver',
     error_unexpected: 'Ocurrió un error inesperado en esta sección.',
     error_not_found: 'No se encontró la página que buscabas.',
+    new_version_available: 'Hay una nueva versión disponible.',
+    reload_now: 'Recargar ahora',
     date_placeholder: 'Haga clic para seleccionar una fecha',
     comments_placeholder: 'Escriba algo... (Opcional)',
     unsaved_title: 'Cambios sin guardar',

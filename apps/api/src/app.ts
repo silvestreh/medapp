@@ -134,6 +134,15 @@ if (process.env.NODE_ENV !== 'test') {
     message: { message: 'Too many login attempts, please try again later' },
   });
   app.use('/authentication', authLimiter);
+
+  const confirmationsLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Too many requests, please try again later' },
+  });
+  app.use('/confirmations', confirmationsLimiter);
 }
 
 // Configure other middleware (see `middleware/index.ts`)

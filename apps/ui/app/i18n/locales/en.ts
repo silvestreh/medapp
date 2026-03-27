@@ -36,6 +36,8 @@ export const en: typeof es = {
     error_go_back: 'Go back',
     error_unexpected: 'An unexpected error occurred in this section.',
     error_not_found: 'The page you were looking for could not be found.',
+    new_version_available: 'A new version is available.',
+    reload_now: 'Reload now',
     date_placeholder: 'Click to select a date',
     comments_placeholder: 'Type something... (Optional)',
     unsaved_title: 'Unsaved changes',

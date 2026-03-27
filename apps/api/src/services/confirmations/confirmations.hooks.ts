@@ -1,6 +1,7 @@
 import { Hook, HookContext, HooksObject } from '@feathersjs/feathers';
 import { disallow } from 'feathers-hooks-common';
 import prepareConfirmation from './hooks/prepare-confirmation';
+import rateLimitConfirmation from './hooks/rate-limit-confirmation';
 import sendConfirmationEmail from './hooks/send-confirmation-email';
 import handleReset from './hooks/handle-reset';
 import handleEmailConfirmation from './hooks/handle-email-confirmation';
@@ -20,7 +21,7 @@ export default {
     all: [],
     find: [disallow('external')],
     get: [disallow('external')],
-    create: [prepareConfirmation()],
+    create: [rateLimitConfirmation(), prepareConfirmation()],
     update: [disallow('external')],
     patch: [allowPublicPatch(), handleReset(), handleEmailConfirmation()],
     remove: [disallow('external')]

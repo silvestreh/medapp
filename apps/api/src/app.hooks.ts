@@ -4,6 +4,7 @@ import { HookContext } from '@feathersjs/feathers';
 import Sentry from './sentry';
 import { setOrganizationContext } from './hooks/set-organization-context';
 import { logAccessDenial } from './hooks/log-access-denial';
+import { sanitizeForLog } from './utils/sanitize-for-log';
 
 export default {
   before: {
@@ -16,11 +17,11 @@ export default {
         console.log(`[BEFORE] ${path}:${method}`);
 
         if (ctx.params.query) {
-          console.log('query =', JSON.stringify(ctx.params.query, null, 2));
+          console.log('query =', JSON.stringify(sanitizeForLog(ctx.params.query), null, 2));
         }
 
         if (ctx.data) {
-          console.log('data =', JSON.stringify(ctx.data, null, 2));
+          console.log('data =', JSON.stringify(sanitizeForLog(ctx.data), null, 2));
         }
       },
       setOrganizationContext()
@@ -43,7 +44,7 @@ export default {
         console.log(`[AFTER] ${path}:${method}`);
 
         if (ctx.result) {
-          console.log('result =', JSON.stringify(ctx.result, null, 2));
+          console.log('result =', JSON.stringify(sanitizeForLog(ctx.result), null, 2));
         }
       }
     ],
