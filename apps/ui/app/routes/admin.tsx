@@ -1,5 +1,5 @@
 import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { NavLink as RemixNavLink, Outlet, useLoaderData } from '@remix-run/react';
+import { NavLink as RemixNavLink, Outlet } from '@remix-run/react';
 import { Flex, NavLink } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheckIcon, ScrollIcon, BuildingsIcon, LinkSimpleIcon } from '@phosphor-icons/react';

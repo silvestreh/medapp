@@ -1,8 +1,16 @@
+import { useEffect, useRef } from 'react';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useActionData, Form, useNavigation } from '@remix-run/react';
-import { Alert, Badge, Button, Group, Stack, Table, Text, Title, Tooltip } from '@mantine/core';
+import { useLoaderData, useActionData, Form, useNavigation, useFetcher, useRevalidator } from '@remix-run/react';
+import { ActionIcon, Alert, Badge, Button, Group, Loader, Stack, Table, Text, Title, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { CheckCircleIcon, XCircleIcon, ArrowsClockwiseIcon, LightningIcon } from '@phosphor-icons/react';
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  ArrowsClockwiseIcon,
+  LightningIcon,
+  WarningCircleIcon,
+  ShieldCheckIcon,
+} from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 
 import { getAuthenticatedClient } from '~/utils/auth.server';
@@ -20,14 +28,10 @@ interface AnchorItem {
   batchEndDate: string;
   errorMessage: string | null;
   retryCount: number;
+  verificationStatus: 'unverified' | 'verified' | 'inconclusive' | 'mismatch';
+  verifiedAt: string | null;
+  verificationError: string | null;
   createdAt: string;
-}
-
-interface VerifyResult {
-  anchorId: string;
-  merkleRoot: string;
-  onChainMatch: boolean;
-  error?: string;
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -50,50 +54,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const intent = String(formData.get('intent') || '');
 
-  if (intent === 'verify-all') {
-    const response = await client.service('solana-anchors').find({
-      query: {
-        status: 'confirmed',
-        $sort: { createdAt: -1 },
-        $limit: 100,
-      },
-    });
-
-    const anchors: AnchorItem[] = Array.isArray(response)
-      ? response
-      : (response as any)?.data || [];
-
-    const results: VerifyResult[] = [];
-
-    for (const anchor of anchors) {
-      if (!anchor.txSignature) continue;
-
-      try {
-        const verification = await client.service('solana-anchor-verification').find({
-          query: { anchorId: anchor.id },
-        });
-
-        results.push({
-          anchorId: anchor.id,
-          merkleRoot: anchor.merkleRoot,
-          onChainMatch: (verification as any)?.solanaVerified === true,
-        });
-      } catch (error: any) {
-        results.push({
-          anchorId: anchor.id,
-          merkleRoot: anchor.merkleRoot,
-          onChainMatch: false,
-          error: error?.message || 'Verification failed',
-        });
-      }
-    }
-
-    return json({ intent: 'verify-all', results });
-  }
-
   if (intent === 'trigger') {
     try {
-      const result = await client.service('solana-anchors').create({ intent: 'trigger' }) as any;
+      const result = (await client.service('solana-anchors').create({ intent: 'trigger' })) as any;
       return json({
         intent: 'trigger',
         ok: result?.ok ?? false,
@@ -102,6 +65,25 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       });
     } catch (error: any) {
       return json({ intent: 'trigger', ok: false, error: error?.message || 'Unknown error' });
+    }
+  }
+
+  if (intent === 'verify-all') {
+    try {
+      const result = (await client.service('solana-anchors').create({ intent: 'verify-all' })) as any;
+      return json({ intent: 'verify-all', ok: true, total: result?.total ?? 0 });
+    } catch (error: any) {
+      return json({ intent: 'verify-all', ok: false, error: error?.message || 'Unknown error' });
+    }
+  }
+
+  if (intent === 'verify-one') {
+    const anchorId = String(formData.get('anchorId') || '');
+    try {
+      await client.service('solana-anchors').create({ intent: 'verify-one', anchorId });
+      return json({ intent: 'verify-one', ok: true, anchorId });
+    } catch (error: any) {
+      return json({ intent: 'verify-one', ok: false, error: error?.message || 'Unknown error' });
     }
   }
 
@@ -158,27 +140,141 @@ function ExplorerLink({ signature, network }: { signature: string; network: stri
   );
 }
 
+function VerificationBadge({ anchor, fetcher }: { anchor: AnchorItem; fetcher: ReturnType<typeof useFetcher> }) {
+  const { t } = useTranslation();
+
+  const isVerifying = fetcher.state !== 'idle' && fetcher.formData?.get('anchorId') === anchor.id;
+
+  if (isVerifying) {
+    return <Loader size="xs" />;
+  }
+
+  if (anchor.status !== 'confirmed' || !anchor.txSignature) {
+    return (
+      <Text size="xs" c="dimmed">
+        —
+      </Text>
+    );
+  }
+
+  const handleVerify = () => {
+    fetcher.submit({ intent: 'verify-one', anchorId: anchor.id }, { method: 'post' });
+  };
+
+  switch (anchor.verificationStatus) {
+    case 'verified':
+      return (
+        <Tooltip
+          label={t('admin.anchors_verified_at', {
+            date: anchor.verifiedAt ? dayjs(anchor.verifiedAt).format('DD/MM/YY HH:mm') : '—',
+          })}
+          withArrow
+        >
+          <Badge color="green" variant="light" leftSection={<CheckCircleIcon size={12} />}>
+            {t('admin.anchors_match')}
+          </Badge>
+        </Tooltip>
+      );
+
+    case 'inconclusive':
+      return (
+        <Group gap={4} wrap="nowrap">
+          <Tooltip label={anchor.verificationError || 'RPC unavailable'} withArrow>
+            <Badge color="yellow" variant="light" leftSection={<WarningCircleIcon size={12} />}>
+              {t('admin.anchors_inconclusive')}
+            </Badge>
+          </Tooltip>
+          <Tooltip label={t('admin.anchors_verify_all')} withArrow>
+            <ActionIcon variant="subtle" size="xs" onClick={handleVerify}>
+              <ArrowsClockwiseIcon size={14} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      );
+
+    case 'mismatch':
+      return (
+        <Group gap={4} wrap="nowrap">
+          <Tooltip label={anchor.verificationError || t('admin.anchors_no_match')} withArrow>
+            <Badge color="red" variant="light" leftSection={<XCircleIcon size={12} />}>
+              {t('admin.anchors_no_match')}
+            </Badge>
+          </Tooltip>
+          <Tooltip label={t('admin.anchors_verify_all')} withArrow>
+            <ActionIcon variant="subtle" size="xs" onClick={handleVerify}>
+              <ArrowsClockwiseIcon size={14} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      );
+
+    default:
+      return (
+        <Group gap={4} wrap="nowrap">
+          <Badge color="gray" variant="light">
+            {t('admin.anchors_unverified')}
+          </Badge>
+          <Tooltip label={t('admin.anchors_verify_all')} withArrow>
+            <ActionIcon variant="subtle" size="xs" onClick={handleVerify}>
+              <ShieldCheckIcon size={14} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      );
+  }
+}
+
 export default function AdminAnchors() {
   const { anchors } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const { t } = useTranslation();
+  const fetcher = useFetcher();
+  const revalidator = useRevalidator();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const submittingIntent = navigation.state === 'submitting' ? navigation.formData?.get('intent') : null;
-  const isVerifying = submittingIntent === 'verify-all';
-  const isTriggering = submittingIntent === 'trigger';
+  const isTriggering = navigation.state === 'submitting' && navigation.formData?.get('intent') === 'trigger';
+  const isVerifyingAll = navigation.state === 'submitting' && navigation.formData?.get('intent') === 'verify-all';
+  const triggerResult = actionData?.intent === 'trigger' ? (actionData as any) : null;
+  const verifyAllResult = actionData?.intent === 'verify-all' ? (actionData as any) : null;
 
-  const verifyResults = actionData?.intent === 'verify-all' ? (actionData as any).results as VerifyResult[] : null;
-  const verifyMap = new Map(verifyResults?.map((r) => [r.anchorId, r]) || []);
-  const triggerResult = actionData?.intent === 'trigger' ? actionData as any : null;
-
+  const confirmedAnchors = anchors.filter((a: AnchorItem) => a.status === 'confirmed' && a.txSignature);
   const confirmedCount = anchors.filter((a: AnchorItem) => a.status === 'confirmed').length;
   const failedCount = anchors.filter((a: AnchorItem) => a.status === 'failed').length;
   const pendingCount = anchors.filter((a: AnchorItem) => a.status === 'pending').length;
   const totalRecords = anchors.reduce((sum: number, a: AnchorItem) => sum + a.leafCount, 0);
 
-  const verifiedOk = verifyResults?.filter((r) => r.onChainMatch).length ?? 0;
-  const verifiedFail = verifyResults?.filter((r) => !r.onChainMatch).length ?? 0;
+  const hasUnverified = confirmedAnchors.some((a: AnchorItem) => a.verificationStatus === 'unverified');
+
+  const verifiedCount = confirmedAnchors.filter((a: AnchorItem) => a.verificationStatus === 'verified').length;
+  const inconclusiveCount = confirmedAnchors.filter((a: AnchorItem) => a.verificationStatus === 'inconclusive').length;
+  const mismatchCount = confirmedAnchors.filter((a: AnchorItem) => a.verificationStatus === 'mismatch').length;
+  const hasAnyVerification = verifiedCount > 0 || inconclusiveCount > 0 || mismatchCount > 0;
+
+  // Poll for updates while there are unverified confirmed anchors (background verify-all in progress)
+  useEffect(() => {
+    if (hasUnverified && verifyAllResult?.ok) {
+      intervalRef.current = setInterval(() => {
+        if (revalidator.state === 'idle') {
+          revalidator.revalidate();
+        }
+      }, 3000);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [hasUnverified, verifyAllResult?.ok, revalidator]);
+
+  // Revalidate after a single verify completes
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data) {
+      revalidator.revalidate();
+    }
+  }, [fetcher.state, fetcher.data, revalidator]);
 
   return (
     <Stack gap="lg">
@@ -187,27 +283,35 @@ export default function AdminAnchors() {
 
         <Group gap="xs">
           {confirmedCount > 0 && (
-            <Badge variant="light" color="green" size="lg">{confirmedCount} {t('admin.anchors_status_confirmed')}</Badge>
+            <Badge variant="light" color="green" size="lg">
+              {confirmedCount} {t('admin.anchors_status_confirmed')}
+            </Badge>
           )}
           {pendingCount > 0 && (
-            <Badge variant="light" color="yellow" size="lg">{pendingCount} {t('admin.anchors_status_pending')}</Badge>
+            <Badge variant="light" color="yellow" size="lg">
+              {pendingCount} {t('admin.anchors_status_pending')}
+            </Badge>
           )}
           {failedCount > 0 && (
-            <Badge variant="light" color="red" size="lg">{failedCount} {t('admin.anchors_status_failed')}</Badge>
+            <Badge variant="light" color="red" size="lg">
+              {failedCount} {t('admin.anchors_status_failed')}
+            </Badge>
           )}
-          <Badge variant="light" color="gray" size="lg">{totalRecords} {t('admin.anchors_col_records')}</Badge>
+          <Badge variant="light" color="gray" size="lg">
+            {totalRecords} {t('admin.anchors_col_records')}
+          </Badge>
         </Group>
       </Group>
 
       <Group gap="sm">
-        {confirmedCount > 0 && (
+        {confirmedAnchors.length > 0 && (
           <Form method="post">
             <input type="hidden" name="intent" value="verify-all" />
             <Button
               type="submit"
               variant="light"
               leftSection={<ArrowsClockwiseIcon size={16} />}
-              loading={isVerifying}
+              loading={isVerifyingAll}
             >
               {t('admin.anchors_verify_all')}
             </Button>
@@ -233,28 +337,51 @@ export default function AdminAnchors() {
           icon={triggerResult.ok ? <CheckCircleIcon size={20} /> : <XCircleIcon size={20} />}
         >
           <Text size="sm">
-            {triggerResult.ok ? t('admin.anchors_trigger_success') : (triggerResult.error || t('admin.anchors_trigger_error'))}
+            {triggerResult.ok
+              ? t('admin.anchors_trigger_success')
+              : triggerResult.error || t('admin.anchors_trigger_error')}
           </Text>
         </Alert>
       )}
 
-      {verifyResults && !isVerifying && (
-        <Alert
-          color={verifiedFail === 0 ? 'green' : 'red'}
-          icon={verifiedFail === 0 ? <CheckCircleIcon size={20} /> : <XCircleIcon size={20} />}
-          title={verifiedFail === 0 ? t('admin.anchors_verify_ok') : t('admin.anchors_verify_mismatch')}
-        >
-          {verifiedFail === 0 && (
-            <Text size="sm">
-              {t('admin.anchors_verify_ok_detail', { count: verifiedOk })}
-            </Text>
-          )}
-          {verifiedFail > 0 && (
-            <Text size="sm">
-              {t('admin.anchors_verify_mismatch_detail', { ok: verifiedOk, fail: verifiedFail })}
-            </Text>
-          )}
+      {verifyAllResult && !isVerifyingAll && verifyAllResult.ok && (
+        <Alert color="blue" icon={<ArrowsClockwiseIcon size={20} />}>
+          <Text size="sm">{t('admin.anchors_verify_all_started', { total: verifyAllResult.total })}</Text>
         </Alert>
+      )}
+
+      {hasAnyVerification && !hasUnverified && (
+        <>
+          {mismatchCount === 0 && inconclusiveCount === 0 && (
+            <Alert color="green" icon={<CheckCircleIcon size={20} />} title={t('admin.anchors_verify_ok')}>
+              <Text size="sm">{t('admin.anchors_verify_ok_detail', { count: verifiedCount })}</Text>
+            </Alert>
+          )}
+          {mismatchCount === 0 && inconclusiveCount > 0 && (
+            <Alert color="yellow" icon={<WarningCircleIcon size={20} />} title={t('admin.anchors_verify_ok')}>
+              <Text size="sm">
+                {t('admin.anchors_verify_inconclusive_detail', {
+                  ok: verifiedCount,
+                  inconclusive: inconclusiveCount,
+                  fail: mismatchCount,
+                })}
+              </Text>
+            </Alert>
+          )}
+          {mismatchCount > 0 && (
+            <Alert color="red" icon={<XCircleIcon size={20} />} title={t('admin.anchors_verify_mismatch')}>
+              <Text size="sm">
+                {inconclusiveCount > 0
+                  ? t('admin.anchors_verify_inconclusive_detail', {
+                      ok: verifiedCount,
+                      inconclusive: inconclusiveCount,
+                      fail: mismatchCount,
+                    })
+                  : t('admin.anchors_verify_mismatch_detail', { ok: verifiedCount, fail: mismatchCount })}
+              </Text>
+            </Alert>
+          )}
+        </>
       )}
 
       {anchors.length === 0 && (
@@ -273,71 +400,56 @@ export default function AdminAnchors() {
               <Table.Th>{t('admin.anchors_col_merkle_root')}</Table.Th>
               <Table.Th>{t('admin.col_status')}</Table.Th>
               <Table.Th>{t('admin.anchors_col_tx')}</Table.Th>
-              {verifyResults && <Table.Th>{t('admin.anchors_col_onchain')}</Table.Th>}
+              <Table.Th>{t('admin.anchors_col_onchain')}</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {anchors.map((anchor: AnchorItem) => {
-              const vr = verifyMap.get(anchor.id);
-              return (
-                <Table.Tr key={anchor.id}>
-                  <Table.Td>
-                    <Text size="sm">{dayjs(anchor.createdAt).format('DD/MM/YY HH:mm')}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge variant="light" color={anchor.chainType === 'encounters' ? 'blue' : 'grape'} size="sm">
-                      {getChainLabel(anchor.chainType)}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm" fw={500}>{anchor.leafCount}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <TruncatedHash hash={anchor.merkleRoot} />
-                  </Table.Td>
-                  <Table.Td>
-                    {anchor.status === 'failed' && anchor.errorMessage ? (
-                      <Tooltip label={anchor.errorMessage} withArrow>
-                        <Badge color={statusColor[anchor.status]} variant="light">
-                          {t(statusLabels[anchor.status])}
-                          {anchor.retryCount > 0 && ` (${anchor.retryCount})`}
-                        </Badge>
-                      </Tooltip>
-                    ) : (
+            {anchors.map((anchor: AnchorItem) => (
+              <Table.Tr key={anchor.id}>
+                <Table.Td>
+                  <Text size="sm">{dayjs(anchor.createdAt).format('DD/MM/YY HH:mm')}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Badge variant="light" color={anchor.chainType === 'encounters' ? 'blue' : 'grape'} size="sm">
+                    {getChainLabel(anchor.chainType)}
+                  </Badge>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm" fw={500}>
+                    {anchor.leafCount}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <TruncatedHash hash={anchor.merkleRoot} />
+                </Table.Td>
+                <Table.Td>
+                  {anchor.status === 'failed' && anchor.errorMessage ? (
+                    <Tooltip label={anchor.errorMessage} withArrow>
                       <Badge color={statusColor[anchor.status]} variant="light">
                         {t(statusLabels[anchor.status])}
+                        {anchor.retryCount > 0 && ` (${anchor.retryCount})`}
                       </Badge>
-                    )}
-                  </Table.Td>
-                  <Table.Td>
-                    {anchor.txSignature ? (
-                      <ExplorerLink signature={anchor.txSignature} network={anchor.network} />
-                    ) : (
-                      <Text size="xs" c="dimmed">—</Text>
-                    )}
-                  </Table.Td>
-                  {verifyResults && (
-                    <Table.Td>
-                      {vr ? (
-                        vr.onChainMatch ? (
-                          <Badge color="green" variant="light" leftSection={<CheckCircleIcon size={12} />}>
-                            {t('admin.anchors_match')}
-                          </Badge>
-                        ) : (
-                          <Tooltip label={vr.error || t('admin.anchors_no_match')} withArrow>
-                            <Badge color="red" variant="light" leftSection={<XCircleIcon size={12} />}>
-                              {t('admin.anchors_no_match')}
-                            </Badge>
-                          </Tooltip>
-                        )
-                      ) : (
-                        <Text size="xs" c="dimmed">—</Text>
-                      )}
-                    </Table.Td>
+                    </Tooltip>
+                  ) : (
+                    <Badge color={statusColor[anchor.status]} variant="light">
+                      {t(statusLabels[anchor.status])}
+                    </Badge>
                   )}
-                </Table.Tr>
-              );
-            })}
+                </Table.Td>
+                <Table.Td>
+                  {anchor.txSignature ? (
+                    <ExplorerLink signature={anchor.txSignature} network={anchor.network} />
+                  ) : (
+                    <Text size="xs" c="dimmed">
+                      —
+                    </Text>
+                  )}
+                </Table.Td>
+                <Table.Td>
+                  <VerificationBadge anchor={anchor} fetcher={fetcher} />
+                </Table.Td>
+              </Table.Tr>
+            ))}
           </Table.Tbody>
         </Table>
       )}

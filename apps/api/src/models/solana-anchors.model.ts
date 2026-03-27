@@ -58,6 +58,19 @@ export default function (app: Application): typeof Model {
       allowNull: false,
       defaultValue: 0,
     },
+    verificationStatus: {
+      type: DataTypes.ENUM('unverified', 'verified', 'inconclusive', 'mismatch'),
+      allowNull: false,
+      defaultValue: 'unverified',
+    },
+    verifiedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    verificationError: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   }, {
     indexes: [
       { fields: ['status'] },

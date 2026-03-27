@@ -100,8 +100,24 @@ export async function submitMemoTransaction(
 
 export interface MemoVerificationResult {
   verified: boolean;
+  reason?: 'not_found' | 'mismatch';
   slot: number;
   blockTime: number | null;
+}
+
+async function fetchTransaction(connection: Connection, signature: string) {
+  const tx = await connection.getTransaction(signature, {
+    commitment: 'confirmed',
+    maxSupportedTransactionVersion: 0,
+  });
+  if (tx) return tx;
+
+  // Retry once after 500ms — public RPCs may rate-limit with a null response
+  await new Promise((r) => setTimeout(r, 500));
+  return connection.getTransaction(signature, {
+    commitment: 'confirmed',
+    maxSupportedTransactionVersion: 0,
+  });
 }
 
 export async function verifyMemoTransaction(
@@ -110,13 +126,10 @@ export async function verifyMemoTransaction(
 ): Promise<MemoVerificationResult> {
   const connection = getSolanaConnection();
 
-  const tx = await connection.getTransaction(signature, {
-    commitment: 'confirmed',
-    maxSupportedTransactionVersion: 0,
-  });
+  const tx = await fetchTransaction(connection, signature);
 
   if (!tx) {
-    return { verified: false, slot: 0, blockTime: null };
+    return { verified: false, reason: 'not_found', slot: 0, blockTime: null };
   }
 
   // Parse memo data from the transaction's log messages
@@ -162,7 +175,7 @@ export async function verifyMemoTransaction(
     }
   }
 
-  return { verified: false, slot: tx.slot, blockTime: tx.blockTime ?? null };
+  return { verified: false, reason: 'mismatch', slot: tx.slot, blockTime: tx.blockTime ?? null };
 }
 
 export async function getWalletBalance(): Promise<number | null> {

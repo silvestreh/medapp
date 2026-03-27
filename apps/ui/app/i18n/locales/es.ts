@@ -1399,6 +1399,11 @@ export const es = {
     anchors_trigger: 'Anclar ahora',
     anchors_trigger_success: 'Anclaje iniciado. Refrescá para ver los resultados.',
     anchors_trigger_error: 'Error al iniciar el anclaje.',
+    anchors_inconclusive: 'No concluyente',
+    anchors_unverified: 'Sin verificar',
+    anchors_verify_all_started: 'Verificación iniciada para {{total}} anclajes. Los resultados irán apareciendo.',
+    anchors_verified_at: 'Verificado el {{date}}',
+    anchors_verify_inconclusive_detail: '{{ok}} coinciden, {{inconclusive}} no se pudieron verificar (RPC no disponible), {{fail}} no coinciden.',
   },
   password_checklist: {
     strength_weak: 'Débil',

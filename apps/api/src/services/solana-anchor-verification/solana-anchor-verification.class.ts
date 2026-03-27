@@ -1,8 +1,9 @@
 import { BadRequest } from '@feathersjs/errors';
 import { Sequelize } from 'sequelize';
-import type { Application, SolanaAnchor, SolanaAnchorLeaf } from '../../declarations';
+import type { Application, SolanaAnchor, SolanaAnchorLeaf, SolanaVerificationStatus } from '../../declarations';
 import { buildMerkleTree, getMerkleProof, MerkleProof } from '../../utils/merkle-tree';
 import { verifyMemoTransaction, MemoVerificationResult } from '../../utils/solana-client';
+import logger from '../../logger';
 
 export interface AnchorVerificationResult {
   recordId?: string;
@@ -20,6 +21,7 @@ export interface AnchorVerificationResult {
   };
   proof?: MerkleProof;
   solanaVerified?: boolean;
+  verificationReason?: 'not_found' | 'mismatch';
 }
 
 export class SolanaAnchorVerification {
@@ -61,11 +63,36 @@ export class SolanaAnchorVerification {
         },
       };
 
+      let verificationStatus: SolanaVerificationStatus = 'unverified';
+      let verificationError: string | null = null;
+
       try {
         const verification = await verifyMemoTransaction(anchor.txSignature, anchor.merkleRoot);
         result.solanaVerified = verification.verified;
-      } catch {
+        if (verification.verified) {
+          verificationStatus = 'verified';
+        } else if (verification.reason === 'not_found') {
+          verificationStatus = 'inconclusive';
+          result.verificationReason = 'not_found';
+        } else {
+          verificationStatus = 'mismatch';
+          result.verificationReason = 'mismatch';
+        }
+      } catch (err: any) {
         result.solanaVerified = false;
+        result.verificationReason = 'not_found';
+        verificationStatus = 'inconclusive';
+        verificationError = err?.message || 'Verification failed';
+      }
+
+      try {
+        await this.app.service('solana-anchors').patch(anchorId, {
+          verificationStatus,
+          verifiedAt: new Date(),
+          verificationError,
+        });
+      } catch (err) {
+        logger.error('Failed to persist verification result', err);
       }
 
       return result;
@@ -134,8 +161,12 @@ export class SolanaAnchorVerification {
           anchor.merkleRoot
         );
         result.solanaVerified = verification.verified;
+        if (!verification.verified && verification.reason) {
+          result.verificationReason = verification.reason;
+        }
       } catch {
         result.solanaVerified = false;
+        result.verificationReason = 'not_found';
       }
     }
 

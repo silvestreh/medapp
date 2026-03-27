@@ -516,6 +516,7 @@ export interface EncounterAiChatMessage {
 
 export type SolanaAnchorChainType = 'encounters' | 'access_logs';
 export type SolanaAnchorStatus = 'pending' | 'confirmed' | 'failed';
+export type SolanaVerificationStatus = 'unverified' | 'verified' | 'inconclusive' | 'mismatch';
 
 export interface SolanaAnchor {
   id: Id;
@@ -530,6 +531,9 @@ export interface SolanaAnchor {
   batchEndDate: Date;
   errorMessage: string | null;
   retryCount: number;
+  verificationStatus: SolanaVerificationStatus;
+  verifiedAt: Date | null;
+  verificationError: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }

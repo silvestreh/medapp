@@ -1393,6 +1393,11 @@ export const en: typeof es = {
     anchors_trigger: 'Anchor now',
     anchors_trigger_success: 'Anchoring triggered. Refresh to see results.',
     anchors_trigger_error: 'Failed to trigger anchoring.',
+    anchors_inconclusive: 'Inconclusive',
+    anchors_unverified: 'Unverified',
+    anchors_verify_all_started: 'Verification started for {{total}} anchors. Results will appear as they complete.',
+    anchors_verified_at: 'Verified at {{date}}',
+    anchors_verify_inconclusive_detail: '{{ok}} match, {{inconclusive}} could not be verified (RPC unavailable), {{fail}} mismatch.',
   },
   password_checklist: {
     strength_weak: 'Weak',
