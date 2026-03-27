@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useActionData, Form, useNavigation, useFetcher, useRevalidator } from '@remix-run/react';
-import { ActionIcon, Alert, Badge, Button, Group, Loader, Stack, Table, Text, Title, Tooltip } from '@mantine/core';
+import { ActionIcon, Alert, Badge, Button, Group, Loader, Progress, Stack, Table, Text, Title, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import {
   CheckCircleIcon,
@@ -349,14 +349,19 @@ export default function AdminAnchors() {
       )}
 
       {hasUnverified && (
-        <Alert color="blue" icon={<ArrowsClockwiseIcon size={20} />}>
-          <Text size="sm">
+        <Stack gap="xs">
+          <Text size="sm" c="dimmed">
             {t('admin.anchors_verifying_progress', {
               completed: verifiedSoFar,
               total: confirmedAnchors.length,
             })}
           </Text>
-        </Alert>
+          <Progress
+            value={confirmedAnchors.length > 0 ? (verifiedSoFar / confirmedAnchors.length) * 100 : 0}
+            animated
+            size="lg"
+          />
+        </Stack>
       )}
 
       {hasAnyVerification && !hasUnverified && (
