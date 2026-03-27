@@ -10,7 +10,7 @@ export default function (app: Application): typeof Model {
       defaultValue: DataTypes.UUIDV4,
     },
     merkleRoot: {
-      type: DataTypes.STRING(64),
+      type: DataTypes.STRING(255),
       allowNull: false,
       comment: 'Hex-encoded SHA-256 Merkle root',
     },

@@ -1,9 +1,8 @@
 import { Service, SequelizeServiceOptions } from 'feathers-sequelize';
 import { Params } from '@feathersjs/feathers';
-import { Sequelize } from 'sequelize';
 import type { Application, SolanaAnchor, SolanaVerificationStatus } from '../../declarations';
 import { runAnchoring } from '../../cron/solana-anchoring';
-import { submitMemoTransaction, batchVerifyTransactions, BatchVerifyItem } from '../../utils/solana-client';
+import { submitMemoTransaction, verifyMemoTransaction } from '../../utils/solana-client';
 import logger from '../../logger';
 
 export class SolanaAnchors extends Service<SolanaAnchor> {
@@ -29,25 +28,23 @@ export class SolanaAnchors extends Service<SolanaAnchor> {
     }
 
     if (data?.intent === 'verify-all') {
-      const response = await this.find({
+      const response = await this.app.service('solana-anchors').find({
         query: {
           status: 'confirmed',
           txSignature: { $ne: null },
           $sort: { createdAt: -1 },
-          $limit: 200,
         },
         paginate: false,
       });
       const anchors: SolanaAnchor[] = Array.isArray(response) ? response : (response as any)?.data || [];
 
       // Reset all to unverified so the UI shows progress
-      const ids = anchors.map((a) => a.id);
-      if (ids.length > 0) {
-        const sequelize: Sequelize = this.app.get('sequelizeClient');
-        await sequelize.models.solana_anchors.update(
-          { verificationStatus: 'unverified', verifiedAt: null, verificationError: null },
-          { where: { id: ids } },
-        );
+      for (const anchor of anchors) {
+        await this.app.service('solana-anchors').patch(anchor.id, {
+          verificationStatus: 'unverified',
+          verifiedAt: null,
+          verificationError: null,
+        });
       }
 
       // Fire and forget — run in background
@@ -62,7 +59,10 @@ export class SolanaAnchors extends Service<SolanaAnchor> {
   }
 
   private async runBatchVerification(anchors: SolanaAnchor[]): Promise<void> {
-    const items: (BatchVerifyItem & { anchorId: string })[] = anchors
+    const CHUNK_SIZE = 5;
+    const CHUNK_DELAY_MS = 1500;
+
+    const items = anchors
       .filter((a) => a.txSignature)
       .map((a) => ({
         anchorId: a.id as string,
@@ -70,36 +70,43 @@ export class SolanaAnchors extends Service<SolanaAnchor> {
         expectedMerkleRoot: a.merkleRoot,
       }));
 
-    const results = await batchVerifyTransactions(items);
+    for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+      const chunk = items.slice(i, i + CHUNK_SIZE);
 
-    const sequelize: Sequelize = this.app.get('sequelizeClient');
-    const AnchorModel = sequelize.models.solana_anchors;
-    const now = new Date();
+      // Verify chunk concurrently
+      const results = await Promise.all(
+        chunk.map((item) => verifyMemoTransaction(item.signature, item.expectedMerkleRoot)),
+      );
 
-    for (let i = 0; i < results.length; i++) {
-      const { result } = results[i];
-      const { anchorId } = items[i];
+      // Write this chunk's results to DB immediately
+      const now = new Date();
+      for (let j = 0; j < chunk.length; j++) {
+        const result = results[j];
+        const { anchorId } = chunk[j];
 
-      let verificationStatus: SolanaVerificationStatus = 'unverified';
-      if (result.verified) {
-        verificationStatus = 'verified';
-      } else if (result.reason === 'not_found') {
-        verificationStatus = 'inconclusive';
-      } else {
-        verificationStatus = 'mismatch';
-      }
+        let verificationStatus: SolanaVerificationStatus = 'unverified';
+        if (result.verified) {
+          verificationStatus = 'verified';
+        } else if (result.reason === 'not_found') {
+          verificationStatus = 'inconclusive';
+        } else {
+          verificationStatus = 'mismatch';
+        }
 
-      try {
-        await AnchorModel.update(
-          {
+        try {
+          await this.app.service('solana-anchors').patch(anchorId, {
             verificationStatus,
             verifiedAt: now,
             verificationError: result.verified ? null : (result.reason || null),
-          },
-          { where: { id: anchorId } },
-        );
-      } catch (err) {
-        logger.error(`Failed to persist verification for anchor ${anchorId}`, err);
+          });
+        } catch (err) {
+          logger.error(`Failed to persist verification for anchor ${anchorId}`, err);
+        }
+      }
+
+      // Delay between chunks
+      if (i + CHUNK_SIZE < items.length) {
+        await new Promise((r) => setTimeout(r, CHUNK_DELAY_MS));
       }
     }
   }

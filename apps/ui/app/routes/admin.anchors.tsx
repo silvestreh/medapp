@@ -245,7 +245,9 @@ export default function AdminAnchors() {
   const pendingCount = anchors.filter((a: AnchorItem) => a.status === 'pending').length;
   const totalRecords = anchors.reduce((sum: number, a: AnchorItem) => sum + a.leafCount, 0);
 
-  const hasUnverified = confirmedAnchors.some((a: AnchorItem) => a.verificationStatus === 'unverified');
+  const unverifiedCount = confirmedAnchors.filter((a: AnchorItem) => a.verificationStatus === 'unverified').length;
+  const hasUnverified = unverifiedCount > 0;
+  const verifiedSoFar = confirmedAnchors.length - unverifiedCount;
 
   const verifiedCount = confirmedAnchors.filter((a: AnchorItem) => a.verificationStatus === 'verified').length;
   const inconclusiveCount = confirmedAnchors.filter((a: AnchorItem) => a.verificationStatus === 'inconclusive').length;
@@ -346,9 +348,14 @@ export default function AdminAnchors() {
         </Alert>
       )}
 
-      {verifyAllResult && !isVerifyingAll && verifyAllResult.ok && (
+      {hasUnverified && (
         <Alert color="blue" icon={<ArrowsClockwiseIcon size={20} />}>
-          <Text size="sm">{t('admin.anchors_verify_all_started', { total: verifyAllResult.total })}</Text>
+          <Text size="sm">
+            {t('admin.anchors_verifying_progress', {
+              completed: verifiedSoFar,
+              total: confirmedAnchors.length,
+            })}
+          </Text>
         </Alert>
       )}
 
