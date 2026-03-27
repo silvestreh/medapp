@@ -365,6 +365,7 @@ export const useGet = (serviceName: string, id: string, params?: Params & { enab
     isLoading: status === 'loading',
     error,
     status,
+    mutate: swrMutate,
   };
 };
 

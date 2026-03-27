@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { useForm } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
@@ -160,6 +160,14 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
       }
     },
   });
+
+  // Reinitialize form when server data changes (e.g., after SWR cache update).
+  // Mantine's initialize() is a no-op if the values are deeply equal, so this
+  // won't reset the form during normal editing.
+  useEffect(() => {
+    form.initialize(buildInitialValues(schema, initialData));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData]);
 
   const handleFieldChange = useCallback(
     (fieldName: string) => (value: string | StudySelectValue) => {

@@ -108,7 +108,7 @@ export default function StudyDetail() {
   const client = useFeathers();
   const isDesktop = useMediaQuery(media.md);
 
-  const { data: study, isLoading: studyLoading } = useGet('studies', studyId!);
+  const { data: study, isLoading: studyLoading, mutate: mutateStudy } = useGet('studies', studyId!);
   const [isPrinting, setIsPrinting] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
@@ -140,6 +140,8 @@ export default function StudyDetail() {
 
   // Local draft state for result forms (saved through the unified study save action)
   const [resultDrafts, setResultDrafts] = useState<Record<string, StudyResultData>>({});
+  // Ref to keep drafts being saved (so we can update SWR cache after save succeeds)
+  const pendingSaveDraftsRef = useRef<Record<string, StudyResultData>>({});
 
   // Local metadata state (initialized from study once loaded)
   const [metaDirty, setMetaDirty] = useState(false);
@@ -200,10 +202,29 @@ export default function StudyDetail() {
   useEffect(() => {
     const wasSaved = (fetcher.data as { success?: boolean } | undefined)?.success;
     if (fetcher.state === 'idle' && wasSaved) {
+      // Optimistically update SWR cache with saved results so navigating
+      // away and back shows fresh data instead of stale cached values.
+      const savedDrafts = pendingSaveDraftsRef.current;
+      if (Object.keys(savedDrafts).length > 0) {
+        mutateStudy((currentStudy: any) => {
+          if (!currentStudy) return currentStudy;
+          const updatedResults = [...(currentStudy.results || [])];
+          for (const [type, data] of Object.entries(savedDrafts)) {
+            const idx = updatedResults.findIndex((r: any) => r.type === type);
+            if (idx >= 0) {
+              updatedResults[idx] = { ...updatedResults[idx], data };
+            } else {
+              updatedResults.push({ type, data });
+            }
+          }
+          return { ...currentStudy, results: updatedResults };
+        }, { revalidate: true });
+        pendingSaveDraftsRef.current = {};
+      }
       setMetaDirty(false);
       setResultDrafts({});
     }
-  }, [fetcher.state, fetcher.data]);
+  }, [fetcher.state, fetcher.data, mutateStudy]);
 
   const handleSave = useCallback(() => {
     if (!studyId) return;
@@ -234,6 +255,7 @@ export default function StudyDetail() {
       payload.medicId = null;
     }
 
+    pendingSaveDraftsRef.current = { ...resultDrafts };
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
   }, [
     studyId,
