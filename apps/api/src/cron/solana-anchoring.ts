@@ -7,6 +7,7 @@ import { buildMerkleTree } from '../utils/merkle-tree';
 import {
   getSolanaKeypair,
   getSolanaNetwork,
+  getSolanaNetworkLabel,
   getWalletBalance,
   submitMemoTransaction,
   MemoSubmissionResult,
@@ -131,7 +132,7 @@ async function anchorChain(
 
   const hashes = records.map((r) => r.hash);
   const tree = buildMerkleTree(hashes);
-  const network = getSolanaNetwork();
+  const network = getSolanaNetworkLabel();
 
   const dates = records.map((r) => new Date(r.date));
   const batchStartDate = new Date(Math.min(...dates.map((d) => d.getTime())));

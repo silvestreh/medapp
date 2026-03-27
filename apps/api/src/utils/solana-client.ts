@@ -32,6 +32,15 @@ export function getSolanaNetwork(): string {
   return process.env.NODE_ENV === 'production' ? 'mainnet-beta' : 'devnet';
 }
 
+/** Returns a safe network label for DB storage (never leaks RPC URLs or API keys). */
+export function getSolanaNetworkLabel(): string {
+  const network = getSolanaNetwork();
+  if (network === 'devnet' || network === 'mainnet-beta') return network;
+  // Custom RPC URL — infer network from URL or default to mainnet-beta
+  if (network.includes('devnet')) return 'devnet';
+  return 'mainnet-beta';
+}
+
 export function getSolanaConnection(): Connection {
   if (cachedConnection) return cachedConnection;
   const rpcUrl = resolveRpcUrl(getSolanaNetwork());
