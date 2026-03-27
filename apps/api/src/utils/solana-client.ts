@@ -120,62 +120,88 @@ async function fetchTransaction(connection: Connection, signature: string) {
   });
 }
 
-export async function verifyMemoTransaction(
-  signature: string,
-  expectedMerkleRoot: string
-): Promise<MemoVerificationResult> {
-  const connection = getSolanaConnection();
-
-  const tx = await fetchTransaction(connection, signature);
-
-  if (!tx) {
-    return { verified: false, reason: 'not_found', slot: 0, blockTime: null };
-  }
-
-  // Parse memo data from the transaction's log messages
+function matchMerkleRootInTx(tx: any, expectedMerkleRoot: string): boolean {
   const logMessages = tx.meta?.logMessages || [];
-  const memoLog = logMessages.find((log) =>
-    log.startsWith('Program log: Memo')
-  );
+  const memoLog = logMessages.find((log: string) => log.startsWith('Program log: Memo'));
 
   if (!memoLog) {
-    // Try parsing from instruction data directly
     const message = tx.transaction.message;
     const instructions = message.compiledInstructions || [];
     for (const ix of instructions) {
       try {
         const data = Buffer.from(ix.data).toString('utf-8');
         const parsed = JSON.parse(data);
-        if (parsed.root === expectedMerkleRoot) {
-          return {
-            verified: true,
-            slot: tx.slot,
-            blockTime: tx.blockTime ?? null,
-          };
-        }
+        if (parsed.root === expectedMerkleRoot) return true;
       } catch {
         continue;
       }
     }
   }
 
-  // Check log messages for memo content
   for (const log of logMessages) {
-    try {
-      // Memo program logs the data directly
-      if (log.includes(expectedMerkleRoot)) {
-        return {
-          verified: true,
-          slot: tx.slot,
-          blockTime: tx.blockTime ?? null,
-        };
-      }
-    } catch {
-      continue;
+    if (log.includes(expectedMerkleRoot)) return true;
+  }
+
+  return false;
+}
+
+export async function verifyMemoTransaction(
+  signature: string,
+  expectedMerkleRoot: string
+): Promise<MemoVerificationResult> {
+  const connection = getSolanaConnection();
+  const tx = await fetchTransaction(connection, signature);
+
+  if (!tx) {
+    return { verified: false, reason: 'not_found', slot: 0, blockTime: null };
+  }
+
+  const verified = matchMerkleRootInTx(tx, expectedMerkleRoot);
+  return {
+    verified,
+    reason: verified ? undefined : 'mismatch',
+    slot: tx.slot,
+    blockTime: tx.blockTime ?? null,
+  };
+}
+
+// --- Batch verification via concurrent Promise.all chunks ---
+
+const BATCH_SIZE = 10;
+
+export interface BatchVerifyItem {
+  signature: string;
+  expectedMerkleRoot: string;
+}
+
+export interface BatchVerifyResult {
+  signature: string;
+  result: MemoVerificationResult;
+}
+
+export async function batchVerifyTransactions(
+  items: BatchVerifyItem[]
+): Promise<BatchVerifyResult[]> {
+  const results: BatchVerifyResult[] = [];
+
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const chunk = items.slice(i, i + BATCH_SIZE);
+
+    const chunkResults = await Promise.all(
+      chunk.map((item) => verifyMemoTransaction(item.signature, item.expectedMerkleRoot)),
+    );
+
+    for (let j = 0; j < chunk.length; j++) {
+      results.push({ signature: chunk[j].signature, result: chunkResults[j] });
+    }
+
+    // Delay between batches to avoid rate limiting
+    if (i + BATCH_SIZE < items.length) {
+      await new Promise((r) => setTimeout(r, 1000));
     }
   }
 
-  return { verified: false, reason: 'mismatch', slot: tx.slot, blockTime: tx.blockTime ?? null };
+  return results;
 }
 
 export async function getWalletBalance(): Promise<number | null> {

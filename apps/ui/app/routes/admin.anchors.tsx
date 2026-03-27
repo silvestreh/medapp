@@ -167,6 +167,7 @@ function VerificationBadge({ anchor, fetcher }: { anchor: AnchorItem; fetcher: R
         <Tooltip
           label={t('admin.anchors_verified_at', {
             date: anchor.verifiedAt ? dayjs(anchor.verifiedAt).format('DD/MM/YY HH:mm') : '—',
+            interpolation: { escapeValue: false },
           })}
           withArrow
         >
