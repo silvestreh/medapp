@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Link, Outlet, useFetcher, useLoaderData, useLocation, useNavigate } from '@remix-run/react';
@@ -121,16 +121,11 @@ export default function PatientDetail() {
   const isTablet = useMediaQuery(media.lg);
   const location = useLocation();
   const hasSireChild = location.pathname.endsWith('/sire');
+  const sireCallbackUrlRef = useRef<string | null>(null);
   const [sireDrawerOpen, setSireDrawerOpen] = useState(false);
   const [deleteOpened, { open: openDelete, close: closeDelete }] = useDisclosure(false);
 
   const handleBack = useCallback(() => navigate('/patients'), [navigate]);
-
-  useEffect(() => {
-    if (hasSireChild) {
-      setSireDrawerOpen(true);
-    }
-  }, [hasSireChild]);
 
   const handleSireDrawerClose = useCallback(() => {
     setSireDrawerOpen(false);
@@ -138,7 +133,13 @@ export default function PatientDetail() {
 
   const handleSireDrawerExited = useCallback(() => {
     if (hasSireChild) {
-      navigate(`/patients/${patient.id}`, { preventScrollReset: isTablet });
+      const callbackUrl = sireCallbackUrlRef.current;
+
+      if (callbackUrl) {
+        navigate(callbackUrl);
+      } else {
+        navigate(`/patients/${patient.id}`, { preventScrollReset: isTablet });
+      }
     }
   }, [hasSireChild, navigate, patient.id, isTablet]);
 
@@ -155,12 +156,6 @@ export default function PatientDetail() {
   const actionData = fetcher.data as
     | { success?: boolean; error?: string; encounterCount?: number; studyCount?: number }
     | undefined;
-
-  useEffect(() => {
-    if (actionData?.success) {
-      navigate(-1);
-    }
-  }, [actionData?.success, navigate]);
 
   const handleSave = useCallback(() => {
     const validation = form.validate();
@@ -202,6 +197,29 @@ export default function PatientDetail() {
     isDirty: form.isDirty() && !actionData?.success,
     onSave: handleSave,
   });
+
+  useEffect(() => {
+    if (actionData?.success) {
+      navigate(-1);
+    }
+  }, [actionData?.success, navigate]);
+
+  useEffect(() => {
+    return () => {
+      sireCallbackUrlRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (hasSireChild) {
+      const params = new URLSearchParams(location.search);
+      const cb = params.get('callbackUrl');
+      if (cb) {
+        sireCallbackUrlRef.current = cb;
+      }
+      setSireDrawerOpen(true);
+    }
+  }, [hasSireChild, location.search]);
 
   return (
     <PageContainer>

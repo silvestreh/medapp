@@ -62,20 +62,24 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
       return json({ ok: true });
 
     case 'create-initial-treatment': {
-      const treatmentId = ((await client.service('sire-treatments').create({
-        ...payload.treatment,
-        patientId,
-        organizationId,
-        medicId: user.id,
-        nextControlDate: payload.nextControlDate,
-      })) as any).id;
+      const treatmentId = (
+        (await client.service('sire-treatments').create({
+          ...payload.treatment,
+          patientId,
+          organizationId,
+          medicId: user.id,
+          nextControlDate: payload.nextControlDate,
+        })) as any
+      ).id;
 
-      const readingId = ((await client.service('sire-readings').create({
-        ...payload.reading,
-        treatmentId,
-        patientId,
-        organizationId,
-      })) as any).id;
+      const readingId = (
+        (await client.service('sire-readings').create({
+          ...payload.reading,
+          treatmentId,
+          patientId,
+          organizationId,
+        })) as any
+      ).id;
 
       if (payload.schedule) {
         await client.service('sire-dose-schedules').create({
@@ -212,9 +216,13 @@ export default function SireManagement() {
   );
 
   const handleBackToList = useCallback(() => {
-    setView('list');
-    setEditingReading(null);
-  }, []);
+    if (callbackUrlRef.current) {
+      navigate(callbackUrlRef.current);
+    } else {
+      setView('list');
+      setEditingReading(null);
+    }
+  }, [navigate]);
 
   const handleSubmitTreatment = useCallback(
     (data: Record<string, any>) => {
@@ -227,11 +235,13 @@ export default function SireManagement() {
   );
 
   const handleSubmitInitialTreatment = useCallback(
-    (data: { treatment: Record<string, any>; reading: Record<string, any>; schedule: Record<string, any>; nextControlDate: string | null }) => {
-      fetcher.submit(
-        { data: JSON.stringify({ intent: 'create-initial-treatment', ...data }) },
-        { method: 'post' }
-      );
+    (data: {
+      treatment: Record<string, any>;
+      reading: Record<string, any>;
+      schedule: Record<string, any>;
+      nextControlDate: string | null;
+    }) => {
+      fetcher.submit({ data: JSON.stringify({ intent: 'create-initial-treatment', ...data }) }, { method: 'post' });
       if (callbackUrlRef.current) {
         navigate(callbackUrlRef.current);
       } else {
@@ -299,9 +309,7 @@ export default function SireManagement() {
             onSubmit={handleSubmitTreatment}
           />
         )}
-        {!activeTreatment && (
-          <SireInitialTreatmentForm onSubmit={handleSubmitInitialTreatment} prefill={prefillData} />
-        )}
+        {!activeTreatment && <SireInitialTreatmentForm onSubmit={handleSubmitInitialTreatment} prefill={prefillData} />}
       </Stack>
     );
   }
