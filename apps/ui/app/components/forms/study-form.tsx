@@ -149,13 +149,14 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
   // parent render due to the unstable curried handleResultDraftChange(type) callback).
   const onChangeRef = useRef(onChange);
   const readOnlyRef = useRef(readOnly);
+  const isInitializingRef = useRef(false);
   onChangeRef.current = onChange;
   readOnlyRef.current = readOnly;
 
   const form = useForm<StudyResultData>({
     initialValues: buildInitialValues(schema, initialData),
     onValuesChange: (values) => {
-      if (!readOnlyRef.current) {
+      if (!readOnlyRef.current && !isInitializingRef.current) {
         onChangeRef.current(values);
       }
     },
@@ -163,9 +164,12 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
 
   // Reinitialize form when server data changes (e.g., after SWR cache update).
   // Mantine's initialize() is a no-op if the values are deeply equal, so this
-  // won't reset the form during normal editing.
+  // won't reset the form during normal editing. The flag suppresses onValuesChange
+  // to avoid marking the form as dirty from a re-initialization.
   useEffect(() => {
+    isInitializingRef.current = true;
     form.initialize(buildInitialValues(schema, initialData));
+    isInitializingRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData]);
 

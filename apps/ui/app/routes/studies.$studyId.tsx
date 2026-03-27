@@ -202,25 +202,9 @@ export default function StudyDetail() {
   useEffect(() => {
     const wasSaved = (fetcher.data as { success?: boolean } | undefined)?.success;
     if (fetcher.state === 'idle' && wasSaved) {
-      // Optimistically update SWR cache with saved results so navigating
-      // away and back shows fresh data instead of stale cached values.
-      const savedDrafts = pendingSaveDraftsRef.current;
-      if (Object.keys(savedDrafts).length > 0) {
-        mutateStudy((currentStudy: any) => {
-          if (!currentStudy) return currentStudy;
-          const updatedResults = [...(currentStudy.results || [])];
-          for (const [type, data] of Object.entries(savedDrafts)) {
-            const idx = updatedResults.findIndex((r: any) => r.type === type);
-            if (idx >= 0) {
-              updatedResults[idx] = { ...updatedResults[idx], data };
-            } else {
-              updatedResults.push({ type, data });
-            }
-          }
-          return { ...currentStudy, results: updatedResults };
-        }, { revalidate: true });
-        pendingSaveDraftsRef.current = {};
-      }
+      // Trigger background revalidation to get canonical server data
+      mutateStudy();
+      pendingSaveDraftsRef.current = {};
       setMetaDirty(false);
       setResultDrafts({});
     }
@@ -255,7 +239,25 @@ export default function StudyDetail() {
       payload.medicId = null;
     }
 
+    // Optimistically update SWR cache before submit so that navigating away
+    // immediately (e.g. "Save and Leave") still leaves fresh data in the cache.
     pendingSaveDraftsRef.current = { ...resultDrafts };
+    if (Object.keys(resultDrafts).length > 0) {
+      mutateStudy((currentStudy: any) => {
+        if (!currentStudy) return currentStudy;
+        const updatedResults = [...(currentStudy.results || [])];
+        for (const [type, data] of Object.entries(resultDrafts)) {
+          const idx = updatedResults.findIndex((r: any) => r.type === type);
+          if (idx >= 0) {
+            updatedResults[idx] = { ...updatedResults[idx], data };
+          } else {
+            updatedResults.push({ type, data });
+          }
+        }
+        return { ...currentStudy, results: updatedResults };
+      }, { revalidate: false });
+    }
+
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });
   }, [
     studyId,
@@ -272,6 +274,7 @@ export default function StudyDetail() {
     patient,
     referringDoctor,
     medicId,
+    mutateStudy,
   ]);
 
   const handleResultDraftChange = useCallback(
