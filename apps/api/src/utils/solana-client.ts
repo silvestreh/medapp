@@ -167,7 +167,7 @@ export async function verifyMemoTransaction(
 
 // --- Batch verification via concurrent Promise.all chunks ---
 
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 3;
 
 export interface BatchVerifyItem {
   signature: string;
@@ -195,9 +195,9 @@ export async function batchVerifyTransactions(
       results.push({ signature: chunk[j].signature, result: chunkResults[j] });
     }
 
-    // Delay between batches to avoid rate limiting
+    // Delay between batches to avoid rate limiting (mainnet-beta public RPC is strict)
     if (i + BATCH_SIZE < items.length) {
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 2000));
     }
   }
 
