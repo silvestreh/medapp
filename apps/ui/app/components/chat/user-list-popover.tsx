@@ -13,7 +13,7 @@ import {
   Text,
   UnstyledButton,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { CircleIcon, SignOutIcon, PushPinIcon, PushPinSlashIcon, UsersIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
@@ -62,6 +62,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
   const [groupMode, setGroupMode] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [pinned, setPinned] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   // Build a unified list of recent items (1-on-1 users + groups) sorted by updatedAt
   type RecentItem =
@@ -288,7 +289,7 @@ export function UserListPopover({ children }: { children: React.ReactNode }) {
     <Popover
       opened={opened}
       onChange={handlePopoverChange}
-      position="right-end"
+      position={isMobile ? 'top' : 'right-end'}
       shadow="md"
       withArrow
       width={280}

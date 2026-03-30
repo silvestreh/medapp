@@ -36,7 +36,11 @@ function getTourIdFromPath(pathname: string): string | null {
   return null;
 }
 
-const HelpButton: React.FC = () => {
+interface HelpButtonProps {
+  asMenuItem?: boolean;
+}
+
+const HelpButton: React.FC<HelpButtonProps> = ({ asMenuItem = false }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -54,6 +58,26 @@ const HelpButton: React.FC = () => {
   const handleReadDocs = useCallback(() => {
     navigate('/docs');
   }, [navigate]);
+
+  if (asMenuItem) {
+    return (
+      <>
+        <Menu.Item
+          leftSection={<ArrowCounterClockwiseIcon size={16} />}
+          onClick={handleStartTour}
+          disabled={!currentTourId}
+        >
+          {t('tour.start_tour')}
+        </Menu.Item>
+        <Menu.Item
+          leftSection={<BookOpenIcon size={16} />}
+          onClick={handleReadDocs}
+        >
+          {t('tour.read_docs')}
+        </Menu.Item>
+      </>
+    );
+  }
 
   return (
     <Menu withArrow position={isMobile ? 'right-end' : 'right-end'} shadow="xs">

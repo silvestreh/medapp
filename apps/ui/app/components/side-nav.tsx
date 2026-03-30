@@ -1,4 +1,4 @@
-import React, { cloneElement, isValidElement, type ReactElement } from 'react';
+import React, { cloneElement, isValidElement, useCallback, useMemo, type ReactElement } from 'react';
 import { ActionIcon, Flex, Tooltip, Image, Menu, type DefaultMantineColor } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { NavLink, useLocation, useMatches, useNavigate } from '@remix-run/react';
@@ -14,13 +14,15 @@ import {
   CalculatorIcon,
   ChatCircleIcon,
   ShieldCheckIcon,
+  DotsThreeIcon,
   type IconProps,
 } from '@phosphor-icons/react';
+import intersection from 'lodash/intersection';
 import { useTranslation } from 'react-i18next';
 
 import { styled } from '~/styled-system/jsx';
 import { media } from '~/media';
-import { useAccount } from '~/components/provider';
+import { useAccount, useOrganization } from '~/components/provider';
 import HasPermission from '~/components/has-permission';
 import { UserListPopover } from '~/components/chat/user-list-popover';
 import HelpButton from '~/components/guided-tour/help-button';
@@ -179,10 +181,10 @@ const Logo = styled(Image, {
 const LanguageSwitcherContainer = styled(Flex, {
   base: {
     sm: {
-      alignItems: 'center',
-      padding: '0.75em',
+      display: 'none',
     },
     md: {
+      display: 'flex',
       width: '100%',
       justifyContent: 'center',
       marginTop: 'auto',
@@ -190,6 +192,28 @@ const LanguageSwitcherContainer = styled(Flex, {
       position: 'sticky',
       bottom: 0,
       flexDirection: 'column',
+    },
+  },
+});
+
+const MobileOnly = styled('div', {
+  base: {
+    sm: {
+      display: 'contents',
+    },
+    md: {
+      display: 'none',
+    },
+  },
+});
+
+const DesktopOnly = styled('div', {
+  base: {
+    sm: {
+      display: 'none',
+    },
+    md: {
+      display: 'contents',
     },
   },
 });
@@ -253,54 +277,85 @@ const sections: Section[] = [
   },
 ];
 
+const OVERFLOW_KEYS = new Set(['users_roles', 'accounting']);
+
 const SideNav: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { user } = useAccount();
+  const { currentOrganizationId } = useOrganization();
   const matches = useMatches();
   const location = useLocation();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(media.sm);
+  const isMobile = !useMediaQuery(media.md);
   const currentLanguage = i18n.resolvedLanguage || 'es';
 
-  const handleLanguageChange = (lng: string) => () => {
-    if (currentLanguage === lng) {
-      return;
-    }
+  const handleLanguageChange = useCallback(
+    (lng: string) => () => {
+      if (currentLanguage === lng) {
+        return;
+      }
 
-    const params = new URLSearchParams(location.search);
-    params.set('lng', lng);
-    navigate(`${location.pathname}?${params.toString()}`, { replace: true, preventScrollReset: true });
-  };
+      const params = new URLSearchParams(location.search);
+      params.set('lng', lng);
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true, preventScrollReset: true });
+    },
+    [currentLanguage, location.search, location.pathname, navigate]
+  );
+
+  const visibleSections = useMemo(() => {
+    if (!user) return [];
+    const currentOrg = (user as any).organizations?.find((o: any) => o.id === currentOrganizationId);
+    const orgPermissions: string[] = currentOrg?.permissions ?? [];
+    return sections.filter(s => intersection(s.permissions, orgPermissions).length > 0);
+  }, [user, currentOrganizationId]);
+
+  const shouldOverflow = visibleSections.length > 4;
+
+  const overflowSections = useMemo(
+    () => (shouldOverflow ? visibleSections.filter(s => OVERFLOW_KEYS.has(s.labelKey)) : []),
+    [shouldOverflow, visibleSections]
+  );
+
+  const renderSection = useCallback(
+    (section: Section) => {
+      const isActive = matches.at(-1)?.pathname.startsWith(section.path);
+      const label = t(`navigation.${section.labelKey}` as any);
+      const isOverflow = shouldOverflow && OVERFLOW_KEYS.has(section.labelKey);
+
+      const item = (
+        <HasPermission permissions={section.permissions}>
+          <Tooltip label={label} position="right">
+            <NavItem
+              tone={section.color}
+              active={isActive}
+              component={NavLink}
+              prefetch="intent"
+              to={section.path}
+              variant="subtle"
+              size="3em"
+              className={isActive ? 'active' : ''}
+            >
+              {isValidElement(section.icon) &&
+                cloneElement(section.icon as ReactElement<IconProps>, { size: isMobile ? 18 : 22 })}
+            </NavItem>
+          </Tooltip>
+        </HasPermission>
+      );
+
+      if (isOverflow) {
+        return <DesktopOnly key={section.labelKey}>{item}</DesktopOnly>;
+      }
+
+      return <React.Fragment key={section.labelKey}>{item}</React.Fragment>;
+    },
+    [matches, t, isMobile, shouldOverflow]
+  );
 
   return (
     <Container>
       <StickyContent>
         <Logo src="/logo.webp" alt="Logo" />
-        {user &&
-          sections.map((section: Section) => {
-            const isActive = matches.at(-1)?.pathname.startsWith(section.path);
-            const label = t(`navigation.${section.labelKey}` as any);
-
-            return (
-              <HasPermission key={section.labelKey} permissions={section.permissions}>
-                <Tooltip label={label} position="right">
-                  <NavItem
-                    tone={section.color}
-                    active={isActive}
-                    component={NavLink}
-                    prefetch="intent"
-                    to={section.path}
-                    variant="subtle"
-                    size="3em"
-                    className={isActive ? 'active' : ''}
-                  >
-                    {isValidElement(section.icon) &&
-                      cloneElement(section.icon as ReactElement<IconProps>, { size: isMobile ? 18 : 22 })}
-                  </NavItem>
-                </Tooltip>
-              </HasPermission>
-            );
-          })}
+        {user && sections.map(renderSection)}
         {user &&
           (user as any).isSuperAdmin &&
           (() => {
@@ -322,6 +377,50 @@ const SideNav: React.FC = () => {
               </Tooltip>
             );
           })()}
+        {user && (
+          <MobileOnly>
+            <Menu withArrow position="top" shadow="xs">
+              <Menu.Target>
+                <Tooltip label={t('navigation.more', 'More')} position="right">
+                  <ActionIcon variant="subtle" size="3em">
+                    <DotsThreeIcon size={18} weight="bold" />
+                  </ActionIcon>
+                </Tooltip>
+              </Menu.Target>
+              <Menu.Dropdown>
+                {overflowSections.map(section => {
+                  const isActive = matches.at(-1)?.pathname.startsWith(section.path);
+                  return (
+                    <Menu.Item
+                      key={section.labelKey}
+                      leftSection={
+                        isValidElement(section.icon)
+                          ? cloneElement(section.icon as ReactElement<IconProps>, { size: 16 })
+                          : undefined
+                      }
+                      component={NavLink}
+                      to={section.path}
+                      prefetch="intent"
+                      bg={isActive ? `var(--mantine-color-${section.color}-0)` : undefined}
+                    >
+                      {t(`navigation.${section.labelKey}` as any)}
+                    </Menu.Item>
+                  );
+                })}
+                {overflowSections.length > 0 && <Menu.Divider />}
+                <HelpButton asMenuItem />
+                <Menu.Divider />
+                <Menu.Label>{t('navigation.language')}</Menu.Label>
+                <Menu.Item onClick={handleLanguageChange('es')} disabled={currentLanguage === 'es'}>
+                  {t('common.spanish')}
+                </Menu.Item>
+                <Menu.Item onClick={handleLanguageChange('en')} disabled={currentLanguage === 'en'}>
+                  {t('common.english')}
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          </MobileOnly>
+        )}
       </StickyContent>
       <LanguageSwitcherContainer>
         {user && (
