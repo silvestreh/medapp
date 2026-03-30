@@ -10,11 +10,7 @@ import {
   Stack,
   ActionIcon,
   Text,
-  Popover,
-  ScrollArea,
   Box,
-  Table,
-  Loader,
   TextInput,
   SimpleGrid,
   Select,
@@ -27,8 +23,7 @@ import { useForm } from '@mantine/form';
 import { showNotification } from '@mantine/notifications';
 import { useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
-import { PlusIcon, TrashIcon, MagnifyingGlassIcon, PencilIcon, WarningIcon } from '@phosphor-icons/react';
-import { AsYouType, type CountryCode } from 'libphonenumber-js';
+import { PlusIcon, TrashIcon, PencilIcon, WarningIcon } from '@phosphor-icons/react';
 import { DateInput } from '@mantine/dates';
 import dayjs from 'dayjs';
 
@@ -51,230 +46,16 @@ import { useFeathers, useGet } from '~/components/provider';
 import { RecetarioInsuranceSelector } from '~/components/recetario-insurance-selector';
 import { matchInsurance, type RecetarioInsurance } from '~/utils/match-insurance';
 import { trackAction } from '~/utils/breadcrumbs';
-
-const COUNTRY_PHONE_OPTIONS = [
-  { value: '54', label: '🇦🇷 +54', country: 'AR' as CountryCode },
-  { value: '55', label: '🇧🇷 +55', country: 'BR' as CountryCode },
-  { value: '56', label: '🇨🇱 +56', country: 'CL' as CountryCode },
-  { value: '57', label: '🇨🇴 +57', country: 'CO' as CountryCode },
-  { value: '52', label: '🇲🇽 +52', country: 'MX' as CountryCode },
-  { value: '598', label: '🇺🇾 +598', country: 'UY' as CountryCode },
-  { value: '595', label: '🇵🇾 +595', country: 'PY' as CountryCode },
-  { value: '51', label: '🇵🇪 +51', country: 'PE' as CountryCode },
-  { value: '1', label: '🇺🇸 +1', country: 'US' as CountryCode },
-  { value: '34', label: '🇪🇸 +34', country: 'ES' as CountryCode },
-];
-
-function formatPhoneForDisplay(digits: string, callingCode: string): string {
-  const country = COUNTRY_PHONE_OPTIONS.find(o => o.value === callingCode)?.country || 'AR';
-  const formatter = new AsYouType(country);
-  // Feed the full international number so the formatter knows the format
-  const formatted = formatter.input(`+${callingCode}${digits}`);
-  // Strip the country code prefix from the display (e.g. "+54 " → "")
-  const prefix = `+${callingCode} `;
-  return formatted.startsWith(prefix)
-    ? formatted.slice(prefix.length)
-    : formatted.replace(`+${callingCode}`, '').trim();
-}
-
-interface MedicineRow {
-  medication: RecetarioSelectedMedication | null;
-  quantity: number;
-  posology: string;
-  longTerm: boolean;
-  genericOnly: boolean;
-}
-
-interface RecetarioMed {
-  id: number;
-  brand: string;
-  drug: string;
-  requiresDuplicate: boolean;
-  hivSpecific: boolean;
-  packages?: {
-    id: number;
-    name: string;
-    externalId: string;
-    shape?: string;
-    power?: { value: string; unit: string };
-  };
-}
-
-interface RecetarioSelectedMedication {
-  externalId: string;
-  text: string;
-  drug: string;
-  brand: string;
-  packageName: string;
-  power: string;
-  requiresDuplicate: boolean;
-}
-
-interface RecetarioMedicinePickerProps {
-  value: RecetarioSelectedMedication | null;
-  onChange: (value: RecetarioSelectedMedication | null) => void;
-}
-
-function RecetarioMedicinePicker({ value, onChange }: RecetarioMedicinePickerProps) {
-  const { t } = useTranslation();
-  const [opened, setOpened] = useState(false);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const searchFetcher = useFetcher<any>();
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 400);
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  useEffect(() => {
-    if (debouncedSearch.length < 3) return;
-    searchFetcher.submit(
-      { intent: 'search-recetario-medications', data: JSON.stringify({ search: debouncedSearch }) },
-      { method: 'post' }
-    );
-  }, [debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const results: RecetarioMed[] = searchFetcher.data?.medications || [];
-  const isLoading = searchFetcher.state !== 'idle';
-
-  const handleSelect = useCallback(
-    (med: RecetarioMed) => {
-      const packageName = med.packages?.name || '';
-      const power = med.packages?.power ? `${med.packages.power.value} ${med.packages.power.unit}` : '';
-      const text = [med.drug, packageName, `(${med.brand})`, power ? `- ${power}` : ''].filter(Boolean).join(' ');
-      onChange({
-        externalId: med.packages?.externalId || '',
-        text,
-        drug: med.drug,
-        brand: med.brand,
-        packageName,
-        power,
-        requiresDuplicate: med.requiresDuplicate,
-      });
-      setSearch(text);
-      setOpened(false);
-    },
-    [onChange]
-  );
-
-  const handleClear = useCallback(() => {
-    onChange(null);
-    setSearch('');
-  }, [onChange]);
-
-  const displayValue = value ? value.text : '';
-
-  return (
-    <Popover
-      opened={opened}
-      onChange={setOpened}
-      width="target"
-      position="bottom-start"
-      offset={4}
-      styles={{ dropdown: { padding: 0, minWidth: '500px' } }}
-    >
-      <Popover.Target>
-        <TextInput
-          placeholder={t('common.search')}
-          value={opened ? search : displayValue}
-          onChange={e => {
-            setSearch(e.currentTarget.value);
-            if (!opened) setOpened(true);
-            if (!opened || !value) {
-              onChange({ externalId: '', text: e.currentTarget.value, drug: '', brand: '', packageName: '', power: '', requiresDuplicate: false });
-            }
-          }}
-          onFocus={() => {
-            setSearch(displayValue);
-            setOpened(true);
-          }}
-          onBlur={() => setTimeout(() => setOpened(false), 150)}
-          rightSection={
-            value ? (
-              <ActionIcon variant="subtle" color="gray" size="sm" onClick={handleClear}>
-                <MagnifyingGlassIcon size={14} />
-              </ActionIcon>
-            ) : isLoading ? (
-              <Loader size="xs" />
-            ) : (
-              <MagnifyingGlassIcon size={14} color="gray" />
-            )
-          }
-        />
-      </Popover.Target>
-      <Popover.Dropdown>
-        <ScrollArea.Autosize mah={300}>
-          <Box p="xs">
-            {results.length === 0 && !isLoading && (
-              <Text size="sm" c="dimmed" ta="center" py="sm">
-                {debouncedSearch ? t('common.no_results') : t('forms.type_to_search_medications')}
-              </Text>
-            )}
-            {results.length > 0 && (
-              <Table variant="simple" verticalSpacing="xs">
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>{t('forms.medication_commercial_name')}</Table.Th>
-                    <Table.Th>{t('forms.medication_generic_drug')}</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {results.map(med => (
-                    <Table.Tr
-                      key={med.id}
-                      style={{ cursor: 'pointer' }}
-                      onMouseDown={e => {
-                        e.preventDefault();
-                        handleSelect(med);
-                      }}
-                    >
-                      <Table.Td>
-                        <Text size="sm" fw={500}>
-                          {med.brand}
-                        </Text>
-                        {med.packages?.name && (
-                          <Text size="xs" c="dimmed">
-                            {med.packages.name}
-                          </Text>
-                        )}
-                      </Table.Td>
-                      <Table.Td>
-                        <Text size="sm">{med.drug}</Text>
-                      </Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            )}
-          </Box>
-        </ScrollArea.Autosize>
-      </Popover.Dropdown>
-    </Popover>
-  );
-}
-
-const defaultMedicine = (): MedicineRow => ({
-  medication: null,
-  quantity: 1,
-  posology: '',
-  longTerm: false,
-  genericOnly: false,
-});
-
-const formatDate = (d: string | Date | null | undefined) => {
-  if (!d) return '';
-  const date = d instanceof Date ? d : new Date(d);
-  if (isNaN(date.getTime())) return '';
-  return date.toISOString().split('T')[0];
-};
-
-const parseDate = (d: string | Date | null | undefined): Date | null => {
-  if (!d) return null;
-  if (d instanceof Date) return d;
-  const parsed = new Date(String(d).split('T')[0] + 'T00:00:00');
-  return isNaN(parsed.getTime()) ? null : parsed;
-};
+import {
+  COUNTRY_PHONE_OPTIONS,
+  formatPhoneForDisplay,
+  formatDate,
+  parseDate,
+  defaultMedicine,
+  type MedicineRow,
+  type RecetarioSelectedMedication,
+} from '~/components/prescribe-utils';
+import { RecetarioMedicinePicker } from '~/components/recetario-medicine-picker';
 
 export interface PrescriptionResult {
   prescriptionId: string | null;
@@ -369,7 +150,7 @@ export function PrescribeModal({
     },
     validate: {
       medicines: {
-        medication: m => (!m ? t('common.required') : null),
+        medication: m => (!m || !m.text?.trim() ? t('common.required') : null),
         quantity: q => (q < 1 || q > 10 ? t('common.invalid') : null),
       },
     },
@@ -553,11 +334,13 @@ export function PrescribeModal({
   // Auto-trigger insurance matching when the patient's prepaga loads
   useEffect(() => {
     if (!opened || !selectedInsurer || insuranceMatchStatus !== 'idle') return;
-    handlePrepagaSelected(selectedInsurer as {
-      id: string;
-      shortName: string;
-      recetarioHealthInsuranceName?: string | null;
-    });
+    handlePrepagaSelected(
+      selectedInsurer as {
+        id: string;
+        shortName: string;
+        recetarioHealthInsuranceName?: string | null;
+      }
+    );
   }, [opened, selectedInsurer, insuranceMatchStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // For repeat: auto-advance to step 1 once insurance is resolved (or not needed)
@@ -573,12 +356,9 @@ export function PrescribeModal({
   }, [opened, repeatData, patient, step, insuranceMatchStatus]);
 
   // Update display value as user types in the insurance autocomplete
-  const handleInsuranceInputChange = useCallback(
-    (name: string) => {
-      setInsuranceMatchName(name);
-    },
-    []
-  );
+  const handleInsuranceInputChange = useCallback((name: string) => {
+    setInsuranceMatchName(name);
+  }, []);
 
   // Confirm insurance selection from the autocomplete dropdown
   const handleInsuranceConfirm = useCallback(
@@ -824,7 +604,15 @@ export function PrescribeModal({
     }
 
     setStep(1);
-  }, [patientForm, selectedPatientId, patient, updatePatientFetcher, insuranceMatchStatus, insuranceMatchName, handleInsuranceConfirm]);
+  }, [
+    patientForm,
+    selectedPatientId,
+    patient,
+    updatePatientFetcher,
+    insuranceMatchStatus,
+    insuranceMatchName,
+    handleInsuranceConfirm,
+  ]);
 
   const handlePrescriptionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -839,7 +627,8 @@ export function PrescribeModal({
     const medications = rxForm.values.medicines.map(m => {
       const baseText = m.medication?.text || '';
       const qty = m.quantity;
-      const spanishNum = ['cero', 'una', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'][qty] || String(qty);
+      const spanishNum =
+        ['cero', 'una', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'][qty] || String(qty);
       const qtyLabel = qty === 1 ? `(${qty} = ${spanishNum} caja)` : `(${qty} = ${spanishNum} cajas)`;
       const text = `${baseText} ${qtyLabel}`.trim();
       return {
@@ -1050,11 +839,13 @@ export function PrescribeModal({
                         }
                       }}
                       onSelectPrepaga={p => {
-                        handlePrepagaSelected(p as {
-                          id: string;
-                          shortName: string;
-                          recetarioHealthInsuranceName?: string | null;
-                        });
+                        handlePrepagaSelected(
+                          p as {
+                            id: string;
+                            shortName: string;
+                            recetarioHealthInsuranceName?: string | null;
+                          }
+                        );
                       }}
                     />
                     {!!pv.medicareId && (
@@ -1104,13 +895,7 @@ export function PrescribeModal({
                 <Button variant="default" onClick={onClose}>
                   {t('common.cancel')}
                 </Button>
-                <Button
-                  onClick={handleNextStep}
-                  disabled={
-                    !hasPatient ||
-                    insuranceMatchStatus === 'none'
-                  }
-                >
+                <Button onClick={handleNextStep} disabled={!hasPatient || insuranceMatchStatus === 'none'}>
                   {t('common.next')}
                 </Button>
               </Group>
