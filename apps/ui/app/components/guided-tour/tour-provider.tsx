@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useRef, useState, type PropsWithChildren } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
 
 import { useFeathers, useAccount } from '~/components/provider';
 
@@ -38,6 +38,16 @@ export const TourProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [activeTourId, setActiveTourId] = useState<string | null>(null);
   const userIdRef = useRef(user?.id);
   userIdRef.current = user?.id;
+
+  // Sync completedTours when user data becomes available (e.g. after reAuthenticate)
+  const initialSyncDone = useRef(!!user?.preferences?.completedTours);
+  useEffect(() => {
+    if (initialSyncDone.current) return;
+    if (user?.preferences?.completedTours) {
+      initialSyncDone.current = true;
+      setCompletedTours(user.preferences.completedTours);
+    }
+  }, [user?.preferences?.completedTours]);
 
   const startTour = useCallback((tourId: string) => {
     setActiveTourId(tourId);

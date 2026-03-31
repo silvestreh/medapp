@@ -1,5 +1,5 @@
 import { HookContext } from '@feathersjs/feathers';
-import { merge } from 'lodash';
+import { mergeWith, isArray } from 'lodash';
 
 export const mergePreferences = () => async (context: HookContext) => {
   const { data, service, id } = context;
@@ -7,7 +7,9 @@ export const mergePreferences = () => async (context: HookContext) => {
 
   if (!user || !data.preferences) return context;
 
-  const merged = merge({}, user.preferences || {}, data.preferences);
+  const merged = mergeWith({}, user.preferences || {}, data.preferences, (_objValue: unknown, srcValue: unknown) => {
+    if (isArray(srcValue)) return srcValue;
+  });
 
   data.preferences = merged;
 
