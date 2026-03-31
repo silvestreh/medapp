@@ -1119,7 +1119,7 @@
             var dispatcher = resolveDispatcher();
             return dispatcher.useCallback(callback, deps);
           }
-          function useMemo(create, deps) {
+          function useMemo2(create, deps) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useMemo(create, deps);
           }
@@ -1891,7 +1891,7 @@
           exports.useImperativeHandle = useImperativeHandle;
           exports.useInsertionEffect = useInsertionEffect;
           exports.useLayoutEffect = useLayoutEffect;
-          exports.useMemo = useMemo;
+          exports.useMemo = useMemo2;
           exports.useReducer = useReducer;
           exports.useRef = useRef4;
           exports.useState = useState4;
@@ -26578,7 +26578,7 @@
   var import_react6 = __toESM(require_react());
 
   // src/shared-client/steps.ts
-  var STEPS = [
+  var DNI_STEPS = [
     {
       key: "idFront",
       title: "Frente del DNI",
@@ -26616,6 +26616,35 @@
       autoDetect: "face"
     }
   ];
+  var PASSPORT_STEPS = [
+    {
+      key: "idFront",
+      title: "Pasaporte",
+      introTitle: "P\xE1gina de datos del pasaporte",
+      introDesc: "Foto de la p\xE1gina con tu foto y datos personales (zona MRZ)",
+      cameraHint: "Encuadr\xE1 la p\xE1gina de datos del pasaporte",
+      cameraHintAuto: "Buscando zona MRZ...",
+      nextTitle: "Video selfie",
+      nextDesc: "Ahora necesitamos verificar tu identidad mirando a la c\xE1mara.",
+      facing: "environment",
+      autoDetect: "mrz"
+    },
+    {
+      key: "selfie",
+      title: "Video selfie",
+      introTitle: "Video selfie",
+      introDesc: "Verificaci\xF3n mirando a la c\xE1mara (sin anteojos)",
+      cameraHint: "Mir\xE1 a la c\xE1mara",
+      cameraHintAuto: "Estamos verificando tus documentos...",
+      nextTitle: null,
+      nextDesc: null,
+      facing: "user",
+      autoDetect: "face"
+    }
+  ];
+  function getSteps(documentType) {
+    return documentType === "passport" ? PASSPORT_STEPS : DNI_STEPS;
+  }
 
   // src/shared-client/api.ts
   async function uploadFile(blob, key, token, api) {
@@ -27157,7 +27186,7 @@
           scanIdRef.current = requestAnimationFrame(scanFrame);
         }).catch(() => {
         });
-      } else if (step.autoDetect === "text") {
+      } else if (step.autoDetect === "text" || step.autoDetect === "mrz") {
         const scanFrame = () => {
           if (!activeRef.current || !streamRef.current) return;
           const vid = videoRef.current;
@@ -27573,10 +27602,13 @@
   function WidgetApp({ token: initialToken, api, locale, config, onEvent }) {
     const [phase, setPhase] = (0, import_react6.useState)("loading");
     const [mode, setMode] = (0, import_react6.useState)("camera");
+    const [documentType, setDocumentType] = (0, import_react6.useState)("dni");
     const [sessionToken, setSessionToken] = (0, import_react6.useState)(initialToken);
     const idData = config?.idData || void 0;
     const [creatingSession, setCreatingSession] = (0, import_react6.useState)(false);
     const [idDataChanged, setIdDataChanged] = (0, import_react6.useState)(false);
+    const steps = (0, import_react6.useMemo)(() => getSteps(documentType), [documentType]);
+    const selfieStep = (0, import_react6.useMemo)(() => steps.find((s) => s.key === "selfie"), [steps]);
     (0, import_react6.useEffect)(() => {
       const userId = config?.userId;
       if (!userId || !api) {
@@ -27624,6 +27656,9 @@
       setError(message);
       onEvent("kyc:error", { message, code: "upload_failed" });
     }, [onEvent]);
+    const handleDocumentTypeChange = (0, import_react6.useCallback)((type) => {
+      setDocumentType(type);
+    }, []);
     const createSession = (0, import_react6.useCallback)(async () => {
       if (sessionToken) return sessionToken;
       if (!config) return null;
@@ -27642,7 +27677,8 @@
             userId: config.userId,
             idData: config.idData || null,
             callbackUrl: config.callbackUrl || null,
-            callbackSecret: config.callbackSecret || null
+            callbackSecret: config.callbackSecret || null,
+            documentType
           })
         });
         if (!res.ok) {
@@ -27659,7 +27695,7 @@
       } finally {
         setCreatingSession(false);
       }
-    }, [sessionToken, config, api, showError]);
+    }, [sessionToken, config, api, showError, documentType]);
     const handleStart = (0, import_react6.useCallback)(async () => {
       const [token] = await Promise.all([
         createSession(),
@@ -27687,7 +27723,7 @@
     }, [capturedPreviewUrl]);
     const handleConfirm = (0, import_react6.useCallback)(async () => {
       if (!capturedBlob || uploading) return;
-      const step2 = STEPS[currentStep];
+      const step2 = steps[currentStep];
       if (!step2) return;
       const key = step2.key;
       setUploading(true);
@@ -27698,21 +27734,27 @@
         setUploads(newUploads);
         setCapturedBlob(null);
         setCapturedPreviewUrl(null);
-        const uploaded = [newUploads.idFront, newUploads.idBack, newUploads.selfie].filter(Boolean).length;
-        onEvent("kyc:step-completed", { step: key, uploaded, total: 3 });
-        const allDone = newUploads.idFront && newUploads.idBack && newUploads.selfie;
+        const uploaded = Object.values(newUploads).filter(Boolean).length;
+        onEvent("kyc:step-completed", { step: key, uploaded, total: steps.length });
+        const isPassport = documentType === "passport";
+        const allDone = isPassport ? newUploads.idFront && newUploads.selfie : newUploads.idFront && newUploads.idBack && newUploads.selfie;
         if (allDone) {
-          await patchSession(sessionToken, api, {
+          const patchBody = {
             status: "completed",
             idFrontUrl: newUploads.idFront.url,
-            idBackUrl: newUploads.idBack.url,
-            selfieUrl: newUploads.selfie.url
-          });
+            selfieUrl: newUploads.selfie.url,
+            documentType
+          };
+          if (!isPassport) {
+            patchBody.idBackUrl = newUploads.idBack.url;
+          }
+          await patchSession(sessionToken, api, patchBody);
           setPhase("processing");
         } else {
           const patchBody = {
             status: "uploading",
-            [`${key}Url`]: url
+            [`${key}Url`]: url,
+            documentType
           };
           if (!fingerprintSentRef.current) {
             patchBody.deviceFingerprint = {
@@ -27730,7 +27772,7 @@
       } finally {
         setUploading(false);
       }
-    }, [capturedBlob, capturedPreviewUrl, uploading, currentStep, uploads, sessionToken, api, showError, onEvent]);
+    }, [capturedBlob, capturedPreviewUrl, uploading, currentStep, uploads, sessionToken, api, showError, onEvent, steps, documentType]);
     const handleContinue = (0, import_react6.useCallback)(() => {
       setPhase("camera");
     }, []);
@@ -27805,8 +27847,8 @@
         setUploading(false);
       }
     }, [selfieRetryBlob, verificationId, sessionToken, uploading, api, showError]);
-    const step = STEPS[currentStep];
-    const prevStep = STEPS[currentStep - 1];
+    const step = steps[currentStep];
+    const prevStep = steps[currentStep - 1];
     const segmentedBtn = "flex-1 py-2 text-sm font-medium text-center rounded-lg cursor-pointer border-none bg-transparent relative z-10 transition-colors duration-200";
     return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex-1 flex flex-col", style: { fontFamily: "system-ui, -apple-system, sans-serif" }, children: [
       phase === "loading" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "flex-1 flex flex-col justify-center items-center py-8", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "w-8 h-8 border-3 border-gray-200 border-t-primary-500 rounded-full animate-spin" }) }),
@@ -27814,6 +27856,34 @@
         idDataChanged && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-800", children: "Tus datos personales cambiaron desde la \xFAltima verificaci\xF3n. Necesit\xE1s verificar tu identidad nuevamente." }),
         /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h1", { className: "text-2xl font-bold mb-2", children: "Verificaci\xF3n de Identidad" }),
         /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "text-gray-500 text-sm mb-6", children: "Necesitamos verificar tu identidad. El proceso dura menos de un minuto." }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "relative flex p-1 bg-gray-100 rounded-xl mb-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+            "div",
+            {
+              className: "absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out",
+              style: {
+                width: "calc(50% - 4px)",
+                left: documentType === "dni" ? "4px" : "calc(50% + 0px)"
+              }
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+            "button",
+            {
+              className: `${segmentedBtn} ${documentType === "dni" ? "text-gray-800" : "text-gray-500"}`,
+              onClick: () => handleDocumentTypeChange("dni"),
+              children: "DNI"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+            "button",
+            {
+              className: `${segmentedBtn} ${documentType === "passport" ? "text-gray-800" : "text-gray-500"}`,
+              onClick: () => handleDocumentTypeChange("passport"),
+              children: "Pasaporte"
+            }
+          )
+        ] }),
         hasCameraApi && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "relative flex p-1 bg-gray-100 rounded-xl mb-4", children: [
           /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
             "div",
@@ -27844,13 +27914,13 @@
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "text-xs text-gray-500 mb-6 min-h-[2.5rem]", children: [
           mode === "qr" && "Se generar\xE1 un c\xF3digo QR para que completes la verificaci\xF3n desde tu celular.",
-          mode === "camera" && "Vas a usar la c\xE1mara de este dispositivo para tomar las fotos del DNI y la selfie.",
+          mode === "camera" && "Vas a usar la c\xE1mara de este dispositivo para tomar las fotos y la selfie.",
           !hasCameraApi && "No se detect\xF3 c\xE1mara. Se generar\xE1 un c\xF3digo QR para verificar desde tu celular."
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("ul", { className: "list-none mb-8", children: STEPS.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("ul", { className: "list-none mb-8", children: steps.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
           "li",
           {
-            className: `flex items-center gap-4 py-4${i < STEPS.length - 1 ? " border-b border-gray-100" : ""}`,
+            className: `flex items-center gap-4 py-4${i < steps.length - 1 ? " border-b border-gray-100" : ""}`,
             children: [
               /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "w-9 h-9 rounded-full bg-primary-50 text-primary-400 flex items-center justify-center font-bold text-sm shrink-0", children: i + 1 }),
               /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "text-sm", children: [
@@ -27877,10 +27947,10 @@
         {
           step,
           stepIndex: currentStep,
-          totalSteps: STEPS.length,
+          totalSteps: steps.length,
           onCapture: handleCapture,
           onBack: currentStep === 0 ? handleBackToIntro : void 0,
-          idData: step.key === "idFront" ? idData : void 0,
+          idData: step.key === "idFront" && documentType === "dni" ? idData : void 0,
           onError: handleCameraError
         }
       ),
@@ -27932,9 +28002,9 @@
       phase === "selfie_retry_camera" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
         CameraPhase,
         {
-          step: STEPS[2],
-          stepIndex: 2,
-          totalSteps: 3,
+          step: selfieStep,
+          stepIndex: steps.length - 1,
+          totalSteps: steps.length,
           onCapture: handleSelfieRetryCapture,
           onBack: () => setPhase("selfie_retry")
         }
@@ -27942,7 +28012,7 @@
       phase === "selfie_retry_preview" && selfieRetryPreview && selfieRetryBlob && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
         PreviewPhase,
         {
-          step: STEPS[2],
+          step: selfieStep,
           blob: selfieRetryBlob,
           previewUrl: selfieRetryPreview,
           uploading,

@@ -64,6 +64,10 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    documentType: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   }, {
     indexes: [
       { fields: ['token'], unique: true },

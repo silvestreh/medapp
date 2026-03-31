@@ -1,15 +1,29 @@
 import { useCallback } from 'react';
-import { StepDef } from '../steps';
+import type { DocumentType } from '../../declarations';
+import { StepDef, getSteps } from '../steps';
 
 interface Props {
-  steps: StepDef[];
+  documentType: DocumentType;
+  onDocumentTypeChange: (type: DocumentType) => void;
   onStart: () => void;
 }
 
-export function IntroPhase({ steps, onStart }: Props) {
+export function IntroPhase({ documentType, onDocumentTypeChange, onStart }: Props) {
+  const steps = getSteps(documentType);
+
   const handleStart = useCallback(() => {
     onStart();
   }, [onStart]);
+
+  const handleSelectDni = useCallback(() => {
+    onDocumentTypeChange('dni');
+  }, [onDocumentTypeChange]);
+
+  const handleSelectPassport = useCallback(() => {
+    onDocumentTypeChange('passport');
+  }, [onDocumentTypeChange]);
+
+  const segmentedBtn = 'flex-1 py-2 text-sm font-medium text-center rounded-lg cursor-pointer border-none bg-transparent relative z-10 transition-colors duration-200';
 
   return (
     <div className="flex-1 flex flex-col justify-center px-6 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] max-w-[420px] mx-auto w-full">
@@ -17,6 +31,30 @@ export function IntroPhase({ steps, onStart }: Props) {
       <p className="text-gray-500 text-sm mb-8">
         Necesitamos verificar tu identidad. El proceso dura menos de un minuto.
       </p>
+
+      {/* Document type selector */}
+      <div className="relative flex p-1 bg-gray-100 rounded-xl mb-6">
+        <div
+          className="absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out"
+          style={{
+            width: 'calc(50% - 4px)',
+            left: documentType === 'dni' ? '4px' : 'calc(50% + 0px)',
+          }}
+        />
+        <button
+          className={`${segmentedBtn} ${documentType === 'dni' ? 'text-gray-800' : 'text-gray-500'}`}
+          onClick={handleSelectDni}
+        >
+          DNI
+        </button>
+        <button
+          className={`${segmentedBtn} ${documentType === 'passport' ? 'text-gray-800' : 'text-gray-500'}`}
+          onClick={handleSelectPassport}
+        >
+          Pasaporte
+        </button>
+      </div>
+
       <ul className="list-none mb-10">
         {steps.map((step, i) => (
           <li

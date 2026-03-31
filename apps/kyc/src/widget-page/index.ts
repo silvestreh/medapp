@@ -128,6 +128,7 @@ export function setupWidgetPage(app: Application): void {
         idData: req.body?.idData || null,
         callbackUrl: req.body?.callbackUrl || null,
         callbackSecret: req.body?.callbackSecret || null,
+        documentType: req.body?.documentType || null,
       }, { provider: undefined } as any);
 
       res.json({

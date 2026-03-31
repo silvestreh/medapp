@@ -76,7 +76,7 @@ export function setupMobilePage(app: Application): void {
         return res.status(400).json({ message: 'Session has expired' });
       }
 
-      const allowed = ['idFrontUrl', 'idBackUrl', 'selfieUrl', 'status'];
+      const allowed = ['idFrontUrl', 'idBackUrl', 'selfieUrl', 'status', 'documentType'];
       const updates: Record<string, unknown> = {};
       for (const key of allowed) {
         if (key in req.body) {
@@ -123,24 +123,30 @@ export function setupMobilePage(app: Application): void {
         { provider: undefined } as any
       );
 
-      // Auto-create identity verification when session completes with all 3 photos
+      // Auto-create identity verification when session completes with required photos
       if (updates.status === 'completed') {
         const s = updated as any;
-        if (s.idFrontUrl && s.idBackUrl && s.selfieUrl) {
+        const isPassport = s.documentType === 'passport';
+        const hasRequiredPhotos = isPassport
+          ? s.idFrontUrl && s.selfieUrl
+          : s.idFrontUrl && s.idBackUrl && s.selfieUrl;
+
+        if (hasRequiredPhotos) {
           try {
             await app.service('identity-verifications').create({
               userId: s.userId,
               sessionId: s.id,
               idFrontUrl: s.idFrontUrl,
-              idBackUrl: s.idBackUrl,
+              idBackUrl: isPassport ? null : s.idBackUrl,
               selfieUrl: s.selfieUrl,
               status: 'pending',
               clientIp: s.clientIp || null,
               clientUserAgent: s.clientUserAgent || null,
               deviceFingerprint: s.deviceFingerprint || null,
               idData: s.idData || null,
+              documentType: s.documentType || null,
             }, { provider: undefined } as any);
-            logger.info('[mobile-page] Auto-created identity verification for session %s (idData: %j)', s.id, s.idData);
+            logger.info('[mobile-page] Auto-created identity verification for session %s (documentType: %s, idData: %j)', s.id, s.documentType, s.idData);
           } catch (err: unknown) {
             const message = err instanceof Error ? err.message : String(err);
             logger.error('[mobile-page] Failed to create identity verification: %s', message);

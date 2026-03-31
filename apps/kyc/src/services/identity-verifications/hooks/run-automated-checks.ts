@@ -3,6 +3,7 @@ import axios from 'axios';
 import { decryptFileFromDisk } from '../../../file-storage';
 import { encryptJson } from '../../../encryption';
 import { scanDniBarcode, validateDniAgainstIdData } from '../../../scan-dni-barcode';
+import { scanPassportMrz, validateMrzAgainstIdData } from '../../../scan-passport-mrz';
 import logger from '../../../logger';
 
 /**
@@ -16,7 +17,7 @@ export const runAutomatedChecks = (): Hook => {
     const verification = context.result;
     if (!verification) return context;
 
-    const { id, idFrontUrl, selfieUrl, idData } = verification;
+    const { id, idFrontUrl, selfieUrl, idData, documentType } = verification;
 
     setImmediate(async () => {
       const app = context.app;
@@ -32,10 +33,13 @@ export const runAutomatedChecks = (): Hook => {
 
       logger.info('[auto-checks] Starting for verification %s', id);
 
-      // Update progress: scanning barcode
-      await patchProgress({ autoCheckProgress: { step: 'scanning_barcode', current: null, total: null, position: null } });
+      const isPassport = documentType === 'passport';
+      const scanStepName = isPassport ? 'scanning_mrz' : 'scanning_barcode';
 
-      // Decrypt ID front locally for barcode scan
+      // Update progress: scanning document
+      await patchProgress({ autoCheckProgress: { step: scanStepName, current: null, total: null, position: null } });
+
+      // Decrypt ID front locally for scanning
       let idFrontBuffer: Buffer;
       try {
         idFrontBuffer = decryptFileFromDisk(uploadsDir, idFrontUrl);
@@ -54,43 +58,62 @@ export const runAutomatedChecks = (): Hook => {
         return;
       }
 
-      // Step 1: Scan PDF417 barcode on ID front
+      // Step 1: Scan document (barcode for DNI, MRZ for passport)
       const updates: Record<string, unknown> = {};
-      try {
-        const dniScanData = await scanDniBarcode(idFrontBuffer);
-        updates.dniScanData = encryptJson(dniScanData);
+      if (isPassport) {
+        try {
+          const mrzScanData = await scanPassportMrz(idFrontBuffer);
+          updates.dniScanData = encryptJson(mrzScanData);
 
-        const validationErrors = validateDniAgainstIdData(dniScanData, idData || {});
-        updates.dniScanMatch = validationErrors.length === 0;
-        updates.dniScanErrors = validationErrors.length > 0 ? validationErrors.join('; ') : null;
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        updates.dniScanData = null;
-        updates.dniScanMatch = null;
-        updates.dniScanErrors = message;
-        logger.error('[auto-checks] PDF417 scan failed: %s', message);
+          const validationErrors = validateMrzAgainstIdData(mrzScanData, idData || {});
+          updates.dniScanMatch = validationErrors.length === 0;
+          updates.dniScanErrors = validationErrors.length > 0 ? validationErrors.join('; ') : null;
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          updates.dniScanData = null;
+          updates.dniScanMatch = null;
+          updates.dniScanErrors = message;
+          logger.error('[auto-checks] MRZ scan failed: %s', message);
+        }
+      } else {
+        try {
+          const dniScanData = await scanDniBarcode(idFrontBuffer);
+          updates.dniScanData = encryptJson(dniScanData);
+
+          const validationErrors = validateDniAgainstIdData(dniScanData, idData || {});
+          updates.dniScanMatch = validationErrors.length === 0;
+          updates.dniScanErrors = validationErrors.length > 0 ? validationErrors.join('; ') : null;
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          updates.dniScanData = null;
+          updates.dniScanMatch = null;
+          updates.dniScanErrors = message;
+          logger.error('[auto-checks] PDF417 scan failed: %s', message);
+        }
       }
 
-      // Early rejection: skip face comparison if DNI doesn't match or scan failed
+      // Early rejection: skip face comparison if document data doesn't match
       if (updates.dniScanMatch === false) {
-        logger.info('[auto-checks] DNI mismatch — rejecting without face comparison');
+        const mismatchType = isPassport ? 'mrz_mismatch' : 'dni_mismatch';
+        logger.info('[auto-checks] %s — rejecting without face comparison', mismatchType);
         await patchProgress({
           ...updates,
           autoCheckCompletedAt: new Date(),
           autoCheckProgress: null,
           faceMatch: null,
           faceMatchConfidence: null,
-          faceMatchError: 'Skipped: DNI data mismatch',
+          faceMatchError: `Skipped: ${isPassport ? 'MRZ' : 'DNI'} data mismatch`,
           status: 'rejected',
-          rejectionReason: `dni_mismatch:${updates.dniScanErrors}`,
+          rejectionReason: `${mismatchType}:${updates.dniScanErrors}`,
         });
         return;
       }
 
       if (updates.dniScanData === null && updates.dniScanErrors) {
-        // Barcode scan failed on the server — this can happen with compressed images.
-        // The client already validated the barcode before upload, so continue to face comparison.
-        logger.warn('[auto-checks] Server-side barcode scan failed (continuing): %s', updates.dniScanErrors);
+        // Scan failed on the server — this can happen with compressed images.
+        // For DNI, the client already validated the barcode. For passport, continue to face comparison.
+        logger.warn('[auto-checks] Server-side %s scan failed (continuing): %s',
+          isPassport ? 'MRZ' : 'barcode', updates.dniScanErrors);
       }
 
       // Save barcode results and update progress

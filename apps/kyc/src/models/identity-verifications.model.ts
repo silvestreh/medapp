@@ -29,7 +29,7 @@ export default function (app: Application): typeof Model {
     },
     idBackUrl: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     selfieUrl: {
       type: DataTypes.STRING,
@@ -107,6 +107,10 @@ export default function (app: Application): typeof Model {
     },
     idData: {
       type: DataTypes.JSONB,
+      allowNull: true,
+    },
+    documentType: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
   }, {

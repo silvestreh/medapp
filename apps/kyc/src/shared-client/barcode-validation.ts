@@ -13,6 +13,7 @@ export interface IdData {
   firstName?: string | null;
   lastName?: string | null;
   dniNumber?: string | null;
+  passportNumber?: string | null;
   birthDate?: string | null;
   gender?: string | null;
 }

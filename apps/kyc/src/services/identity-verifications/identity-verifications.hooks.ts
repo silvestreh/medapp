@@ -46,9 +46,14 @@ const validateCreate = (): Hook => {
   return async (context: HookContext): Promise<HookContext> => {
     if (context.params.provider === undefined) return context;
 
-    const { idFrontUrl, idBackUrl, selfieUrl } = context.data;
-    if (!idFrontUrl || !idBackUrl || !selfieUrl) {
-      throw new BadRequest('ID front photo, ID back photo, and selfie are all required');
+    const { idFrontUrl, idBackUrl, selfieUrl, documentType } = context.data;
+    const isPassport = documentType === 'passport';
+    if (!idFrontUrl || (!isPassport && !idBackUrl) || !selfieUrl) {
+      throw new BadRequest(
+        isPassport
+          ? 'Passport photo and selfie are required'
+          : 'ID front photo, ID back photo, and selfie are all required'
+      );
     }
 
     const user = context.params.user;

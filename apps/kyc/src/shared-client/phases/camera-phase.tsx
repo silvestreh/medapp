@@ -331,7 +331,7 @@ export function CameraPhase({ step, stepIndex, totalSteps, onCapture, onBack, id
           scanIdRef.current = requestAnimationFrame(scanFrame);
         })
         .catch(() => {});
-    } else if (step.autoDetect === 'text') {
+    } else if (step.autoDetect === 'text' || step.autoDetect === 'mrz') {
       const scanFrame = () => {
         if (!activeRef.current || !streamRef.current) return;
         const vid = videoRef.current;

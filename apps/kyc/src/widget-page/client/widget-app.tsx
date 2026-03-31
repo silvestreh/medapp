@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { STEPS } from '../../shared-client/steps';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import type { DocumentType } from '../../declarations';
+import { getSteps, STEPS } from '../../shared-client/steps';
 import type { IdData } from '../../shared-client/barcode-validation';
 import { uploadFile, patchSession } from '../../shared-client/api';
 import { collectDeviceFingerprint, collectGeolocation } from '../../shared-client/utils';
@@ -30,12 +31,16 @@ interface Props {
 export function WidgetApp({ token: initialToken, api, locale, config, onEvent }: Props) {
   const [phase, setPhase] = useState<Phase | 'loading'>('loading');
   const [mode, setMode] = useState<Mode>('camera');
+  const [documentType, setDocumentType] = useState<DocumentType>('dni');
   const [sessionToken, setSessionToken] = useState(initialToken);
 
   const idData = (config?.idData as IdData | undefined) || undefined;
   const [creatingSession, setCreatingSession] = useState(false);
 
   const [idDataChanged, setIdDataChanged] = useState(false);
+
+  const steps = useMemo(() => getSteps(documentType), [documentType]);
+  const selfieStep = useMemo(() => steps.find(s => s.key === 'selfie')!, [steps]);
 
   // Check if user already has a verified identity on mount
   useEffect(() => {
@@ -95,6 +100,10 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
     onEvent('kyc:error', { message, code: 'upload_failed' });
   }, [onEvent]);
 
+  const handleDocumentTypeChange = useCallback((type: DocumentType) => {
+    setDocumentType(type);
+  }, []);
+
   const createSession = useCallback(async (): Promise<string | null> => {
     // If we already have a token (passed directly), use it
     if (sessionToken) return sessionToken;
@@ -117,6 +126,7 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
           idData: config.idData || null,
           callbackUrl: config.callbackUrl || null,
           callbackSecret: config.callbackSecret || null,
+          documentType,
         }),
       });
 
@@ -135,7 +145,7 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
     } finally {
       setCreatingSession(false);
     }
-  }, [sessionToken, config, api, showError]);
+  }, [sessionToken, config, api, showError, documentType]);
 
   const handleStart = useCallback(async () => {
     // Create session and collect geolocation in parallel
@@ -167,7 +177,7 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
 
   const handleConfirm = useCallback(async () => {
     if (!capturedBlob || uploading) return;
-    const step = STEPS[currentStep];
+    const step = steps[currentStep];
     if (!step) return;
     const key = step.key as UploadKey;
 
@@ -181,23 +191,31 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
       setCapturedBlob(null);
       setCapturedPreviewUrl(null);
 
-      const uploaded = [newUploads.idFront, newUploads.idBack, newUploads.selfie].filter(Boolean).length;
-      onEvent('kyc:step-completed', { step: key, uploaded, total: 3 });
+      const uploaded = Object.values(newUploads).filter(Boolean).length;
+      onEvent('kyc:step-completed', { step: key, uploaded, total: steps.length });
 
-      const allDone = newUploads.idFront && newUploads.idBack && newUploads.selfie;
+      const isPassport = documentType === 'passport';
+      const allDone = isPassport
+        ? newUploads.idFront && newUploads.selfie
+        : newUploads.idFront && newUploads.idBack && newUploads.selfie;
 
       if (allDone) {
-        await patchSession(sessionToken, api, {
+        const patchBody: Record<string, unknown> = {
           status: 'completed',
           idFrontUrl: newUploads.idFront!.url,
-          idBackUrl: newUploads.idBack!.url,
           selfieUrl: newUploads.selfie!.url,
-        });
+          documentType,
+        };
+        if (!isPassport) {
+          patchBody.idBackUrl = newUploads.idBack!.url;
+        }
+        await patchSession(sessionToken, api, patchBody);
         setPhase('processing');
       } else {
         const patchBody: Record<string, unknown> = {
           status: 'uploading',
           [`${key}Url`]: url,
+          documentType,
         };
         if (!fingerprintSentRef.current) {
           patchBody.deviceFingerprint = {
@@ -215,7 +233,7 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
     } finally {
       setUploading(false);
     }
-  }, [capturedBlob, capturedPreviewUrl, uploading, currentStep, uploads, sessionToken, api, showError, onEvent]);
+  }, [capturedBlob, capturedPreviewUrl, uploading, currentStep, uploads, sessionToken, api, showError, onEvent, steps, documentType]);
 
   const handleContinue = useCallback(() => {
     setPhase('camera');
@@ -308,8 +326,8 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
     }
   }, [selfieRetryBlob, verificationId, sessionToken, uploading, api, showError]);
 
-  const step = STEPS[currentStep];
-  const prevStep = STEPS[currentStep - 1];
+  const step = steps[currentStep];
+  const prevStep = steps[currentStep - 1];
 
   const segmentedBtn = 'flex-1 py-2 text-sm font-medium text-center rounded-lg cursor-pointer border-none bg-transparent relative z-10 transition-colors duration-200';
 
@@ -332,6 +350,29 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
           <p className="text-gray-500 text-sm mb-6">
             Necesitamos verificar tu identidad. El proceso dura menos de un minuto.
           </p>
+
+          {/* Document type selector */}
+          <div className="relative flex p-1 bg-gray-100 rounded-xl mb-4">
+            <div
+              className="absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out"
+              style={{
+                width: 'calc(50% - 4px)',
+                left: documentType === 'dni' ? '4px' : 'calc(50% + 0px)',
+              }}
+            />
+            <button
+              className={`${segmentedBtn} ${documentType === 'dni' ? 'text-gray-800' : 'text-gray-500'}`}
+              onClick={() => handleDocumentTypeChange('dni')}
+            >
+              DNI
+            </button>
+            <button
+              className={`${segmentedBtn} ${documentType === 'passport' ? 'text-gray-800' : 'text-gray-500'}`}
+              onClick={() => handleDocumentTypeChange('passport')}
+            >
+              Pasaporte
+            </button>
+          </div>
 
           {/* Mode selector with sliding indicator */}
           {hasCameraApi && (
@@ -362,16 +403,16 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
           {/* Mode description */}
           <div className="text-xs text-gray-500 mb-6 min-h-[2.5rem]">
             {mode === 'qr' && 'Se generará un código QR para que completes la verificación desde tu celular.'}
-            {mode === 'camera' && 'Vas a usar la cámara de este dispositivo para tomar las fotos del DNI y la selfie.'}
+            {mode === 'camera' && 'Vas a usar la cámara de este dispositivo para tomar las fotos y la selfie.'}
             {!hasCameraApi && 'No se detectó cámara. Se generará un código QR para verificar desde tu celular.'}
           </div>
 
           {/* Steps */}
           <ul className="list-none mb-8">
-            {STEPS.map((s, i) => (
+            {steps.map((s, i) => (
               <li
                 key={s.key}
-                className={`flex items-center gap-4 py-4${i < STEPS.length - 1 ? ' border-b border-gray-100' : ''}`}
+                className={`flex items-center gap-4 py-4${i < steps.length - 1 ? ' border-b border-gray-100' : ''}`}
               >
                 <div className="w-9 h-9 rounded-full bg-primary-50 text-primary-400 flex items-center justify-center font-bold text-sm shrink-0">
                   {i + 1}
@@ -403,10 +444,10 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
         <CameraPhase
           step={step}
           stepIndex={currentStep}
-          totalSteps={STEPS.length}
+          totalSteps={steps.length}
           onCapture={handleCapture}
           onBack={currentStep === 0 ? handleBackToIntro : undefined}
-          idData={step.key === 'idFront' ? idData : undefined}
+          idData={step.key === 'idFront' && documentType === 'dni' ? idData : undefined}
           onError={handleCameraError}
         />
       )}
@@ -467,9 +508,9 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
 
       {phase === 'selfie_retry_camera' && (
         <CameraPhase
-          step={STEPS[2]}
-          stepIndex={2}
-          totalSteps={3}
+          step={selfieStep}
+          stepIndex={steps.length - 1}
+          totalSteps={steps.length}
           onCapture={handleSelfieRetryCapture}
           onBack={() => setPhase('selfie_retry')}
         />
@@ -477,7 +518,7 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
 
       {phase === 'selfie_retry_preview' && selfieRetryPreview && selfieRetryBlob && (
         <PreviewPhase
-          step={STEPS[2]}
+          step={selfieStep}
           blob={selfieRetryBlob}
           previewUrl={selfieRetryPreview}
           uploading={uploading}

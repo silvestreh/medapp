@@ -5,6 +5,8 @@ export interface ServiceTypes {}
 
 export type Application = ExpressFeathers<ServiceTypes>;
 
+export type DocumentType = 'dni' | 'passport';
+
 export interface VerificationSession {
   id: string;
   userId: string;
@@ -18,6 +20,7 @@ export interface VerificationSession {
   clientUserAgent: string | null;
   deviceFingerprint: Record<string, unknown> | null;
   idData: Record<string, unknown> | null;
+  documentType: DocumentType | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,8 +30,9 @@ export interface IdentityVerification {
   userId: string;
   sessionId: string | null;
   status: 'pending' | 'verified' | 'rejected';
+  documentType: DocumentType | null;
   idFrontUrl: string;
-  idBackUrl: string;
+  idBackUrl: string | null;
   selfieUrl: string;
   notes: string | null;
   rejectionReason: string | null;

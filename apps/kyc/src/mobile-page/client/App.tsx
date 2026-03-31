@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { STEPS } from '../../shared-client/steps';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import type { DocumentType } from '../../declarations';
+import { getSteps } from '../../shared-client/steps';
 import { uploadFile, patchSession } from '../../shared-client/api';
 import { collectDeviceFingerprint, collectGeolocation } from '../../shared-client/utils';
 import type { GeolocationData } from '../../shared-client/utils';
@@ -25,6 +26,7 @@ interface Props {
 
 export function App({ token, api }: Props) {
   const [phase, setPhase] = useState<Phase>('intro');
+  const [documentType, setDocumentType] = useState<DocumentType>('dni');
   const [currentStep, setCurrentStep] = useState(0);
   const [uploads, setUploads] = useState<Record<UploadKey, UploadedFile | null>>({
     idFront: null,
@@ -36,6 +38,8 @@ export function App({ token, api }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
+  const steps = useMemo(() => getSteps(documentType), [documentType]);
+
   const fingerprintSentRef = useRef(false);
   const deviceFingerprintRef = useRef(collectDeviceFingerprint());
   const geolocationRef = useRef<GeolocationData | null>(null);
@@ -46,6 +50,10 @@ export function App({ token, api }: Props) {
       message = 'No se pudo conectar con el servidor. Verificá tu conexión a internet.';
     }
     setError(message);
+  }, []);
+
+  const handleDocumentTypeChange = useCallback((type: DocumentType) => {
+    setDocumentType(type);
   }, []);
 
   const handleStart = useCallback(() => {
@@ -70,7 +78,7 @@ export function App({ token, api }: Props) {
 
   const handleConfirm = useCallback(async () => {
     if (!capturedBlob || uploading) return;
-    const step = STEPS[currentStep];
+    const step = steps[currentStep];
     if (!step) return;
     const key = step.key as UploadKey;
 
@@ -84,20 +92,28 @@ export function App({ token, api }: Props) {
       setCapturedBlob(null);
       setCapturedPreviewUrl(null);
 
-      const allDone = newUploads.idFront && newUploads.idBack && newUploads.selfie;
+      const isPassport = documentType === 'passport';
+      const allDone = isPassport
+        ? newUploads.idFront && newUploads.selfie
+        : newUploads.idFront && newUploads.idBack && newUploads.selfie;
 
       if (allDone) {
-        await patchSession(token, api, {
+        const patchBody: Record<string, unknown> = {
           status: 'completed',
           idFrontUrl: newUploads.idFront!.url,
-          idBackUrl: newUploads.idBack!.url,
           selfieUrl: newUploads.selfie!.url,
-        });
+          documentType,
+        };
+        if (!isPassport) {
+          patchBody.idBackUrl = newUploads.idBack!.url;
+        }
+        await patchSession(token, api, patchBody);
         setPhase('done');
       } else {
         const patchBody: Record<string, unknown> = {
           status: 'uploading',
           [`${key}Url`]: url,
+          documentType,
         };
         if (!fingerprintSentRef.current) {
           patchBody.deviceFingerprint = {
@@ -115,26 +131,30 @@ export function App({ token, api }: Props) {
     } finally {
       setUploading(false);
     }
-  }, [capturedBlob, capturedPreviewUrl, uploading, currentStep, uploads, token, api, showError]);
+  }, [capturedBlob, capturedPreviewUrl, uploading, currentStep, uploads, token, api, showError, steps, documentType]);
 
   const handleContinue = useCallback(() => {
     setPhase('camera');
   }, []);
 
-  const step = STEPS[currentStep];
-  const prevStep = STEPS[currentStep - 1];
+  const step = steps[currentStep];
+  const prevStep = steps[currentStep - 1];
 
   return (
     <div className="flex-1 flex flex-col">
       {phase === 'intro' && (
-        <IntroPhase steps={STEPS} onStart={handleStart} />
+        <IntroPhase
+          documentType={documentType}
+          onDocumentTypeChange={handleDocumentTypeChange}
+          onStart={handleStart}
+        />
       )}
 
       {phase === 'camera' && step && (
         <CameraPhase
           step={step}
           stepIndex={currentStep}
-          totalSteps={STEPS.length}
+          totalSteps={steps.length}
           onCapture={handleCapture}
         />
       )}
