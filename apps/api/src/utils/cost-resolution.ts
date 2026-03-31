@@ -6,6 +6,15 @@ import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@athe
 
 export type PricingType = 'fixed' | 'multiplier';
 
+export interface TierPriceOverride {
+  value?: number;
+  multiplier?: number;
+  extras?: Record<string, number>;
+  emergencyValue?: number;
+  emergencyMultiplier?: number;
+  emergencyExtras?: Record<string, number>;
+}
+
 export interface PricingConfig {
   type: PricingType;
   value?: number;
@@ -17,6 +26,7 @@ export interface PricingConfig {
   emergencyValue?: number;
   emergencyMultiplier?: number;
   emergencyExtras?: Record<string, number>;
+  tierPrices?: Record<string, TierPriceOverride>;
 }
 
 export type InsurerPricing = Record<string, number | PricingConfig>;
@@ -187,6 +197,42 @@ export function hasStudyResultData(data: Record<string, unknown>): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Tier-aware pricing resolution
+// ---------------------------------------------------------------------------
+
+export function resolvePricingForTier(
+  config: PricingConfig,
+  tierName: string | null | undefined,
+): PricingConfig {
+  if (!config.tierPrices || Object.keys(config.tierPrices).length === 0) {
+    return config;
+  }
+
+  let override: TierPriceOverride | undefined;
+
+  if (tierName && config.tierPrices[tierName]) {
+    override = config.tierPrices[tierName];
+  } else {
+    // Fallback: use the tier with the highest resolved base cost
+    let highestCost = -1;
+    for (const tierOverride of Object.values(config.tierPrices)) {
+      const synth: PricingConfig = { ...config, ...tierOverride, tierPrices: undefined };
+      const cost = resolveCostFromPrice(synth);
+      if (cost > highestCost) {
+        highestCost = cost;
+        override = tierOverride;
+      }
+    }
+  }
+
+  if (!override) {
+    return config;
+  }
+
+  return { ...config, ...override, tierPrices: config.tierPrices };
+}
+
+// ---------------------------------------------------------------------------
 // Convenience: resolve total cost (base + extras) for a single practice
 // ---------------------------------------------------------------------------
 
@@ -195,9 +241,14 @@ export function resolveTotalCost(opts: {
   practiceType: string;
   emergency: boolean;
   activeSections: string[];
+  tierName?: string | null;
 }): number {
-  const { insurerPricing, practiceType, emergency, activeSections } = opts;
-  const price = insurerPricing ? insurerPricing[practiceType] : undefined;
+  const { insurerPricing, practiceType, emergency, activeSections, tierName } = opts;
+  let price = insurerPricing ? insurerPricing[practiceType] : undefined;
+
+  if (price != null && typeof price === 'object' && !Array.isArray(price)) {
+    price = resolvePricingForTier(price, tierName);
+  }
 
   const baseCost = emergency
     ? resolveEmergencyCostFromPrice(price)

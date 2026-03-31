@@ -36,13 +36,17 @@ export function updateCost(kind: 'study'): Hook {
       const insurerPrices = toInsurerPrices(settings[0].insurerPrices);
 
       let effectiveInsurerId = record.insurerId || null;
-      if (!effectiveInsurerId) {
+      let tierName: string | null = null;
+      {
         const sequelize = app.get('sequelizeClient');
         const patient = await sequelize.models.patients.findByPk(record.patientId, {
-          attributes: ['medicareId'],
+          attributes: ['medicareId', 'medicarePlan'],
           raw: true,
         });
-        effectiveInsurerId = patient?.medicareId || null;
+        if (!effectiveInsurerId) {
+          effectiveInsurerId = patient?.medicareId || null;
+        }
+        tierName = patient?.medicarePlan || null;
       }
 
       const priceKey = effectiveInsurerId || PARTICULAR_INSURER_ID;
@@ -86,6 +90,7 @@ export function updateCost(kind: 'study'): Hook {
           practiceType: studyType,
           emergency: isEmergency,
           activeSections,
+          tierName,
         });
 
         // Upsert: find existing cost row for this (practiceId, studyType)

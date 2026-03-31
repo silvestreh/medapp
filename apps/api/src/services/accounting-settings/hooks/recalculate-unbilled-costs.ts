@@ -49,24 +49,24 @@ export function recalculateUnbilledCosts(): Hook {
       resultsByStudyAndType.set(`${sr.studyId}:${sr.type}`, d);
     }
 
-    // Resolve effective insurer IDs — batch fetch patients for rows without insurerId
-    const patientIdsNeedingLookup = [
-      ...new Set(
-        unbilledCosts
-          .filter(c => !c.insurerId)
-          .map(c => String(c.patientId))
-      ),
+    // Batch fetch patients for insurer ID resolution and tier name
+    const allPatientIds = [
+      ...new Set(unbilledCosts.map(c => String(c.patientId))),
     ];
 
-    const patients = patientIdsNeedingLookup.length
+    const patients = allPatientIds.length
       ? await app.service('patients').find({
-        query: { id: { $in: patientIdsNeedingLookup }, $select: ['id', 'medicareId'] },
+        query: { id: { $in: allPatientIds }, $select: ['id', 'medicareId', 'medicarePlan'] },
         paginate: false,
-      }) as { id: string; medicareId: string | null }[]
+      }) as { id: string; medicareId: string | null; medicarePlan: string | null }[]
       : [];
 
     const medicareByPatientId = new Map(
       patients.map(p => [String(p.id), p.medicareId])
+    );
+
+    const medicarePlanByPatientId = new Map(
+      patients.map(p => [String(p.id), p.medicarePlan])
     );
 
     for (const cost of unbilledCosts) {
@@ -98,11 +98,14 @@ export function recalculateUnbilledCosts(): Hook {
         ? 'encounter'
         : (cost.studyType || 'encounter');
 
+      const tierName = medicarePlanByPatientId.get(String(cost.patientId)) || null;
+
       const newCost = resolveTotalCost({
         insurerPricing,
         practiceType,
         emergency: cost.emergency,
         activeSections,
+        tierName,
       });
 
       if (Number(cost.cost) !== newCost) {

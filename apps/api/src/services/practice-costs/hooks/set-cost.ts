@@ -11,20 +11,21 @@ import type { Application, AccountingSettings } from '../../../declarations';
 
 type PracticeKind = 'study' | 'encounter';
 
-async function resolveEffectiveInsurerId(
+async function resolvePatientInsurance(
   app: Application,
   insurerId: string | null,
   patientId: string
-): Promise<string | null> {
-  if (insurerId) return insurerId;
-
+): Promise<{ insurerId: string | null; tierName: string | null }> {
   const sequelize = app.get('sequelizeClient');
   const patient = await sequelize.models.patients.findByPk(patientId, {
-    attributes: ['medicareId'],
+    attributes: ['medicareId', 'medicarePlan'],
     raw: true,
   });
 
-  return patient?.medicareId || null;
+  return {
+    insurerId: insurerId || patient?.medicareId || null,
+    tierName: patient?.medicarePlan || null,
+  };
 }
 
 async function getMedicInsurerPrices(
@@ -51,7 +52,7 @@ export function setCost(kind: PracticeKind): Hook {
       if (!medicId) continue;
 
       const insurerPrices = await getMedicInsurerPrices(app, medicId);
-      const effectiveInsurerId = await resolveEffectiveInsurerId(
+      const { insurerId: effectiveInsurerId, tierName } = await resolvePatientInsurance(
         app,
         record.insurerId || null,
         record.patientId,
@@ -69,6 +70,7 @@ export function setCost(kind: PracticeKind): Hook {
           practiceType: 'encounter',
           emergency: false,
           activeSections: [],
+          tierName,
         });
 
         await app.service('practice-costs').create({
@@ -111,6 +113,7 @@ export function setCost(kind: PracticeKind): Hook {
             practiceType: studyType,
             emergency: isEmergency,
             activeSections,
+            tierName,
           });
 
           await app.service('practice-costs').create({

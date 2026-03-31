@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useLoaderData, useParams } from '@remix-run/react';
@@ -47,6 +47,7 @@ import {
   type PricingConfig,
   type PricingType,
   type InsurerPrices,
+  type TierPriceOverride,
 } from '~/utils/accounting';
 import { studySchemas, getExtraCostSections, type ExtraCostSection } from '@athelas/encounter-schemas';
 import { parseFormJson } from '~/utils/parse-form-json';
@@ -68,6 +69,7 @@ type Prepaga = {
   id: string;
   shortName: string;
   denomination: string;
+  tiers: { name: string; code: number | null }[];
 };
 
 const Layout = styled('div', {
@@ -261,7 +263,7 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
   }
 
   const finalInsurers = [
-    { id: PARTICULAR_INSURER_ID, shortName: 'Particular', denomination: 'Particular' },
+    { id: PARTICULAR_INSURER_ID, shortName: 'Particular', denomination: 'Particular', tiers: [] as { name: string; code: number | null }[] },
     ...mergedInsurerIds
       .map(id => {
         const insurer = insurerById.get(id);
@@ -269,6 +271,7 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
           id,
           shortName: insurer?.shortName || 'UNKNOWN',
           denomination: insurer?.denomination || id,
+          tiers: (insurer as any)?.tiers || [],
         };
       })
       .sort((a, b) => a.shortName.localeCompare(b.shortName)),
@@ -434,10 +437,25 @@ export default function AccountingSettingsPage() {
 
   const isSaving = fetcher.state !== 'idle';
 
+  const [activeTierName, setActiveTierName] = useState<string | null>(null);
+
+  // Reset tier selection when insurer changes
+  useEffect(() => {
+    setActiveTierName(null);
+  }, [activeInsurerId]);
+
   const activeInsurer = useMemo(
     () => insurers.find(insurer => insurer.id === activeInsurerId) ?? null,
     [activeInsurerId, insurers]
   );
+
+  const activeTierOptions = useMemo(() => {
+    if (!activeInsurer || !activeInsurer.tiers || activeInsurer.tiers.length === 0) return [];
+    return activeInsurer.tiers.map(tier => ({
+      value: tier.name,
+      label: tier.name,
+    }));
+  }, [activeInsurer]);
 
   const activePrices = useMemo(
     () => (activeInsurerId ? (insurerPrices[activeInsurerId] ?? {}) : {}),
@@ -504,8 +522,58 @@ export default function AccountingSettingsPage() {
   );
 
   const getPracticeConfig = useCallback(
-    (practiceKey: string): PricingConfig => toPricingConfig(activePrices[practiceKey]),
-    [activePrices]
+    (practiceKey: string): PricingConfig => {
+      const base = toPricingConfig(activePrices[practiceKey]);
+      if (!activeTierName || !base.tierPrices?.[activeTierName]) return base;
+      const override = base.tierPrices[activeTierName];
+      return {
+        ...base,
+        ...(override.value !== undefined ? { value: override.value } : {}),
+        ...(override.multiplier !== undefined ? { multiplier: override.multiplier } : {}),
+        ...(override.emergencyValue !== undefined ? { emergencyValue: override.emergencyValue } : {}),
+        ...(override.emergencyMultiplier !== undefined ? { emergencyMultiplier: override.emergencyMultiplier } : {}),
+        ...(override.extras !== undefined ? { extras: override.extras } : {}),
+        ...(override.emergencyExtras !== undefined ? { emergencyExtras: override.emergencyExtras } : {}),
+      };
+    },
+    [activePrices, activeTierName]
+  );
+
+  const updatePracticePriceField = useCallback(
+    (practiceKey: string, field: keyof TierPriceOverride, fieldValue: unknown) => {
+      if (!activeInsurerId) return;
+      setInsurerPrices(prev => {
+        const current = prev[activeInsurerId] ?? {};
+        const practiceConfig = toPricingConfig(current[practiceKey]);
+
+        if (!activeTierName) {
+          return {
+            ...prev,
+            [activeInsurerId]: {
+              ...current,
+              [practiceKey]: { ...practiceConfig, [field]: fieldValue },
+            },
+          };
+        }
+
+        const existingTierPrices = practiceConfig.tierPrices ?? {};
+        const existingOverride = existingTierPrices[activeTierName] ?? {};
+        return {
+          ...prev,
+          [activeInsurerId]: {
+            ...current,
+            [practiceKey]: {
+              ...practiceConfig,
+              tierPrices: {
+                ...existingTierPrices,
+                [activeTierName]: { ...existingOverride, [field]: fieldValue },
+              },
+            },
+          },
+        };
+      });
+    },
+    [activeInsurerId, activeTierName]
   );
 
   const handlePracticeTypeChange = useCallback(
@@ -541,21 +609,9 @@ export default function AccountingSettingsPage() {
 
   const handlePracticeFixedValueChange = useCallback(
     (practiceKey: string, value: string | number) => {
-      if (!activeInsurerId) {
-        return;
-      }
-      setInsurerPrices(prev => ({
-        ...prev,
-        [activeInsurerId]: {
-          ...(prev[activeInsurerId] ?? {}),
-          [practiceKey]: {
-            ...toPricingConfig(prev[activeInsurerId]?.[practiceKey]),
-            value: toNumericPrice(value),
-          },
-        },
-      }));
+      updatePracticePriceField(practiceKey, 'value', toNumericPrice(value));
     },
-    [activeInsurerId]
+    [updatePracticePriceField]
   );
 
   const handleInsurerBaseNameChange = useCallback(
@@ -594,55 +650,23 @@ export default function AccountingSettingsPage() {
 
   const handlePracticeMultiplierChange = useCallback(
     (practiceKey: string, value: string | number) => {
-      if (!activeInsurerId) {
-        return;
-      }
-      setInsurerPrices(prev => ({
-        ...prev,
-        [activeInsurerId]: {
-          ...(prev[activeInsurerId] ?? {}),
-          [practiceKey]: {
-            ...toPricingConfig(prev[activeInsurerId]?.[practiceKey]),
-            multiplier: toNumericPrice(value),
-          },
-        },
-      }));
+      updatePracticePriceField(practiceKey, 'multiplier', toNumericPrice(value));
     },
-    [activeInsurerId]
+    [updatePracticePriceField]
   );
 
   const handleEmergencyFixedValueChange = useCallback(
     (practiceKey: string, value: string | number) => {
-      if (!activeInsurerId) return;
-      setInsurerPrices(prev => ({
-        ...prev,
-        [activeInsurerId]: {
-          ...(prev[activeInsurerId] ?? {}),
-          [practiceKey]: {
-            ...toPricingConfig(prev[activeInsurerId]?.[practiceKey]),
-            emergencyValue: toNumericPrice(value),
-          },
-        },
-      }));
+      updatePracticePriceField(practiceKey, 'emergencyValue', toNumericPrice(value));
     },
-    [activeInsurerId]
+    [updatePracticePriceField]
   );
 
   const handleEmergencyMultiplierChange = useCallback(
     (practiceKey: string, value: string | number) => {
-      if (!activeInsurerId) return;
-      setInsurerPrices(prev => ({
-        ...prev,
-        [activeInsurerId]: {
-          ...(prev[activeInsurerId] ?? {}),
-          [practiceKey]: {
-            ...toPricingConfig(prev[activeInsurerId]?.[practiceKey]),
-            emergencyMultiplier: toNumericPrice(value),
-          },
-        },
-      }));
+      updatePracticePriceField(practiceKey, 'emergencyMultiplier', toNumericPrice(value));
     },
-    [activeInsurerId]
+    [updatePracticePriceField]
   );
 
   const handleEmergencyExtraCostChange = useCallback(
@@ -650,22 +674,47 @@ export default function AccountingSettingsPage() {
       if (!activeInsurerId) return;
       setInsurerPrices(prev => {
         const current = toPricingConfig(prev[activeInsurerId]?.[practiceKey]);
+
+        if (!activeTierName) {
+          return {
+            ...prev,
+            [activeInsurerId]: {
+              ...(prev[activeInsurerId] ?? {}),
+              [practiceKey]: {
+                ...current,
+                emergencyExtras: {
+                  ...current.emergencyExtras,
+                  [sectionName]: toNumericPrice(value),
+                },
+              },
+            },
+          };
+        }
+
+        const existingTierPrices = current.tierPrices ?? {};
+        const existingOverride = existingTierPrices[activeTierName] ?? {};
         return {
           ...prev,
           [activeInsurerId]: {
             ...(prev[activeInsurerId] ?? {}),
             [practiceKey]: {
               ...current,
-              emergencyExtras: {
-                ...current.emergencyExtras,
-                [sectionName]: toNumericPrice(value),
+              tierPrices: {
+                ...existingTierPrices,
+                [activeTierName]: {
+                  ...existingOverride,
+                  emergencyExtras: {
+                    ...(existingOverride.emergencyExtras ?? {}),
+                    [sectionName]: toNumericPrice(value),
+                  },
+                },
               },
             },
           },
         };
       });
     },
-    [activeInsurerId]
+    [activeInsurerId, activeTierName]
   );
 
   const handleExtraCostChange = useCallback(
@@ -675,22 +724,47 @@ export default function AccountingSettingsPage() {
       }
       setInsurerPrices(prev => {
         const current = toPricingConfig(prev[activeInsurerId]?.[practiceKey]);
+
+        if (!activeTierName) {
+          return {
+            ...prev,
+            [activeInsurerId]: {
+              ...(prev[activeInsurerId] ?? {}),
+              [practiceKey]: {
+                ...current,
+                extras: {
+                  ...current.extras,
+                  [sectionName]: toNumericPrice(value),
+                },
+              },
+            },
+          };
+        }
+
+        const existingTierPrices = current.tierPrices ?? {};
+        const existingOverride = existingTierPrices[activeTierName] ?? {};
         return {
           ...prev,
           [activeInsurerId]: {
             ...(prev[activeInsurerId] ?? {}),
             [practiceKey]: {
               ...current,
-              extras: {
-                ...current.extras,
-                [sectionName]: toNumericPrice(value),
+              tierPrices: {
+                ...existingTierPrices,
+                [activeTierName]: {
+                  ...existingOverride,
+                  extras: {
+                    ...(existingOverride.extras ?? {}),
+                    [sectionName]: toNumericPrice(value),
+                  },
+                },
               },
             },
           },
         };
       });
     },
-    [activeInsurerId]
+    [activeInsurerId, activeTierName]
   );
 
   const copyFromOptions = useMemo(() => {
@@ -788,7 +862,7 @@ export default function AccountingSettingsPage() {
   }, []);
 
   const handleAddInsurer = useCallback(
-    (prepaga: { id: string; shortName: string; denomination: string }) => {
+    (prepaga: { id: string; shortName: string; denomination: string; tiers?: { name: string; code: number | null }[] }) => {
       if (insurers.some(i => i.id === prepaga.id)) {
         setActiveInsurerId(prepaga.id);
         setShowAddInsurer(false);
@@ -796,7 +870,7 @@ export default function AccountingSettingsPage() {
       }
       setInsurers(prev => [
         ...prev,
-        { id: prepaga.id, shortName: prepaga.shortName, denomination: prepaga.denomination },
+        { id: prepaga.id, shortName: prepaga.shortName, denomination: prepaga.denomination, tiers: prepaga.tiers || [] },
       ]);
       setInsurerPrices(prev => {
         if (prev[prepaga.id]) return prev;
@@ -822,7 +896,7 @@ export default function AccountingSettingsPage() {
       const prepagaList = (Array.isArray(response) ? response : ((response as any).data ?? [])) as Prepaga[];
       setInsurers(prev => [
         ...prev,
-        ...prepagaList.map(p => ({ id: p.id, shortName: p.shortName, denomination: p.denomination })),
+        ...prepagaList.map(p => ({ id: p.id, shortName: p.shortName, denomination: p.denomination, tiers: p.tiers || [] })),
       ]);
     } finally {
       setLoadingHistorical(false);
@@ -1138,11 +1212,24 @@ export default function AccountingSettingsPage() {
           <Stack gap="0">
             <Group justify="space-between" mb="md">
               <Stack gap="0">
-                <Title>
-                  {activeInsurer.id === PARTICULAR_INSURER_ID
-                    ? t('accounting.settings_particular')
-                    : activeInsurer.shortName}
-                </Title>
+                <Group align="center" gap="md">
+                  <Title>
+                    {activeInsurer.id === PARTICULAR_INSURER_ID
+                      ? t('accounting.settings_particular')
+                      : activeInsurer.shortName}
+                  </Title>
+                  {activeTierOptions.length > 0 && (
+                    <Select
+                      placeholder={t('accounting.settings_all_plans')}
+                      data={activeTierOptions}
+                      value={activeTierName}
+                      onChange={setActiveTierName}
+                      clearable
+                      size="sm"
+                      style={{ width: '200px' }}
+                    />
+                  )}
+                </Group>
                 <InsurerName>
                   {activeInsurer.id === PARTICULAR_INSURER_ID
                     ? t('accounting.settings_particular')

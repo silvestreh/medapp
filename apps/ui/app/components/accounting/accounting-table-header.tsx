@@ -26,7 +26,7 @@ export function AccountingTableHeader({
   const showControls = unbilledCount > 0 || hasUncosted;
 
   return (
-    <Table.Thead style={{ position: 'sticky', top: '5rem', zIndex: 1 }}>
+    <Table.Thead className="accounting-thead">
       <Table.Tr>
         <Table.Th
           style={{ border: '1px solid var(--mantine-primary-color-1)', borderLeft: 'none', width: 56 }}

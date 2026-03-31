@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Link, useLoaderData, useParams } from '@remix-run/react';
-import { BarChart } from '@mantine/charts';
-import { Button, Group, Menu, Paper, Stack, Text, Title, Table } from '@mantine/core';
+import { BarChart, PieChart } from '@mantine/charts';
+import { ActionIcon, Button, Drawer, Group, Menu, NativeSelect, Paper, Stack, Text, Title, Table } from '@mantine/core';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
-import { CaretDownIcon, GearIcon } from '@phosphor-icons/react';
+import { CaretDownIcon, FunnelIcon, GearIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
@@ -16,6 +17,7 @@ import Portal from '~/components/portal';
 import { DateRangePopover, resolveDateRange, type DateRangeFilterState } from '~/components/date-range-popover';
 import { useFeathers } from '~/components/provider';
 import { normalizeInsurerPrices, PARTICULAR_INSURER_ID } from '~/utils/accounting';
+import { media } from '~/media';
 import { styled } from '~/styled-system/jsx';
 import { css } from '~/styled-system/css';
 import { useSectionTour } from '~/components/guided-tour/use-section-tour';
@@ -29,6 +31,7 @@ import {
   type AccountingResult,
   type UncostedPractice,
 } from '~/components/accounting';
+import { Fab } from '~/components/fab';
 
 type Prepaga = {
   id: string;
@@ -98,6 +101,9 @@ export default function AccountingDashboardPage() {
   const medicId = params.medicId;
   const [selectedInsurerId, setSelectedInsurerId] = useState<string>('all');
   const [selectedPracticeType, setSelectedPracticeType] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<'all' | 'billed' | 'unbilled' | 'uncosted'>('all');
+  const isDesktop = useMediaQuery(media.lg);
+  const [filtersOpened, { open: openFilters, close: closeFilters }] = useDisclosure(false);
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<AccountingResult | null>(null);
@@ -172,6 +178,12 @@ export default function AccountingDashboardPage() {
     if (selectedInsurerId !== 'all') {
       query.insurerId = selectedInsurerId;
     }
+    if (selectedPracticeType !== 'all') {
+      query.practiceType = selectedPracticeType;
+    }
+    if (selectedStatus === 'billed' || selectedStatus === 'unbilled') {
+      query.status = selectedStatus;
+    }
 
     feathersClient
       .service('accounting')
@@ -195,7 +207,7 @@ export default function AccountingDashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [feathersClient, resolvedRange, selectedInsurerId, medicId]);
+  }, [feathersClient, resolvedRange, selectedInsurerId, selectedPracticeType, selectedStatus, medicId]);
 
   // Fetch uncosted practices for the same date range
   useEffect(() => {
@@ -237,19 +249,24 @@ export default function AccountingDashboardPage() {
   const revenueByInsurer = data?.revenueByInsurer ?? [];
 
   const filteredRecords = useMemo(() => {
-    if (selectedPracticeType === 'all') return allRecords;
-    return allRecords.filter(r => r.kind === selectedPracticeType);
-  }, [allRecords, selectedPracticeType]);
+    if (selectedStatus === 'uncosted') return [];
+    return allRecords;
+  }, [allRecords, selectedStatus]);
 
   const filteredUncostedPractices = useMemo(() => {
-    if (selectedPracticeType === 'all') return uncostedPractices;
-    if (selectedPracticeType === 'encounter') {
-      return uncostedPractices.filter(p => p.practiceType === 'encounters');
+    if (selectedStatus === 'billed' || selectedStatus === 'unbilled') return [];
+    let result = uncostedPractices;
+    if (selectedPracticeType !== 'all') {
+      if (selectedPracticeType === 'encounter') {
+        result = result.filter(p => p.practiceType === 'encounters');
+      } else {
+        result = result.filter(
+          p => p.practiceType === 'studies' && p.studies?.includes(selectedPracticeType)
+        );
+      }
     }
-    return uncostedPractices.filter(
-      p => p.practiceType === 'studies' && p.studies?.includes(selectedPracticeType)
-    );
-  }, [uncostedPractices, selectedPracticeType]);
+    return result;
+  }, [uncostedPractices, selectedPracticeType, selectedStatus]);
 
   const availablePracticeTypes = useMemo(() => {
     const types = new Set<string>();
@@ -298,14 +315,42 @@ export default function AccountingDashboardPage() {
     setSelectedForBilling(new Set());
   }, []);
 
+  const handleSelectStatus = useCallback((status: 'all' | 'billed' | 'unbilled' | 'uncosted') => {
+    setSelectedStatus(status);
+    setSelectedForBackfill(new Set());
+    setSelectedForBilling(new Set());
+  }, []);
+
   const selectedPracticeTypeLabel = useMemo(() => {
     if (selectedPracticeType === 'all') return t('accounting.filter_practice_type');
     return translateType(selectedPracticeType);
   }, [selectedPracticeType, t, translateType]);
 
+  const selectedStatusLabel = useMemo(() => {
+    if (selectedStatus === 'all') return t('accounting.filter_status');
+    return t(`accounting.${selectedStatus}`);
+  }, [selectedStatus, t]);
+
   const visibleInsurers = useMemo(() => {
     return insurers.filter((insurer: Prepaga) => !hiddenInsurers.includes(insurer.id));
   }, [insurers, hiddenInsurers]);
+
+  const insurerSelectData = useMemo(() => [
+    { value: 'all', label: t('common.all') },
+    ...visibleInsurers.map((i: Prepaga) => ({ value: i.id, label: i.shortName })),
+  ], [visibleInsurers, t]);
+
+  const practiceTypeSelectData = useMemo(() => [
+    { value: 'all', label: t('common.all') },
+    ...availablePracticeTypes.map(type => ({ value: type, label: translateType(type) })),
+  ], [availablePracticeTypes, translateType, t]);
+
+  const statusSelectData = useMemo(() => [
+    { value: 'all', label: t('common.all') },
+    { value: 'billed', label: t('accounting.billed') },
+    { value: 'unbilled', label: t('accounting.unbilled') },
+    { value: 'uncosted', label: t('accounting.uncosted') },
+  ], [t]);
 
   const insurerNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -569,83 +614,165 @@ export default function AccountingDashboardPage() {
         styles={{ options: { zIndex: 10000 } }}
       />
       <Portal id="form-actions">
-        <Group justify="space-between" align="center" w="100%">
-          <Group gap="sm">
-            <Menu shadow="md" width={260}>
-              <Menu.Target>
-                <Button
-                  data-tour="accounting-insurer-filter"
-                  variant="filled"
-                  color="gray.1"
-                  c="gray.7"
-                  fw={500}
-                  rightSection={<CaretDownIcon size={14} />}
-                >
-                  {selectedInsurerLabel}
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Label>{t('navigation.insurers')}</Menu.Label>
-                <Menu.Item onClick={() => handleSelectInsurer('all')} fw={selectedInsurerId === 'all' ? 700 : 400}>
-                  {t('common.all')}
-                </Menu.Item>
-                <Menu.Divider />
-                {visibleInsurers.map((insurer: Prepaga) => (
-                  <Menu.Item
-                    key={insurer.id}
-                    onClick={() => handleSelectInsurer(insurer.id)}
-                    fw={selectedInsurerId === insurer.id ? 700 : 400}
+        {isDesktop && (
+          <Group justify="space-between" align="center" w="100%">
+            <Group gap="sm">
+              <Menu shadow="md" width={260}>
+                <Menu.Target>
+                  <Button
+                    data-tour="accounting-insurer-filter"
+                    variant="filled"
+                    color="gray.1"
+                    c="gray.7"
+                    fw={500}
+                    rightSection={<CaretDownIcon size={14} />}
                   >
-                    {insurer.shortName}
+                    {selectedInsurerLabel}
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Label>{t('navigation.insurers')}</Menu.Label>
+                  <Menu.Item onClick={() => handleSelectInsurer('all')} fw={selectedInsurerId === 'all' ? 700 : 400}>
+                    {t('common.all')}
                   </Menu.Item>
-                ))}
-              </Menu.Dropdown>
-            </Menu>
-            <Menu shadow="md" width={260}>
-              <Menu.Target>
-                <Button
-                  variant="filled"
-                  color="gray.1"
-                  c="gray.7"
-                  fw={500}
-                  rightSection={<CaretDownIcon size={14} />}
-                >
-                  {selectedPracticeTypeLabel}
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Label>{t('accounting.practice_type')}</Menu.Label>
-                <Menu.Item onClick={() => handleSelectPracticeType('all')} fw={selectedPracticeType === 'all' ? 700 : 400}>
-                  {t('common.all')}
-                </Menu.Item>
-                <Menu.Divider />
-                {availablePracticeTypes.map((type) => (
-                  <Menu.Item
-                    key={type}
-                    onClick={() => handleSelectPracticeType(type)}
-                    fw={selectedPracticeType === type ? 700 : 400}
+                  <Menu.Divider />
+                  {visibleInsurers.map((insurer: Prepaga) => (
+                    <Menu.Item
+                      key={insurer.id}
+                      onClick={() => handleSelectInsurer(insurer.id)}
+                      fw={selectedInsurerId === insurer.id ? 700 : 400}
+                    >
+                      {insurer.shortName}
+                    </Menu.Item>
+                  ))}
+                </Menu.Dropdown>
+              </Menu>
+              <Menu shadow="md" width={260}>
+                <Menu.Target>
+                  <Button
+                    variant="filled"
+                    color="gray.1"
+                    c="gray.7"
+                    fw={500}
+                    rightSection={<CaretDownIcon size={14} />}
                   >
-                    {translateType(type)}
+                    {selectedPracticeTypeLabel}
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Label>{t('accounting.practice_type')}</Menu.Label>
+                  <Menu.Item onClick={() => handleSelectPracticeType('all')} fw={selectedPracticeType === 'all' ? 700 : 400}>
+                    {t('common.all')}
                   </Menu.Item>
-                ))}
-              </Menu.Dropdown>
-            </Menu>
-            <div data-tour="accounting-date-range">
-              <DateRangePopover
-                value={rangeFilter}
-                onApply={handleApplyRange}
-                minRangeStart={MIN_RANGE_START}
-                maxDate={dayjs().format('YYYY-MM-DD')}
-                precision="day"
-                variant="filled"
-              />
-            </div>
-            <Button component={Link} to="settings" variant="filled" leftSection={<GearIcon />}>
-              {t('common.settings')}
-            </Button>
+                  <Menu.Divider />
+                  {availablePracticeTypes.map((type) => (
+                    <Menu.Item
+                      key={type}
+                      onClick={() => handleSelectPracticeType(type)}
+                      fw={selectedPracticeType === type ? 700 : 400}
+                    >
+                      {translateType(type)}
+                    </Menu.Item>
+                  ))}
+                </Menu.Dropdown>
+              </Menu>
+              <Menu shadow="md" width={200}>
+                <Menu.Target>
+                  <Button
+                    variant="filled"
+                    color="gray.1"
+                    c="gray.7"
+                    fw={500}
+                    rightSection={<CaretDownIcon size={14} />}
+                  >
+                    {selectedStatusLabel}
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Label>{t('accounting.filter_status')}</Menu.Label>
+                  <Menu.Item onClick={() => handleSelectStatus('all')} fw={selectedStatus === 'all' ? 700 : 400}>
+                    {t('common.all')}
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item onClick={() => handleSelectStatus('billed')} fw={selectedStatus === 'billed' ? 700 : 400}>
+                    {t('accounting.billed')}
+                  </Menu.Item>
+                  <Menu.Item onClick={() => handleSelectStatus('unbilled')} fw={selectedStatus === 'unbilled' ? 700 : 400}>
+                    {t('accounting.unbilled')}
+                  </Menu.Item>
+                  <Menu.Item onClick={() => handleSelectStatus('uncosted')} fw={selectedStatus === 'uncosted' ? 700 : 400}>
+                    {t('accounting.uncosted')}
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+              <div data-tour="accounting-date-range">
+                <DateRangePopover
+                  value={rangeFilter}
+                  onApply={handleApplyRange}
+                  minRangeStart={MIN_RANGE_START}
+                  maxDate={dayjs().format('YYYY-MM-DD')}
+                  precision="day"
+                  variant="filled"
+                />
+              </div>
+              <Button component={Link} to="settings" variant="filled" leftSection={<GearIcon />}>
+                {t('common.settings')}
+              </Button>
+            </Group>
           </Group>
-        </Group>
+        )}
+        {!isDesktop && (
+          <ActionIcon component={Link} to="settings" variant="filled" size="lg">
+            <GearIcon size={18} />
+          </ActionIcon>
+        )}
       </Portal>
+
+      {!isDesktop && (
+        <>
+          <Fab icon={<FunnelIcon size={22} />} onClick={openFilters} />
+          <Drawer
+            opened={filtersOpened}
+            onClose={closeFilters}
+            position="bottom"
+            title={t('common.filters')}
+            styles={{ content: { borderRadius: '1rem 1rem 0 0' } }}
+          >
+            <Stack gap="sm" pb="md">
+              <NativeSelect
+                label={t('accounting.filter_insurer')}
+                data={insurerSelectData}
+                value={selectedInsurerId}
+                onChange={e => handleSelectInsurer(e.currentTarget.value)}
+              />
+              <NativeSelect
+                label={t('accounting.filter_practice_type')}
+                data={practiceTypeSelectData}
+                value={selectedPracticeType}
+                onChange={e => handleSelectPracticeType(e.currentTarget.value)}
+              />
+              <NativeSelect
+                label={t('accounting.filter_status')}
+                data={statusSelectData}
+                value={selectedStatus}
+                onChange={e => handleSelectStatus(e.currentTarget.value as 'all' | 'billed' | 'unbilled' | 'uncosted')}
+              />
+              <Stack gap={4}>
+                <Text fw={500} size="sm">{t('common.date_range')}</Text>
+                <DateRangePopover
+                  value={rangeFilter}
+                  onApply={handleApplyRange}
+                  minRangeStart={MIN_RANGE_START}
+                  maxDate={dayjs().format('YYYY-MM-DD')}
+                  precision="day"
+                  variant="filled"
+                  fullWidth
+                />
+              </Stack>
+            </Stack>
+          </Drawer>
+        </>
+      )}
 
       <Stack gap="md">
         <Paper withBorder p="md" data-tour="accounting-revenue">
@@ -663,12 +790,45 @@ export default function AccountingDashboardPage() {
             <Text fw={600} mb="sm">
               {t('accounting.revenue_by_insurer')}
             </Text>
-            <BarChart
-              h={260}
-              data={revenueByInsurer}
-              dataKey="insurer"
-              series={[{ name: 'revenue', color: 'blue.6' }]}
-            />
+            {isDesktop && (
+              <BarChart
+                h={260}
+                data={revenueByInsurer}
+                dataKey="insurer"
+                series={[{ name: 'revenue', color: 'blue.6' }]}
+              />
+            )}
+            {!isDesktop && (() => {
+              const colors = ['teal.6', 'blue.6', 'violet.6', 'orange.6', 'pink.6', 'cyan.6', 'yellow.6', 'grape.6', 'lime.6', 'indigo.6'];
+              const pieData = revenueByInsurer.map((item, i) => ({
+                name: item.insurer,
+                value: item.revenue,
+                color: colors[i % colors.length],
+              }));
+              return (
+                <Stack gap="sm">
+                  <PieChart
+                    h={260}
+                    size={200}
+                    data={pieData}
+                    withTooltip
+                    tooltipDataSource="segment"
+                    labelsType="percent"
+                    withLabels
+                    withLabelsLine
+                    mx="auto"
+                  />
+                  <Group gap="sm" justify="center" wrap="wrap">
+                    {pieData.map(item => (
+                      <Group key={item.name} gap={6} wrap="nowrap">
+                        <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: `var(--mantine-color-${item.color.replace('.', '-')})`, flexShrink: 0 }} />
+                        <Text size="xs" c="dimmed">{item.name}</Text>
+                      </Group>
+                    ))}
+                  </Group>
+                </Stack>
+              );
+            })()}
           </Paper>
         )}
 
@@ -678,12 +838,20 @@ export default function AccountingDashboardPage() {
           </Text>
         )}
 
+        <div className={css({ overflowX: 'auto', lg: { overflow: 'visible' } })}>
         <Table
           ref={tableRef}
           data-tour="accounting-table"
-          layout="fixed"
           bg="white"
           className={css({
+            minWidth: '700px',
+            '& .accounting-thead': {
+              lg: {
+                position: 'sticky',
+                top: '5rem',
+                zIndex: 1,
+              },
+            },
             lg: {
               marginTop: '1rem',
               marginLeft: '-2rem',
@@ -728,6 +896,7 @@ export default function AccountingDashboardPage() {
             ))}
           </Table.Tbody>
         </Table>
+        </div>
 
         {(selectedForBilling.size > 0 || (hasUncosted && selectedForBackfill.size > 0)) && (
           <AccountingActionBar

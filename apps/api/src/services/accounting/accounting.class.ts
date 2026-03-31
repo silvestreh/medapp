@@ -165,7 +165,7 @@ export class Accounting {
       ): Promise<(T & { effectiveInsurerId: string })[]> => {
         const results: (T & { effectiveInsurerId: string })[] = [];
         for (const row of rows) {
-          const resolved = await this.resolveEffectiveInsurerId(row.insurerId, row.patientId);
+          const { insurerId: resolved } = await this.resolvePatientInsurance(row.insurerId, row.patientId);
           const priceKey = resolved || PARTICULAR_INSURER_ID;
           if (!configuredInsurers.has(priceKey)) continue;
           if (filterInsurerId && priceKey !== filterInsurerId) continue;
@@ -245,7 +245,7 @@ export class Accounting {
   async find(params?: Params): Promise<AccountingResult> {
     const organizationId = params?.organizationId;
     const query = params?.query || {};
-    const { from, to, insurerId, medicId } = query;
+    const { from, to, insurerId, medicId, practiceType, status } = query;
 
     if (!from || !to) {
       throw new BadRequest('Both "from" and "to" query params are required');
@@ -276,6 +276,19 @@ export class Accounting {
     };
     if (organizationId) costQuery.organizationId = organizationId;
     if (insurerId) costQuery.insurerId = insurerId;
+    if (practiceType) {
+      if (practiceType === 'encounter') {
+        costQuery.practiceType = 'encounters';
+      } else {
+        costQuery.practiceType = 'studies';
+        costQuery.studyType = practiceType;
+      }
+    }
+    if (status === 'billed') {
+      costQuery.billedAt = { $ne: null };
+    } else if (status === 'unbilled') {
+      costQuery.billedAt = null;
+    }
 
     const allCostRows = await this.app.service('practice-costs').find({
       query: costQuery,
@@ -493,7 +506,7 @@ export class Accounting {
         if (!study.medicId) { skipped++; continue; }
 
         const insurerPrices = await this.getMedicInsurerPrices(study.medicId);
-        const effectiveInsurerId = await this.resolveEffectiveInsurerId(study.insurerId, study.patientId);
+        const { insurerId: effectiveInsurerId, tierName } = await this.resolvePatientInsurance(study.insurerId, study.patientId);
         const priceKey = effectiveInsurerId || PARTICULAR_INSURER_ID;
         const insurerPricing = insurerPrices[priceKey];
         const isEmergency = !!study.emergency;
@@ -541,6 +554,7 @@ export class Accounting {
             practiceType: studyType,
             emergency: isEmergency,
             activeSections,
+            tierName,
           });
 
           try {
@@ -581,7 +595,7 @@ export class Accounting {
         if (!encounter.medicId) { skipped++; continue; }
 
         const insurerPrices = await this.getMedicInsurerPrices(encounter.medicId);
-        const effectiveInsurerId = await this.resolveEffectiveInsurerId(encounter.insurerId, encounter.patientId);
+        const { insurerId: effectiveInsurerId, tierName } = await this.resolvePatientInsurance(encounter.insurerId, encounter.patientId);
         const priceKey = effectiveInsurerId || PARTICULAR_INSURER_ID;
         const insurerPricing = insurerPrices[priceKey];
         if (!insurerPricing) { skipped++; continue; }
@@ -591,6 +605,7 @@ export class Accounting {
           practiceType: 'encounter',
           emergency: false,
           activeSections: [],
+          tierName,
         });
 
         try {
@@ -629,19 +644,20 @@ export class Accounting {
     return toInsurerPrices(settings[0].insurerPrices);
   }
 
-  private async resolveEffectiveInsurerId(
+  private async resolvePatientInsurance(
     insurerId: string | null,
     patientId: string,
-  ): Promise<string | null> {
-    if (insurerId) return insurerId;
-
+  ): Promise<{ insurerId: string | null; tierName: string | null }> {
     try {
       const patient = await this.app.service('patients').get(patientId, {
-        query: { $select: ['medicareId'] },
-      }) as { medicareId: string | null };
-      return patient?.medicareId || null;
+        query: { $select: ['medicareId', 'medicarePlan'] },
+      }) as { medicareId: string | null; medicarePlan: string | null };
+      return {
+        insurerId: insurerId || patient?.medicareId || null,
+        tierName: patient?.medicarePlan || null,
+      };
     } catch (err) {
-      if (err instanceof NotFound) return null;
+      if (err instanceof NotFound) return { insurerId, tierName: null };
       throw err;
     }
   }

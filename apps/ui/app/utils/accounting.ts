@@ -14,6 +14,15 @@ export type AccountingPracticeKey = (typeof ACCOUNTING_PRACTICE_KEYS)[number];
 
 export type PricingType = 'fixed' | 'multiplier';
 
+export type TierPriceOverride = {
+  value?: number;
+  multiplier?: number;
+  extras?: Record<string, number>;
+  emergencyValue?: number;
+  emergencyMultiplier?: number;
+  emergencyExtras?: Record<string, number>;
+};
+
 export type PricingConfig = {
   type: PricingType;
   value?: number;
@@ -25,6 +34,7 @@ export type PricingConfig = {
   emergencyValue?: number;
   emergencyMultiplier?: number;
   emergencyExtras?: Record<string, number>;
+  tierPrices?: Record<string, TierPriceOverride>;
 };
 
 export type InsurerPrices = Record<string, Record<string, PricingConfig>>;
@@ -80,6 +90,34 @@ export function toPricingConfig(value: unknown): PricingConfig {
     }
   }
 
+  let tierPrices: Record<string, TierPriceOverride> | undefined;
+  if (raw.tierPrices && typeof raw.tierPrices === 'object' && !Array.isArray(raw.tierPrices)) {
+    tierPrices = {};
+    for (const [tierName, tierVal] of Object.entries(raw.tierPrices as Record<string, unknown>)) {
+      if (!tierVal || typeof tierVal !== 'object' || Array.isArray(tierVal)) continue;
+      const tv = tierVal as Record<string, unknown>;
+      const override: TierPriceOverride = {};
+      if (tv.value !== undefined) override.value = toNumericPrice(tv.value);
+      if (tv.multiplier !== undefined) override.multiplier = toNumericPrice(tv.multiplier);
+      if (tv.emergencyValue !== undefined) override.emergencyValue = toNumericPrice(tv.emergencyValue);
+      if (tv.emergencyMultiplier !== undefined) override.emergencyMultiplier = toNumericPrice(tv.emergencyMultiplier);
+      if (tv.extras && typeof tv.extras === 'object' && !Array.isArray(tv.extras)) {
+        override.extras = {};
+        for (const [k, v] of Object.entries(tv.extras as Record<string, unknown>)) {
+          override.extras[k] = toNumericPrice(v);
+        }
+      }
+      if (tv.emergencyExtras && typeof tv.emergencyExtras === 'object' && !Array.isArray(tv.emergencyExtras)) {
+        override.emergencyExtras = {};
+        for (const [k, v] of Object.entries(tv.emergencyExtras as Record<string, unknown>)) {
+          override.emergencyExtras[k] = toNumericPrice(v);
+        }
+      }
+      tierPrices[tierName] = override;
+    }
+    if (Object.keys(tierPrices).length === 0) tierPrices = undefined;
+  }
+
   return {
     type,
     value: toNumericPrice(raw.value),
@@ -91,6 +129,7 @@ export function toPricingConfig(value: unknown): PricingConfig {
     emergencyValue: toNumericPrice(raw.emergencyValue),
     emergencyMultiplier: toNumericPrice(raw.emergencyMultiplier),
     emergencyExtras,
+    tierPrices,
   };
 }
 
