@@ -4,6 +4,7 @@ import { json } from '@remix-run/node';
 import { useLoaderData, useFetcher, useNavigate, useSearchParams } from '@remix-run/react';
 import { Stack, Group, Button, Title, Text, Table, Badge, ActionIcon } from '@mantine/core';
 import { PlusIcon, PillIcon, PencilSimpleIcon, ArrowLeftIcon } from '@phosphor-icons/react';
+import { useTranslation } from 'react-i18next';
 
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
 import { getCurrentOrganizationId } from '~/session';
@@ -162,10 +163,16 @@ const Section = styled('div', {
   },
 });
 
-function getInrStatus(inr: number, min: number, max: number) {
-  if (inr < min) return { label: 'Bajo', color: 'orange' };
-  if (inr > max) return { label: 'Alto', color: 'red' };
-  return { label: 'Normal', color: 'green' };
+function getInrStatusColor(inr: number, min: number, max: number) {
+  if (inr < min) return 'orange';
+  if (inr > max) return 'red';
+  return 'green';
+}
+
+function getInrStatusKey(inr: number, min: number, max: number) {
+  if (inr < min) return 'sire.status_low';
+  if (inr > max) return 'sire.status_high';
+  return 'sire.status_normal';
 }
 
 export default function SireManagement() {
@@ -173,6 +180,7 @@ export default function SireManagement() {
   const fetcher = useFetcher();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
 
   // Read QS params from the initial navigation (works during SSR)
   const qsIntent = searchParams.get('intent');
@@ -300,7 +308,7 @@ export default function SireManagement() {
           <ActionIcon variant="subtle" onClick={handleBackToList}>
             <ArrowLeftIcon size={18} />
           </ActionIcon>
-          <Title order={4}>{activeTreatment ? 'Editar tratamiento' : 'Nuevo tratamiento'}</Title>
+          <Title order={4}>{activeTreatment ? t('sire.edit_treatment') : t('sire.new_treatment')}</Title>
         </Group>
         {activeTreatment && (
           <SireTreatmentForm
@@ -322,7 +330,7 @@ export default function SireManagement() {
           <ActionIcon variant="subtle" onClick={handleBackToList}>
             <ArrowLeftIcon size={18} />
           </ActionIcon>
-          <Title order={4}>{editingReading ? 'Editar control' : 'Nuevo control'}</Title>
+          <Title order={4}>{editingReading ? t('sire.edit_control') : t('sire.new_control')}</Title>
         </Group>
         {activeTreatment && (
           <SireControlForm
@@ -345,14 +353,14 @@ export default function SireManagement() {
       {/* Treatment Summary */}
       <Section>
         <Group justify="space-between" mb="md">
-          <Title order={4}>Tratamiento</Title>
+          <Title order={4}>{t('sire.treatment')}</Title>
           <Button
             leftSection={activeTreatment ? <PencilSimpleIcon size={16} /> : <PlusIcon size={16} />}
             size="xs"
             variant="light"
             onClick={handleOpenTreatment}
           >
-            {activeTreatment ? 'Editar' : 'Nuevo tratamiento'}
+            {activeTreatment ? t('common.edit') : t('sire.new_treatment')}
           </Button>
         </Group>
 
@@ -364,20 +372,20 @@ export default function SireManagement() {
                 {activeTreatment.medication} {activeTreatment.tabletDoseMg} mg
               </Text>
               <Badge color="green" variant="light">
-                Activo
+                {t('sire.status_active')}
               </Badge>
             </Group>
             <Text size="sm" c="dimmed">
-              RIN objetivo: {activeTreatment.targetInrMin} – {activeTreatment.targetInrMax}
+              {t('sire.target_inr')}: {activeTreatment.targetInrMin} – {activeTreatment.targetInrMax}
             </Text>
             {activeTreatment.indication && (
               <Text size="sm" c="dimmed">
-                Indicación: {activeTreatment.indication}
+                {t('sire.indication_label')} {activeTreatment.indication}
               </Text>
             )}
             {activeTreatment.nextControlDate && (
               <Text size="sm" c="dimmed">
-                Próximo control: {activeTreatment.nextControlDate}
+                {t('sire.next_control_label')} {activeTreatment.nextControlDate}
               </Text>
             )}
           </Stack>
@@ -385,7 +393,7 @@ export default function SireManagement() {
 
         {!activeTreatment && (
           <Text c="dimmed" size="sm">
-            No hay tratamiento activo configurado.
+            {t('sire.no_active_treatment')}
           </Text>
         )}
       </Section>
@@ -393,10 +401,10 @@ export default function SireManagement() {
       {/* Controls */}
       <Section>
         <Group justify="space-between" mb="md">
-          <Title order={4}>Controles</Title>
+          <Title order={4}>{t('sire.controls')}</Title>
           {activeTreatment && (
             <Button leftSection={<PlusIcon size={16} />} size="xs" variant="light" onClick={handleOpenNewControl}>
-              Nuevo control
+              {t('sire.new_control')}
             </Button>
           )}
         </Group>
@@ -405,19 +413,22 @@ export default function SireManagement() {
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Fecha</Table.Th>
+                <Table.Th>{t('sire.date')}</Table.Th>
                 <Table.Th>%</Table.Th>
-                <Table.Th>RIN</Table.Th>
-                <Table.Th>Estado</Table.Th>
-                <Table.Th>Esquema</Table.Th>
+                <Table.Th>{t('sire.inr')}</Table.Th>
+                <Table.Th>{t('sire.status_label')}</Table.Th>
+                <Table.Th>{t('sire.schedule')}</Table.Th>
                 <Table.Th w={40}></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {(readings as any[]).map((reading: any) => {
-                const status = activeTreatment
-                  ? getInrStatus(reading.inr, activeTreatment.targetInrMin, activeTreatment.targetInrMax)
-                  : { label: '—', color: 'gray' };
+                const statusColor = activeTreatment
+                  ? getInrStatusColor(reading.inr, activeTreatment.targetInrMin, activeTreatment.targetInrMax)
+                  : 'gray';
+                const statusKey = activeTreatment
+                  ? getInrStatusKey(reading.inr, activeTreatment.targetInrMin, activeTreatment.targetInrMax)
+                  : null;
                 const schedule = findScheduleForReading(reading);
                 const doseLabel = schedule
                   ? ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
@@ -435,8 +446,8 @@ export default function SireManagement() {
                     <Table.Td>{reading.percentage ?? '—'}</Table.Td>
                     <Table.Td fw={700}>{reading.inr}</Table.Td>
                     <Table.Td>
-                      <Badge color={status.color} variant="light">
-                        {status.label}
+                      <Badge color={statusColor} variant="light">
+                        {statusKey ? t(statusKey) : '—'}
                       </Badge>
                     </Table.Td>
                     <Table.Td>
@@ -458,7 +469,7 @@ export default function SireManagement() {
 
         {(readings as any[]).length === 0 && (
           <Text c="dimmed" size="sm">
-            No hay controles registrados.
+            {t('sire.no_controls')}
           </Text>
         )}
       </Section>

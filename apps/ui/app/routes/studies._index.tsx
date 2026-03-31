@@ -384,7 +384,7 @@ export default function StudiesIndex() {
                 data={studyTypeOptions}
                 value={selectedStudyType}
                 onChange={handleSelectStudyType}
-                placeholder={t('studies.filter_study_type', { defaultValue: 'Study type' })}
+                placeholder={t('studies.filter_study_type')}
                 clearable
                 comboboxProps={{ withinPortal: true }}
                 variant="filled"
@@ -395,7 +395,7 @@ export default function StudiesIndex() {
                 value={insurerSearch}
                 onChange={handleInsurerChange}
                 onOptionSubmit={handleInsurerOptionSubmit}
-                placeholder={t('studies.filter_insurer', { defaultValue: 'Insurer' })}
+                placeholder={t('studies.filter_insurer')}
                 comboboxProps={{ withinPortal: true }}
                 maxDropdownHeight={300}
                 w={200}
@@ -447,7 +447,7 @@ export default function StudiesIndex() {
                     data={studyTypeOptions}
                     value={selectedStudyType}
                     onChange={handleSelectStudyType}
-                    placeholder={t('studies.filter_study_type', { defaultValue: 'Study type' })}
+                    placeholder={t('studies.filter_study_type')}
                     clearable
                     comboboxProps={{ withinPortal: false }}
                     styles={{ input: { minHeight: 32 } }}
@@ -457,7 +457,7 @@ export default function StudiesIndex() {
                     value={insurerSearch}
                     onChange={handleInsurerChange}
                     onOptionSubmit={handleInsurerOptionSubmit}
-                    placeholder={t('studies.filter_insurer', { defaultValue: 'Insurer' })}
+                    placeholder={t('studies.filter_insurer')}
                     comboboxProps={{ withinPortal: false }}
                     maxDropdownHeight={300}
                     styles={{ input: { minHeight: 32 } }}

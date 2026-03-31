@@ -44,17 +44,7 @@ export function AccountingRecordRow({
         <CellText>{dayjs(record.date).format('YYYY-MM-DD')}</CellText>
       </Table.Td>
       <Table.Td>
-        <CellText>
-          {translateType(record.kind)}
-          {record.billedAt && (
-            <>
-              {' '}
-              <Badge size="xs" color="green" variant="light">
-                {t('accounting.billed', { defaultValue: 'billed' })}
-              </Badge>
-            </>
-          )}
-        </CellText>
+        <CellText>{translateType(record.kind)}</CellText>
       </Table.Td>
       <Table.Td>
         <CellText>{record.insurerName}</CellText>
@@ -64,6 +54,18 @@ export function AccountingRecordRow({
       </Table.Td>
       <Table.Td>
         <CellText>${record.cost.toFixed(2)}</CellText>
+      </Table.Td>
+      <Table.Td>
+        {record.billedAt && (
+          <Badge size="xs" color="green">
+            {t('accounting.billed')}
+          </Badge>
+        )}
+        {!record.billedAt && (
+          <Badge size="xs" color="yellow">
+            {t('accounting.unbilled')}
+          </Badge>
+        )}
       </Table.Td>
     </Table.Tr>
   );

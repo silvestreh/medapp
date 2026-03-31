@@ -203,10 +203,10 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
   const existingInsurerIds = useMemo(() => codes.map(c => c.insurerId), [codes]);
 
   const drawerTitle = isCreateMode
-    ? t('settings.practices_new_title', 'Nueva práctica')
+    ? t('settings.practices_new_title')
     : isSystem
       ? practice?.title
-      : t('settings.practices_edit', 'Editar práctica');
+      : t('settings.practices_edit');
 
   if (!isCreateMode && !practice) return null;
 
@@ -214,7 +214,7 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
     <Drawer opened={opened} onClose={onClose} title={drawerTitle} position="right" size="lg">
       <Stack gap="md">
         <FormCard>
-          <FieldRow label={`${t('settings.practices_title', 'Título')}:`}>
+          <FieldRow label={`${t('settings.practices_title')}:`}>
             {isSystem && (
               <Group gap="xs" style={{ flex: 1 }}>
                 <Text size="sm">{practice?.title}</Text>
@@ -227,13 +227,13 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
                 value={editTitle}
                 onChange={handleTitleChange}
                 onBlur={isNew ? undefined : handleTitleBlur}
-                placeholder={t('settings.practices_title_placeholder', 'Nombre de la práctica')}
+                placeholder={t('settings.practices_title_placeholder')}
                 style={{ flex: 1 }}
                 styles={{ input: { minHeight: '1.5rem', height: 'auto', lineHeight: 1.75 } }}
               />
             )}
           </FieldRow>
-          <FieldRow label={`${t('settings.practices_description', 'Descripción')}:`}>
+          <FieldRow label={`${t('settings.practices_description')}:`}>
             {isSystem && (
               <Group gap="xs" style={{ flex: 1 }}>
                 <Text size="sm">{practice?.description}</Text>
@@ -246,7 +246,7 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
                 value={editDescription}
                 onChange={handleDescriptionChange}
                 onBlur={isNew ? undefined : handleDescriptionBlur}
-                placeholder={t('settings.practices_description_placeholder', 'Descripción de la práctica')}
+                placeholder={t('settings.practices_description_placeholder')}
                 autosize
                 style={{ flex: 1 }}
                 styles={{ input: { lineHeight: 1.75 } }}
@@ -261,7 +261,7 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
             disabled={!editTitle.trim() || !editDescription.trim()}
             loading={fetcher.state !== 'idle'}
           >
-            {t('settings.practices_create_and_continue', 'Crear práctica')}
+            {t('settings.practices_create_and_continue')}
           </Button>
         )}
 
@@ -269,14 +269,14 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
           <>
             <div>
               <Text size="sm" fw={600} mb="xs">
-                {t('settings.practices_insurer_codes', 'Códigos por prepaga')}
+                {t('settings.practices_insurer_codes')}
               </Text>
               <FormCard>
                 <Table>
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th fw={400}>{t('settings.practices_col_insurer', 'Prepaga')}</Table.Th>
-                      <Table.Th fw={400}>{t('settings.practices_col_code', 'Código')}</Table.Th>
+                      <Table.Th fw={400}>{t('settings.practices_col_insurer')}</Table.Th>
+                      <Table.Th fw={400}>{t('settings.practices_col_code')}</Table.Th>
                       <Table.Th fw={400} style={{ width: 80 }}></Table.Th>
                     </Table.Tr>
                   </Table.Thead>
@@ -290,7 +290,7 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
                                 <PrepagaSelector
                                   value={editingInsurerValue}
                                   onChange={handleEditInsurerChange}
-                                  placeholder={t('settings.practices_insurer_placeholder', 'Buscar prepaga...')}
+                                  placeholder={t('settings.practices_insurer_placeholder')}
                                   variant="default"
                                 />
                               </div>
@@ -360,7 +360,7 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
                       <Table.Tr>
                         <Table.Td colSpan={3}>
                           <Text size="sm" c="dimmed" ta="center" py="md">
-                            {t('settings.practices_no_codes', 'Sin códigos asignados.')}
+                            {t('settings.practices_no_codes')}
                           </Text>
                         </Table.Td>
                       </Table.Tr>
@@ -372,7 +372,7 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
 
             <Flex gap="sm" align="flex-end" wrap="wrap">
               <TextInput
-                placeholder={t('settings.practices_code_placeholder', 'Código')}
+                placeholder={t('settings.practices_code_placeholder')}
                 value={newCode}
                 onChange={handleNewCodeChange}
                 style={{ flex: '0 0 120px' }}
@@ -382,7 +382,7 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
                 <PrepagaSelector
                   value={newInsurerId}
                   onChange={handleNewInsurerChange}
-                  placeholder={t('settings.practices_insurer_placeholder', 'Buscar prepaga...')}
+                  placeholder={t('settings.practices_insurer_placeholder')}
                   variant="default"
                   size="sm"
                 />
@@ -394,7 +394,7 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
                 disabled={!newInsurerId || !newCode.trim() || existingInsurerIds.includes(newInsurerId)}
                 loading={fetcher.state !== 'idle'}
               >
-                {t('settings.practices_add_code', 'Agregar')}
+                {t('settings.practices_add_code')}
               </Button>
             </Flex>
           </>
@@ -410,7 +410,7 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
               onClick={handleDelete}
               loading={fetcher.state !== 'idle'}
             >
-              {t('settings.practices_delete', 'Eliminar práctica')}
+              {t('settings.practices_delete')}
             </Button>
           </Flex>
         )}

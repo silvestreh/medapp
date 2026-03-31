@@ -350,7 +350,7 @@ function SettingsTabs({
         <NavLink
           component={RemixNavLink}
           to="/settings/practices"
-          label={t('profile.tab_practices', 'Prácticas')}
+          label={t('profile.tab_practices')}
           leftSection={<FirstAidKitIcon size={16} />}
           variant="light"
           style={navLinkStyle}

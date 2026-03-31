@@ -2,16 +2,10 @@ import { useCallback } from 'react';
 import { Stack, Group, Button, NumberInput, Textarea, Title, Divider } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
+import { useTranslation } from 'react-i18next';
 
-const DAYS = [
-  { key: 'monday', label: 'Lun' },
-  { key: 'tuesday', label: 'Mar' },
-  { key: 'wednesday', label: 'Mié' },
-  { key: 'thursday', label: 'Jue' },
-  { key: 'friday', label: 'Vie' },
-  { key: 'saturday', label: 'Sáb' },
-  { key: 'sunday', label: 'Dom' },
-] as const;
+const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+const DAY_I18N_KEYS = ['day_mon', 'day_tue', 'day_wed', 'day_thu', 'day_fri', 'day_sat', 'day_sun'] as const;
 
 interface SireControlFormProps {
   treatmentId: string;
@@ -37,6 +31,10 @@ export function SireControlForm({
   onDelete,
   prefill,
 }: SireControlFormProps) {
+  const { t } = useTranslation();
+
+  const DAYS = DAY_KEYS.map((key, i) => ({ key, label: t(`sire.${DAY_I18N_KEYS[i]}`) }));
+
   const form = useForm({
     initialValues: {
       // Reading fields
@@ -57,7 +55,7 @@ export function SireControlForm({
       nextControlDate: nextControlDate ? new Date(nextControlDate) : (null as Date | null),
     },
     validate: {
-      inr: value => (value === '' ? 'RIN es requerido' : null),
+      inr: value => (value === '' ? t('sire.inr_required') : null),
     },
   });
 
@@ -80,9 +78,9 @@ export function SireControlForm({
     let schedule: Record<string, any> | null = null;
     if (form.values.includeDose) {
       const weekSchedule: Record<string, number | null> = {};
-      for (const day of DAYS) {
-        const val = form.values[day.key];
-        weekSchedule[day.key] = val !== '' ? Number(val) : null;
+      for (const day of DAY_KEYS) {
+        const val = form.values[day];
+        weekSchedule[day] = val !== '' ? Number(val) : null;
       }
       schedule = {
         treatmentId,
@@ -108,37 +106,37 @@ export function SireControlForm({
 
   return (
     <Stack gap="md">
-      <Title order={5}>Lectura</Title>
+      <Title order={5}>{t('sire.reading')}</Title>
 
-      <DateInput label="Fecha" valueFormat="YYYY-MM-DD" {...form.getInputProps('date')} />
+      <DateInput label={t('sire.date')} valueFormat="YYYY-MM-DD" {...form.getInputProps('date')} />
 
       <NumberInput
-        label="RIN"
+        label={t('sire.inr')}
         required
         min={0}
         max={20}
         step={0.1}
         decimalScale={1}
-        placeholder="Ej: 2.4"
+        placeholder={t('sire.placeholder_inr')}
         {...form.getInputProps('inr')}
       />
 
       <NumberInput
-        label="Porcentaje (%)"
+        label={t('sire.percentage')}
         min={0}
         max={200}
         step={1}
         decimalScale={0}
-        placeholder="Ej: 48"
+        placeholder={t('sire.placeholder_percentage')}
         {...form.getInputProps('percentage')}
       />
 
       <Divider />
 
       <Group justify="space-between">
-        <Title order={5}>Esquema de dosis</Title>
+        <Title order={5}>{t('sire.dose_schedule')}</Title>
         <Button variant="subtle" size="xs" onClick={handleToggleDose}>
-          {form.values.includeDose ? 'Quitar esquema' : 'Agregar esquema'}
+          {form.values.includeDose ? t('sire.remove_schedule') : t('sire.add_schedule')}
         </Button>
       </Group>
 
@@ -161,10 +159,10 @@ export function SireControlForm({
           </Group>
 
           <Textarea
-            label="Notas del esquema"
+            label={t('sire.dose_notes')}
             autosize
             minRows={2}
-            placeholder="Observaciones..."
+            placeholder={t('sire.placeholder_observations')}
             {...form.getInputProps('doseNotes')}
           />
         </>
@@ -173,20 +171,20 @@ export function SireControlForm({
       <Divider />
 
       <DateInput
-        label="Próximo control"
+        label={t('sire.next_control')}
         valueFormat="YYYY-MM-DD"
         clearable
-        placeholder="Sin fecha"
+        placeholder={t('sire.placeholder_no_date')}
         {...form.getInputProps('nextControlDate')}
       />
 
       <Group grow>
         <Button onClick={handleSubmit} fullWidth>
-          {isEditing ? 'Actualizar' : 'Guardar'}
+          {isEditing ? t('sire.update') : t('sire.save')}
         </Button>
         {isEditing && onDelete && (
           <Button onClick={onDelete} color="red" variant="light" fullWidth>
-            Eliminar
+            {t('sire.delete')}
           </Button>
         )}
       </Group>

@@ -50,10 +50,7 @@ export function UncostedPracticeRow({
         <CellText>
           {practice.practiceType === 'studies'
             ? (practice.studies || []).map(s => translateType(s)).join(', ')
-            : translateType('encounter')}{' '}
-          <Badge size="xs" color="orange" variant="light">
-            {t('accounting.untracked', { defaultValue: 'untracked' })}
-          </Badge>
+            : translateType('encounter')}
         </CellText>
       </Table.Td>
       <Table.Td>
@@ -64,6 +61,11 @@ export function UncostedPracticeRow({
       </Table.Td>
       <Table.Td>
         <CellText style={{ color: 'var(--mantine-color-dimmed)' }}>$0.00</CellText>
+      </Table.Td>
+      <Table.Td>
+        <Badge size="xs" color="orange">
+          {t('accounting.uncosted')}
+        </Badge>
       </Table.Td>
     </Table.Tr>
   );

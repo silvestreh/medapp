@@ -202,8 +202,8 @@ export function PracticeSelector({
   const { t } = useTranslation();
 
   const label = insurerName
-    ? `${t('recetario.practices_label', 'Prácticas')} (${insurerName})`
-    : t('recetario.practices_label', 'Prácticas');
+    ? `${t('recetario.practices_label')} (${insurerName})`
+    : t('recetario.practices_label');
 
   const selectedIds = useMemo(() => new Set(selected.map(rp => rp.practice.id)), [selected]);
 
@@ -263,7 +263,7 @@ export function PracticeSelector({
   return (
     <TagsInput
       label={label}
-      placeholder={selected.length < max ? t('recetario.add_practice', 'Agregar práctica...') : ''}
+      placeholder={selected.length < max ? t('recetario.add_practice') : ''}
       data={suggestions}
       value={tagValues}
       onChange={handleChange}

@@ -72,7 +72,7 @@ const CalendarContainer = styled('div', {
 });
 
 const WEEKDAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
-const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const WEEKDAY_I18N_KEYS = ['day_mon', 'day_tue', 'day_wed', 'day_thu', 'day_fri', 'day_sat', 'day_sun'] as const;
 
 function getAge(birthDate: string | Date | null | undefined): number | null {
   if (!birthDate) return null;
@@ -239,7 +239,7 @@ export function PatientOverview({ patient, encounters, sireData }: PatientOvervi
         <Section>
           <FormHeader>
             <StyledTitle order={1} mb="md">
-              Anticoagulación
+              {t('sire.anticoagulation')}
             </StyledTitle>
           </FormHeader>
 
@@ -262,17 +262,17 @@ export function PatientOverview({ patient, encounters, sireData }: PatientOvervi
               </CalendarContainer>
 
               <Stack gap={0} style={{ flex: 1 }}>
-                <FieldRow label="Medicación" variant="stacked">
+                <FieldRow label={t('sire.medication')} variant="stacked">
                   <Text>
                     {sireData.treatment.medication} ({sireData.treatment.tabletDoseMg} mg)
                   </Text>
                 </FieldRow>
-                <FieldRow label="INR objetivo" variant="stacked">
+                <FieldRow label={t('sire.target_inr')} variant="stacked">
                   <Text>
                     Min: {sireData.treatment.targetInrMin} / Max: {sireData.treatment.targetInrMax}
                   </Text>
                 </FieldRow>
-                <FieldRow label="Inicio" variant="stacked">
+                <FieldRow label={t('sire.start')} variant="stacked">
                   <Text>{dayjs(sireData.treatment.startDate).format('DD/MM/YYYY')}</Text>
                 </FieldRow>
 
@@ -282,7 +282,7 @@ export function PatientOverview({ patient, encounters, sireData }: PatientOvervi
                       {WEEKDAY_KEYS.map((key, i) => (
                         <Stack key={key} gap={2} align="center">
                           <Text size="xs" c="dimmed" fw={500}>
-                            {WEEKDAY_LABELS[i]}
+                            {t(`sire.${WEEKDAY_I18N_KEYS[i]}`)}
                           </Text>
                           <Text size="sm" fw={600}>
                             {formatDose(sireData.schedule!.schedule[key] ?? null)}

@@ -239,7 +239,7 @@ export default function PatientDetail() {
               variant="light"
               leftSection={<DropIcon size={16} />}
             >
-              Anticoagulación
+              {t('sire.anticoagulation')}
             </Button>
             <Button
               variant="outline"
@@ -298,7 +298,7 @@ export default function PatientDetail() {
           onExited={handleSireDrawerExited}
           position="right"
           size="lg"
-          title="Anticoagulación"
+          title={t('sire.anticoagulation')}
           skeleton={
             <Stack gap="md" p="md">
               <Skeleton h={80} />

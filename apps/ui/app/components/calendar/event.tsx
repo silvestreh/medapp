@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 
 import { CalendarEvent, EventVariant } from '~/components/calendar';
@@ -121,6 +122,7 @@ const EventTitle = styled('span', {
 });
 
 export function Event({ event, date, isFirstInRow, isLastInRow, style }: EventProps) {
+  const { t } = useTranslation();
   const startDate = useMemo(() => dayjs(event.startDate), [event.startDate]);
   const endDate = useMemo(() => dayjs(event.endDate), [event.endDate]);
   const isFirstDay = date.isSame(startDate, 'day');
@@ -144,7 +146,7 @@ export function Event({ event, date, isFirstInRow, isLastInRow, style }: EventPr
       }}
     >
       {isFirstDay && <EventTitle>{event.title}</EventTitle>}
-      {isMultiDay && isFirstInRow && <EventTitle style={{ paddingLeft: '2em' }}>{event.title} (continúa)</EventTitle>}
+      {isMultiDay && isFirstInRow && <EventTitle style={{ paddingLeft: '2em' }}>{event.title} {t('calendar.continues')}</EventTitle>}
       {!isMultiDay && !event.allDay && !event.extra && <Time>{startDate.format('HH:mm')}</Time>}
       {event.extra && <Time>(ST)</Time>}
     </EventBox>

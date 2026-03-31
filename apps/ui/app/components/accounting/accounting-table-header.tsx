@@ -53,12 +53,12 @@ export function AccountingTableHeader({
                 <Menu.Dropdown>
                   {unbilledCount > 0 && (
                     <Menu.Item onClick={onSelectAllBilling}>
-                      {t('accounting.select_all_unbilled', { defaultValue: 'Select all unbilled' })}
+                      {t('accounting.select_all_unbilled')}
                     </Menu.Item>
                   )}
                   {hasUncosted && (
                     <Menu.Item onClick={onSelectAllBackfill}>
-                      {t('accounting.select_all_backfillable', { defaultValue: 'Select all untracked' })}
+                      {t('accounting.select_all_backfillable')}
                     </Menu.Item>
                   )}
                 </Menu.Dropdown>
@@ -67,17 +67,18 @@ export function AccountingTableHeader({
           </Group>
         </Table.Th>
         {[
-          t('accounting.col_date', { defaultValue: 'Date' }),
-          t('accounting.col_type', { defaultValue: 'Type' }),
-          t('accounting.col_insurer', { defaultValue: 'Insurer' }),
-          t('accounting.col_patient', { defaultValue: 'Patient' }),
-          t('accounting.col_cost', { defaultValue: 'Cost' }),
+          t('accounting.col_date'),
+          t('accounting.col_type'),
+          t('accounting.col_insurer'),
+          t('accounting.col_patient'),
+          t('accounting.col_cost'),
+          t('accounting.col_status'),
         ].map((label, idx) => (
           <Table.Th
             key={label}
             style={{
               border: '1px solid var(--mantine-primary-color-1)',
-              ...(idx === 4 && { borderRight: 'none' }),
+              ...(idx === 5 && { borderRight: 'none' }),
             }}
             fw={500}
             fz="md"

@@ -874,7 +874,6 @@ export default function AccountingSettingsPage() {
       setUncostedCount(0);
       setUncostedPractices([]);
       const msg = t('accounting.settings_backfill_result', {
-        defaultValue: '{{backfilled}} backfilled, {{skipped}} skipped',
         backfilled: result.backfilled,
         skipped: result.skipped,
       });
@@ -897,14 +896,14 @@ export default function AccountingSettingsPage() {
                     .then(() => {
                       setUncostedPractices(prevUncosted);
                       setUncostedCount(prevCount);
-                      showNotification({ color: 'teal', message: t('common.undone', { defaultValue: 'Undone' }) });
+                      showNotification({ color: 'teal', message: t('common.undone') });
                     })
                     .catch((err: any) => {
                       showNotification({ color: 'red', message: err.message || 'Undo failed' });
                     });
                 }}
               >
-                {t('common.undo', { defaultValue: 'Undo' })}
+                {t('common.undo')}
               </Button>
             )}
           </Group>
@@ -939,7 +938,7 @@ export default function AccountingSettingsPage() {
           {activeInsurerId && copyFromOptions.length > 0 && (
             <div data-tour="acct-settings-copy-from">
               <Select
-                placeholder={t('accounting.settings_copy_from', { defaultValue: 'Copy from...' })}
+                placeholder={t('accounting.settings_copy_from')}
                 data={copyFromOptions}
                 value={null}
                 onChange={handleCopyFrom}
@@ -1023,7 +1022,7 @@ export default function AccountingSettingsPage() {
                 onChange={() => {}}
                 onSelectPrepaga={handleAddInsurer}
                 onEscape={() => setShowAddInsurer(false)}
-                placeholder={t('accounting.settings_search_add_insurer', { defaultValue: 'Search insurer...' })}
+                placeholder={t('accounting.settings_search_add_insurer')}
               />
             </Flex>
           ) : (
@@ -1037,7 +1036,7 @@ export default function AccountingSettingsPage() {
                 style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                 flex={1}
               >
-                {t('accounting.settings_add_insurer', { defaultValue: 'Add insurer' })}
+                {t('accounting.settings_add_insurer')}
               </Button>
               {(data.allHistoricalInsurerIds?.length ?? 0) > 0 && (
                 <Popover position="bottom-end" withArrow>
@@ -1064,7 +1063,7 @@ export default function AccountingSettingsPage() {
                       loading={loadingHistorical}
                       flex={1}
                     >
-                      {t('accounting.settings_add_all_past', { defaultValue: 'Add past' })}
+                      {t('accounting.settings_add_all_past')}
                     </Button>
                   </Popover.Dropdown>
                 </Popover>
@@ -1091,13 +1090,13 @@ export default function AccountingSettingsPage() {
         <InsurerFilter>
           <Stack gap="sm">
             <Switch
-              label={t('accounting.settings_show_hidden_insurers', { defaultValue: 'Show hidden insurers' })}
+              label={t('accounting.settings_show_hidden_insurers')}
               checked={showHiddenInsurers}
               onChange={handleShowHiddenInsurersChange}
             />
             <Divider />
             <Text size="xs" fw={600} c="dimmed" data-tour="acct-settings-backfill">
-              {t('accounting.settings_backfill', { defaultValue: 'Backfill costs' })}
+              {t('accounting.settings_backfill')}
             </Text>
             <DateRangePopover
               value={backfillRange}
@@ -1110,7 +1109,7 @@ export default function AccountingSettingsPage() {
             />
             <Flex gap="xs">
               <Button flex={1} size="xs" variant="light" onClick={handleFindUncosted} loading={backfillLoading}>
-                {t('accounting.settings_find_uncosted', { defaultValue: 'Find' })}
+                {t('accounting.settings_find_uncosted')}
               </Button>
               {uncostedCount !== null && uncostedCount > 0 && (
                 <Button
@@ -1122,7 +1121,6 @@ export default function AccountingSettingsPage() {
                   loading={backfillLoading}
                 >
                   {t('accounting.settings_backfill_all', {
-                    defaultValue: `Backfill ${uncostedCount}`,
                     count: uncostedCount,
                   })}
                 </Button>
@@ -1134,7 +1132,7 @@ export default function AccountingSettingsPage() {
 
       <Content>
         {!activeInsurer && (
-          <Text c="dimmed">{t('common.no_results', { defaultValue: 'No insurers configured yet.' })}</Text>
+          <Text c="dimmed">{t('common.no_results')}</Text>
         )}
         {activeInsurer && (
           <Stack gap="0">
@@ -1153,7 +1151,7 @@ export default function AccountingSettingsPage() {
               </Stack>
               <Switch
                 data-tour="acct-settings-visibility"
-                label={t('accounting.settings_visible', { defaultValue: 'Visible' })}
+                label={t('accounting.settings_visible')}
                 checked={!hiddenInsurers.includes(activeInsurer.id)}
                 onChange={handleToggleVisibility}
               />

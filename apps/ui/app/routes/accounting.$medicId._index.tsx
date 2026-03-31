@@ -253,7 +253,7 @@ export default function AccountingDashboardPage() {
   const translateType = useCallback(
     (kind: string) => {
       if (kind === 'encounter') {
-        return t('accounting.kind_encounter', { defaultValue: 'Encounter' });
+        return t('accounting.kind_encounter');
       }
       const key = STUDY_TYPE_I18N[kind];
       return key ? t(key, { defaultValue: kind }) : kind;
@@ -262,9 +262,9 @@ export default function AccountingDashboardPage() {
   );
 
   const selectedInsurerLabel = useMemo(() => {
-    if (selectedInsurerId === 'all') return t('accounting.filter_insurer', { defaultValue: 'Obra social' });
+    if (selectedInsurerId === 'all') return t('accounting.filter_insurer');
     const found = insurers.find((i: Prepaga) => i.id === selectedInsurerId);
-    return found ? found.shortName : t('accounting.filter_insurer', { defaultValue: 'Obra social' });
+    return found ? found.shortName : t('accounting.filter_insurer');
   }, [selectedInsurerId, insurers, t]);
 
   const handleSelectInsurer = useCallback((id: string) => {
@@ -278,7 +278,7 @@ export default function AccountingDashboardPage() {
   }, []);
 
   const selectedPracticeTypeLabel = useMemo(() => {
-    if (selectedPracticeType === 'all') return t('accounting.filter_practice_type', { defaultValue: 'Tipo de práctica' });
+    if (selectedPracticeType === 'all') return t('accounting.filter_practice_type');
     return translateType(selectedPracticeType);
   }, [selectedPracticeType, t, translateType]);
 
@@ -291,7 +291,7 @@ export default function AccountingDashboardPage() {
     for (const ins of insurers) {
       map.set(ins.id, ins.shortName);
     }
-    map.set(PARTICULAR_INSURER_ID, t('accounting.settings_particular', { defaultValue: 'Particular' }));
+    map.set(PARTICULAR_INSURER_ID, t('accounting.settings_particular'));
     return map;
   }, [insurers, t]);
 
@@ -425,7 +425,7 @@ export default function AccountingDashboardPage() {
       .then(() => {
         setUncostedPractices(prev => [...prev, ...practices]);
         refetchAccounting();
-        showNotification({ color: 'teal', message: t('common.undone', { defaultValue: 'Undone' }) });
+        showNotification({ color: 'teal', message: t('common.undone') });
       })
       .catch((err: any) => {
         showNotification({ color: 'red', message: err.message || 'Undo failed' });
@@ -453,7 +453,6 @@ export default function AccountingDashboardPage() {
       lastBackfilledRef.current = { ids, practices: backfilledPractices };
 
       const msg = t('accounting.settings_backfill_result', {
-        defaultValue: '{{backfilled}} backfilled, {{skipped}} skipped',
         backfilled: result.backfilled,
         skipped: result.skipped,
       });
@@ -465,7 +464,7 @@ export default function AccountingDashboardPage() {
             <Text size="sm">{msg}</Text>
             {ids.length > 0 && (
               <Button size="compact-xs" variant="subtle" color="gray" onClick={handleUndoBackfill}>
-                {t('common.undo', { defaultValue: 'Undo' })}
+                {t('common.undo')}
               </Button>
             )}
           </Group>
@@ -511,12 +510,11 @@ export default function AccountingDashboardPage() {
           <Group gap="xs">
             <Text size="sm">
               {t('accounting.marked_as_billed', {
-                defaultValue: '{{count}} marked as billed',
                 count: practiceCostIds.length,
               })}
             </Text>
             <Button size="xs" variant="subtle" color="gray" onClick={handleUndoBilling}>
-              {t('common.undo', { defaultValue: 'Undo' })}
+              {t('common.undo')}
             </Button>
           </Group>
         ),
@@ -566,9 +564,9 @@ export default function AccountingDashboardPage() {
                 </Button>
               </Menu.Target>
               <Menu.Dropdown>
-                <Menu.Label>{t('navigation.insurers', { defaultValue: 'Insurers' })}</Menu.Label>
+                <Menu.Label>{t('navigation.insurers')}</Menu.Label>
                 <Menu.Item onClick={() => handleSelectInsurer('all')} fw={selectedInsurerId === 'all' ? 700 : 400}>
-                  {t('common.all', { defaultValue: 'Everything' })}
+                  {t('common.all')}
                 </Menu.Item>
                 <Menu.Divider />
                 {visibleInsurers.map((insurer: Prepaga) => (
@@ -595,9 +593,9 @@ export default function AccountingDashboardPage() {
                 </Button>
               </Menu.Target>
               <Menu.Dropdown>
-                <Menu.Label>{t('accounting.practice_type', { defaultValue: 'Practice type' })}</Menu.Label>
+                <Menu.Label>{t('accounting.practice_type')}</Menu.Label>
                 <Menu.Item onClick={() => handleSelectPracticeType('all')} fw={selectedPracticeType === 'all' ? 700 : 400}>
-                  {t('common.all', { defaultValue: 'Everything' })}
+                  {t('common.all')}
                 </Menu.Item>
                 <Menu.Divider />
                 {availablePracticeTypes.map((type) => (
@@ -630,11 +628,11 @@ export default function AccountingDashboardPage() {
 
       <Stack gap="md">
         <Paper withBorder p="md" data-tour="accounting-revenue">
-          <Text c="dimmed">{t('accounting.total_revenue', { defaultValue: 'Total revenue' })}</Text>
+          <Text c="dimmed">{t('accounting.total_revenue')}</Text>
           <Title order={2}>${totalRevenue.toFixed(2)}</Title>
           {loading && (
             <Text c="dimmed" size="sm">
-              {t('common.loading', { defaultValue: 'Loading...' })}
+              {t('common.loading')}
             </Text>
           )}
         </Paper>
@@ -642,7 +640,7 @@ export default function AccountingDashboardPage() {
         {revenueByInsurer.length > 0 && (
           <Paper withBorder p="md" data-tour="accounting-chart">
             <Text fw={600} mb="sm">
-              {t('accounting.revenue_by_insurer', { defaultValue: 'Revenue by insurer' })}
+              {t('accounting.revenue_by_insurer')}
             </Text>
             <BarChart
               h={260}
@@ -655,7 +653,7 @@ export default function AccountingDashboardPage() {
 
         {isClient && loading && (
           <Text c="dimmed" ta="center" py="xl">
-            {t('common.loading', { defaultValue: 'Loading...' })}
+            {t('common.loading')}
           </Text>
         )}
 

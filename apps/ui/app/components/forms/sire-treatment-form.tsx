@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Stack, Group, Button, NumberInput, TextInput, Textarea, Select } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
+import { useTranslation } from 'react-i18next';
 
 interface SireTreatmentFormProps {
   patientId: string;
@@ -10,6 +11,8 @@ interface SireTreatmentFormProps {
 }
 
 export function SireTreatmentForm({ patientId, initialData, onSubmit }: SireTreatmentFormProps) {
+  const { t } = useTranslation();
+
   const form = useForm({
     initialValues: {
       medication: initialData?.medication || 'Acenocumarol',
@@ -38,19 +41,19 @@ export function SireTreatmentForm({ patientId, initialData, onSubmit }: SireTrea
   return (
     <Stack gap="md">
       <Select
-        label="Medicación"
+        label={t('sire.medication')}
         data={[
-          { value: 'Acenocumarol', label: 'Acenocumarol (Sintrom)' },
-          { value: 'Warfarina', label: 'Warfarina (Circuvit)' },
-          { value: 'Apixabán', label: 'Apixabán (Eliquis)' },
-          { value: 'Rivaroxabán', label: 'Rivaroxabán (Xarelto)' },
-          { value: 'Dabigatrán', label: 'Dabigatrán (Pradaxa)' },
+          { value: 'Acenocumarol', label: t('sire.med_acenocoumarol') },
+          { value: 'Warfarina', label: t('sire.med_warfarin') },
+          { value: 'Apixabán', label: t('sire.med_apixaban') },
+          { value: 'Rivaroxabán', label: t('sire.med_rivaroxaban') },
+          { value: 'Dabigatrán', label: t('sire.med_dabigatran') },
         ]}
         {...form.getInputProps('medication')}
       />
 
       <NumberInput
-        label="Dosis por comprimido (mg)"
+        label={t('sire.tablet_dose')}
         min={0.5}
         step={0.5}
         decimalScale={1}
@@ -59,7 +62,7 @@ export function SireTreatmentForm({ patientId, initialData, onSubmit }: SireTrea
 
       <Group grow>
         <NumberInput
-          label="RIN mínimo objetivo"
+          label={t('sire.target_inr_min')}
           min={0.5}
           max={5}
           step={0.1}
@@ -67,7 +70,7 @@ export function SireTreatmentForm({ patientId, initialData, onSubmit }: SireTrea
           {...form.getInputProps('targetInrMin')}
         />
         <NumberInput
-          label="RIN máximo objetivo"
+          label={t('sire.target_inr_max')}
           min={0.5}
           max={5}
           step={0.1}
@@ -76,23 +79,23 @@ export function SireTreatmentForm({ patientId, initialData, onSubmit }: SireTrea
         />
       </Group>
 
-      <TextInput label="Indicación" placeholder="Ej: Fibrilación auricular" {...form.getInputProps('indication')} />
+      <TextInput label={t('sire.indication')} placeholder={t('sire.placeholder_indication')} {...form.getInputProps('indication')} />
 
       <Group grow>
-        <DateInput label="Fecha de inicio" valueFormat="YYYY-MM-DD" {...form.getInputProps('startDate')} />
+        <DateInput label={t('sire.start_date')} valueFormat="YYYY-MM-DD" {...form.getInputProps('startDate')} />
         <DateInput
-          label="Próximo control"
+          label={t('sire.next_control')}
           valueFormat="YYYY-MM-DD"
           clearable
-          placeholder="Sin fecha"
+          placeholder={t('sire.placeholder_no_date')}
           {...form.getInputProps('nextControlDate')}
         />
       </Group>
 
-      <Textarea label="Notas" autosize minRows={2} {...form.getInputProps('notes')} />
+      <Textarea label={t('sire.notes')} autosize minRows={2} {...form.getInputProps('notes')} />
 
       <Button onClick={handleSubmit} fullWidth>
-        {initialData ? 'Actualizar tratamiento' : 'Crear tratamiento'}
+        {initialData ? t('sire.update_treatment') : t('sire.create_treatment')}
       </Button>
     </Stack>
   );

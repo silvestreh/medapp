@@ -28,13 +28,12 @@ export function AccountingActionBar({
         {selectedForBillingSize > 0 && (
           <Group justify="space-between">
             <Text size="sm">
-              {t('accounting.billing_selected_count', {
-                defaultValue: '{{count}} selected',
+              {t('accounting.selected_count', {
                 count: selectedForBillingSize,
               })}
             </Text>
             <Button size="sm" onClick={onMarkAsBilled} loading={billingLoading}>
-              {t('accounting.mark_as_billed', { defaultValue: 'Mark as billed' })}
+              {t('accounting.mark_as_billed')}
             </Button>
           </Group>
         )}
@@ -43,12 +42,11 @@ export function AccountingActionBar({
           <Group justify="space-between">
             <Text size="sm">
               {t('accounting.backfill_selected_count', {
-                defaultValue: '{{count}} selected for backfill',
                 count: selectedForBackfillSize,
               })}
             </Text>
             <Button size="sm" onClick={onBackfillSelected} loading={backfillLoading}>
-              {t('accounting.backfill_selected', { defaultValue: 'Backfill selected' })}
+              {t('accounting.backfill_selected')}
             </Button>
           </Group>
         )}

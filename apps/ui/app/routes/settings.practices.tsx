@@ -217,12 +217,12 @@ export default function SettingsPracticesPage() {
           onClick={handleNewPractice}
           style={{ marginLeft: 'auto' }}
         >
-          {t('settings.practices_add', 'Nueva práctica')}
+          {t('settings.practices_add')}
         </Button>
       </Portal>
 
       <SectionTitle id="practices" icon={<FirstAidKitIcon />} mb="md">
-        {t('settings.practices_heading', 'Prácticas')}
+        {t('settings.practices_heading')}
       </SectionTitle>
 
       {!isMedic && delegatedMedics.length > 0 && (
@@ -242,10 +242,10 @@ export default function SettingsPracticesPage() {
           <Table.Thead>
             <Table.Tr>
               <Table.Th fw={400} py="xs" pl="lg">
-                {t('settings.practices_col_name', 'Nombre')}
+                {t('settings.practices_col_name')}
               </Table.Th>
               <Table.Th fw={400} py="xs">
-                {t('settings.practices_col_insurers', 'Prepagas')}
+                {t('settings.practices_col_insurers')}
               </Table.Th>
               <Table.Th fw={400} py="xs" pr="lg" style={{ width: 40 }}></Table.Th>
             </Table.Tr>
@@ -276,7 +276,7 @@ export default function SettingsPracticesPage() {
               <Table.Tr>
                 <Table.Td colSpan={3}>
                   <Text size="sm" c="dimmed" ta="center" py="xl">
-                    {t('settings.practices_empty', 'No hay prácticas aún.')}
+                    {t('settings.practices_empty')}
                   </Text>
                 </Table.Td>
               </Table.Tr>

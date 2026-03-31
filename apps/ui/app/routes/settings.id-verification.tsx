@@ -179,18 +179,15 @@ export default function SettingsIdVerification() {
     const rejectionReason = parentData.identityVerification?.rejectionReason;
     return (
       <Stack gap="md" py="xl" mx="auto">
-        <Alert color="red" title={t('identity_verification.status_rejected', 'Verificación rechazada')}>
+        <Alert color="red" title={t('identity_verification.status_rejected')}>
           <Text size="sm">
             {rejectionReason?.includes('license_invalid')
-              ? t(
-                  'identity_verification.rejection_license_invalid',
-                  'No se encontró tu matrícula en el registro de SSSalud.'
-                )
+              ? t('identity_verification.rejection_license_invalid')
               : rejectionReason?.includes('dni_mismatch')
-                ? t('identity_verification.rejection_dni_mismatch', 'Los datos del DNI no coinciden con los registros.')
+                ? t('identity_verification.rejection_dni_mismatch')
                 : rejectionReason?.includes('face_match_failed')
-                  ? t('identity_verification.rejection_face_mismatch', 'No se pudo verificar la coincidencia facial.')
-                  : t('identity_verification.rejection_generic', 'La verificación fue rechazada. Intentá nuevamente.')}
+                  ? t('identity_verification.rejection_face_mismatch')
+                  : t('identity_verification.rejection_generic')}
           </Text>
         </Alert>
         <KycWidget
@@ -210,10 +207,7 @@ export default function SettingsIdVerification() {
     return (
       <Stack align="center" py="xl">
         <Text c="red" size="sm">
-          {t(
-            'identity_verification.missing_personal_data',
-            'Completá tus datos personales antes de verificar tu identidad.'
-          )}
+          {t('identity_verification.missing_personal_data')}
         </Text>
       </Stack>
     );
@@ -222,13 +216,13 @@ export default function SettingsIdVerification() {
   return (
     <Stack gap="md">
       {scanned && (
-        <Alert color="red" title="El DNI escaneado no coincide con tus datos">
+        <Alert color="red" title={t('identity_verification.id_mismatch_title')}>
           <Stack gap="xs">
-            <Text size="sm">¿Querés actualizar tus datos con la información del DNI?</Text>
+            <Text size="sm">{t('identity_verification.id_mismatch_question')}</Text>
             {scanned.firstName && (
               <Text size="xs">
                 <Text span fw={600}>
-                  Nombre:
+                  {t('identity_verification.first_name_label')}
                 </Text>{' '}
                 {scanned.firstName}
               </Text>
@@ -236,7 +230,7 @@ export default function SettingsIdVerification() {
             {scanned.lastName && (
               <Text size="xs">
                 <Text span fw={600}>
-                  Apellido:
+                  {t('identity_verification.last_name_label')}
                 </Text>{' '}
                 {scanned.lastName}
               </Text>
@@ -244,17 +238,17 @@ export default function SettingsIdVerification() {
             {scanned.dniNumber && (
               <Text size="xs">
                 <Text span fw={600}>
-                  DNI:
+                  {t('identity_verification.dni_label')}
                 </Text>{' '}
                 {scanned.dniNumber}
               </Text>
             )}
             <Group mt="xs">
               <Button size="xs" onClick={handleUpdateRecords} color="red" loading={updating}>
-                Actualizar mis datos
+                {t('identity_verification.update_my_records')}
               </Button>
               <Button size="xs" variant="subtle" color="red" onClick={handleDismissError}>
-                Cancelar
+                {t('common.cancel')}
               </Button>
             </Group>
           </Stack>
@@ -264,40 +258,31 @@ export default function SettingsIdVerification() {
       {status === 'verified' && (
         <Stack gap="md">
           {isLicenseVerified && (
-            <Alert color="green" title={t('identity_verification.license_verified', 'Matrícula verificada')}>
+            <Alert color="green" title={t('identity_verification.license_verified')}>
               <Text size="sm">
-                {t(
-                  'identity_verification.license_verified_desc',
-                  'Tu identidad y matrícula profesional han sido verificadas correctamente.'
-                )}
+                {t('identity_verification.license_verified_desc')}
               </Text>
             </Alert>
           )}
           {!isLicenseVerified && licenseError && licenseError !== 'sssalud_unreachable' && (
-            <Alert color="red" title={t('identity_verification.license_failed', 'Matrícula no verificada')}>
+            <Alert color="red" title={t('identity_verification.license_failed')}>
               <Text size="sm">
                 {licenseError.includes('not found')
-                  ? t(
-                      'identity_verification.license_not_found',
-                      'No se encontró tu matrícula en el registro de SSSalud.'
-                    )
+                  ? t('identity_verification.license_not_found')
                   : licenseError.includes('expired')
-                    ? t('identity_verification.license_expired', 'Tu matrícula profesional se encuentra vencida.')
-                    : t('identity_verification.license_error', 'No pudimos verificar tu matrícula profesional.')}
+                    ? t('identity_verification.license_expired')
+                    : t('identity_verification.license_error')}
               </Text>
             </Alert>
           )}
           {!isLicenseVerified && (licenseError === 'sssalud_unreachable' || !licenseError) && (
             <Alert
               color="yellow"
-              title={t('identity_verification.license_pending', 'Validación de matrícula pendiente')}
+              title={t('identity_verification.license_pending')}
             >
               <Stack gap="xs">
                 <Text size="sm">
-                  {t(
-                    'identity_verification.license_pending_desc',
-                    'No pudimos conectar con SSSalud. Reintentaremos automáticamente.'
-                  )}
+                  {t('identity_verification.license_pending_desc')}
                 </Text>
                 <Group>
                   <Button
@@ -307,7 +292,7 @@ export default function SettingsIdVerification() {
                     loading={retryingLicense}
                     onClick={handleRetryLicense}
                   >
-                    {t('identity_verification.retry_license', 'Reintentar ahora')}
+                    {t('identity_verification.retry_license')}
                   </Button>
                 </Group>
               </Stack>

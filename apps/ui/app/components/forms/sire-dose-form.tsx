@@ -2,15 +2,11 @@ import { useCallback } from 'react';
 import { Stack, Group, Button, NumberInput, Textarea } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
+import { useTranslation } from 'react-i18next';
 
-const DAYS = [
-  { key: 'monday', label: 'Lunes' },
-  { key: 'tuesday', label: 'Martes' },
-  { key: 'wednesday', label: 'Miércoles' },
-  { key: 'thursday', label: 'Jueves' },
-  { key: 'friday', label: 'Viernes' },
-  { key: 'saturday', label: 'Sábado' },
-  { key: 'sunday', label: 'Domingo' },
+const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+const DAY_FULL_I18N_KEYS = [
+  'day_monday', 'day_tuesday', 'day_wednesday', 'day_thursday', 'day_friday', 'day_saturday', 'day_sunday',
 ] as const;
 
 interface SireDoseFormProps {
@@ -19,6 +15,10 @@ interface SireDoseFormProps {
 }
 
 export function SireDoseForm({ treatmentId, onSubmit }: SireDoseFormProps) {
+  const { t } = useTranslation();
+
+  const DAYS = DAY_KEYS.map((key, i) => ({ key, label: t(`sire.${DAY_FULL_I18N_KEYS[i]}`) }));
+
   const form = useForm({
     initialValues: {
       startDate: new Date(),
@@ -35,9 +35,9 @@ export function SireDoseForm({ treatmentId, onSubmit }: SireDoseFormProps) {
 
   const handleSubmit = useCallback(() => {
     const schedule: Record<string, number | null> = {};
-    for (const day of DAYS) {
-      const val = form.values[day.key];
-      schedule[day.key] = val !== '' ? Number(val) : null;
+    for (const day of DAY_KEYS) {
+      const val = form.values[day];
+      schedule[day] = val !== '' ? Number(val) : null;
     }
 
     onSubmit({
@@ -53,7 +53,7 @@ export function SireDoseForm({ treatmentId, onSubmit }: SireDoseFormProps) {
 
   return (
     <Stack gap="md">
-      <DateInput label="Fecha de inicio" valueFormat="YYYY-MM-DD" {...form.getInputProps('startDate')} />
+      <DateInput label={t('sire.start_date')} valueFormat="YYYY-MM-DD" {...form.getInputProps('startDate')} />
 
       <Group grow>
         {DAYS.map(day => (
@@ -72,15 +72,15 @@ export function SireDoseForm({ treatmentId, onSubmit }: SireDoseFormProps) {
       </Group>
 
       <Textarea
-        label="Notas"
+        label={t('sire.notes')}
         autosize
         minRows={2}
-        placeholder="Observaciones sobre el esquema..."
+        placeholder={t('sire.placeholder_schedule_observations')}
         {...form.getInputProps('notes')}
       />
 
       <Button onClick={handleSubmit} fullWidth>
-        Guardar esquema
+        {t('sire.save_schedule')}
       </Button>
     </Stack>
   );

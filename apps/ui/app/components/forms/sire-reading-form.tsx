@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Stack, Group, Button, NumberInput, Select } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
+import { useTranslation } from 'react-i18next';
 
 interface SireReadingFormProps {
   treatmentId: string;
@@ -11,6 +12,8 @@ interface SireReadingFormProps {
 }
 
 export function SireReadingForm({ treatmentId, patientId, organizationId, onSubmit }: SireReadingFormProps) {
+  const { t } = useTranslation();
+
   const form = useForm({
     initialValues: {
       date: new Date(),
@@ -20,7 +23,7 @@ export function SireReadingForm({ treatmentId, patientId, organizationId, onSubm
       source: 'provider' as string,
     },
     validate: {
-      inr: value => (value === '' ? 'RIN es requerido' : null),
+      inr: value => (value === '' ? t('sire.inr_required') : null),
     },
   });
 
@@ -41,51 +44,51 @@ export function SireReadingForm({ treatmentId, patientId, organizationId, onSubm
 
   return (
     <Stack gap="md">
-      <DateInput label="Fecha de lectura" valueFormat="YYYY-MM-DD" {...form.getInputProps('date')} />
+      <DateInput label={t('sire.reading_date')} valueFormat="YYYY-MM-DD" {...form.getInputProps('date')} />
 
       <NumberInput
-        label="RIN"
+        label={t('sire.inr')}
         required
         min={0}
         max={20}
         step={0.1}
         decimalScale={1}
-        placeholder="Ej: 2.4"
+        placeholder={t('sire.placeholder_inr')}
         {...form.getInputProps('inr')}
       />
 
       <Group grow>
         <NumberInput
-          label="Quick (seg)"
+          label={t('sire.quick_sec')}
           min={0}
           step={0.1}
           decimalScale={1}
-          placeholder="Ej: 1.2"
+          placeholder={t('sire.placeholder_quick')}
           {...form.getInputProps('quick')}
         />
         <NumberInput
-          label="Porcentaje (%)"
+          label={t('sire.percentage')}
           min={0}
           max={200}
           step={1}
           decimalScale={0}
-          placeholder="Ej: 48"
+          placeholder={t('sire.placeholder_percentage')}
           {...form.getInputProps('percentage')}
         />
       </Group>
 
       <Select
-        label="Fuente"
+        label={t('sire.source')}
         data={[
-          { value: 'provider', label: 'Profesional' },
-          { value: 'patient', label: 'Paciente' },
-          { value: 'lab', label: 'Laboratorio' },
+          { value: 'provider', label: t('sire.source_provider') },
+          { value: 'patient', label: t('sire.source_patient') },
+          { value: 'lab', label: t('sire.source_lab') },
         ]}
         {...form.getInputProps('source')}
       />
 
       <Button onClick={handleSubmit} fullWidth>
-        Guardar lectura
+        {t('sire.save_reading')}
       </Button>
     </Stack>
   );
