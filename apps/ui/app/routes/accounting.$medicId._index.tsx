@@ -5,7 +5,7 @@ import { Link, useLoaderData, useParams } from '@remix-run/react';
 import { BarChart } from '@mantine/charts';
 import { Button, Group, Menu, Paper, Stack, Text, Title, Table } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
-import { CaretDownIcon } from '@phosphor-icons/react';
+import { CaretDownIcon, GearIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
@@ -97,6 +97,7 @@ export default function AccountingDashboardPage() {
   const params = useParams();
   const medicId = params.medicId;
   const [selectedInsurerId, setSelectedInsurerId] = useState<string>('all');
+  const [selectedPracticeType, setSelectedPracticeType] = useState<string>('all');
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<AccountingResult | null>(null);
@@ -210,9 +211,44 @@ export default function AccountingDashboardPage() {
     };
   }, [feathersClient, resolvedRange, medicId, selectedInsurerId]);
 
-  const records = data?.records ?? [];
+  const allRecords = data?.records ?? [];
   const totalRevenue = data?.totalRevenue ?? 0;
   const revenueByInsurer = data?.revenueByInsurer ?? [];
+
+  const filteredRecords = useMemo(() => {
+    if (selectedPracticeType === 'all') return allRecords;
+    return allRecords.filter(r => r.kind === selectedPracticeType);
+  }, [allRecords, selectedPracticeType]);
+
+  const filteredUncostedPractices = useMemo(() => {
+    if (selectedPracticeType === 'all') return uncostedPractices;
+    if (selectedPracticeType === 'encounter') {
+      return uncostedPractices.filter(p => p.practiceType === 'encounters');
+    }
+    return uncostedPractices.filter(
+      p => p.practiceType === 'studies' && p.studies?.includes(selectedPracticeType)
+    );
+  }, [uncostedPractices, selectedPracticeType]);
+
+  const availablePracticeTypes = useMemo(() => {
+    const types = new Set<string>();
+    for (const r of allRecords) {
+      types.add(r.kind);
+    }
+    for (const p of uncostedPractices) {
+      if (p.practiceType === 'encounters') {
+        types.add('encounter');
+      }
+      if (p.practiceType === 'studies' && p.studies) {
+        for (const s of p.studies) {
+          types.add(s);
+        }
+      }
+    }
+    return Array.from(types).sort();
+  }, [allRecords, uncostedPractices]);
+
+  const records = filteredRecords;
 
   const translateType = useCallback(
     (kind: string) => {
@@ -226,14 +262,25 @@ export default function AccountingDashboardPage() {
   );
 
   const selectedInsurerLabel = useMemo(() => {
-    if (selectedInsurerId === 'all') return t('common.all', { defaultValue: 'Everything' });
+    if (selectedInsurerId === 'all') return t('accounting.filter_insurer', { defaultValue: 'Obra social' });
     const found = insurers.find((i: Prepaga) => i.id === selectedInsurerId);
-    return found ? found.shortName : t('common.all', { defaultValue: 'Everything' });
+    return found ? found.shortName : t('accounting.filter_insurer', { defaultValue: 'Obra social' });
   }, [selectedInsurerId, insurers, t]);
 
   const handleSelectInsurer = useCallback((id: string) => {
     setSelectedInsurerId(id);
   }, []);
+
+  const handleSelectPracticeType = useCallback((type: string) => {
+    setSelectedPracticeType(type);
+    setSelectedForBackfill(new Set());
+    setSelectedForBilling(new Set());
+  }, []);
+
+  const selectedPracticeTypeLabel = useMemo(() => {
+    if (selectedPracticeType === 'all') return t('accounting.filter_practice_type', { defaultValue: 'Tipo de práctica' });
+    return translateType(selectedPracticeType);
+  }, [selectedPracticeType, t, translateType]);
 
   const visibleInsurers = useMemo(() => {
     return insurers.filter((insurer: Prepaga) => !hiddenInsurers.includes(insurer.id));
@@ -248,7 +295,7 @@ export default function AccountingDashboardPage() {
     return map;
   }, [insurers, t]);
 
-  const hasUncosted = uncostedPractices.length > 0;
+  const hasUncosted = filteredUncostedPractices.length > 0;
 
   const handleToggleBackfillSelect = useCallback(
     (practiceId: string, idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -263,7 +310,7 @@ export default function AccountingDashboardPage() {
           const from = Math.min(lastBackfillClickIdx.current, idx);
           const to = Math.max(lastBackfillClickIdx.current, idx);
           for (let i = from; i <= to; i++) {
-            const id = uncostedPractices[i]?.practiceId;
+            const id = filteredUncostedPractices[i]?.practiceId;
             if (!id) continue;
             if (willSelect) {
               next.add(id);
@@ -283,17 +330,17 @@ export default function AccountingDashboardPage() {
         return next;
       });
     },
-    [uncostedPractices]
+    [filteredUncostedPractices]
   );
 
   const handleToggleSelectAll = useCallback(() => {
     setSelectedForBackfill(prev => {
-      if (prev.size === uncostedPractices.length) {
+      if (prev.size === filteredUncostedPractices.length) {
         return new Set();
       }
-      return new Set(uncostedPractices.map(p => p.practiceId));
+      return new Set(filteredUncostedPractices.map(p => p.practiceId));
     });
-  }, [uncostedPractices]);
+  }, [filteredUncostedPractices]);
 
   const unbilledRecords = useMemo(() => records.filter(r => !r.billedAt), [records]);
 
@@ -535,6 +582,35 @@ export default function AccountingDashboardPage() {
                 ))}
               </Menu.Dropdown>
             </Menu>
+            <Menu shadow="md" width={260}>
+              <Menu.Target>
+                <Button
+                  variant="filled"
+                  color="gray.1"
+                  c="gray.7"
+                  fw={500}
+                  rightSection={<CaretDownIcon size={14} />}
+                >
+                  {selectedPracticeTypeLabel}
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Label>{t('accounting.practice_type', { defaultValue: 'Practice type' })}</Menu.Label>
+                <Menu.Item onClick={() => handleSelectPracticeType('all')} fw={selectedPracticeType === 'all' ? 700 : 400}>
+                  {t('common.all', { defaultValue: 'Everything' })}
+                </Menu.Item>
+                <Menu.Divider />
+                {availablePracticeTypes.map((type) => (
+                  <Menu.Item
+                    key={type}
+                    onClick={() => handleSelectPracticeType(type)}
+                    fw={selectedPracticeType === type ? 700 : 400}
+                  >
+                    {translateType(type)}
+                  </Menu.Item>
+                ))}
+              </Menu.Dropdown>
+            </Menu>
             <div data-tour="accounting-date-range">
               <DateRangePopover
                 value={rangeFilter}
@@ -545,7 +621,7 @@ export default function AccountingDashboardPage() {
                 variant="filled"
               />
             </div>
-            <Button component={Link} to="settings" variant="filled" color="gray.1" c="gray.7">
+            <Button component={Link} to="settings" variant="filled" leftSection={<GearIcon />}>
               {t('common.settings')}
             </Button>
           </Group>
@@ -617,7 +693,7 @@ export default function AccountingDashboardPage() {
                 t={t}
               />
             ))}
-            {uncostedPractices.map((practice, idx) => (
+            {filteredUncostedPractices.map((practice, idx) => (
               <UncostedPracticeRow
                 key={`uncosted-${practice.practiceId}`}
                 practice={practice}
