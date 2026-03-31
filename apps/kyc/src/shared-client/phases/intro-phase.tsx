@@ -1,19 +1,48 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { DocumentType } from '../../declarations';
-import { StepDef, getSteps } from '../steps';
+import { getSteps } from '../steps';
+
+type CountryOrigin = 'AR' | 'other';
 
 interface Props {
   documentType: DocumentType;
   onDocumentTypeChange: (type: DocumentType) => void;
   onStart: () => void;
+  api?: string;
 }
 
-export function IntroPhase({ documentType, onDocumentTypeChange, onStart }: Props) {
+export function IntroPhase({ documentType, onDocumentTypeChange, onStart, api }: Props) {
+  const [countryOrigin, setCountryOrigin] = useState<CountryOrigin | null>(null);
   const steps = getSteps(documentType);
+
+  // Auto-detect country on mount
+  useEffect(() => {
+    if (!api) return;
+    fetch(`${api}/detect-country`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.countryCode) return;
+        const origin: CountryOrigin = data.countryCode === 'AR' ? 'AR' : 'other';
+        setCountryOrigin(origin);
+        if (origin === 'other') {
+          onDocumentTypeChange('passport');
+        }
+      })
+      .catch(() => {});
+  }, [api]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStart = useCallback(() => {
     onStart();
   }, [onStart]);
+
+  const handleSelectCountry = useCallback((origin: CountryOrigin) => {
+    setCountryOrigin(origin);
+    if (origin === 'other') {
+      onDocumentTypeChange('passport');
+    } else {
+      onDocumentTypeChange('dni');
+    }
+  }, [onDocumentTypeChange]);
 
   const handleSelectDni = useCallback(() => {
     onDocumentTypeChange('dni');
@@ -22,6 +51,8 @@ export function IntroPhase({ documentType, onDocumentTypeChange, onStart }: Prop
   const handleSelectPassport = useCallback(() => {
     onDocumentTypeChange('passport');
   }, [onDocumentTypeChange]);
+
+  const showDocumentTypeToggle = countryOrigin === 'AR';
 
   const segmentedBtn = 'flex-1 py-2 text-sm font-medium text-center rounded-lg cursor-pointer border-none bg-transparent relative z-10 transition-colors duration-200';
 
@@ -32,28 +63,61 @@ export function IntroPhase({ documentType, onDocumentTypeChange, onStart }: Prop
         Necesitamos verificar tu identidad. El proceso dura menos de un minuto.
       </p>
 
-      {/* Document type selector */}
-      <div className="relative flex p-1 bg-gray-100 rounded-xl mb-6">
+      {/* Country origin selector */}
+      <label className="text-xs text-gray-500 mb-1.5 block">País de origen</label>
+      <div className="relative flex p-1 bg-gray-100 rounded-xl mb-4">
         <div
           className="absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out"
           style={{
             width: 'calc(50% - 4px)',
-            left: documentType === 'dni' ? '4px' : 'calc(50% + 0px)',
+            left: countryOrigin !== 'other' ? '4px' : 'calc(50% + 0px)',
           }}
         />
         <button
-          className={`${segmentedBtn} ${documentType === 'dni' ? 'text-gray-800' : 'text-gray-500'}`}
-          onClick={handleSelectDni}
+          className={`${segmentedBtn} ${countryOrigin !== 'other' ? 'text-gray-800' : 'text-gray-500'}`}
+          onClick={() => handleSelectCountry('AR')}
         >
-          DNI
+          Argentina
         </button>
         <button
-          className={`${segmentedBtn} ${documentType === 'passport' ? 'text-gray-800' : 'text-gray-500'}`}
-          onClick={handleSelectPassport}
+          className={`${segmentedBtn} ${countryOrigin === 'other' ? 'text-gray-800' : 'text-gray-500'}`}
+          onClick={() => handleSelectCountry('other')}
         >
-          Pasaporte
+          Otro país
         </button>
       </div>
+
+      {/* Document type selector — only for Argentina */}
+      {showDocumentTypeToggle && (
+        <>
+          <label className="text-xs text-gray-500 mb-1.5 block">Tipo de documento</label>
+          <div className="relative flex p-1 bg-gray-100 rounded-xl mb-6">
+            <div
+              className="absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out"
+              style={{
+                width: 'calc(50% - 4px)',
+                left: documentType === 'dni' ? '4px' : 'calc(50% + 0px)',
+              }}
+            />
+            <button
+              className={`${segmentedBtn} ${documentType === 'dni' ? 'text-gray-800' : 'text-gray-500'}`}
+              onClick={handleSelectDni}
+            >
+              DNI
+            </button>
+            <button
+              className={`${segmentedBtn} ${documentType === 'passport' ? 'text-gray-800' : 'text-gray-500'}`}
+              onClick={handleSelectPassport}
+            >
+              Pasaporte
+            </button>
+          </div>
+        </>
+      )}
+
+      {!showDocumentTypeToggle && (
+        <div className="mb-6" />
+      )}
 
       <ul className="list-none mb-10">
         {steps.map((step, i) => (

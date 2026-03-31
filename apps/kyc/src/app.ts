@@ -48,6 +48,15 @@ app.get('/healthz', (_req: any, res: any) => {
   res.json({ ok: true });
 });
 
+// Detect country from client IP (for document type pre-selection)
+(app as any).get('/detect-country', (req: any, res: any) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  const geoip = require('geoip-lite');
+  const ip = req.ip || req.headers['x-forwarded-for']?.split(',')[0]?.trim();
+  const geo = ip ? geoip.lookup(ip) : null;
+  res.json({ countryCode: geo?.country || null });
+});
+
 // Serve decrypted uploads (requires API key for service-to-service access)
 (app as any).get('/uploads/:filename', async (req: any, res: any) => {
   try {

@@ -38,6 +38,7 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
   const [creatingSession, setCreatingSession] = useState(false);
 
   const [idDataChanged, setIdDataChanged] = useState(false);
+  const [countryOrigin, setCountryOrigin] = useState<'AR' | 'other' | null>(null);
 
   const steps = useMemo(() => getSteps(documentType), [documentType]);
   const selfieStep = useMemo(() => steps.find(s => s.key === 'selfie')!, [steps]);
@@ -74,6 +75,23 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
       })
       .catch(() => setPhase('intro'));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-detect country on mount
+  useEffect(() => {
+    if (!api) return;
+    fetch(`${api}/detect-country`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.countryCode) return;
+        const origin = data.countryCode === 'AR' ? 'AR' as const : 'other' as const;
+        setCountryOrigin(origin);
+        if (origin === 'other') {
+          setDocumentType('passport');
+        }
+      })
+      .catch(() => {});
+  }, [api]);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [uploads, setUploads] = useState<Record<UploadKey, UploadedFile | null>>({
     idFront: null,
@@ -102,6 +120,15 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
 
   const handleDocumentTypeChange = useCallback((type: DocumentType) => {
     setDocumentType(type);
+  }, []);
+
+  const handleSelectCountry = useCallback((origin: 'AR' | 'other') => {
+    setCountryOrigin(origin);
+    if (origin === 'other') {
+      setDocumentType('passport');
+    } else {
+      setDocumentType('dni');
+    }
   }, []);
 
   const createSession = useCallback(async (): Promise<string | null> => {
@@ -351,28 +378,57 @@ export function WidgetApp({ token: initialToken, api, locale, config, onEvent }:
             Necesitamos verificar tu identidad. El proceso dura menos de un minuto.
           </p>
 
-          {/* Document type selector */}
+          {/* Country origin selector */}
+          <label className="text-xs text-gray-500 mb-1.5 block">País de origen</label>
           <div className="relative flex p-1 bg-gray-100 rounded-xl mb-4">
             <div
               className="absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out"
               style={{
                 width: 'calc(50% - 4px)',
-                left: documentType === 'dni' ? '4px' : 'calc(50% + 0px)',
+                left: countryOrigin !== 'other' ? '4px' : 'calc(50% + 0px)',
               }}
             />
             <button
-              className={`${segmentedBtn} ${documentType === 'dni' ? 'text-gray-800' : 'text-gray-500'}`}
-              onClick={() => handleDocumentTypeChange('dni')}
+              className={`${segmentedBtn} ${countryOrigin !== 'other' ? 'text-gray-800' : 'text-gray-500'}`}
+              onClick={() => handleSelectCountry('AR')}
             >
-              DNI
+              Argentina
             </button>
             <button
-              className={`${segmentedBtn} ${documentType === 'passport' ? 'text-gray-800' : 'text-gray-500'}`}
-              onClick={() => handleDocumentTypeChange('passport')}
+              className={`${segmentedBtn} ${countryOrigin === 'other' ? 'text-gray-800' : 'text-gray-500'}`}
+              onClick={() => handleSelectCountry('other')}
             >
-              Pasaporte
+              Otro país
             </button>
           </div>
+
+          {/* Document type selector — only for Argentina */}
+          {countryOrigin === 'AR' && (
+            <>
+              <label className="text-xs text-gray-500 mb-1.5 block">Tipo de documento</label>
+              <div className="relative flex p-1 bg-gray-100 rounded-xl mb-4">
+                <div
+                  className="absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out"
+                  style={{
+                    width: 'calc(50% - 4px)',
+                    left: documentType === 'dni' ? '4px' : 'calc(50% + 0px)',
+                  }}
+                />
+                <button
+                  className={`${segmentedBtn} ${documentType === 'dni' ? 'text-gray-800' : 'text-gray-500'}`}
+                  onClick={() => handleDocumentTypeChange('dni')}
+                >
+                  DNI
+                </button>
+                <button
+                  className={`${segmentedBtn} ${documentType === 'passport' ? 'text-gray-800' : 'text-gray-500'}`}
+                  onClick={() => handleDocumentTypeChange('passport')}
+                >
+                  Pasaporte
+                </button>
+              </div>
+            </>
+          )}
 
           {/* Mode selector with sliding indicator */}
           {hasCameraApi && (

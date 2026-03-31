@@ -147,6 +147,7 @@ export function App({ token, api }: Props) {
           documentType={documentType}
           onDocumentTypeChange={handleDocumentTypeChange}
           onStart={handleStart}
+          api={api}
         />
       )}
 

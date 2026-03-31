@@ -1091,7 +1091,7 @@
             }
             return dispatcher.useContext(Context);
           }
-          function useState3(initialState) {
+          function useState4(initialState) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useState(initialState);
           }
@@ -1103,7 +1103,7 @@
             var dispatcher = resolveDispatcher();
             return dispatcher.useRef(initialValue);
           }
-          function useEffect4(create, deps) {
+          function useEffect5(create, deps) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useEffect(create, deps);
           }
@@ -1886,7 +1886,7 @@
           exports.useContext = useContext;
           exports.useDebugValue = useDebugValue;
           exports.useDeferredValue = useDeferredValue;
-          exports.useEffect = useEffect4;
+          exports.useEffect = useEffect5;
           exports.useId = useId;
           exports.useImperativeHandle = useImperativeHandle;
           exports.useInsertionEffect = useInsertionEffect;
@@ -1894,7 +1894,7 @@
           exports.useMemo = useMemo2;
           exports.useReducer = useReducer;
           exports.useRef = useRef3;
-          exports.useState = useState3;
+          exports.useState = useState4;
           exports.useSyncExternalStore = useSyncExternalStore;
           exports.useTransition = useTransition;
           exports.version = ReactVersion;
@@ -2441,7 +2441,7 @@
           var HostPortal = 4;
           var HostComponent = 5;
           var HostText = 6;
-          var Fragment2 = 7;
+          var Fragment3 = 7;
           var Mode = 8;
           var ContextConsumer = 9;
           var ContextProvider = 10;
@@ -3598,7 +3598,7 @@
                 return "DehydratedFragment";
               case ForwardRef:
                 return getWrappedName$1(type, type.render, "ForwardRef");
-              case Fragment2:
+              case Fragment3:
                 return "Fragment";
               case HostComponent:
                 return type;
@@ -12027,7 +12027,7 @@
               }
             }
             function updateFragment2(returnFiber, current2, fragment, lanes, key) {
-              if (current2 === null || current2.tag !== Fragment2) {
+              if (current2 === null || current2.tag !== Fragment3) {
                 var created = createFiberFromFragment(fragment, returnFiber.mode, lanes, key);
                 created.return = returnFiber;
                 return created;
@@ -12430,7 +12430,7 @@
                 if (child.key === key) {
                   var elementType = element.type;
                   if (elementType === REACT_FRAGMENT_TYPE) {
-                    if (child.tag === Fragment2) {
+                    if (child.tag === Fragment3) {
                       deleteRemainingChildren(returnFiber, child.sibling);
                       var existing = useFiber(child, element.props.children);
                       existing.return = returnFiber;
@@ -17906,7 +17906,7 @@
                 var _resolvedProps2 = workInProgress2.elementType === type ? _unresolvedProps2 : resolveDefaultProps(type, _unresolvedProps2);
                 return updateForwardRef(current2, workInProgress2, type, _resolvedProps2, renderLanes2);
               }
-              case Fragment2:
+              case Fragment3:
                 return updateFragment(current2, workInProgress2, renderLanes2);
               case Mode:
                 return updateMode(current2, workInProgress2, renderLanes2);
@@ -18178,7 +18178,7 @@
               case SimpleMemoComponent:
               case FunctionComponent:
               case ForwardRef:
-              case Fragment2:
+              case Fragment3:
               case Mode:
               case Profiler:
               case ContextConsumer:
@@ -22439,7 +22439,7 @@
             return fiber;
           }
           function createFiberFromFragment(elements, mode, lanes, key) {
-            var fiber = createFiber(Fragment2, elements, key, mode);
+            var fiber = createFiber(Fragment3, elements, key, mode);
             fiber.lanes = lanes;
             return fiber;
           }
@@ -24710,49 +24710,104 @@
   // src/shared-client/phases/intro-phase.tsx
   var import_react = __toESM(require_react());
   var import_jsx_runtime = __toESM(require_jsx_runtime());
-  function IntroPhase({ documentType, onDocumentTypeChange, onStart }) {
+  function IntroPhase({ documentType, onDocumentTypeChange, onStart, api }) {
+    const [countryOrigin, setCountryOrigin] = (0, import_react.useState)(null);
     const steps = getSteps(documentType);
+    (0, import_react.useEffect)(() => {
+      if (!api) return;
+      fetch(`${api}/detect-country`).then((r) => r.ok ? r.json() : null).then((data) => {
+        if (!data?.countryCode) return;
+        const origin = data.countryCode === "AR" ? "AR" : "other";
+        setCountryOrigin(origin);
+        if (origin === "other") {
+          onDocumentTypeChange("passport");
+        }
+      }).catch(() => {
+      });
+    }, [api]);
     const handleStart = (0, import_react.useCallback)(() => {
       onStart();
     }, [onStart]);
+    const handleSelectCountry = (0, import_react.useCallback)((origin) => {
+      setCountryOrigin(origin);
+      if (origin === "other") {
+        onDocumentTypeChange("passport");
+      } else {
+        onDocumentTypeChange("dni");
+      }
+    }, [onDocumentTypeChange]);
     const handleSelectDni = (0, import_react.useCallback)(() => {
       onDocumentTypeChange("dni");
     }, [onDocumentTypeChange]);
     const handleSelectPassport = (0, import_react.useCallback)(() => {
       onDocumentTypeChange("passport");
     }, [onDocumentTypeChange]);
+    const showDocumentTypeToggle = countryOrigin === "AR";
     const segmentedBtn = "flex-1 py-2 text-sm font-medium text-center rounded-lg cursor-pointer border-none bg-transparent relative z-10 transition-colors duration-200";
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex-1 flex flex-col justify-center px-6 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] max-w-[420px] mx-auto w-full", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { className: "text-2xl font-bold mb-2", children: "Verificaci\xF3n de Identidad" }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-500 text-sm mb-8", children: "Necesitamos verificar tu identidad. El proceso dura menos de un minuto." }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative flex p-1 bg-gray-100 rounded-xl mb-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { className: "text-xs text-gray-500 mb-1.5 block", children: "Pa\xEDs de origen" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative flex p-1 bg-gray-100 rounded-xl mb-4", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "div",
           {
             className: "absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out",
             style: {
               width: "calc(50% - 4px)",
-              left: documentType === "dni" ? "4px" : "calc(50% + 0px)"
+              left: countryOrigin !== "other" ? "4px" : "calc(50% + 0px)"
             }
           }
         ),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "button",
           {
-            className: `${segmentedBtn} ${documentType === "dni" ? "text-gray-800" : "text-gray-500"}`,
-            onClick: handleSelectDni,
-            children: "DNI"
+            className: `${segmentedBtn} ${countryOrigin !== "other" ? "text-gray-800" : "text-gray-500"}`,
+            onClick: () => handleSelectCountry("AR"),
+            children: "Argentina"
           }
         ),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "button",
           {
-            className: `${segmentedBtn} ${documentType === "passport" ? "text-gray-800" : "text-gray-500"}`,
-            onClick: handleSelectPassport,
-            children: "Pasaporte"
+            className: `${segmentedBtn} ${countryOrigin === "other" ? "text-gray-800" : "text-gray-500"}`,
+            onClick: () => handleSelectCountry("other"),
+            children: "Otro pa\xEDs"
           }
         )
       ] }),
+      showDocumentTypeToggle && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { className: "text-xs text-gray-500 mb-1.5 block", children: "Tipo de documento" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative flex p-1 bg-gray-100 rounded-xl mb-6", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "div",
+            {
+              className: "absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out",
+              style: {
+                width: "calc(50% - 4px)",
+                left: documentType === "dni" ? "4px" : "calc(50% + 0px)"
+              }
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "button",
+            {
+              className: `${segmentedBtn} ${documentType === "dni" ? "text-gray-800" : "text-gray-500"}`,
+              onClick: handleSelectDni,
+              children: "DNI"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "button",
+            {
+              className: `${segmentedBtn} ${documentType === "passport" ? "text-gray-800" : "text-gray-500"}`,
+              onClick: handleSelectPassport,
+              children: "Pasaporte"
+            }
+          )
+        ] })
+      ] }),
+      !showDocumentTypeToggle && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mb-6" }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", { className: "list-none mb-10", children: steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
         "li",
         {
@@ -25627,7 +25682,8 @@
         {
           documentType,
           onDocumentTypeChange: handleDocumentTypeChange,
-          onStart: handleStart
+          onStart: handleStart,
+          api
         }
       ),
       phase === "camera" && step && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(

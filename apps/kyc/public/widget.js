@@ -2441,7 +2441,7 @@
           var HostPortal = 4;
           var HostComponent = 5;
           var HostText = 6;
-          var Fragment2 = 7;
+          var Fragment3 = 7;
           var Mode = 8;
           var ContextConsumer = 9;
           var ContextProvider = 10;
@@ -3598,7 +3598,7 @@
                 return "DehydratedFragment";
               case ForwardRef:
                 return getWrappedName$1(type, type.render, "ForwardRef");
-              case Fragment2:
+              case Fragment3:
                 return "Fragment";
               case HostComponent:
                 return type;
@@ -12027,7 +12027,7 @@
               }
             }
             function updateFragment2(returnFiber, current2, fragment, lanes, key) {
-              if (current2 === null || current2.tag !== Fragment2) {
+              if (current2 === null || current2.tag !== Fragment3) {
                 var created = createFiberFromFragment(fragment, returnFiber.mode, lanes, key);
                 created.return = returnFiber;
                 return created;
@@ -12430,7 +12430,7 @@
                 if (child.key === key) {
                   var elementType = element.type;
                   if (elementType === REACT_FRAGMENT_TYPE) {
-                    if (child.tag === Fragment2) {
+                    if (child.tag === Fragment3) {
                       deleteRemainingChildren(returnFiber, child.sibling);
                       var existing = useFiber(child, element.props.children);
                       existing.return = returnFiber;
@@ -17906,7 +17906,7 @@
                 var _resolvedProps2 = workInProgress2.elementType === type ? _unresolvedProps2 : resolveDefaultProps(type, _unresolvedProps2);
                 return updateForwardRef(current2, workInProgress2, type, _resolvedProps2, renderLanes2);
               }
-              case Fragment2:
+              case Fragment3:
                 return updateFragment(current2, workInProgress2, renderLanes2);
               case Mode:
                 return updateMode(current2, workInProgress2, renderLanes2);
@@ -18178,7 +18178,7 @@
               case SimpleMemoComponent:
               case FunctionComponent:
               case ForwardRef:
-              case Fragment2:
+              case Fragment3:
               case Mode:
               case Profiler:
               case ContextConsumer:
@@ -22439,7 +22439,7 @@
             return fiber;
           }
           function createFiberFromFragment(elements, mode, lanes, key) {
-            var fiber = createFiber(Fragment2, elements, key, mode);
+            var fiber = createFiber(Fragment3, elements, key, mode);
             fiber.lanes = lanes;
             return fiber;
           }
@@ -27607,6 +27607,7 @@
     const idData = config?.idData || void 0;
     const [creatingSession, setCreatingSession] = (0, import_react6.useState)(false);
     const [idDataChanged, setIdDataChanged] = (0, import_react6.useState)(false);
+    const [countryOrigin, setCountryOrigin] = (0, import_react6.useState)(null);
     const steps = (0, import_react6.useMemo)(() => getSteps(documentType), [documentType]);
     const selfieStep = (0, import_react6.useMemo)(() => steps.find((s) => s.key === "selfie"), [steps]);
     (0, import_react6.useEffect)(() => {
@@ -27634,6 +27635,18 @@
         }
       }).catch(() => setPhase("intro"));
     }, []);
+    (0, import_react6.useEffect)(() => {
+      if (!api) return;
+      fetch(`${api}/detect-country`).then((r) => r.ok ? r.json() : null).then((data) => {
+        if (!data?.countryCode) return;
+        const origin = data.countryCode === "AR" ? "AR" : "other";
+        setCountryOrigin(origin);
+        if (origin === "other") {
+          setDocumentType("passport");
+        }
+      }).catch(() => {
+      });
+    }, [api]);
     const [currentStep, setCurrentStep] = (0, import_react6.useState)(0);
     const [uploads, setUploads] = (0, import_react6.useState)({
       idFront: null,
@@ -27658,6 +27671,14 @@
     }, [onEvent]);
     const handleDocumentTypeChange = (0, import_react6.useCallback)((type) => {
       setDocumentType(type);
+    }, []);
+    const handleSelectCountry = (0, import_react6.useCallback)((origin) => {
+      setCountryOrigin(origin);
+      if (origin === "other") {
+        setDocumentType("passport");
+      } else {
+        setDocumentType("dni");
+      }
     }, []);
     const createSession = (0, import_react6.useCallback)(async () => {
       if (sessionToken) return sessionToken;
@@ -27856,6 +27877,7 @@
         idDataChanged && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-800", children: "Tus datos personales cambiaron desde la \xFAltima verificaci\xF3n. Necesit\xE1s verificar tu identidad nuevamente." }),
         /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h1", { className: "text-2xl font-bold mb-2", children: "Verificaci\xF3n de Identidad" }),
         /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "text-gray-500 text-sm mb-6", children: "Necesitamos verificar tu identidad. El proceso dura menos de un minuto." }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "text-xs text-gray-500 mb-1.5 block", children: "Pa\xEDs de origen" }),
         /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "relative flex p-1 bg-gray-100 rounded-xl mb-4", children: [
           /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
             "div",
@@ -27863,26 +27885,57 @@
               className: "absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out",
               style: {
                 width: "calc(50% - 4px)",
-                left: documentType === "dni" ? "4px" : "calc(50% + 0px)"
+                left: countryOrigin !== "other" ? "4px" : "calc(50% + 0px)"
               }
             }
           ),
           /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
             "button",
             {
-              className: `${segmentedBtn} ${documentType === "dni" ? "text-gray-800" : "text-gray-500"}`,
-              onClick: () => handleDocumentTypeChange("dni"),
-              children: "DNI"
+              className: `${segmentedBtn} ${countryOrigin !== "other" ? "text-gray-800" : "text-gray-500"}`,
+              onClick: () => handleSelectCountry("AR"),
+              children: "Argentina"
             }
           ),
           /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
             "button",
             {
-              className: `${segmentedBtn} ${documentType === "passport" ? "text-gray-800" : "text-gray-500"}`,
-              onClick: () => handleDocumentTypeChange("passport"),
-              children: "Pasaporte"
+              className: `${segmentedBtn} ${countryOrigin === "other" ? "text-gray-800" : "text-gray-500"}`,
+              onClick: () => handleSelectCountry("other"),
+              children: "Otro pa\xEDs"
             }
           )
+        ] }),
+        countryOrigin === "AR" && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(import_jsx_runtime6.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "text-xs text-gray-500 mb-1.5 block", children: "Tipo de documento" }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "relative flex p-1 bg-gray-100 rounded-xl mb-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+              "div",
+              {
+                className: "absolute top-1 bottom-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-in-out",
+                style: {
+                  width: "calc(50% - 4px)",
+                  left: documentType === "dni" ? "4px" : "calc(50% + 0px)"
+                }
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+              "button",
+              {
+                className: `${segmentedBtn} ${documentType === "dni" ? "text-gray-800" : "text-gray-500"}`,
+                onClick: () => handleDocumentTypeChange("dni"),
+                children: "DNI"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+              "button",
+              {
+                className: `${segmentedBtn} ${documentType === "passport" ? "text-gray-800" : "text-gray-500"}`,
+                onClick: () => handleDocumentTypeChange("passport"),
+                children: "Pasaporte"
+              }
+            )
+          ] })
         ] }),
         hasCameraApi && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "relative flex p-1 bg-gray-100 rounded-xl mb-4", children: [
           /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
