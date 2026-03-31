@@ -36,7 +36,7 @@
     "@feathersjs/transport-commons": "^4.5.17",
     "@napi-rs/canvas": "^0.1.96",
     "@types/geoip-lite": "^1.4.4",
-    "axios": "^1.7.7",
+    "axios": "1.7.7",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",

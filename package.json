@@ -17,5 +17,10 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "pnpm": {
+    "overrides": {
+      "axios": "1.7.7"
+    }
+  }
 }
