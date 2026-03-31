@@ -118,6 +118,27 @@ export default function AccountingDashboardPage() {
   const lastBackfillClickIdx = useRef<number | null>(null);
   const lastBilledIdsRef = useRef<string[]>([]);
   const lastBackfilledRef = useRef<{ ids: string[]; practices: UncostedPractice[] }>({ ids: [], practices: [] });
+  const tableRef = useRef<HTMLTableElement>(null);
+  const shiftHeldRef = useRef(false);
+
+  useEffect(() => {
+    const el = tableRef.current;
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        shiftHeldRef.current = true;
+        if (el) el.style.userSelect = 'none';
+      }
+    };
+    const up = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        shiftHeldRef.current = false;
+        if (el) el.style.userSelect = '';
+      }
+    };
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+  }, []);
 
   useEffect(() => {
     setIsClient(true);
@@ -298,8 +319,8 @@ export default function AccountingDashboardPage() {
   const hasUncosted = filteredUncostedPractices.length > 0;
 
   const handleToggleBackfillSelect = useCallback(
-    (practiceId: string, idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
-      const shiftKey = e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey;
+    (practiceId: string, idx: number, _e: React.ChangeEvent<HTMLInputElement>) => {
+      const shiftKey = shiftHeldRef.current;
       if (shiftKey) window.getSelection()?.removeAllRanges();
 
       setSelectedForBackfill(prev => {
@@ -345,8 +366,8 @@ export default function AccountingDashboardPage() {
   const unbilledRecords = useMemo(() => records.filter(r => !r.billedAt), [records]);
 
   const handleToggleBillingSelect = useCallback(
-    (practiceCostId: string, idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
-      const shiftKey = e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey;
+    (practiceCostId: string, idx: number, _e: React.ChangeEvent<HTMLInputElement>) => {
+      const shiftKey = shiftHeldRef.current;
       if (shiftKey) window.getSelection()?.removeAllRanges();
 
       setSelectedForBilling(prev => {
@@ -658,6 +679,7 @@ export default function AccountingDashboardPage() {
         )}
 
         <Table
+          ref={tableRef}
           data-tour="accounting-table"
           layout="fixed"
           bg="white"
