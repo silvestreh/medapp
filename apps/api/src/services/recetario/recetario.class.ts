@@ -6,6 +6,11 @@ import { APP_SLUG } from '@athelas/brand';
 import type { Application } from '../../declarations';
 import { mapDoctorData, mapPatientData, mapDoctorForAPI, mapPatientForAPI, checkDoctorReadiness, sanitizeDocumentNumber, mapGender, reverseMapGender, reverseMapProvince, formatBirthDate } from './data-mapper';
 import * as recetarioClient from './recetario-client';
+import type { HealthInsurance } from './recetario-client';
+
+let _healthInsurancesCache: HealthInsurance[] | null = null;
+let _healthInsurancesCacheTime = 0;
+const INSURANCE_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 type RecetarioAction =
   | 'quick-link'
@@ -181,16 +186,8 @@ export class Recetario {
     // patients.get already populates personalData and contactData via after hooks
     const patient = await this.app.service('patients').get(patientId, internal);
 
-    // Get insurer name if patient has medicare
-    let insurerName: string | null = null;
-    if ((patient as any).medicareId) {
-      try {
-        const prepaga = await this.app.service('prepagas').get((patient as any).medicareId, this.internal());
-        insurerName = (prepaga as any).recetarioHealthInsuranceName || (prepaga as any).shortName || null;
-      } catch {
-        // prepaga not found
-      }
-    }
+    // Resolve insurer name from Recetario's API
+    const insurerName = await this.resolveInsuranceName((patient as any).medicareId);
 
     return {
       personalData: (patient as any).personalData || {},
@@ -213,6 +210,61 @@ export class Recetario {
       enabled: settings?.enabled || false,
       healthCenterId: settings?.healthCenterId || null,
     };
+  }
+
+  /**
+   * Resolve the health insurance name for a prepaga from Recetario's API.
+   * Uses a cached list and backfills our recetarioHealthInsuranceName column.
+   */
+  private async resolveInsuranceName(prepagaId: string | null | undefined): Promise<string | null> {
+    if (!prepagaId) return null;
+
+    let prepaga: any;
+    try {
+      prepaga = await this.app.service('prepagas').get(prepagaId, this.internal());
+    } catch {
+      return null;
+    }
+
+    // Fetch Recetario insurances (cached)
+    const now = Date.now();
+    if (!_healthInsurancesCache || now - _healthInsurancesCacheTime > INSURANCE_CACHE_TTL) {
+      try {
+        _healthInsurancesCache = await recetarioClient.getHealthInsurances();
+        _healthInsurancesCacheTime = now;
+      } catch {
+        // API unavailable — fall back to local column
+        return prepaga.recetarioHealthInsuranceName || null;
+      }
+    }
+    const insurances = _healthInsurancesCache;
+
+    // Try to find a match: first by the stored name, then by shortName
+    const normalize = (s: string) => s.toLowerCase().trim();
+    const candidates = [prepaga.recetarioHealthInsuranceName, prepaga.shortName, prepaga.denomination].filter(Boolean);
+
+    let match: HealthInsurance | undefined;
+    for (const candidate of candidates) {
+      match = insurances.find((hi) => normalize(hi.name) === normalize(candidate));
+      if (match) break;
+    }
+
+    if (!match) return prepaga.recetarioHealthInsuranceName || null;
+
+    // Backfill the local column if it's missing or outdated
+    if (prepaga.recetarioHealthInsuranceName !== match.name) {
+      try {
+        await this.app.service('prepagas').patch(
+          prepagaId,
+          { recetarioHealthInsuranceName: match.name } as any,
+          this.internal()
+        );
+      } catch {
+        // non-fatal
+      }
+    }
+
+    return match.name;
   }
 
   private async handleQuickLink(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {
@@ -675,14 +727,9 @@ export class Recetario {
 
     if (!override) return { resolved: mhsPatient, mhsPatient };
 
-    // Determine insurer name: from override.healthInsuranceName, or look up prepaga by override.medicareId
-    let insurerName = override.healthInsuranceName || mhsPatient.insurerName;
-    if (override.medicareId && !override.healthInsuranceName) {
-      try {
-        const prepaga = await this.app.service('prepagas').get(override.medicareId, this.internal());
-        insurerName = (prepaga as any).recetarioHealthInsuranceName || (prepaga as any).shortName || insurerName;
-      } catch { /* non-fatal */ }
-    }
+    // Resolve insurer name from Recetario's API, using overridden medicareId if provided
+    const effectiveMedicareId = override.medicareId || mhsPatient.medicareId;
+    const insurerName = await this.resolveInsuranceName(effectiveMedicareId) || mhsPatient.insurerName;
 
     const resolved = {
       personalData: {

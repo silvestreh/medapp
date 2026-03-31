@@ -209,8 +209,10 @@ export function mapPatientForAPI(patient: PatientInput): PatientPayload {
   const { personalData: pd, contactData: cd } = patient;
 
   return {
-    healthInsurance: patient.insurerName || 'PARTICULAR',
-    insuranceNumber: patient.medicareNumber || undefined,
+    healthInsurance: patient.insurerName || 'particular',
+    insuranceNumber: (patient.insurerName || 'particular').toLowerCase() === 'particular'
+      ? undefined
+      : (patient.medicareNumber || undefined),
     name: pd.firstName || '',
     surname: pd.lastName || '',
     documentNumber: sanitizeDocumentNumber(pd.documentValue),

@@ -303,6 +303,18 @@ async function handleRequest<T>(request: Promise<{ data: T }>): Promise<T> {
   }
 }
 
+function isMocked(): boolean {
+  return process.env.MOCK_RECETARIO === 'true';
+}
+
+function mockResponse<T>(method: string, url: string, dataOrParams?: any): T {
+  console.log(`\n[Recetario][MOCK] ${method.toUpperCase()} ${url}`);
+  if (dataOrParams) {
+    console.log('[Recetario][MOCK] Payload:', JSON.stringify(dataOrParams, null, 2));
+  }
+  return {} as T;
+}
+
 // --- Quick Links ---
 export async function createQuickLinks(payload: QuickLinkPayload): Promise<QuickLinkResponse> {
   const client = createClient();
@@ -311,12 +323,14 @@ export async function createQuickLinks(payload: QuickLinkPayload): Promise<Quick
 
 // --- Prescriptions ---
 export async function createPrescription(payload: PrescriptionPayload): Promise<any> {
+  if (isMocked()) return mockResponse('POST', '/prescriptions', payload);
   const client = createClient();
   return handleRequest(client.post('/prescriptions', payload));
 }
 
 // --- Orders ---
 export async function createOrder(payload: OrderPayload): Promise<any> {
+  if (isMocked()) return mockResponse('POST', '/orders', payload);
   const client = createClient();
   return handleRequest(client.post('/orders', payload));
 }
@@ -395,9 +409,9 @@ export async function upsertPatient(data: RecetarioPatient): Promise<any> {
 
 // --- Users ---
 export async function getUsersByDocumentNumber(documentNumber: string, healthCenterId?: number): Promise<any[]> {
-  const client = createClient();
   const params: Record<string, any> = { documentNumber };
   if (healthCenterId) params.healthCenterId = healthCenterId;
+  const client = createClient();
   return handleRequest(client.get('/users', { params }));
 }
 
