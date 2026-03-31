@@ -337,25 +337,33 @@ export class Recetario {
       doctorPayload.healthCenterId = orgSettings.healthCenterId;
     }
 
+    const mappedMedicines = (medications || []).map((m: any) => ({
+      externalId: m.externalId || undefined,
+      quantity: m.quantity,
+      longTerm: m.longTerm || m.longTermTreatment || false,
+      posology: m.posology || undefined,
+      genericOnly: m.genericOnly || undefined,
+      brandRecommendation: m.brandRecommendation || undefined,
+      requiresDuplicate: m.requiresDuplicate || undefined,
+      text: m.text || undefined,
+    }));
+
+    // Use 'vademecum' when all medications have an externalId (selected from
+    // Recetario's /medications endpoint). Fall back to 'manual' only when at
+    // least one medication was entered as free text (no externalId).
+    const allHaveExternalId = mappedMedicines.length > 0 && mappedMedicines.every((m: any) => m.externalId);
+    const method = allHaveExternalId ? 'vademecum' : 'manual';
+
     const payload: recetarioClient.PrescriptionPayload = {
       ...(useUserId ? { userId: recetarioUserId } : { doctor: doctorPayload }),
       date: date || dayjs().format('YYYY-MM-DD'),
       patient: mapPatientForAPI(patient),
-      method: 'manual',
+      method,
       diagnosis: diagnosis || '',
       reference,
       hiv: hiv || undefined,
       recurring,
-      medicines: (medications || []).map((m: any) => ({
-        externalId: m.externalId || undefined,
-        quantity: m.quantity,
-        longTerm: m.longTerm || m.longTermTreatment || false,
-        posology: m.posology || undefined,
-        genericOnly: m.genericOnly || undefined,
-        brandRecommendation: m.brandRecommendation || undefined,
-        requiresDuplicate: m.requiresDuplicate || undefined,
-        text: m.text || undefined,
-      })),
+      medicines: mappedMedicines,
     };
 
     // Create DB record first so webhooks can find it
