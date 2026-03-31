@@ -624,6 +624,16 @@ export function PrescribeModal({
     setRxDiagnosisError('');
     if (rxErrors.hasErrors) return;
 
+    const hasExternal = rxForm.values.medicines.some(m => m.medication?.externalId);
+    const hasFreeText = rxForm.values.medicines.some(m => !m.medication?.externalId);
+    if (hasExternal && hasFreeText) {
+      showNotification({
+        color: 'red',
+        message: t('recetario.mixed_medicines_error'),
+      });
+      return;
+    }
+
     const medications = rxForm.values.medicines.map(m => {
       const baseText = m.medication?.text || '';
       const qty = m.quantity;

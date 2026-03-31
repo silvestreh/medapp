@@ -1165,6 +1165,7 @@ export const es = {
     share_whatsapp: 'WhatsApp',
     share_email: 'Email',
     share_success: 'Documento compartido exitosamente',
+    mixed_medicines_error: 'No se pueden mezclar medicamentos del vademécum con medicamentos ingresados manualmente. Todos deben ser del mismo tipo.',
     history_title: 'Recetas',
     history_empty: 'Sin recetas aún',
     status_pending: 'Pendiente',

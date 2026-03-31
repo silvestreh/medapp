@@ -348,11 +348,14 @@ export class Recetario {
       text: m.text || undefined,
     }));
 
-    // Use 'vademecum' when all medications have an externalId (selected from
-    // Recetario's /medications endpoint). Fall back to 'manual' only when at
-    // least one medication was entered as free text (no externalId).
-    const allHaveExternalId = mappedMedicines.length > 0 && mappedMedicines.every((m: any) => m.externalId);
-    const method = allHaveExternalId ? 'vademecum' : 'manual';
+    const withExternalId = mappedMedicines.filter((m: any) => m.externalId);
+    const withoutExternalId = mappedMedicines.filter((m: any) => !m.externalId);
+
+    if (withExternalId.length > 0 && withoutExternalId.length > 0) {
+      throw new BadRequest('Cannot mix medicines with and without externalId. All medicines must either come from the vademecum or be entered manually.');
+    }
+
+    const method = withExternalId.length > 0 ? 'vademecum' : 'manual';
 
     const payload: recetarioClient.PrescriptionPayload = {
       ...(useUserId ? { userId: recetarioUserId } : { doctor: doctorPayload }),

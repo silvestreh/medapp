@@ -1161,6 +1161,7 @@ export const en: typeof es = {
     share_whatsapp: 'WhatsApp',
     share_email: 'Email',
     share_success: 'Document shared successfully',
+    mixed_medicines_error: 'Cannot mix medicines from the vademecum with manually entered ones. All must be of the same type.',
     history_title: 'Prescriptions',
     history_empty: 'No prescriptions yet',
     status_pending: 'Pending',
