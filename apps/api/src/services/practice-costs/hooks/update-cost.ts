@@ -99,6 +99,9 @@ export function updateCost(kind: 'study'): Hook {
         }) as any[];
 
         if (existing.length > 0) {
+          // Don't update cost on billed rows — the price is locked
+          if (existing[0].billedAt != null) continue;
+
           await app.service('practice-costs').patch(
             existing[0].id,
             {

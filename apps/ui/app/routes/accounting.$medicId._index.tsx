@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { LoaderFunctionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Link, useLoaderData, useParams } from '@remix-run/react';
 import { BarChart } from '@mantine/charts';
-import { Badge, Button, Checkbox, Group, Menu, Paper, Stack, Text, Title, Table } from '@mantine/core';
+import { Button, Group, Menu, Paper, Stack, Text, Title, Table } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
@@ -21,6 +21,14 @@ import { css } from '~/styled-system/css';
 import { useSectionTour } from '~/components/guided-tour/use-section-tour';
 import { getAccountingSteps } from '~/components/guided-tour/tour-steps/accounting-steps';
 import TourTooltip from '~/components/guided-tour/tour-tooltip';
+import {
+  AccountingRecordRow,
+  UncostedPracticeRow,
+  AccountingTableHeader,
+  AccountingActionBar,
+  type AccountingResult,
+  type UncostedPractice,
+} from '~/components/accounting';
 
 type Prepaga = {
   id: string;
@@ -28,35 +36,6 @@ type Prepaga = {
   denomination: string;
 };
 
-type AccountingRecord = {
-  id: string;
-  date: string;
-  kind: string;
-  protocol: number | null;
-  insurerId: string | null;
-  insurerName: string;
-  patientName: string;
-  cost: number;
-};
-
-type AccountingResult = {
-  records: AccountingRecord[];
-  totalRevenue: number;
-  revenueByDay: { date: string; revenue: number }[];
-  revenueByInsurer: { insurer: string; revenue: number }[];
-};
-
-type UncostedPractice = {
-  practiceId: string;
-  practiceType: 'studies' | 'encounters';
-  date: string;
-  patientId: string;
-  insurerId: string | null;
-  effectiveInsurerId: string;
-  emergency: boolean;
-  studies?: string[];
-  patientName: string;
-};
 
 const ContentWrapper = styled('div', {
   base: {
@@ -64,17 +43,6 @@ const ContentWrapper = styled('div', {
     md: {
       padding: '2rem',
     },
-  },
-});
-
-const CellText = styled('span', {
-  base: {
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    display: 'block',
-    padding: 'var(--mantine-spacing-xs)',
-    fontSize: 'var(--mantine-font-size-sm)',
   },
 });
 
@@ -143,6 +111,12 @@ export default function AccountingDashboardPage() {
   const [uncostedPractices, setUncostedPractices] = useState<UncostedPractice[]>([]);
   const [selectedForBackfill, setSelectedForBackfill] = useState<Set<string>>(new Set());
   const [backfillLoading, setBackfillLoading] = useState(false);
+  const [selectedForBilling, setSelectedForBilling] = useState<Set<string>>(new Set());
+  const [billingLoading, setBillingLoading] = useState(false);
+  const lastBillingClickIdx = useRef<number | null>(null);
+  const lastBackfillClickIdx = useRef<number | null>(null);
+  const lastBilledIdsRef = useRef<string[]>([]);
+  const lastBackfilledRef = useRef<{ ids: string[]; practices: UncostedPractice[] }>({ ids: [], practices: [] });
 
   useEffect(() => {
     setIsClient(true);
@@ -276,17 +250,41 @@ export default function AccountingDashboardPage() {
 
   const hasUncosted = uncostedPractices.length > 0;
 
-  const handleToggleBackfillSelect = useCallback((practiceId: string) => {
-    setSelectedForBackfill(prev => {
-      const next = new Set(prev);
-      if (next.has(practiceId)) {
-        next.delete(practiceId);
-      } else {
-        next.add(practiceId);
-      }
-      return next;
-    });
-  }, []);
+  const handleToggleBackfillSelect = useCallback(
+    (practiceId: string, idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
+      const shiftKey = e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey;
+      if (shiftKey) window.getSelection()?.removeAllRanges();
+
+      setSelectedForBackfill(prev => {
+        const next = new Set(prev);
+        const willSelect = !next.has(practiceId);
+
+        if (shiftKey && lastBackfillClickIdx.current != null) {
+          const from = Math.min(lastBackfillClickIdx.current, idx);
+          const to = Math.max(lastBackfillClickIdx.current, idx);
+          for (let i = from; i <= to; i++) {
+            const id = uncostedPractices[i]?.practiceId;
+            if (!id) continue;
+            if (willSelect) {
+              next.add(id);
+            } else {
+              next.delete(id);
+            }
+          }
+        } else {
+          if (willSelect) {
+            next.add(practiceId);
+          } else {
+            next.delete(practiceId);
+          }
+        }
+
+        lastBackfillClickIdx.current = idx;
+        return next;
+      });
+    },
+    [uncostedPractices]
+  );
 
   const handleToggleSelectAll = useCallback(() => {
     setSelectedForBackfill(prev => {
@@ -296,6 +294,64 @@ export default function AccountingDashboardPage() {
       return new Set(uncostedPractices.map(p => p.practiceId));
     });
   }, [uncostedPractices]);
+
+  const unbilledRecords = useMemo(() => records.filter(r => !r.billedAt), [records]);
+
+  const handleToggleBillingSelect = useCallback(
+    (practiceCostId: string, idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
+      const shiftKey = e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey;
+      if (shiftKey) window.getSelection()?.removeAllRanges();
+
+      setSelectedForBilling(prev => {
+        const next = new Set(prev);
+        const willSelect = !next.has(practiceCostId);
+
+        if (shiftKey && lastBillingClickIdx.current != null) {
+          const from = Math.min(lastBillingClickIdx.current, idx);
+          const to = Math.max(lastBillingClickIdx.current, idx);
+          for (let i = from; i <= to; i++) {
+            const id = unbilledRecords[i]?.practiceCostId;
+            if (!id) continue;
+            if (willSelect) {
+              next.add(id);
+            } else {
+              next.delete(id);
+            }
+          }
+        } else {
+          if (willSelect) {
+            next.add(practiceCostId);
+          } else {
+            next.delete(practiceCostId);
+          }
+        }
+
+        lastBillingClickIdx.current = idx;
+        return next;
+      });
+    },
+    [unbilledRecords]
+  );
+
+  const handleToggleBillingSelectAll = useCallback(() => {
+    setSelectedForBilling(prev => {
+      if (prev.size === unbilledRecords.length) {
+        return new Set();
+      }
+      return new Set(unbilledRecords.map(r => r.practiceCostId));
+    });
+  }, [unbilledRecords]);
+
+  const handleHeaderCheckboxChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.nativeEvent instanceof MouseEvent && e.nativeEvent.altKey && hasUncosted) {
+        handleToggleSelectAll();
+      } else {
+        handleToggleBillingSelectAll();
+      }
+    },
+    [hasUncosted, handleToggleSelectAll, handleToggleBillingSelectAll]
+  );
 
   const refetchAccounting = useCallback(() => {
     if (!resolvedRange || !medicId) return;
@@ -313,6 +369,21 @@ export default function AccountingDashboardPage() {
       .then((result: AccountingResult) => setData(result))
       .catch(() => {});
   }, [resolvedRange, medicId, selectedInsurerId, feathersClient]);
+
+  const handleUndoBackfill = useCallback(() => {
+    const { ids, practices } = lastBackfilledRef.current;
+    if (ids.length === 0) return;
+    (feathersClient.service('accounting') as any)
+      .create({ intent: 'undo-backfill', practiceCostIds: ids })
+      .then(() => {
+        setUncostedPractices(prev => [...prev, ...practices]);
+        refetchAccounting();
+        showNotification({ color: 'teal', message: t('common.undone', { defaultValue: 'Undone' }) });
+      })
+      .catch((err: any) => {
+        showNotification({ color: 'red', message: err.message || 'Undo failed' });
+      });
+  }, [feathersClient, refetchAccounting, t]);
 
   const handleBackfillSelected = useCallback(async () => {
     if (selectedForBackfill.size === 0) return;
@@ -332,6 +403,8 @@ export default function AccountingDashboardPage() {
       refetchAccounting();
 
       const ids: string[] = result.createdIds || [];
+      lastBackfilledRef.current = { ids, practices: backfilledPractices };
+
       const msg = t('accounting.settings_backfill_result', {
         defaultValue: '{{backfilled}} backfilled, {{skipped}} skipped',
         backfilled: result.backfilled,
@@ -344,23 +417,7 @@ export default function AccountingDashboardPage() {
           <Group justify="space-between" align="center" wrap="nowrap">
             <Text size="sm">{msg}</Text>
             {ids.length > 0 && (
-              <Button
-                size="compact-xs"
-                variant="subtle"
-                color="gray"
-                onClick={() => {
-                  (feathersClient.service('accounting') as any)
-                    .create({ intent: 'undo-backfill', practiceCostIds: ids })
-                    .then(() => {
-                      setUncostedPractices(prev => [...prev, ...backfilledPractices]);
-                      refetchAccounting();
-                      showNotification({ color: 'teal', message: t('common.undone', { defaultValue: 'Undone' }) });
-                    })
-                    .catch((err: any) => {
-                      showNotification({ color: 'red', message: err.message || 'Undo failed' });
-                    });
-                }}
-              >
+              <Button size="compact-xs" variant="subtle" color="gray" onClick={handleUndoBackfill}>
                 {t('common.undo', { defaultValue: 'Undo' })}
               </Button>
             )}
@@ -373,10 +430,64 @@ export default function AccountingDashboardPage() {
     } finally {
       setBackfillLoading(false);
     }
-  }, [selectedForBackfill, uncostedPractices, feathersClient, refetchAccounting, t]);
+  }, [selectedForBackfill, uncostedPractices, feathersClient, refetchAccounting, t, handleUndoBackfill]);
+
+  const handleUndoBilling = useCallback(() => {
+    const ids = lastBilledIdsRef.current;
+    if (ids.length === 0) return;
+    feathersClient
+      .service('accounting')
+      .create({ intent: 'unmark-billed', practiceCostIds: ids })
+      .then(() => refetchAccounting());
+  }, [feathersClient, refetchAccounting]);
+
+  const handleMarkAsBilled = useCallback(async () => {
+    if (selectedForBilling.size === 0) return;
+    setBillingLoading(true);
+
+    try {
+      const practiceCostIds = [...selectedForBilling];
+      lastBilledIdsRef.current = practiceCostIds;
+
+      await feathersClient.service('accounting').create({
+        intent: 'mark-billed',
+        practiceCostIds,
+      });
+
+      setSelectedForBilling(new Set());
+      refetchAccounting();
+
+      showNotification({
+        color: 'green',
+        autoClose: 8000,
+        message: (
+          <Group gap="xs">
+            <Text size="sm">
+              {t('accounting.marked_as_billed', {
+                defaultValue: '{{count}} marked as billed',
+                count: practiceCostIds.length,
+              })}
+            </Text>
+            <Button size="xs" variant="subtle" color="gray" onClick={handleUndoBilling}>
+              {t('common.undo', { defaultValue: 'Undo' })}
+            </Button>
+          </Group>
+        ),
+      });
+    } catch (err: any) {
+      console.error('Mark as billed failed:', err);
+      showNotification({ color: 'red', message: err.message || 'Failed to mark as billed' });
+    } finally {
+      setBillingLoading(false);
+    }
+  }, [selectedForBilling, feathersClient, refetchAccounting, t, handleUndoBilling]);
 
   const tourSteps = getAccountingSteps(t);
-  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('accounting', tourSteps);
+  const {
+    run: tourRun,
+    stepIndex: tourStepIndex,
+    handleCallback: tourHandleCallback,
+  } = useSectionTour('accounting', tourSteps);
 
   return (
     <ContentWrapper>
@@ -396,7 +507,14 @@ export default function AccountingDashboardPage() {
           <Group gap="sm">
             <Menu shadow="md" width={260}>
               <Menu.Target>
-                <Button data-tour="accounting-insurer-filter" variant="filled" color="gray.1" c="gray.7" fw={500} rightSection={<CaretDownIcon size={14} />}>
+                <Button
+                  data-tour="accounting-insurer-filter"
+                  variant="filled"
+                  color="gray.1"
+                  c="gray.7"
+                  fw={500}
+                  rightSection={<CaretDownIcon size={14} />}
+                >
                   {selectedInsurerLabel}
                 </Button>
               </Menu.Target>
@@ -477,125 +595,55 @@ export default function AccountingDashboardPage() {
             },
           })}
         >
-          <Table.Thead style={{ position: 'sticky', top: '5rem', zIndex: 1 }}>
-            <Table.Tr>
-              {hasUncosted && (
-                <Table.Th
-                  style={{ border: '1px solid var(--mantine-primary-color-1)', borderLeft: 'none', width: 40 }}
-                  fw={500}
-                  py="0.5em"
-                >
-                  <Checkbox
-                    size="xs"
-                    checked={selectedForBackfill.size === uncostedPractices.length}
-                    indeterminate={selectedForBackfill.size > 0 && selectedForBackfill.size < uncostedPractices.length}
-                    onChange={handleToggleSelectAll}
-                  />
-                </Table.Th>
-              )}
-              {[
-                t('accounting.col_date', { defaultValue: 'Date' }),
-                t('accounting.col_type', { defaultValue: 'Type' }),
-                // t('accounting.col_protocol', { defaultValue: 'Protocol' }),
-                t('accounting.col_insurer', { defaultValue: 'Insurer' }),
-                t('accounting.col_patient', { defaultValue: 'Patient' }),
-                t('accounting.col_cost', { defaultValue: 'Cost' }),
-              ].map((label, idx) => (
-                <Table.Th
-                  key={label}
-                  style={{
-                    border: '1px solid var(--mantine-primary-color-1)',
-                    ...(!hasUncosted && idx === 0 && { borderLeft: 'none' }),
-                    ...(idx === 4 && { borderRight: 'none' }),
-                  }}
-                  fw={500}
-                  fz="md"
-                  py="0.5em"
-                >
-                  {label}
-                </Table.Th>
-              ))}
-            </Table.Tr>
-          </Table.Thead>
+          <AccountingTableHeader
+            unbilledCount={unbilledRecords.length}
+            hasUncosted={hasUncosted}
+            selectedForBillingSize={selectedForBilling.size}
+            selectedForBackfillSize={selectedForBackfill.size}
+            onHeaderCheckboxChange={handleHeaderCheckboxChange}
+            onSelectAllBilling={handleToggleBillingSelectAll}
+            onSelectAllBackfill={handleToggleSelectAll}
+            t={t}
+          />
           <Table.Tbody>
             {records.map((record, index) => (
-              <Table.Tr
+              <AccountingRecordRow
                 key={`${record.id}-${record.kind}-${index}`}
-                styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
-              >
-                {hasUncosted && <Table.Td />}
-                <Table.Td>
-                  <CellText>{dayjs(record.date).format('YYYY-MM-DD')}</CellText>
-                </Table.Td>
-                <Table.Td>
-                  <CellText>{translateType(record.kind)}</CellText>
-                </Table.Td>
-                <Table.Td>
-                  <CellText>{record.insurerName}</CellText>
-                </Table.Td>
-                <Table.Td>
-                  <CellText>{record.patientName}</CellText>
-                </Table.Td>
-                <Table.Td>
-                  <CellText>${record.cost.toFixed(2)}</CellText>
-                </Table.Td>
-              </Table.Tr>
+                record={record}
+                unbilledIdx={record.billedAt ? -1 : unbilledRecords.indexOf(record)}
+                selectedForBilling={selectedForBilling}
+                onToggleBilling={handleToggleBillingSelect}
+                translateType={translateType}
+                t={t}
+              />
             ))}
             {uncostedPractices.map((practice, idx) => (
-              <Table.Tr
+              <UncostedPracticeRow
                 key={`uncosted-${practice.practiceId}`}
-                style={{ opacity: 0.6 }}
-                styles={{ tr: { borderColor: 'var(--mantine-color-gray-1)' } }}
-                {...(idx === 0 ? { 'data-tour': 'accounting-untracked' } : {})}
-              >
-                <Table.Td>
-                  <Checkbox
-                    size="xs"
-                    checked={selectedForBackfill.has(practice.practiceId)}
-                    onChange={() => handleToggleBackfillSelect(practice.practiceId)}
-                  />
-                </Table.Td>
-                <Table.Td>
-                  <CellText>{dayjs(practice.date).format('YYYY-MM-DD')}</CellText>
-                </Table.Td>
-                <Table.Td>
-                  <CellText>
-                    {practice.practiceType === 'studies'
-                      ? (practice.studies || []).map(s => translateType(s)).join(', ')
-                      : translateType('encounter')}{' '}
-                    <Badge size="xs" color="orange" variant="light">
-                      {t('accounting.untracked', { defaultValue: 'untracked' })}
-                    </Badge>
-                  </CellText>
-                </Table.Td>
-                <Table.Td>
-                  <CellText>{insurerNameById.get(practice.effectiveInsurerId) || '-'}</CellText>
-                </Table.Td>
-                <Table.Td>
-                  <CellText>{practice.patientName}</CellText>
-                </Table.Td>
-                <Table.Td>
-                  <CellText style={{ color: 'var(--mantine-color-dimmed)' }}>$0.00</CellText>
-                </Table.Td>
-              </Table.Tr>
+                practice={practice}
+                idx={idx}
+                selectedForBackfill={selectedForBackfill}
+                onToggleBackfill={handleToggleBackfillSelect}
+                translateType={translateType}
+                insurerNameById={insurerNameById}
+                t={t}
+                isFirst={idx === 0}
+              />
             ))}
           </Table.Tbody>
         </Table>
 
-        {hasUncosted && selectedForBackfill.size > 0 && (
-          <Paper data-tour="accounting-backfill" withBorder p="sm" style={{ position: 'sticky', bottom: 0, zIndex: 2 }}>
-            <Group justify="space-between">
-              <Text size="sm">
-                {t('accounting.backfill_selected_count', {
-                  defaultValue: '{{count}} selected for backfill',
-                  count: selectedForBackfill.size,
-                })}
-              </Text>
-              <Button size="sm" onClick={handleBackfillSelected} loading={backfillLoading}>
-                {t('accounting.backfill_selected', { defaultValue: 'Backfill selected' })}
-              </Button>
-            </Group>
-          </Paper>
+        {(selectedForBilling.size > 0 || (hasUncosted && selectedForBackfill.size > 0)) && (
+          <AccountingActionBar
+            selectedForBillingSize={selectedForBilling.size}
+            selectedForBackfillSize={selectedForBackfill.size}
+            hasUncosted={hasUncosted}
+            onMarkAsBilled={handleMarkAsBilled}
+            billingLoading={billingLoading}
+            onBackfillSelected={handleBackfillSelected}
+            backfillLoading={backfillLoading}
+            t={t}
+          />
         )}
       </Stack>
     </ContentWrapper>

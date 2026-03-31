@@ -1,5 +1,4 @@
-import { Op, Sequelize } from 'sequelize';
-import { BadRequest } from '@feathersjs/errors';
+import { BadRequest, NotFound } from '@feathersjs/errors';
 import type { Params, Id } from '@feathersjs/feathers';
 import dayjs from 'dayjs';
 
@@ -17,10 +16,12 @@ import {
   PARTICULAR_INSURER_ID,
   extraCostSectionsByStudyType,
   hasAnyFieldValue,
+  hasStudyResultData,
 } from '../../utils/cost-resolution';
 
 export interface AccountingRecord {
   id: string;
+  practiceCostId: string;
   date: string;
   kind: string;
   protocol: number | null;
@@ -29,6 +30,7 @@ export interface AccountingRecord {
   insurerName: string;
   patientName: string;
   cost: number;
+  billedAt: string | null;
 }
 
 export interface AccountingResult {
@@ -58,30 +60,39 @@ export class Accounting {
       throw new BadRequest('medicId query param is required');
     }
 
-    const sequelize: Sequelize = this.app.get('sequelizeClient');
-
     if (id === 'insurers') {
-      const rows = await sequelize.models.practice_costs.findAll({
-        where: { medicId },
-        attributes: [[sequelize.fn('DISTINCT', sequelize.col('insurerId')), 'insurerId']],
-        raw: true,
-      }) as unknown as { insurerId: string | null }[];
+      const costs = await this.app.service('practice-costs').find({
+        query: { medicId, $select: ['insurerId'] },
+        paginate: false,
+      }) as PracticeCost[];
 
-      return rows
-        .map(r => r.insurerId)
-        .filter((v): v is string => Boolean(v));
+      return [...new Set(
+        costs.map(r => r.insurerId as string | null).filter((v): v is string => Boolean(v))
+      )];
     }
 
     if (id === 'all-insurers') {
-      const [rows] = await sequelize.query(`
-        SELECT DISTINCT "insurerId" FROM studies WHERE "medicId" = :medicId AND "insurerId" IS NOT NULL
-        UNION
-        SELECT DISTINCT "insurerId" FROM encounters WHERE "medicId" = :medicId AND "insurerId" IS NOT NULL
-        UNION
-        SELECT DISTINCT "insurerId" FROM practice_costs WHERE "medicId" = :medicId AND "insurerId" IS NOT NULL
-      `, { replacements: { medicId } }) as [{ insurerId: string }[], unknown];
+      const [studyRows, encounterRows, costRows] = await Promise.all([
+        this.app.service('studies').find({
+          query: { medicId, insurerId: { $ne: null }, $select: ['insurerId'] },
+          paginate: false,
+        }) as Promise<{ insurerId: string }[]>,
+        this.app.service('encounters').find({
+          query: { medicId, insurerId: { $ne: null }, $select: ['insurerId'] },
+          paginate: false,
+        }) as Promise<{ insurerId: string }[]>,
+        this.app.service('practice-costs').find({
+          query: { medicId, insurerId: { $ne: null }, $select: ['insurerId'] },
+          paginate: false,
+        }) as Promise<PracticeCost[]>,
+      ]);
 
-      return rows.map(r => r.insurerId).filter(Boolean);
+      const allIds = [
+        ...studyRows.map(r => r.insurerId),
+        ...encounterRows.map(r => r.insurerId),
+        ...costRows.map(r => r.insurerId as string),
+      ];
+      return [...new Set(allIds.filter(Boolean))];
     }
 
     if (id === 'uncosted') {
@@ -99,46 +110,51 @@ export class Accounting {
       const fromISO = fromDate.startOf('day').toISOString();
       const toISO = toDate.endOf('day').toISOString();
 
-      // Studies without cost rows
-      const uncostsedStudies = await sequelize.models.studies.findAll({
-        where: {
-          medicId,
-          date: { [Op.gte]: fromISO, [Op.lte]: toISO },
-        },
-        attributes: ['id', 'date', 'patientId', 'insurerId', 'emergency', 'studies', 'organizationId', 'medicId'],
-        raw: true,
-      }) as unknown as {
-        id: string; date: string; patientId: string; insurerId: string | null;
-        emergency: boolean; studies: string[]; organizationId: string; medicId: string;
-      }[];
+      const [allStudies, allEncounters, existingCosts] = await Promise.all([
+        this.app.service('studies').find({
+          query: {
+            medicId,
+            date: { $gte: fromISO, $lte: toISO },
+            $select: ['id', 'date', 'patientId', 'insurerId', 'emergency', 'studies', 'organizationId', 'medicId'],
+          },
+          paginate: false,
+        }) as Promise<unknown> as Promise<{
+          id: string; date: string; patientId: string; insurerId: string | null;
+          emergency: boolean; studies: string[]; organizationId: string; medicId: string;
+        }[]>,
+        this.app.service('encounters').find({
+          query: {
+            medicId,
+            date: { $gte: fromISO, $lte: toISO },
+            $select: ['id', 'date', 'patientId', 'insurerId', 'organizationId', 'medicId'],
+          },
+          paginate: false,
+        }) as Promise<unknown> as Promise<{
+          id: string; date: string; patientId: string; insurerId: string | null;
+          organizationId: string; medicId: string;
+        }[]>,
+        this.app.service('practice-costs').find({
+          query: {
+            medicId,
+            date: { $gte: fromISO, $lte: toISO },
+            $select: ['practiceId'],
+          },
+          paginate: false,
+        }) as Promise<PracticeCost[]>,
+      ]);
 
-      // Encounters without cost rows
-      const uncostedEncounters = await sequelize.models.encounters.findAll({
-        where: {
-          medicId,
-          date: { [Op.gte]: fromISO, [Op.lte]: toISO },
-        },
-        attributes: ['id', 'date', 'patientId', 'insurerId', 'organizationId', 'medicId'],
-        raw: true,
-      }) as unknown as {
-        id: string; date: string; patientId: string; insurerId: string | null;
-        organizationId: string; medicId: string;
-      }[];
+      const costedIds = new Set(existingCosts.map(r => r.practiceId as string));
 
-      // Get all practice_costs practiceIds in that range to filter out already costed
-      const existingCosts = await sequelize.models.practice_costs.findAll({
-        where: {
-          medicId,
-          date: { [Op.gte]: fromISO, [Op.lte]: toISO },
-        },
-        attributes: ['practiceId'],
-        raw: true,
-      }) as unknown as { practiceId: string }[];
+      const uncostedStudyRows = allStudies.filter(s => !costedIds.has(s.id));
+      const uncostedEncounterRows = allEncounters.filter(e => !costedIds.has(e.id));
 
-      const costedIds = new Set(existingCosts.map(r => r.practiceId));
-
-      const uncostedStudyRows = uncostsedStudies.filter(s => !costedIds.has(s.id));
-      const uncostedEncounterRows = uncostedEncounters.filter(e => !costedIds.has(e.id));
+      // Filter out studies with no meaningful results
+      const studyIdsWithResults = await this.getStudyIdsWithResults(
+        uncostedStudyRows.map(s => s.id)
+      );
+      const uncostedStudiesWithResults = uncostedStudyRows.filter(s =>
+        studyIdsWithResults.has(s.id)
+      );
 
       // Filter to only practices whose effective insurer has pricing configured
       const insurerPrices = await this.getMedicInsurerPrices(medicId);
@@ -158,7 +174,7 @@ export class Accounting {
         return results;
       };
 
-      const filteredStudyRows = await resolveAndFilter(uncostedStudyRows);
+      const filteredStudyRows = await resolveAndFilter(uncostedStudiesWithResults);
       const filteredEncounterRows = await resolveAndFilter(uncostedEncounterRows);
 
       // Enrich with patient names
@@ -254,34 +270,33 @@ export class Accounting {
     const toISO = toDate.endOf('day').toISOString();
 
     // Query practice_costs
-    const where: Record<string, unknown> = {
+    const costQuery: Record<string, unknown> = {
       medicId,
-      date: { [Op.gte]: fromISO, [Op.lte]: toISO },
+      date: { $gte: fromISO, $lte: toISO },
     };
-    if (organizationId) where.organizationId = organizationId;
-    if (insurerId) where.insurerId = insurerId;
+    if (organizationId) costQuery.organizationId = organizationId;
+    if (insurerId) costQuery.insurerId = insurerId;
 
-    const sequelize: Sequelize = this.app.get('sequelizeClient');
-    const costRows = await sequelize.models.practice_costs.findAll({
-      where,
-      raw: true,
-    }) as unknown as PracticeCost[];
+    const allCostRows = await this.app.service('practice-costs').find({
+      query: costQuery,
+      paginate: false,
+    }) as PracticeCost[];
 
-    // Collect unique patient and insurer IDs for display lookups
-    const patientIds = [...new Set(costRows.map(r => String(r.patientId)).filter(Boolean))];
-    const allInsurerIds = [...new Set(costRows.map(r => String(r.insurerId)).filter(id => id && id !== 'null'))];
-
-    // Collect study practiceIds to fetch protocol numbers
+    // Collect study practiceIds to check for results
     const studyPracticeIds = [
       ...new Set(
-        costRows
+        allCostRows
           .filter(r => r.practiceType === 'studies')
           .map(r => String(r.practiceId))
       ),
     ];
 
-    // Bulk fetch patient names, insurers, and study protocols
-    const [ppds, prepagas, studyRows] = await Promise.all([
+    // Collect unique patient and insurer IDs for display lookups
+    const patientIds = [...new Set(allCostRows.map(r => String(r.patientId)).filter(Boolean))];
+    const allInsurerIds = [...new Set(allCostRows.map(r => String(r.insurerId)).filter(id => id && id !== 'null'))];
+
+    // Bulk fetch patient names, insurers, study protocols, and study results
+    const [ppds, prepagas, studyRows, studyIdsWithResults] = await Promise.all([
       patientIds.length
         ? this.app.service('patient-personal-data').find({
           query: { ownerId: { $in: patientIds } },
@@ -295,13 +310,19 @@ export class Accounting {
         }) as Promise<Prepaga[]>
         : Promise.resolve([] as Prepaga[]),
       studyPracticeIds.length
-        ? sequelize.models.studies.findAll({
-          where: { id: { [Op.in]: studyPracticeIds } },
-          attributes: ['id', 'protocol'],
-          raw: true,
-        }) as Promise<unknown> as Promise<{ id: string; protocol: number | null }[]>
+        ? this.app.service('studies').find({
+          query: { id: { $in: studyPracticeIds }, $select: ['id', 'protocol'] },
+          paginate: false,
+        }) as Promise<{ id: string; protocol: number | null }[]>
         : Promise.resolve([] as { id: string; protocol: number | null }[]),
+      this.getStudyIdsWithResults(studyPracticeIds),
     ]);
+
+    // Filter out study costs where the study has no meaningful results
+    const costRows = allCostRows.filter(row => {
+      if (row.practiceType !== 'studies') return true;
+      return studyIdsWithResults.has(String(row.practiceId));
+    });
 
     const pdIds = ppds.map(ppd => ppd.personalDataId as string);
     const pds = pdIds.length
@@ -334,6 +355,7 @@ export class Accounting {
 
       return {
         id: String(row.practiceId),
+        practiceCostId: String(row.id),
         date: dateToString(row.date as unknown as Date | string),
         kind,
         protocol,
@@ -342,6 +364,7 @@ export class Accounting {
         insurerName,
         patientName,
         cost: Number(Number(row.cost).toFixed(2)),
+        billedAt: row.billedAt ? dateToString(row.billedAt as unknown as Date | string) : null,
       };
     });
 
@@ -400,6 +423,44 @@ export class Accounting {
       return { removed };
     }
 
+    if (data.intent === 'mark-billed') {
+      const ids: string[] = data.practiceCostIds;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        throw new BadRequest('practiceCostIds array is required');
+      }
+      let updated = 0;
+      for (const id of ids) {
+        try {
+          await this.app.service('practice-costs').patch(
+            id,
+            { billedAt: new Date() },
+            { provider: undefined },
+          );
+          updated++;
+        } catch { /* row may not exist */ }
+      }
+      return { updated };
+    }
+
+    if (data.intent === 'unmark-billed') {
+      const ids: string[] = data.practiceCostIds;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        throw new BadRequest('practiceCostIds array is required');
+      }
+      let updated = 0;
+      for (const id of ids) {
+        try {
+          await this.app.service('practice-costs').patch(
+            id,
+            { billedAt: null },
+            { provider: undefined },
+          );
+          updated++;
+        } catch { /* row may not exist */ }
+      }
+      return { updated };
+    }
+
     if (data.intent !== 'backfill') {
       throw new BadRequest(`Unknown intent: ${data.intent}`);
     }
@@ -408,7 +469,6 @@ export class Accounting {
       throw new BadRequest('practiceIds array is required');
     }
 
-    const sequelize: Sequelize = this.app.get('sequelizeClient');
     const errors: string[] = [];
     const createdIds: string[] = [];
     let backfilled = 0;
@@ -421,9 +481,9 @@ export class Accounting {
 
     // Process studies
     if (studyIds.length > 0) {
-      const studies = await sequelize.models.studies.findAll({
-        where: { id: { [Op.in]: studyIds } },
-        raw: true,
+      const studies = await this.app.service('studies').find({
+        query: { id: { $in: studyIds } },
+        paginate: false,
       }) as unknown as {
         id: string; date: string; patientId: string; insurerId: string | null;
         emergency: boolean; studies: string[]; organizationId: string; medicId: string;
@@ -453,6 +513,13 @@ export class Accounting {
         for (const sr of studyResults) {
           const d = typeof sr.data === 'string' ? JSON.parse(sr.data) : sr.data;
           resultsByType.set(sr.type, d || {});
+        }
+
+        // Skip studies with no meaningful results
+        const hasAnyMeaningfulResult = [...resultsByType.values()].some(d => hasStudyResultData(d));
+        if (!hasAnyMeaningfulResult) {
+          skipped++;
+          continue;
         }
 
         for (const studyType of studyTypes) {
@@ -502,9 +569,9 @@ export class Accounting {
 
     // Process encounters
     if (encounterIds.length > 0) {
-      const encounters = await sequelize.models.encounters.findAll({
-        where: { id: { [Op.in]: encounterIds } },
-        raw: true,
+      const encounters = await this.app.service('encounters').find({
+        query: { id: { $in: encounterIds } },
+        paginate: false,
       }) as unknown as {
         id: string; date: string; patientId: string; insurerId: string | null;
         organizationId: string; medicId: string;
@@ -568,12 +635,32 @@ export class Accounting {
   ): Promise<string | null> {
     if (insurerId) return insurerId;
 
-    const sequelize: Sequelize = this.app.get('sequelizeClient');
-    const patient = await sequelize.models.patients.findByPk(patientId, {
-      attributes: ['medicareId'],
-      raw: true,
-    }) as { medicareId: string | null } | null;
+    try {
+      const patient = await this.app.service('patients').get(patientId, {
+        query: { $select: ['medicareId'] },
+      }) as { medicareId: string | null };
+      return patient?.medicareId || null;
+    } catch (err) {
+      if (err instanceof NotFound) return null;
+      throw err;
+    }
+  }
 
-    return patient?.medicareId || null;
+  private async getStudyIdsWithResults(studyIds: string[]): Promise<Set<string>> {
+    if (studyIds.length === 0) return new Set();
+
+    const results = await this.app.service('study-results').find({
+      query: { studyId: { $in: studyIds } },
+      paginate: false,
+    }) as { studyId: string; data: Record<string, unknown> | string }[];
+
+    const ids = new Set<string>();
+    for (const sr of results) {
+      const d = typeof sr.data === 'string' ? JSON.parse(sr.data) : (sr.data || {});
+      if (hasStudyResultData(d)) {
+        ids.add(sr.studyId);
+      }
+    }
+    return ids;
   }
 }

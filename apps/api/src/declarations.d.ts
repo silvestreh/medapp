@@ -229,6 +229,7 @@ export interface PracticeCost {
   emergency: boolean;
   date: Date;
   cost: number;
+  billedAt: Date | null;
 }
 
 export interface Organization {

@@ -69,6 +69,11 @@ export default function (app: Application): typeof Model {
       allowNull: false,
       defaultValue: 0,
     },
+    billedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null,
+    },
   }, {
     hooks: {
       beforeCount(options: any): HookReturn {

@@ -155,6 +155,10 @@ describe('\'accounting\' service', () => {
       medicId: medic.id,
       patientId: patient.id,
       insurerId: prepaga.id,
+      results: [
+        { type: 'anemia', data: { hemoglobin: '12' } },
+        { type: 'hemostasis', data: { quick: '11' } },
+      ],
     } as any);
 
     const result = await app.service('accounting').find({
@@ -184,6 +188,10 @@ describe('\'accounting\' service', () => {
       medicId: medic.id,
       patientId: patient.id,
       insurerId: prepaga.id,
+      results: [
+        { type: 'anemia', data: { hemoglobin: '14' } },
+        { type: 'anticoagulation', data: { rin: '2.5' } },
+      ],
     } as any);
 
     const result = await app.service('accounting').find({
@@ -357,6 +365,7 @@ describe('\'accounting\' service', () => {
       medicId: medic.id,
       patientId: patient.id,
       insurerId: prepaga.id,
+      results: [{ type: 'thrombophilia', data: { protein_c: '85' } }],
     } as any);
 
     const result = await app.service('accounting').find({
@@ -567,6 +576,7 @@ describe('\'accounting\' service', () => {
         medicId: medic.id,
         patientId: patient.id,
         insurerId: prepaga.id,
+        results: [{ type: 'anemia', data: { hemoglobin: '10' } }],
       } as any);
 
       const result = await app.service('accounting').find({
@@ -595,6 +605,7 @@ describe('\'accounting\' service', () => {
         medicId: medic.id,
         patientId: patient.id,
         insurerId: prepaga.id,
+        results: [{ type: 'anemia', data: { hemoglobin: '13' } }],
       } as any);
 
       const result = await app.service('accounting').find({
@@ -679,6 +690,7 @@ describe('\'accounting\' service', () => {
         medicId: medic.id,
         patientId: patient.id,
         insurerId: prepaga.id,
+        results: [{ type: 'anemia', data: { hemoglobin: '9' } }],
       } as any);
 
       const result = await app.service('accounting').find({
@@ -727,6 +739,7 @@ describe('\'accounting\' service', () => {
         medicId: medic.id,
         patientId: patient.id,
         insurerId: prepaga.id,
+        results: [{ type: 'anemia', data: { hemoglobin: '11' } }],
       } as any);
 
       const result = await app.service('accounting').find({
@@ -742,6 +755,332 @@ describe('\'accounting\' service', () => {
       );
       assert.ok(row, 'Emergency anemia row exists');
       assert.strictEqual(row.cost, 3000, 'Falls back to normal value (3000) since emergency is 0');
+    });
+  });
+
+  describe('empty study filtering', () => {
+    before(async () => {
+      const existingSettings = await app.service('accounting-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 3000,
+            hemostasis: 2000,
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+    });
+
+    it('excludes studies without any results from accounting', async () => {
+      const today = dayjs();
+
+      const emptyStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['anemia'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+      } as any);
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
+        },
+      } as any);
+
+      const row = result.records.find((r: any) => r.id === emptyStudy.id);
+      assert.strictEqual(row, undefined, 'Study without results should not appear in accounting');
+    });
+
+    it('excludes studies with all-zero/empty results from accounting', async () => {
+      const today = dayjs();
+
+      const zeroStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['anemia'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+        results: [{ type: 'anemia', data: { hemoglobin: '0', hematocrit: '', rbc: null } }],
+      } as any);
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
+        },
+      } as any);
+
+      const row = result.records.find((r: any) => r.id === zeroStudy.id);
+      assert.strictEqual(row, undefined, 'Study with all-zero/empty results should not appear');
+    });
+
+    it('includes studies with at least one meaningful result value', async () => {
+      const today = dayjs();
+
+      const goodStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['anemia'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+        results: [{ type: 'anemia', data: { hemoglobin: '12.5', hematocrit: '' } }],
+      } as any);
+
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
+        },
+      } as any);
+
+      const row = result.records.find((r: any) => r.id === goodStudy.id);
+      assert.ok(row, 'Study with meaningful results should appear in accounting');
+    });
+
+    it('excludes empty studies from get("uncosted")', async () => {
+      const today = dayjs();
+
+      // Create study without results and remove any auto-created practice_costs
+      const emptyStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['anemia'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+      } as any);
+
+      // Remove any auto-created costs so it would show as "uncosted"
+      const costs = await app.service('practice-costs').find({
+        query: { practiceId: emptyStudy.id },
+        paginate: false,
+      }) as any[];
+      for (const c of costs) {
+        await app.service('practice-costs').remove(c.id, { provider: undefined });
+      }
+
+      const uncosted = await app.service('accounting').get('uncosted', {
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
+        },
+      } as any) as any[];
+
+      const row = uncosted.find((r: any) => r.practiceId === emptyStudy.id);
+      assert.strictEqual(row, undefined, 'Empty study should not appear in uncosted list');
+    });
+  });
+
+  describe('billing', () => {
+    let billingStudy: any;
+    let billingCostId: string;
+
+    before(async () => {
+      const existingSettings = await app.service('accounting-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 3000,
+            hemostasis: 2000,
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+
+      const today = dayjs();
+
+      billingStudy = await app.service('studies').create({
+        date: today.toDate(),
+        studies: ['anemia'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: patient.id,
+        insurerId: prepaga.id,
+        results: [{ type: 'anemia', data: { hemoglobin: '14' } }],
+      } as any);
+
+      // Find the practice_cost row
+      const costs = await app.service('practice-costs').find({
+        query: { practiceId: billingStudy.id, studyType: 'anemia' },
+        paginate: false,
+      }) as any[];
+      billingCostId = costs[0].id;
+    });
+
+    it('records include billedAt and practiceCostId fields', async () => {
+      const today = dayjs();
+      const result = await app.service('accounting').find({
+        query: {
+          from: today.subtract(1, 'day').format('YYYY-MM-DD'),
+          to: today.add(1, 'day').format('YYYY-MM-DD'),
+          medicId: medic.id,
+        },
+      } as any);
+
+      const row = result.records.find((r: any) => r.id === billingStudy.id && r.kind === 'anemia');
+      assert.ok(row, 'Record exists');
+      assert.ok(row.practiceCostId, 'practiceCostId is present');
+      assert.strictEqual(row.billedAt, null, 'billedAt is null initially');
+    });
+
+    it('mark-billed sets billedAt to a date', async () => {
+      const result = await app.service('accounting').create({
+        intent: 'mark-billed',
+        practiceCostIds: [billingCostId],
+      });
+
+      assert.strictEqual(result.updated, 1);
+
+      const cost = await app.service('practice-costs').get(billingCostId) as any;
+      assert.ok(cost.billedAt, 'billedAt is set');
+    });
+
+    it('unmark-billed sets billedAt back to null', async () => {
+      const result = await app.service('accounting').create({
+        intent: 'unmark-billed',
+        practiceCostIds: [billingCostId],
+      });
+
+      assert.strictEqual(result.updated, 1);
+
+      const cost = await app.service('practice-costs').get(billingCostId) as any;
+      assert.strictEqual(cost.billedAt, null, 'billedAt is null after unmarking');
+    });
+
+    it('updateCost hook skips billed practice_costs', async () => {
+      // Mark as billed
+      await app.service('accounting').create({
+        intent: 'mark-billed',
+        practiceCostIds: [billingCostId],
+      });
+
+      const costBefore = await app.service('practice-costs').get(billingCostId) as any;
+
+      // Patch the study with new results — should NOT change the billed cost
+      await app.service('studies').patch(billingStudy.id, {
+        results: [{ type: 'anemia', data: { hemoglobin: '99' } }],
+      } as any);
+
+      const costAfter = await app.service('practice-costs').get(billingCostId) as any;
+      assert.strictEqual(
+        Number(costAfter.cost),
+        Number(costBefore.cost),
+        'Billed cost should not change when study is updated'
+      );
+
+      // Clean up: unmark
+      await app.service('accounting').create({
+        intent: 'unmark-billed',
+        practiceCostIds: [billingCostId],
+      });
+    });
+
+    it('unbilled costs are recalculated when insurerPrices changes', async () => {
+      const costBefore = await app.service('practice-costs').get(billingCostId) as any;
+      assert.strictEqual(Number(costBefore.cost), 3000, 'Cost starts at 3000');
+
+      const existingSettings = await app.service('accounting-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      // Change anemia price
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 4000,
+            hemostasis: 2000,
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+
+      const costAfter = await app.service('practice-costs').get(billingCostId) as any;
+      assert.strictEqual(Number(costAfter.cost), 4000, 'Unbilled cost was recalculated to 4000');
+
+      // Restore prices
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 3000,
+            hemostasis: 2000,
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+    });
+
+    it('billed costs are NOT recalculated when insurerPrices changes', async () => {
+      // Mark as billed
+      await app.service('accounting').create({
+        intent: 'mark-billed',
+        practiceCostIds: [billingCostId],
+      });
+
+      const costBefore = await app.service('practice-costs').get(billingCostId) as any;
+
+      const existingSettings = await app.service('accounting-settings').find({
+        query: { userId: medic.id, $limit: 1 },
+        paginate: false,
+      }) as any[];
+
+      // Change anemia price
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 9999,
+            hemostasis: 2000,
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
+
+      const costAfter = await app.service('practice-costs').get(billingCostId) as any;
+      assert.strictEqual(
+        Number(costAfter.cost),
+        Number(costBefore.cost),
+        'Billed cost should not change when prices change'
+      );
+
+      // Clean up
+      await app.service('accounting').create({
+        intent: 'unmark-billed',
+        practiceCostIds: [billingCostId],
+      });
+
+      await app.service('accounting-settings').patch(existingSettings[0].id, {
+        insurerPrices: {
+          [prepaga.id]: {
+            encounter: 5000,
+            anemia: 3000,
+            hemostasis: 2000,
+            anticoagulation: 1500,
+          },
+        },
+      } as any);
     });
   });
 });

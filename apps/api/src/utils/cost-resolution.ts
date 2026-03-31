@@ -177,6 +177,15 @@ export function hasAnyFieldValue(
   return false;
 }
 
+export function hasStudyResultData(data: Record<string, unknown>): boolean {
+  for (const val of Object.values(data)) {
+    if (val != null && val !== '' && val !== 0 && val !== '0') {
+      return true;
+    }
+  }
+  return false;
+}
+
 // ---------------------------------------------------------------------------
 // Convenience: resolve total cost (base + extras) for a single practice
 // ---------------------------------------------------------------------------
