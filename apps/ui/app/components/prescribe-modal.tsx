@@ -185,7 +185,7 @@ export function PrescribeModal({
     const pd = p.personalData || {};
     const cd = p.contactData || {};
     const email = cd.email || '';
-    const phone = (cd.phoneNumber || '').replace(/^tel:/i, '');
+    const phone = (String(cd.phoneNumber) || '').replace(/^tel:/i, '');
     const values = {
       documentValue: pd.documentValue || '',
       documentType: pd.documentType || 'DNI',
