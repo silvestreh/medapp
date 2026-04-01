@@ -74,15 +74,29 @@ export class Accounting {
     if (id === 'all-insurers') {
       const [studyRows, encounterRows, costRows] = await Promise.all([
         this.app.service('studies').find({
-          query: { medicId, insurerId: { $ne: null }, $select: ['insurerId'] },
+          query: {
+            medicId,
+            insurerId: { $ne: null },
+            $select: ['insurerId']
+          },
           paginate: false,
         }) as Promise<{ insurerId: string }[]>,
+
         this.app.service('encounters').find({
-          query: { medicId, insurerId: { $ne: null }, $select: ['insurerId'] },
+          query: {
+            medicId,
+            insurerId: { $ne: null },
+            $select: ['insurerId', 'patientId']
+          },
           paginate: false,
-        }) as Promise<{ insurerId: string }[]>,
+        }) as Promise<{ insurerId: string, patientId: string }[]>,
+
         this.app.service('practice-costs').find({
-          query: { medicId, insurerId: { $ne: null }, $select: ['insurerId'] },
+          query: {
+            medicId,
+            insurerId: { $ne: null },
+            $select: ['insurerId']
+          },
           paginate: false,
         }) as Promise<PracticeCost[]>,
       ]);
@@ -97,12 +111,14 @@ export class Accounting {
 
     if (id === 'uncosted') {
       const { from, to, insurerId: filterInsurerId } = params?.query || {};
+
       if (!from || !to) {
         throw new BadRequest('Both "from" and "to" query params are required');
       }
 
       const fromDate = dayjs(from);
       const toDate = dayjs(to);
+
       if (!fromDate.isValid() || !toDate.isValid()) {
         throw new BadRequest('"from" and "to" must be valid dates');
       }
@@ -122,6 +138,7 @@ export class Accounting {
           id: string; date: string; patientId: string; insurerId: string | null;
           emergency: boolean; studies: string[]; organizationId: string; medicId: string;
         }[]>,
+
         this.app.service('encounters').find({
           query: {
             medicId,
@@ -133,6 +150,7 @@ export class Accounting {
           id: string; date: string; patientId: string; insurerId: string | null;
           organizationId: string; medicId: string;
         }[]>,
+
         this.app.service('practice-costs').find({
           query: {
             medicId,
@@ -144,7 +162,6 @@ export class Accounting {
       ]);
 
       const costedIds = new Set(existingCosts.map(r => r.practiceId as string));
-
       const uncostedStudyRows = allStudies.filter(s => !costedIds.has(s.id));
       const uncostedEncounterRows = allEncounters.filter(e => !costedIds.has(e.id));
 
@@ -152,6 +169,7 @@ export class Accounting {
       const studyIdsWithResults = await this.getStudyIdsWithResults(
         uncostedStudyRows.map(s => s.id)
       );
+
       const uncostedStudiesWithResults = uncostedStudyRows.filter(s =>
         studyIdsWithResults.has(s.id)
       );
@@ -167,10 +185,13 @@ export class Accounting {
         for (const row of rows) {
           const { insurerId: resolved } = await this.resolvePatientInsurance(row.insurerId, row.patientId);
           const priceKey = resolved || PARTICULAR_INSURER_ID;
+
           if (!configuredInsurers.has(priceKey)) continue;
           if (filterInsurerId && priceKey !== filterInsurerId) continue;
+
           results.push({ ...row, effectiveInsurerId: priceKey });
         }
+
         return results;
       };
 
@@ -187,7 +208,9 @@ export class Accounting {
 
       const ppds = allPatientIds.length
         ? await this.app.service('patient-personal-data').find({
-          query: { ownerId: { $in: allPatientIds } },
+          query: {
+            ownerId: { $in: allPatientIds }
+          },
           paginate: false,
         }) as PatientPersonalData[]
         : [];
@@ -274,8 +297,10 @@ export class Accounting {
       medicId,
       date: { $gte: fromISO, $lte: toISO },
     };
+
     if (organizationId) costQuery.organizationId = organizationId;
     if (insurerId) costQuery.insurerId = insurerId;
+
     if (practiceType) {
       if (practiceType === 'encounter') {
         costQuery.practiceType = 'encounters';
@@ -284,6 +309,7 @@ export class Accounting {
         costQuery.studyType = practiceType;
       }
     }
+
     if (status === 'billed') {
       costQuery.billedAt = { $ne: null };
     } else if (status === 'unbilled') {
@@ -438,9 +464,11 @@ export class Accounting {
 
     if (data.intent === 'mark-billed') {
       const ids: string[] = data.practiceCostIds;
+
       if (!Array.isArray(ids) || ids.length === 0) {
         throw new BadRequest('practiceCostIds array is required');
       }
+
       let updated = 0;
       for (const id of ids) {
         try {
