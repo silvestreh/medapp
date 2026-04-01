@@ -726,7 +726,7 @@ export class Recetario {
         gender: patient.personalData.gender || '',
         birthDate: patient.personalData.birthDate ? formatBirthDate(patient.personalData.birthDate) : '',
         email: patient.contactData.email || '',
-        phone: ((patient.contactData as any).phoneNumber || '').replace(/^tel:/i, ''),
+        phone: String((patient.contactData as any).phoneNumber || '').replace(/^tel:/i, ''),
         medicareId: patient.medicareId || '',
         insuranceNumber: patient.medicareNumber || '',
       },
