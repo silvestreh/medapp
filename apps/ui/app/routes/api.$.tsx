@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/node';
 
 const API_URL = () => process.env.API_URL ?? 'http://localhost:3030';
+const PROXY_SECRET = process.env.PROXY_SECRET || '';
 
 const FORWARDED_HEADERS = ['content-type', 'authorization', 'accept', 'organization-id'];
 
@@ -90,6 +91,9 @@ function forwardHeaders(request: Request): HeadersInit {
     if (value) {
       headers[key] = value;
     }
+  }
+  if (PROXY_SECRET) {
+    headers['x-proxy-token'] = PROXY_SECRET;
   }
   return headers;
 }
