@@ -1,5 +1,6 @@
 import assert from 'assert';
 import app from '../../src/app';
+import { emailRateLimits } from '../../src/services/confirmations/hooks/rate-limit-confirmation';
 
 describe('\'confirmations\' service', () => {
   it('registered the service', () => {
@@ -11,6 +12,10 @@ describe('\'confirmations\' service', () => {
     const testPassword = 'OldPassword1!';
     const newPassword = 'NewPassword1!';
     let userId: string;
+
+    beforeEach(() => {
+      emailRateLimits.clear();
+    });
 
     before(async () => {
       const user = await app.service('users').create({

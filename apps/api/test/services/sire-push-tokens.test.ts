@@ -5,7 +5,7 @@ import { createTestUser, createTestOrganization } from '../test-helpers';
 describe('\'sire-push-tokens\' service', () => {
   let org: any;
   let accessToken: string;
-  const testDocumentValue = `sire-push-${Date.now()}`;
+  const testDocumentValue = `sirepush${Date.now()}`;
   const testOrgSlug = `sire-push-org-${Date.now()}`;
 
   before(async () => {

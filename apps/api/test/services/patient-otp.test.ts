@@ -2,7 +2,7 @@ import assert from 'assert';
 import app from '../../src/app';
 
 describe('\'patient-otp\' service', () => {
-  const testDocumentValue = `otp-test-${Date.now()}`;
+  const testDocumentValue = `otptest${Date.now()}`;
   const testOrgSlugAuth = `auth-org-${Date.now()}`;
   let patientId: string;
 
@@ -47,7 +47,7 @@ describe('\'patient-otp\' service', () => {
     it('returns not_found for a non-existent document', async () => {
       const result: any = await app.service('patient-otp').create({
         action: 'request-otp',
-        documentNumber: 'nonexistent-doc-99999',
+        documentNumber: 'nonexistent99999',
       });
 
       assert.equal(result.action, 'request-otp');
@@ -55,7 +55,7 @@ describe('\'patient-otp\' service', () => {
     });
 
     it('returns no_phone for a patient without phone number', async () => {
-      const noPhoneDoc = `no-phone-${Date.now()}`;
+      const noPhoneDoc = `nophone${Date.now()}`;
       await app.service('patients').create({
         personalData: {
           firstName: 'NoPhone',
@@ -132,7 +132,7 @@ describe('\'patient-otp\' service', () => {
       try {
         await app.service('authentication').create({
           strategy: 'patient-otp',
-          documentNumber: 'never-requested-doc',
+          documentNumber: 'neverrequested99',
           slug: testOrgSlugAuth,
           code: '123456',
         }, {});
@@ -221,6 +221,82 @@ describe('\'patient-otp\' service', () => {
     });
   });
 
+  describe('input validation', () => {
+    it('rejects get-organization with a scanner probe slug (.s3cfg)', async () => {
+      try {
+        await app.service('patient-otp').create({
+          action: 'get-organization',
+          slug: '.s3cfg',
+        });
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 400);
+      }
+    });
+
+    it('rejects get-organization with path traversal slug', async () => {
+      try {
+        await app.service('patient-otp').create({
+          action: 'get-organization',
+          slug: '../etc/passwd',
+        });
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 400);
+      }
+    });
+
+    it('rejects get-organization with uppercase slug', async () => {
+      try {
+        await app.service('patient-otp').create({
+          action: 'get-organization',
+          slug: 'UPPERCASE',
+        });
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 400);
+      }
+    });
+
+    it('rejects request-otp with special characters in document number', async () => {
+      try {
+        await app.service('patient-otp').create({
+          action: 'request-otp',
+          documentNumber: 'doc-with-hyphens',
+        });
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 400);
+        assert.equal(error.message, 'Invalid document number');
+      }
+    });
+
+    it('rejects request-otp with overly long document number', async () => {
+      try {
+        await app.service('patient-otp').create({
+          action: 'request-otp',
+          documentNumber: 'a'.repeat(51),
+        });
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 400);
+        assert.equal(error.message, 'Invalid document number');
+      }
+    });
+
+    it('rejects unsupported action', async () => {
+      try {
+        await app.service('patient-otp').create({
+          action: 'steal-data',
+        });
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 400);
+        assert.equal(error.message, 'Unsupported action');
+      }
+    });
+  });
+
   describe('booking service', () => {
     it('registered the service', () => {
       const service = app.service('booking');
@@ -266,7 +342,7 @@ describe('\'patient-otp\' service', () => {
     });
 
     it('rejects patient token on non-booking services', async () => {
-      const isolatedDoc = `isolated-${Date.now()}`;
+      const isolatedDoc = `isolated${Date.now()}`;
       await app.service('patients').create({
         personalData: {
           firstName: 'Isolated',

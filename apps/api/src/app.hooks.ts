@@ -67,7 +67,8 @@ export default {
             ctx.id.length > 36;
 
           const isAccessLogError = ctx.path === 'access-logs';
-          const isExpectedError = ctx.error.code === 401 || isLegacyNotFound || isAccessLogError;
+          const isPatientOtpBadRequest = ctx.path === 'patient-otp' && ctx.error.code === 400;
+          const isExpectedError = ctx.error.code === 401 || isLegacyNotFound || isAccessLogError || isPatientOtpBadRequest;
 
           if (!isExpectedError) {
             if (ctx.params.user) {

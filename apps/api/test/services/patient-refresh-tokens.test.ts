@@ -3,7 +3,7 @@ import app from '../../src/app';
 import { createTestOrganization } from '../test-helpers';
 
 describe('\'patient-refresh-tokens\' service', () => {
-  const testDocumentValue = `refresh-test-${Date.now()}`;
+  const testDocumentValue = `refreshtest${Date.now()}`;
   const testOrgSlug = `refresh-org-${Date.now()}`;
   let patientId: string;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

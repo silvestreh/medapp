@@ -143,6 +143,15 @@ if (process.env.NODE_ENV !== 'test') {
     message: { message: 'Too many requests, please try again later' },
   });
   app.use('/confirmations', confirmationsLimiter);
+
+  const patientOtpLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 15,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Too many requests, please try again later' },
+  });
+  app.use('/patient-otp', patientOtpLimiter);
 }
 
 // Configure other middleware (see `middleware/index.ts`)

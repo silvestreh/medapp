@@ -21,6 +21,11 @@ const OTP_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 const MAX_OTP_REQUESTS = 5;
 
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+function isValidSlug(slug: string): boolean {
+  return slug.length >= 2 && slug.length <= 100 && SLUG_RE.test(slug);
+}
+
 export class PatientOtp {
   app: Application;
   pendingOtps: Map<string, PendingOtp> = new Map();
@@ -130,6 +135,7 @@ export class PatientOtp {
 
   private async resolveOrganizationId(slug?: string): Promise<string | null> {
     if (!slug) return null;
+    if (!isValidSlug(slug)) return null;
 
     const result = await this.app.service('organizations').find({
       query: { slug, $limit: 1 },
@@ -144,6 +150,10 @@ export class PatientOtp {
 
     if (!documentNumber || typeof documentNumber !== 'string') {
       throw new BadRequest('Document number is required');
+    }
+
+    if (documentNumber.length > 50 || !/^[a-zA-Z0-9]+$/.test(documentNumber)) {
+      throw new BadRequest('Invalid document number');
     }
 
     // Test user for app store review — fixed OTP, no DB, no WhatsApp
@@ -228,7 +238,7 @@ export class PatientOtp {
   private async getOrganization(data: any) {
     const { slug } = data;
 
-    if (!slug || typeof slug !== 'string') {
+    if (!slug || typeof slug !== 'string' || !isValidSlug(slug)) {
       throw new BadRequest('Organization slug is required');
     }
 
