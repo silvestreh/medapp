@@ -146,7 +146,7 @@ if (process.env.NODE_ENV !== 'test') {
 
   const patientOtpLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 15,
+    max: 200,
     standardHeaders: true,
     legacyHeaders: false,
     message: { message: 'Too many requests, please try again later' },
