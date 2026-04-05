@@ -533,18 +533,21 @@ export class Recetario {
     if (!shareChannel) throw new BadRequest('shareChannel required');
     if (!shareRecipient) throw new BadRequest('shareRecipient required');
 
-    // Fetch PDF from Recetario using our authenticated client
-    if (!prescriptionId) throw new BadRequest('prescriptionId is required for sharing');
-    const record = await this.app.service('prescriptions').get(prescriptionId, this.internal());
-    const docIds = (record as any).recetarioDocumentIds || [];
-    if (docIds.length === 0) throw new BadRequest('No Recetario document found for this prescription');
-    const doc = docIds[0];
-    const pdfBuffer = doc.type === 'order'
-      ? await recetarioClient.getOrderPdf(doc.id)
-      : await recetarioClient.getPrescriptionPdf(doc.id);
+    if (!pdfUrl) throw new BadRequest('pdfUrl is required for sharing');
+
+    // Download the signed PDF URL from Recetario
+    const pdfResponse = await fetch(pdfUrl);
+    if (!pdfResponse.ok) {
+      throw new BadRequest(`Failed to fetch PDF from Recetario: ${pdfResponse.status}`);
+    }
+    const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
 
     if (shareChannel === 'whatsapp') {
-      const filename = doc.type === 'order' ? 'orden.pdf' : 'receta.pdf';
+      const record = prescriptionId
+        ? await this.app.service('prescriptions').get(prescriptionId, this.internal())
+        : null;
+      const isOrder = record && (record as any).type === 'order';
+      const filename = isOrder ? 'orden.pdf' : 'receta.pdf';
       await this.app.service('whatsapp').create({
         organizationId: params.organizationId,
         to: shareRecipient,
@@ -552,30 +555,33 @@ export class Recetario {
         filename,
       });
     } else {
-      const documentType: 'prescription' | 'order' = (record as any).type === 'order' ? 'order' : 'prescription';
-
-      // Resolve names for the email template
+      let documentType: 'prescription' | 'order' = 'prescription';
       let patientName = '';
       let doctorName = '';
       let organizationName = '';
 
-      try {
-        if ((record as any).patientId) {
-          const patient = await this.app.service('patients').get((record as any).patientId, this.internal());
-          const pd = (patient as any).personalData || {};
-          patientName = [pd.firstName, pd.lastName].filter(Boolean).join(' ');
+      if (prescriptionId) {
+        try {
+          const record = await this.app.service('prescriptions').get(prescriptionId, this.internal()) as any;
+          documentType = record.type === 'order' ? 'order' : 'prescription';
+
+          if (record.patientId) {
+            const patient = await this.app.service('patients').get(record.patientId, this.internal()) as any;
+            const pd = patient.personalData || {};
+            patientName = [pd.firstName, pd.lastName].filter(Boolean).join(' ');
+          }
+          if (record.medicId) {
+            const medic = await this.app.service('users').get(record.medicId, this.internal()) as any;
+            const pd = medic.personalData || {};
+            doctorName = [pd.firstName, pd.lastName].filter(Boolean).join(' ');
+          }
+          if (record.organizationId) {
+            const org = await this.app.service('organizations').get(record.organizationId, this.internal()) as any;
+            organizationName = org.name || '';
+          }
+        } catch {
+          // Non-fatal — send email with empty names
         }
-        if ((record as any).medicId) {
-          const medic = await this.app.service('users').get((record as any).medicId, this.internal());
-          const pd = (medic as any).personalData || {};
-          doctorName = [pd.firstName, pd.lastName].filter(Boolean).join(' ');
-        }
-        if ((record as any).organizationId) {
-          const org = await this.app.service('organizations').get((record as any).organizationId, this.internal());
-          organizationName = (org as any).name || '';
-        }
-      } catch {
-        // Non-fatal — send email with empty names
       }
 
       const filename = documentType === 'order' ? 'orden.pdf' : 'receta.pdf';
