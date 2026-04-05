@@ -25,10 +25,18 @@ function isPrivateIP(ip: string): boolean {
   if (/^10\./.test(ip)) return true;
   if (/^172\.(1[6-9]|2\d|3[01])\./.test(ip)) return true;
   if (/^192\.168\./.test(ip)) return true;
+  if (/^169\.254\./.test(ip)) return true;
   if (ip === '0.0.0.0') return true;
+  if (/^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(ip)) return true;
 
-  // IPv6 loopback
+  // IPv6 loopback / link-local / unique local
   if (ip === '::1' || ip === '::') return true;
+  if (/^fe80:/i.test(ip)) return true;
+  if (/^f[cd]/i.test(ip)) return true;
+
+  // IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1)
+  const v4Mapped = ip.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  if (v4Mapped) return isPrivateIP(v4Mapped[1]);
 
   return false;
 }
@@ -87,8 +95,12 @@ export class UrlFetch {
       const headRes = await fetch(targetUrl, {
         method: 'HEAD',
         signal: controller.signal,
-        redirect: 'follow',
+        redirect: 'manual',
       });
+
+      if (headRes.status >= 300 && headRes.status < 400) {
+        throw new BadRequest('Redirects are not allowed');
+      }
 
       if (!headRes.ok) {
         throw new BadRequest(`Remote server returned ${headRes.status}`);
@@ -107,8 +119,12 @@ export class UrlFetch {
       // Download the file
       const getRes = await fetch(targetUrl, {
         signal: controller.signal,
-        redirect: 'follow',
+        redirect: 'manual',
       });
+
+      if (getRes.status >= 300 && getRes.status < 400) {
+        throw new BadRequest('Redirects are not allowed');
+      }
 
       if (!getRes.ok || !getRes.body) {
         throw new BadRequest('Failed to download file');

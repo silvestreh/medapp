@@ -76,7 +76,7 @@ app.use('/healthz', (_req: any, res: any) => res.status(200).json({ ok: true }))
 const uploadsDir = path.resolve(app.get('uploads')?.dir || './public/uploads');
 const EXT_TO_MIME: Record<string, string> = {
   '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
-  '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml',
+  '.webp': 'image/webp', '.gif': 'image/gif',
   '.pdf': 'application/pdf', '.dcm': 'application/dicom',
 };
 app.use('/uploads', (req: any, res: any, next: any) => {
@@ -112,6 +112,8 @@ app.use('/uploads', (req: any, res: any, next: any) => {
 
   res.set('Content-Type', contentType);
   res.set('Content-Length', String(decrypted.length));
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('Content-Disposition', 'attachment');
   res.send(decrypted);
 }, express.static(uploadsDir));
 

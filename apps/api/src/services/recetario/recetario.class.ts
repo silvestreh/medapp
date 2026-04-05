@@ -152,6 +152,25 @@ export class Recetario {
     return data.medicId;
   }
 
+  private validatePdfUrl(pdfUrl: string): void {
+    let parsed: URL;
+    try {
+      parsed = new URL(pdfUrl);
+    } catch {
+      throw new BadRequest('Invalid pdfUrl');
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      throw new BadRequest('Invalid pdfUrl protocol');
+    }
+    const recetarioApiUrl = (this.app.get as any)('recetario')?.apiUrl
+      || process.env.RECETARIO_API_URL
+      || 'https://external-api.recetario.com.ar';
+    const allowedHost = new URL(recetarioApiUrl).hostname;
+    if (parsed.hostname !== allowedHost) {
+      throw new BadRequest('pdfUrl must point to the Recetario API domain');
+    }
+  }
+
   private async getDoctorData(userId: string) {
     const internal = this.internal();
 
@@ -535,6 +554,7 @@ export class Recetario {
 
     if (shareChannel === 'whatsapp') {
       if (!pdfUrl) throw new BadRequest('pdfUrl required for WhatsApp sharing');
+      this.validatePdfUrl(pdfUrl);
       await this.app.service('whatsapp').create({
         organizationId: params.organizationId,
         to: shareRecipient,
@@ -543,6 +563,7 @@ export class Recetario {
       });
     } else {
       if (!pdfUrl) throw new BadRequest('pdfUrl required for email sharing');
+      this.validatePdfUrl(pdfUrl);
 
       // Download PDF from Recetario
       const axios = (await import('axios')).default;

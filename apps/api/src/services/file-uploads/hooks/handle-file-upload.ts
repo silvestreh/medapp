@@ -5,7 +5,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 
 const ALLOWED_MIMES = [
-  'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml', 'image/gif',
+  'image/png', 'image/jpeg', 'image/webp', 'image/gif',
   'application/pdf',
   'application/dicom',
 ];
@@ -15,7 +15,6 @@ const MAX_SIZE_BY_MIME: Record<string, number> = {
   'image/jpeg': 5 * 1024 * 1024,
   'image/webp': 5 * 1024 * 1024,
   'image/gif': 5 * 1024 * 1024,
-  'image/svg+xml': 2 * 1024 * 1024,
   'application/pdf': 10 * 1024 * 1024,
   'application/dicom': 50 * 1024 * 1024,
 };
@@ -25,7 +24,6 @@ const MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': '.jpg',
   'image/webp': '.webp',
   'image/gif': '.gif',
-  'image/svg+xml': '.svg',
   'application/pdf': '.pdf',
   'application/dicom': '.dcm',
 };

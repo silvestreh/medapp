@@ -1,4 +1,5 @@
 import { HooksObject } from '@feathersjs/feathers';
+import * as authentication from '@feathersjs/authentication';
 import { disallow } from 'feathers-hooks-common';
 
 import { parseDecryptedAttributes } from '../../hooks/parse-decrypted-attributes';
@@ -6,9 +7,11 @@ import { includeDecryptedAttributes } from '../../hooks/include-decrypted-attrib
 import { sanitizeEncryptedData } from '../../hooks/sanitize-encrypted-data';
 // Don't remove this comment. It's needed to format import lines nicely.
 
+const { authenticate } = authentication.hooks;
+
 export default {
   before: {
-    all: [],
+    all: [authenticate('jwt')],
     find: [ includeDecryptedAttributes() ],
     get: [ includeDecryptedAttributes() ],
     create: [ disallow('external'), sanitizeEncryptedData('data') ],

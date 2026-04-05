@@ -9,6 +9,7 @@ if (!process.env.SESSION_SECRET) {
 export const { getSession, commitSession, destroySession } = createCookieSessionStorage({
   cookie: {
     name: 'feathers-jwt',
+    httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',

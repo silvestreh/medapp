@@ -54,6 +54,8 @@ export default {
     ],
     patch: [
       authenticate('jwt'),
+      verifyOrganizationMembership(),
+      restrictUserToOrganization(),
       stripSuperAdmin(),
       changePassword(),
       extractPatchActions(),

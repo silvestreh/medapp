@@ -26,7 +26,7 @@ export default {
     all: [authenticate('jwt'), verifyOrganizationMembership()],
     find: [stripPopulateFlag(), filterByOrganizationId()],
     get: [],
-    create: [enforceActiveOrganization()],
+    create: [enforceActiveOrganization(), authorizeOrgManagement()],
     update: [],
     patch: [enforceActiveOrganization()],
     remove: [enforceActiveOrganization(), authorizeOrgManagement()]

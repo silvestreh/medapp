@@ -7,7 +7,7 @@ import { sanitizeForLog } from '../utils/sanitize-for-log';
  */
 export const debug = (phase: 'before' | 'after'): Hook => {
   return (context: HookContext): HookContext => {
-    if (process.env.DEBUG !== 'true') return context;
+    if (process.env.DEBUG !== 'true' || process.env.NODE_ENV === 'production') return context;
 
     const { method, path } = context;
     const label = phase.toUpperCase();

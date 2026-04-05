@@ -25,7 +25,10 @@ function isProduction(): boolean {
 }
 
 function toProviderOrder(preferredProvider?: LlmProvider): LlmProvider[] {
-  if (preferredProvider === 'lmstudio') return ['lmstudio'];
+  if (preferredProvider === 'lmstudio') {
+    if (isProduction()) return ['openai', 'anthropic'];
+    return ['lmstudio'];
+  }
   if (!preferredProvider) return ['openai', 'anthropic'];
   return preferredProvider === 'openai'
     ? ['openai', 'anthropic']
@@ -51,6 +54,9 @@ function getLmStudioBaseUrl(input: LlmAdapterInput): string {
 }
 
 async function callLocalLmStudio(input: LlmAdapterInput): Promise<LlmAdapterOutput> {
+  if (isProduction()) {
+    throw new BadRequest('LM Studio is only available in local development');
+  }
   const baseUrl = getLmStudioBaseUrl(input);
   const model = input.model || process.env.LM_STUDIO_MODEL || 'local-model';
   const response = await fetch(`${baseUrl}/chat/completions`, {
@@ -239,6 +245,9 @@ function normalizeModelIds(payload: any): string[] {
 }
 
 async function listLmStudioModels(baseUrl: string): Promise<LlmModelListOutput> {
+  if (isProduction()) {
+    throw new BadRequest('LM Studio is only available in local development');
+  }
   const response = await fetch(`${baseUrl}/models`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },

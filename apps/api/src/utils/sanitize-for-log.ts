@@ -7,6 +7,20 @@ const SENSITIVE_KEYS = new Set([
   'accessToken',
   'refreshToken',
   'authorization',
+  'documentNumber',
+  'documentValue',
+  'firstName',
+  'lastName',
+  'surname',
+  'phone',
+  'phoneNumber',
+  'birthDate',
+  'medicareNumber',
+  'nationalId',
+  'cuil',
+  'ssn',
+  'mugshot',
+  'signatureImage',
 ]);
 
 export function sanitizeForLog(obj: unknown): unknown {
