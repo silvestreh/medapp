@@ -5,7 +5,8 @@ export interface WhatsAppDocumentData {
   type?: 'document';
   organizationId: string;
   to: string;
-  documentUrl: string;
+  documentUrl?: string;
+  media?: string;
   filename?: string;
   caption?: string;
 }
@@ -139,19 +140,21 @@ export class WhatsApp {
     apiUrl: string,
     apiKey: string
   ): Promise<WhatsAppResult> {
-    const { documentUrl, filename = 'document.pdf', caption } = data;
+    const { documentUrl, media, filename = 'document.pdf', caption } = data;
 
-    if (!documentUrl) {
-      throw new Error('documentUrl is required');
+    let base64: string;
+    if (media) {
+      base64 = media;
+    } else if (documentUrl) {
+      const pdfResponse = await fetch(documentUrl);
+      if (!pdfResponse.ok) {
+        throw new Error(`Failed to fetch document from ${documentUrl}`);
+      }
+      const buffer = Buffer.from(await pdfResponse.arrayBuffer());
+      base64 = buffer.toString('base64');
+    } else {
+      throw new Error('Either documentUrl or media is required');
     }
-
-    // Fetch the document and convert to base64
-    const pdfResponse = await fetch(documentUrl);
-    if (!pdfResponse.ok) {
-      throw new Error(`Failed to fetch document from ${documentUrl}`);
-    }
-    const buffer = Buffer.from(await pdfResponse.arrayBuffer());
-    const base64 = buffer.toString('base64');
 
     const response = await fetch(`${apiUrl}/message/sendMedia/${instanceName}`, {
       method: 'POST',

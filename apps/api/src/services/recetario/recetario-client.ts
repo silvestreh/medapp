@@ -349,6 +349,19 @@ export async function getMedicalDocuments(filters: Record<string, any>): Promise
   return handleRequest(client.get('/medical-documents', { params: filters }));
 }
 
+// --- PDF Download ---
+export async function getPrescriptionPdf(id: number): Promise<Buffer> {
+  const client = createClient();
+  const response = await client.get(`/prescriptions/${id}/pdf`, { responseType: 'arraybuffer', timeout: 30000 });
+  return Buffer.from(response.data);
+}
+
+export async function getOrderPdf(id: number): Promise<Buffer> {
+  const client = createClient();
+  const response = await client.get(`/orders/${id}/pdf`, { responseType: 'arraybuffer', timeout: 30000 });
+  return Buffer.from(response.data);
+}
+
 // --- Share ---
 export async function shareMedicalDocuments(payload: SharePayload): Promise<any> {
   const client = createClient();

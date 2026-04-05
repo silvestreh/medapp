@@ -152,25 +152,6 @@ export class Recetario {
     return data.medicId;
   }
 
-  private validatePdfUrl(pdfUrl: string): void {
-    let parsed: URL;
-    try {
-      parsed = new URL(pdfUrl);
-    } catch {
-      throw new BadRequest('Invalid pdfUrl');
-    }
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      throw new BadRequest('Invalid pdfUrl protocol');
-    }
-    const recetarioApiUrl = (this.app.get as any)('recetario')?.apiUrl
-      || process.env.RECETARIO_API_URL
-      || 'https://external-api.recetario.com.ar';
-    const allowedHost = new URL(recetarioApiUrl).hostname;
-    if (parsed.hostname !== allowedHost) {
-      throw new BadRequest('pdfUrl must point to the Recetario API domain');
-    }
-  }
-
   private async getDoctorData(userId: string) {
     const internal = this.internal();
 
@@ -552,52 +533,49 @@ export class Recetario {
     if (!shareChannel) throw new BadRequest('shareChannel required');
     if (!shareRecipient) throw new BadRequest('shareRecipient required');
 
+    // Fetch PDF from Recetario using our authenticated client
+    if (!prescriptionId) throw new BadRequest('prescriptionId is required for sharing');
+    const record = await this.app.service('prescriptions').get(prescriptionId, this.internal());
+    const docIds = (record as any).recetarioDocumentIds || [];
+    if (docIds.length === 0) throw new BadRequest('No Recetario document found for this prescription');
+    const doc = docIds[0];
+    const pdfBuffer = doc.type === 'order'
+      ? await recetarioClient.getOrderPdf(doc.id)
+      : await recetarioClient.getPrescriptionPdf(doc.id);
+
     if (shareChannel === 'whatsapp') {
-      if (!pdfUrl) throw new BadRequest('pdfUrl required for WhatsApp sharing');
-      this.validatePdfUrl(pdfUrl);
+      const filename = doc.type === 'order' ? 'orden.pdf' : 'receta.pdf';
       await this.app.service('whatsapp').create({
         organizationId: params.organizationId,
         to: shareRecipient,
-        documentUrl: pdfUrl,
-        filename: 'receta.pdf',
+        media: pdfBuffer.toString('base64'),
+        filename,
       });
     } else {
-      if (!pdfUrl) throw new BadRequest('pdfUrl required for email sharing');
-      this.validatePdfUrl(pdfUrl);
-
-      // Download PDF from Recetario
-      const axios = (await import('axios')).default;
-      const pdfResponse = await axios.get(pdfUrl, { responseType: 'arraybuffer', timeout: 30000 });
-      const pdfBuffer = Buffer.from(pdfResponse.data);
+      const documentType: 'prescription' | 'order' = (record as any).type === 'order' ? 'order' : 'prescription';
 
       // Resolve names for the email template
       let patientName = '';
       let doctorName = '';
       let organizationName = '';
-      let documentType: 'prescription' | 'order' = 'prescription';
 
-      if (prescriptionId) {
-        try {
-          const prescription = await this.app.service('prescriptions').get(prescriptionId, this.internal());
-          documentType = (prescription as any).type === 'order' ? 'order' : 'prescription';
-
-          if ((prescription as any).patientId) {
-            const patient = await this.app.service('patients').get((prescription as any).patientId, this.internal());
-            const pd = (patient as any).personalData || {};
-            patientName = [pd.firstName, pd.lastName].filter(Boolean).join(' ');
-          }
-          if ((prescription as any).medicId) {
-            const medic = await this.app.service('users').get((prescription as any).medicId, this.internal());
-            const pd = (medic as any).personalData || {};
-            doctorName = [pd.firstName, pd.lastName].filter(Boolean).join(' ');
-          }
-          if ((prescription as any).organizationId) {
-            const org = await this.app.service('organizations').get((prescription as any).organizationId, this.internal());
-            organizationName = (org as any).name || '';
-          }
-        } catch {
-          // Non-fatal — send email with empty names
+      try {
+        if ((record as any).patientId) {
+          const patient = await this.app.service('patients').get((record as any).patientId, this.internal());
+          const pd = (patient as any).personalData || {};
+          patientName = [pd.firstName, pd.lastName].filter(Boolean).join(' ');
         }
+        if ((record as any).medicId) {
+          const medic = await this.app.service('users').get((record as any).medicId, this.internal());
+          const pd = (medic as any).personalData || {};
+          doctorName = [pd.firstName, pd.lastName].filter(Boolean).join(' ');
+        }
+        if ((record as any).organizationId) {
+          const org = await this.app.service('organizations').get((record as any).organizationId, this.internal());
+          organizationName = (org as any).name || '';
+        }
+      } catch {
+        // Non-fatal — send email with empty names
       }
 
       const filename = documentType === 'order' ? 'orden.pdf' : 'receta.pdf';
