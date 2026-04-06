@@ -7,21 +7,14 @@ import { useMediaQuery } from '@mantine/hooks';
 import { media } from '~/media';
 import { generateEmptySlots, getWorkDaysFromSettings } from '~/utils';
 import { getAuthenticatedClient } from '~/utils/auth.server';
+import { fetchHolidays } from '~/utils/holidays.server';
 import { useFind } from '~/components/provider';
 import { RouteDrawer } from '~/components/route-drawer';
 import RouteErrorFallback from '~/components/route-error-fallback';
 import Calendar from '~/components/calendar';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  let holidays: any[] = [];
-  try {
-    const icsResponse = await fetch(`${new URL(request.url).origin}/ics`);
-    if (icsResponse.ok) {
-      holidays = await icsResponse.json();
-    }
-  } catch {
-    // If /ics fetch fails, continue without holidays
-  }
+  const holidays = await fetchHolidays();
   const { client } = await getAuthenticatedClient(request);
   const { medicId } = params;
   let medic = null;

@@ -10,6 +10,7 @@ import { CalendarDotsIcon, PrinterIcon } from '@phosphor-icons/react';
 
 import AppointmentsList from '~/components/appointments-list';
 import { getAuthenticatedClient, authenticatedLoader } from '~/utils/auth.server';
+import { fetchHolidays } from '~/utils/holidays.server';
 import RouteErrorFallback from '~/components/route-error-fallback';
 import { generateSlots, formatInLocale } from '~/utils';
 import { printAppointments } from '~/utils/print-appointments';
@@ -75,13 +76,10 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
 
   let holiday: { title: string } | null = null;
   try {
-    const icsResponse = await fetch(`${new URL(request.url).origin}/ics`);
-    const holidays = (await icsResponse.json()) as Array<{ title: string; startDate: string; endDate: string }>;
+    const holidays = await fetchHolidays();
     const dateStart = date.startOf('day').toISOString();
     const dateEnd = date.endOf('day').toISOString();
-    const matchingHoliday = Array.isArray(holidays)
-      ? holidays.find(h => h.startDate <= dateEnd && h.endDate >= dateStart)
-      : null;
+    const matchingHoliday = holidays.find(h => h.startDate <= dateEnd && h.endDate >= dateStart);
     holiday = matchingHoliday ? { title: matchingHoliday.title } : null;
   } catch {
     // Non-blocking: appointments remain usable if ICS fetch fails.
