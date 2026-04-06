@@ -12,7 +12,20 @@ export const loader = async () => {
 
   try {
     const response = await fetch(icsUrl);
+    console.log(`[ics] Google Calendar response: status=${response.status} content-type=${response.headers.get('content-type')}`);
+
     const icsData = await response.text();
+
+    if (!response.ok) {
+      console.error(`[ics] Google Calendar returned non-OK status ${response.status}. Body: ${icsData.slice(0, 500)}`);
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+
+    if (!icsData.startsWith('BEGIN:VCALENDAR')) {
+      console.error(`[ics] Unexpected response body (first 500 chars): ${icsData.slice(0, 500)}`);
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+
     const jcalData = ICAL.parse(icsData);
     const comp = new ICAL.Component(jcalData);
     const vevents = comp.getAllSubcomponents('vevent');
@@ -29,13 +42,15 @@ export const loader = async () => {
       };
     });
 
+    console.log(`[ics] Parsed ${parsedEvents.length} holiday events`);
+
     return new Response(JSON.stringify(parsedEvents), {
       headers: {
         'Cache-Control': 'public, max-age=86400',
       },
     });
   } catch (error) {
-    console.error('Error fetching or parsing ICS:', error);
-    return new Response(JSON.stringify([]), { status: 500 });
+    console.error('[ics] Error fetching or parsing ICS:', error);
+    return new Response(JSON.stringify([]), { status: 200 });
   }
 };
