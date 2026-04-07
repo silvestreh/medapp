@@ -161,9 +161,9 @@ export function GifPicker({ searchTerm, onSelect, onClose }: GifPickerProps) {
         )}
       </ScrollArea>
 
-      <Text size="xs" c="dimmed" ta="right" px="md" pb={4} style={{ opacity: 0.6 }}>
-        Powered by GIPHY
-      </Text>
+      <Box px="md" pb={4} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Image src="/giphy-powered-badge.png" alt="Powered by GIPHY" h={16} w="auto" style={{ opacity: 0.6 }} />
+      </Box>
     </Box>
   );
 }

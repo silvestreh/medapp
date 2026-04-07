@@ -1767,6 +1767,9 @@ export function MessagingChatPanel({
                   backgroundColor: idx === slashMenuIndex ? 'var(--mantine-color-blue-0)' : 'transparent',
                 }}
               >
+                {cmd.name === 'giphy' && (
+                  <Image src="/giphy-iso.png" alt="Giphy" w={20} h={20} style={{ flexShrink: 0 }} />
+                )}
                 <Text size="sm" fw={600} c="blue.6">
                   /{cmd.name}
                 </Text>
