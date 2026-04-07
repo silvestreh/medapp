@@ -373,6 +373,10 @@ export function MessagingChatPanel({
     requestAnimationFrame(() => textareaRef.current?.focus());
   }, []);
 
+  const handleGiphyCreatorSearch = useCallback((username: string) => {
+    setDraftMessage(`/giphy @${username}`);
+  }, []);
+
   const uploadFiles = useCallback(
     async (files: File[]) => {
       setIsUploading(true);
@@ -1683,7 +1687,7 @@ export function MessagingChatPanel({
 
         {/* GIF picker */}
         {isGiphyActive && (
-          <GifPicker searchTerm={giphySearchTerm} onSelect={handleGifSelect} onClose={handleGifPickerClose} />
+          <GifPicker searchTerm={giphySearchTerm} onSelect={handleGifSelect} onClose={handleGifPickerClose} onCreatorSearch={handleGiphyCreatorSearch} />
         )}
 
         {/* Pending attachments preview */}
@@ -1835,6 +1839,9 @@ export function MessagingChatPanel({
             disabled={isSending || isUploading}
             style={{ flex: 1 }}
           />
+          {isGiphyActive && (
+            <Image src="/giphy-powered-badge.png" alt="Powered by GIPHY" h={16} w="auto" style={{ flexShrink: 0 }} />
+          )}
           <EmojiPicker
             opened={emojiPickerOpen}
             onToggle={handleToggleEmojiPicker}

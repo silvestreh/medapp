@@ -1,18 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActionIcon, Box, Group, Image, Loader, ScrollArea, SimpleGrid, Text } from '@mantine/core';
+import { ActionIcon, Box, Group, Image, Loader, ScrollArea, Text } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { XIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
-
-interface GiphyImage {
-  id: string;
-  title: string;
-  images: {
-    fixed_height: { url: string; width: string; height: string };
-    original: { url: string; width: string; height: string; size: string };
-    fixed_width_small: { url: string; width: string; height: string };
-  };
-}
+import { GifTile } from '~/components/chat/gif-tile';
+import type { GiphyImage } from '~/components/chat/gif-tile';
 
 interface GiphySearchResponse {
   data: GiphyImage[];
@@ -23,6 +15,7 @@ interface GifPickerProps {
   searchTerm: string;
   onSelect: (gif: { url: string; previewUrl: string; title: string; fileSize: number }) => void;
   onClose: () => void;
+  onCreatorSearch: (username: string) => void;
 }
 
 const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY ?? '';
@@ -30,7 +23,7 @@ const GIPHY_SEARCH_URL = 'https://api.giphy.com/v1/gifs/search';
 const GIPHY_TRENDING_URL = 'https://api.giphy.com/v1/gifs/trending';
 const PAGE_SIZE = 20;
 
-export function GifPicker({ searchTerm, onSelect, onClose }: GifPickerProps) {
+export function GifPicker({ searchTerm, onSelect, onClose, onCreatorSearch }: GifPickerProps) {
   const { t } = useTranslation();
   const [results, setResults] = useState<GiphyImage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -134,36 +127,17 @@ export function GifPicker({ searchTerm, onSelect, onClose }: GifPickerProps) {
         )}
 
         {!isLoading && !error && results.length > 0 && (
-          <SimpleGrid cols={3} spacing={4}>
+          <Box style={{ columns: 3, columnGap: 4 }}>
             {results.map(gif => (
-              <Box
-                key={gif.id}
-                onClick={() => handleSelect(gif)}
-                style={{
-                  cursor: 'pointer',
-                  borderRadius: 6,
-                  overflow: 'hidden',
-                  aspectRatio: '1',
-                  position: 'relative',
-                }}
-              >
-                <Image
-                  src={gif.images.fixed_width_small.url}
-                  alt={gif.title}
-                  h="100%"
-                  w="100%"
-                  fit="cover"
-                  radius={6}
-                />
-              </Box>
+              <GifTile key={gif.id} gif={gif} onSelect={handleSelect} onCreatorSearch={onCreatorSearch} />
             ))}
-          </SimpleGrid>
+          </Box>
         )}
       </ScrollArea>
 
-      <Box px="md" pb={4} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      {/*<Box px="md" pb={4} style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Image src="/giphy-powered-badge.png" alt="Powered by GIPHY" h={16} w="auto" style={{ opacity: 0.6 }} />
-      </Box>
+      </Box>*/}
     </Box>
   );
 }
