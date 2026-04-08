@@ -33,7 +33,18 @@
       "organization-users:remove",
       "user-roles:find",
       "user-roles:create",
-      "user-roles:remove"
+      "user-roles:remove",
+      "practices:find",
+      "practices:get",
+      "practices:create",
+      "practices:patch",
+      "practices:remove",
+      "practice-codes:find",
+      "practice-codes:get",
+      "practice-codes:create",
+      "practice-codes:patch",
+      "practice-codes:remove",
+      "prepagas:find"
     ]
   },
   {

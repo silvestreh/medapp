@@ -34,7 +34,8 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
 
   const isMedic = orgRoleIds.includes('medic');
   const isPrescriber = orgRoleIds.includes('prescriber');
-  const canAccess = isMedic || isPrescriber || orgRoleIds.includes('accounting');
+  const isAdmin = orgRoleIds.includes('admin');
+  const canAccess = isMedic || isPrescriber || isAdmin || orgRoleIds.includes('accounting');
   if (!canAccess) {
     throw json({ error: 'Not authorized' }, { status: 403 });
   }
@@ -43,7 +44,7 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   let delegatedMedics: any[] = [];
   let selectedMedicId = user.id;
 
-  if (!isMedic && isPrescriber) {
+  if (!isMedic && isPrescriber && !isAdmin) {
     const url = new URL(request.url);
     const medicIdParam = url.searchParams.get('medicId');
 
@@ -70,7 +71,7 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   }
 
   const codesQuery: Record<string, any> = { $limit: 500 };
-  if (!isMedic && isPrescriber && selectedMedicId !== user.id) {
+  if (!isMedic && isPrescriber && !isAdmin && selectedMedicId !== user.id) {
     codesQuery.userId = selectedMedicId;
   }
 
@@ -96,7 +97,7 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     prepagas = Array.isArray(prepagasResponse) ? prepagasResponse : ((prepagasResponse as any)?.data ?? []);
   }
 
-  return json({ practices, codes, prepagas, delegatedMedics, selectedMedicId, isMedic });
+  return json({ practices, codes, prepagas, delegatedMedics, selectedMedicId, isMedic, isAdmin });
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -155,12 +156,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function SettingsPracticesPage() {
   const { t } = useTranslation();
-  const { practices, codes, prepagas, delegatedMedics, selectedMedicId, isMedic } = useLoaderData<typeof loader>();
+  const { practices, codes, prepagas, delegatedMedics, selectedMedicId, isMedic, isAdmin } = useLoaderData<typeof loader>();
   const revalidator = useRevalidator();
   const navigate = useNavigate();
   const [selectedPractice, setSelectedPractice] = useState<Practice | null>(null);
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
   const [isCreateMode, setIsCreateMode] = useState(false);
+  const [createdPracticeId, setCreatedPracticeId] = useState<string | null>(null);
 
   const prepagaMap = useMemo(() => new Map(prepagas.map((p: Prepaga) => [p.id, p])), [prepagas]);
 
@@ -193,12 +195,18 @@ export default function SettingsPracticesPage() {
   const handleNewPractice = useCallback(() => {
     setSelectedPractice(null);
     setIsCreateMode(true);
+    setCreatedPracticeId(null);
     openDrawer();
   }, [openDrawer]);
+
+  const handlePracticeCreated = useCallback((practiceId: string) => {
+    setCreatedPracticeId(practiceId);
+  }, []);
 
   const handleDrawerClose = useCallback(() => {
     closeDrawer();
     setIsCreateMode(false);
+    setCreatedPracticeId(null);
     setTimeout(() => revalidator.revalidate(), 300);
   }, [closeDrawer, revalidator]);
 
@@ -287,10 +295,11 @@ export default function SettingsPracticesPage() {
 
       <PracticeDrawer
         practice={selectedPractice}
-        codes={selectedPractice ? codesByPracticeId.get(selectedPractice.id) || [] : []}
+        codes={codesByPracticeId.get(selectedPractice?.id || createdPracticeId || '') || []}
         opened={drawerOpened}
         onClose={handleDrawerClose}
         isCreateMode={isCreateMode}
+        onCreated={handlePracticeCreated}
       />
     </Stack>
   );

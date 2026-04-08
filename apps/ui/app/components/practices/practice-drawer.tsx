@@ -14,9 +14,10 @@ interface PracticeDrawerProps {
   opened: boolean;
   onClose: () => void;
   isCreateMode?: boolean;
+  onCreated?: (practiceId: string) => void;
 }
 
-export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode }: PracticeDrawerProps) {
+export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode, onCreated }: PracticeDrawerProps) {
   const { t } = useTranslation();
   const fetcher = useFetcher();
   const revalidator = useRevalidator();
@@ -51,8 +52,9 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode 
     const data = fetcher.data as any;
     if (data?.ok && data?.intent === 'create-practice' && data?.practiceId) {
       setCreatedPracticeId(data.practiceId);
+      onCreated?.(data.practiceId);
     }
-  }, [fetcher.data]);
+  }, [fetcher.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const effectivePracticeId = practice?.id || createdPracticeId;
   const isSystem = practice?.isSystem ?? false;
