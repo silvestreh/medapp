@@ -4,7 +4,11 @@ import app from './app';
 import { scheduleAppointmentCleanup } from './cron/cleanup-appointments';
 import { scheduleLicenseRevalidation } from './cron/license-revalidation';
 import { scheduleSolanaAnchoring } from './cron/solana-anchoring';
+import { scheduleAppointmentReminders } from './cron/appointment-reminders';
+import createAppointmentRemindersModel from './models/appointment-reminders.model';
 
+// Register model before app.listen() so it's included in sequelize.sync()
+createAppointmentRemindersModel(app);
 
 const port = app.get('port');
 const server = app.listen(port);
@@ -19,6 +23,7 @@ server.on('listening', () => {
   scheduleAppointmentCleanup(app);
   scheduleLicenseRevalidation(app);
   scheduleSolanaAnchoring(app);
+  scheduleAppointmentReminders(app);
 
 
   app.service('access-logs').create({

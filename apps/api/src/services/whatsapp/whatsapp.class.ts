@@ -23,6 +23,7 @@ export type WhatsAppCreateData = WhatsAppDocumentData | WhatsAppTextData;
 export interface WhatsAppResult {
   sent: boolean;
   messageId?: string;
+  reason?: string;
 }
 
 interface EvolutionConfig {
@@ -59,7 +60,7 @@ export class WhatsApp {
 
   /**
    * Normalizes a phone number for WhatsApp.
-   * Argentine local numbers (10 digits like 2216412898) get 54 prepended.
+   * Argentine local numbers (10 digits like 2214567890) get 54 prepended.
    * Numbers starting with 0 get the leading 0 stripped and 54 prepended.
    * Numbers that already include a country code (11+ digits) are left as-is.
    */

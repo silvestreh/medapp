@@ -75,8 +75,8 @@ export const COUNTRY_CALLING_CODES = [
 ];
 
 /**
- * Extracts the country code from a phone string like "cel:+542216412898"
- * or "cel:542216412898". Returns { countryCode, localNumber }.
+ * Extracts the country code from a phone string like "cel:+542214567890"
+ * or "cel:542214567890". Returns { countryCode, localNumber }.
  */
 export function extractCountryCode(phone: string): { countryCode: string; localNumber: string } {
   // Strip the tel:/cel: prefix and any + sign
@@ -142,7 +142,7 @@ export function parsePatientToFormValues(patient: any): PatientFormValues {
 /**
  * Prepends the country code to each phone number in a comma-separated string.
  * Preserves the tel:/cel: prefix if present.
- * e.g. "cel:2216412898, tel:42123456" with code "54" → "cel:+542216412898, tel:+5442123456"
+ * e.g. "cel:2214567890, tel:42123456" with code "54" → "cel:+542214567890, tel:+5442123456"
  */
 export function prependCountryCode(phoneNumber: string, countryCode: string): string {
   if (!phoneNumber) return '';

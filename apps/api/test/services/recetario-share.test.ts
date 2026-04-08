@@ -106,7 +106,7 @@ describe('recetario share action', () => {
     const result = await app.service('recetario').create({
       action: 'share',
       shareChannel: 'whatsapp',
-      shareRecipient: '5492216412898',
+      shareRecipient: '5492214567890',
       prescriptionId,
       pdfUrl: pdfServerUrl,
     } as any, internalParams());
@@ -114,7 +114,7 @@ describe('recetario share action', () => {
     assert.ok(result.success);
     assert.equal(whatsappCalls.length, 1);
     assert.equal(whatsappCalls[0].organizationId, orgId);
-    assert.equal(whatsappCalls[0].to, '5492216412898');
+    assert.equal(whatsappCalls[0].to, '5492214567890');
     assert.equal(whatsappCalls[0].filename, 'receta.pdf');
     assert.ok(whatsappCalls[0].media, 'should send base64 media');
     assert.equal(typeof whatsappCalls[0].media, 'string');
@@ -125,7 +125,7 @@ describe('recetario share action', () => {
     const result = await app.service('recetario').create({
       action: 'share',
       shareChannel: 'whatsapp',
-      shareRecipient: '5492216412898',
+      shareRecipient: '5492214567890',
       prescriptionId: orderPrescriptionId,
       pdfUrl: pdfServerUrl,
     } as any, internalParams());
@@ -172,14 +172,14 @@ describe('recetario share action', () => {
     await app.service('recetario').create({
       action: 'share',
       shareChannel: 'whatsapp',
-      shareRecipient: '5492216412898',
+      shareRecipient: '5492214567890',
       prescriptionId,
       pdfUrl: pdfServerUrl,
     } as any, internalParams());
 
     const updated = await app.service('prescriptions').get(prescriptionId) as any;
     assert.equal(updated.sharedVia, 'whatsapp');
-    assert.equal(updated.sharedTo, '5492216412898');
+    assert.equal(updated.sharedTo, '5492214567890');
   });
 
   it('throws if pdfUrl is missing', async () => {
@@ -187,7 +187,7 @@ describe('recetario share action', () => {
       await app.service('recetario').create({
         action: 'share',
         shareChannel: 'whatsapp',
-        shareRecipient: '5492216412898',
+        shareRecipient: '5492214567890',
         prescriptionId,
       } as any, internalParams());
       assert.fail('Should have thrown');
@@ -200,7 +200,7 @@ describe('recetario share action', () => {
     try {
       await app.service('recetario').create({
         action: 'share',
-        shareRecipient: '5492216412898',
+        shareRecipient: '5492214567890',
         prescriptionId,
         pdfUrl: pdfServerUrl,
       } as any, internalParams());
@@ -229,7 +229,7 @@ describe('recetario share action', () => {
     const result = await app.service('recetario').create({
       action: 'share',
       shareChannel: 'whatsapp',
-      shareRecipient: '5492216412898',
+      shareRecipient: '5492214567890',
       prescriptionId,
       pdfUrl: pdfServerUrl,
     } as any, internalParams());

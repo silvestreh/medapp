@@ -1,12 +1,14 @@
 import { HooksObject } from '@feathersjs/feathers';
 import { disallow } from 'feathers-hooks-common';
+import normalizePhoneNumber from './hooks/normalize-phone-number';
+import verifyWhatsAppNumber from './hooks/verify-whatsapp-number';
 
 export default {
   before: {
     all: [disallow('external')],
     find: [],
     get: [],
-    create: [],
+    create: [normalizePhoneNumber(), verifyWhatsAppNumber()],
     update: [],
     patch: [],
     remove: []

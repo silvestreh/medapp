@@ -89,6 +89,7 @@
     "feathers-sequelize": "^6.4.0",
     "form-data": "^4.0.3",
     "helmet": "^5.1.1",
+    "libphonenumber-js": "^1.12.38",
     "lodash": "^4.17.21",
     "mailgun.js": "^10.4.0",
     "multer": "^2.0.2",
