@@ -70,6 +70,7 @@ const ALLOWED_PATHS = new Set([
   'sire-dose-logs',
   'sire-push-tokens',
   'patient-refresh-tokens',
+  'healthz',
 ]);
 
 function getFirstSegment(request: Request): string {
