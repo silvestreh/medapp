@@ -2,6 +2,7 @@ import { HooksObject, HookContext } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { disallow } from 'feathers-hooks-common';
 import { Forbidden } from '@feathersjs/errors';
+import { disablePagination } from './hooks/disable-pagination';
 
 const { authenticate } = authentication.hooks;
 
@@ -15,7 +16,7 @@ const requireSuperAdmin = () => async (context: HookContext): Promise<HookContex
 export default {
   before: {
     all: [authenticate('jwt')],
-    find: [],
+    find: [disablePagination()],
     get: [],
     create: [requireSuperAdmin()],
     update: [disallow('external')],
