@@ -37,14 +37,11 @@ interface AnchorItem {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
 
-  const response = await client.service('solana-anchors').find({
+  const anchors = await client.service('solana-anchors').find({
     query: {
       $sort: { createdAt: -1 },
-      $limit: 100,
     },
-  });
-
-  const anchors = Array.isArray(response) ? response : (response as any)?.data || [];
+  }) as any[];
 
   return json({ anchors });
 };

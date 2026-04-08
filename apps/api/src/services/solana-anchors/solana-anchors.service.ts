@@ -13,7 +13,7 @@ declare module '../../declarations' {
 export default function (app: Application): void {
   const options = {
     Model: createModel(app),
-    paginate: app.get('paginate'),
+    paginate: false,
   };
 
   // Also initialize the leaves model so Sequelize knows about it
