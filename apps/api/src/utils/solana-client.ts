@@ -4,7 +4,7 @@ import {
   Transaction,
   TransactionInstruction,
   PublicKey,
-  sendAndConfirmTransaction,
+  TransactionExpiredBlockheightExceededError,
 } from '@solana/web3.js';
 import bs58 from 'bs58';
 import logger from '../logger';
@@ -95,25 +95,54 @@ export async function submitMemoTransaction(
     data: Buffer.from(memoData, 'utf-8'),
   });
 
-  const transaction = new Transaction().add(instruction);
-  const signature = await sendAndConfirmTransaction(
-    connection,
-    transaction,
-    [keypair],
-    {
-      commitment: 'confirmed',
-    },
-  );
+  const MAX_SUBMIT_RETRIES = 3;
 
-  const tx = await connection.getTransaction(signature, {
-    commitment: 'confirmed',
-    maxSupportedTransactionVersion: 0,
-  });
+  for (let attempt = 0; attempt < MAX_SUBMIT_RETRIES; attempt++) {
+    const { blockhash, lastValidBlockHeight } =
+      await connection.getLatestBlockhash('confirmed');
 
-  return {
-    signature,
-    slot: tx?.slot ?? 0,
-  };
+    const transaction = new Transaction().add(instruction);
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = keypair.publicKey;
+
+    transaction.sign(keypair);
+    const rawTransaction = transaction.serialize();
+
+    try {
+      const signature = await connection.sendRawTransaction(rawTransaction, {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+      });
+
+      await connection.confirmTransaction(
+        { signature, blockhash, lastValidBlockHeight },
+        'confirmed',
+      );
+
+      const tx = await connection.getTransaction(signature, {
+        commitment: 'confirmed',
+        maxSupportedTransactionVersion: 0,
+      });
+
+      return {
+        signature,
+        slot: tx?.slot ?? 0,
+      };
+    } catch (error) {
+      if (
+        error instanceof TransactionExpiredBlockheightExceededError &&
+        attempt < MAX_SUBMIT_RETRIES - 1
+      ) {
+        logger.warn(
+          `Solana anchoring: block height exceeded, retrying (attempt ${attempt + 1}/${MAX_SUBMIT_RETRIES})`,
+        );
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error('Solana anchoring: max retries exceeded');
 }
 
 export interface MemoVerificationResult {
