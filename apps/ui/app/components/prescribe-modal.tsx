@@ -934,7 +934,7 @@ export function PrescribeModal({
               valueFormat="DD/MM/YYYY"
               value={prescriptionDate}
               onChange={v => setPrescriptionDate(v as Date | null)}
-              maxDate={new Date()}
+              minDate={new Date()}
               w={160}
               ml="auto"
             />
