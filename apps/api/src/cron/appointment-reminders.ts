@@ -215,6 +215,22 @@ export async function sendAppointmentReminders(app: Application, options?: Remin
           `Hola ${patientFirstName}! Te recordamos que tenés un turno mañana ${dayName} ${dateStr} a las ${timeStr} hs con ${medicLabel} en ${orgName}.\n` +
           'Si necesitás cancelar o reprogramar, por favor comunicate con anticipación. ¡Gracias!';
 
+        // In dev, just log the message instead of sending it
+        const isDev = process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test';
+        if (isDev) {
+          logger.info(`[Appointment Reminders] [DEV] Would send to ${phoneNumber}: ${body}`);
+          await models.appointment_reminders.create({
+            appointmentId: appt.id,
+            organizationId: orgId,
+            patientId: appt.patientId,
+            sentAt: new Date(),
+            status: 'sent',
+            errorMessage: 'dev-mode: not actually sent',
+          });
+          sent++;
+          continue;
+        }
+
         // Anti-spam: staggered delay
         if (delayMax > 0) {
           await randomDelay(delayMin, delayMax);
