@@ -226,7 +226,12 @@ export function PrepagaSelector({
               loading ? (
                 <Loader size="xs" />
               ) : value ? (
-                <ActionIcon variant="subtle" color="gray" onClick={handleClear} style={{ pointerEvents: 'all' }}>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  onClick={handleClear}
+                  style={{ pointerEvents: 'all', backgroundColor: 'white' }}
+                >
                   <XIcon size={16} />
                 </ActionIcon>
               ) : (

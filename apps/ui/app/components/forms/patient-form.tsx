@@ -190,9 +190,10 @@ export function buildFormPayload(values: PatientFormValues) {
       email: email || undefined,
     },
     patientFields: {
-      medicareId: medicareId || undefined,
-      medicareNumber: medicareNumber || undefined,
-      medicarePlan: medicarePlan || undefined,
+      medicare: medicareId ? undefined : null,
+      medicareId: medicareId || null,
+      medicareNumber: medicareNumber || null,
+      medicarePlan: medicarePlan || null,
     },
   };
 }
@@ -236,6 +237,9 @@ export function PatientForm({
     (val: string) => {
       form.setFieldValue('medicareId', val);
       form.setFieldValue('medicarePlan', '');
+      if (!val) {
+        form.setFieldValue('medicareNumber', '');
+      }
     },
     [form]
   );
