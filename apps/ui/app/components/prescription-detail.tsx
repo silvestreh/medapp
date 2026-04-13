@@ -57,11 +57,17 @@ export function PrescriptionDetail({ prescription: rx, onCancelled }: Prescripti
     setConfirming(false);
   };
 
-  // Watch for cancel success
+  // Watch for cancel response
   useEffect(() => {
-    if (cancelFetcher.state !== 'idle' || !cancelFetcher.data?.success) return;
-    showNotification({ color: 'green', message: t('recetario.cancel_success') });
-    onCancelled?.();
+    if (cancelFetcher.state !== 'idle' || !cancelFetcher.data) return;
+    if (cancelFetcher.data.recetarioUnavailable) {
+      showNotification({ color: 'red', title: 'Recetario', message: t('recetario.service_unavailable') });
+      return;
+    }
+    if (cancelFetcher.data.success) {
+      showNotification({ color: 'green', message: t('recetario.cancel_success') });
+      onCancelled?.();
+    }
   }, [cancelFetcher.state, cancelFetcher.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canCancel = rx.status !== 'cancelled' && rx.status !== 'expired' && rx.status !== 'completed';

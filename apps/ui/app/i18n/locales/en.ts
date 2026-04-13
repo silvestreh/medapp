@@ -1258,6 +1258,8 @@ export const en: typeof es = {
       'No match found for "{{shortName}}" in Recetario. Please select the correct health insurance from the list.',
     practices_label: 'Practices',
     add_practice: 'Add practice...',
+    service_unavailable:
+      'The prescription service (Recetario) is currently unavailable. Please try again in a few minutes.',
   },
   identity_verification: {
     title: 'Identity Verification',

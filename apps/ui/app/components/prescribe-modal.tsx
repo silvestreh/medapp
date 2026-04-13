@@ -222,7 +222,7 @@ export function PrescribeModal({
             if (res?.insurances) setRecetarioInsurances(res.insurances);
           })
           .catch(() => {
-            // non-fatal — matching will be unavailable
+            showNotification({ color: 'orange', title: 'Recetario', message: t('recetario.service_unavailable') });
           });
       }
       if (initialPrescriptionResult) {
@@ -382,6 +382,9 @@ export function PrescribeModal({
   // Gap-fill from fetcher (mhsPatientData / recetarioData)
   useEffect(() => {
     if (patientFetcher.state !== 'idle' || !patientFetcher.data) return;
+    if (patientFetcher.data.recetarioUnavailable) {
+      showNotification({ color: 'orange', title: 'Recetario', message: t('recetario.service_unavailable') });
+    }
     const { recetarioData, matchedPrepagaId, mhsPatientData } = patientFetcher.data;
     const filledByGapFill: string[] = [];
     if (mhsPatientData) {
@@ -545,6 +548,10 @@ export function PrescribeModal({
   // Handle prescription/order submit response
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return;
+    if (fetcher.data.recetarioUnavailable) {
+      showNotification({ color: 'red', title: 'Recetario', message: t('recetario.service_unavailable') });
+      return;
+    }
     if (fetcher.data.success) {
       setPrescriptionResult({
         prescriptionId: fetcher.data.prescriptionId ?? null,
@@ -563,6 +570,10 @@ export function PrescribeModal({
   // Handle share response
   useEffect(() => {
     if (shareFetcher.state !== 'idle' || !shareFetcher.data) return;
+    if (shareFetcher.data.recetarioUnavailable) {
+      showNotification({ color: 'red', title: 'Recetario', message: t('recetario.service_unavailable') });
+      return;
+    }
     if (shareFetcher.data.success) {
       showNotification({ color: 'green', message: t('recetario.share_success') });
     }

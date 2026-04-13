@@ -1263,6 +1263,8 @@ export const es = {
       'No se encontró una coincidencia para "{{shortName}}" en Recetario. Seleccioná la obra social correcta de la lista.',
     practices_label: 'Prácticas',
     add_practice: 'Agregar práctica...',
+    service_unavailable:
+      'El servicio de recetas (Recetario) no está disponible en este momento. Por favor, intente nuevamente en unos minutos.',
   },
   identity_verification: {
     title: 'Verificación de Identidad',

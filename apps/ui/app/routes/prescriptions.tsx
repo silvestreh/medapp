@@ -163,6 +163,11 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   return { medics, defaultMedicId, isMedic, isPrescriber, userId: user.id };
 });
 
+function isRecetarioUnavailable(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : '';
+  return /recetario.*timeout|ECONNREFUSED|ETIMEDOUT/i.test(msg);
+}
+
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
   const formData = await request.formData();
@@ -174,16 +179,23 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (!patientId) {
       return json({ intent: 'get-patient-data', recetarioData: null, matchedPrepagaId: null, mhsPatientData: null });
     }
-    const result = await client.service('recetario' as any).create({
-      action: 'get-patient-data',
-      patientId,
-    });
-    return json({
-      intent: 'get-patient-data',
-      recetarioData: (result as any).recetarioData,
-      matchedPrepagaId: (result as any).matchedPrepagaId,
-      mhsPatientData: (result as any).mhsPatientData,
-    });
+    try {
+      const result = await client.service('recetario' as any).create({
+        action: 'get-patient-data',
+        patientId,
+      });
+      return json({
+        intent: 'get-patient-data',
+        recetarioData: (result as any).recetarioData,
+        matchedPrepagaId: (result as any).matchedPrepagaId,
+        mhsPatientData: (result as any).mhsPatientData,
+      });
+    } catch (err) {
+      if (isRecetarioUnavailable(err)) {
+        return json({ intent: 'get-patient-data', recetarioUnavailable: true, recetarioData: null, matchedPrepagaId: null, mhsPatientData: null });
+      }
+      throw err;
+    }
   }
 
   if (intent === 'update-patient-data') {
@@ -205,75 +217,110 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   if (intent === 'search-recetario-medications') {
     const { search } = parseFormJson(formData.get('data')) as any;
-    const result = await client.service('recetario' as any).create({ action: 'search-medications', search });
-    return json({
-      intent: 'search-recetario-medications',
-      medications: (result as any).medications,
-    });
+    try {
+      const result = await client.service('recetario' as any).create({ action: 'search-medications', search });
+      return json({
+        intent: 'search-recetario-medications',
+        medications: (result as any).medications,
+      });
+    } catch (err) {
+      if (isRecetarioUnavailable(err)) {
+        return json({ intent: 'search-recetario-medications', recetarioUnavailable: true, medications: [] });
+      }
+      throw err;
+    }
   }
 
   if (intent === 'create-prescription') {
     const { diagnosis, medications, hiv, patientData, patientId, medicId, date } = parseFormJson(
       formData.get('data')
     ) as any;
-    const result = await client.service('recetario' as any).create({
-      action: 'prescribe',
-      patientId,
-      diagnosis,
-      medications,
-      hiv,
-      patientData,
-      medicId,
-      date,
-    });
-    return json({
-      intent: 'create-prescription',
-      success: true,
-      url: (result as any).url ?? null,
-      prescriptionId: (result as any).prescriptionId ?? null,
-      recetarioDocumentId: (result as any).recetarioDocumentId ?? null,
-    });
+    try {
+      const result = await client.service('recetario' as any).create({
+        action: 'prescribe',
+        patientId,
+        diagnosis,
+        medications,
+        hiv,
+        patientData,
+        medicId,
+        date,
+      });
+      return json({
+        intent: 'create-prescription',
+        success: true,
+        url: (result as any).url ?? null,
+        prescriptionId: (result as any).prescriptionId ?? null,
+        recetarioDocumentId: (result as any).recetarioDocumentId ?? null,
+      });
+    } catch (err) {
+      if (isRecetarioUnavailable(err)) {
+        return json({ intent: 'create-prescription', recetarioUnavailable: true, error: 'recetario_unavailable' });
+      }
+      throw err;
+    }
   }
 
   if (intent === 'create-order') {
     const { diagnosis, content, patientData, patientId, medicId, date } = parseFormJson(formData.get('data')) as any;
-    const result = await client.service('recetario' as any).create({
-      action: 'order',
-      patientId,
-      diagnosis,
-      content,
-      patientData,
-      medicId,
-      date,
-    });
-    return json({
-      intent: 'create-order',
-      success: true,
-      url: (result as any).url ?? null,
-      prescriptionId: (result as any).prescriptionId ?? null,
-      recetarioDocumentId: (result as any).recetarioDocumentId ?? null,
-    });
+    try {
+      const result = await client.service('recetario' as any).create({
+        action: 'order',
+        patientId,
+        diagnosis,
+        content,
+        patientData,
+        medicId,
+        date,
+      });
+      return json({
+        intent: 'create-order',
+        success: true,
+        url: (result as any).url ?? null,
+        prescriptionId: (result as any).prescriptionId ?? null,
+        recetarioDocumentId: (result as any).recetarioDocumentId ?? null,
+      });
+    } catch (err) {
+      if (isRecetarioUnavailable(err)) {
+        return json({ intent: 'create-order', recetarioUnavailable: true, error: 'recetario_unavailable' });
+      }
+      throw err;
+    }
   }
 
   if (intent === 'cancel-prescription') {
     const { prescriptionId, recetarioDocumentId } = parseFormJson(formData.get('data')) as any;
-    await client.service('recetario' as any).create({ action: 'cancel', prescriptionId, recetarioDocumentId });
-    return json({ intent: 'cancel-prescription', success: true });
+    try {
+      await client.service('recetario' as any).create({ action: 'cancel', prescriptionId, recetarioDocumentId });
+      return json({ intent: 'cancel-prescription', success: true });
+    } catch (err) {
+      if (isRecetarioUnavailable(err)) {
+        return json({ intent: 'cancel-prescription', recetarioUnavailable: true, error: 'recetario_unavailable' });
+      }
+      throw err;
+    }
   }
 
   if (intent === 'share-prescription') {
     const { prescriptionId, documentIds, shareChannel, shareRecipient, pdfUrl } = parseFormJson(
       formData.get('data')
     ) as any;
-    await client.service('recetario' as any).create({
-      action: 'share',
-      prescriptionId,
-      documentIds,
-      shareChannel,
-      shareRecipient,
-      pdfUrl,
-    });
-    return json({ intent: 'share-prescription', success: true });
+    try {
+      await client.service('recetario' as any).create({
+        action: 'share',
+        prescriptionId,
+        documentIds,
+        shareChannel,
+        shareRecipient,
+        pdfUrl,
+      });
+      return json({ intent: 'share-prescription', success: true });
+    } catch (err) {
+      if (isRecetarioUnavailable(err)) {
+        return json({ intent: 'share-prescription', recetarioUnavailable: true, error: 'recetario_unavailable' });
+      }
+      throw err;
+    }
   }
 
   return json({ error: 'Unknown intent' }, { status: 400 });

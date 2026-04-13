@@ -42,6 +42,7 @@ function RecetarioMedicinePicker({ value, onChange }: RecetarioMedicinePickerPro
 
   const results: RecetarioMed[] = searchFetcher.data?.medications || [];
   const isLoading = searchFetcher.state !== 'idle';
+  const isUnavailable = searchFetcher.data?.recetarioUnavailable === true;
 
   const handleSelect = useCallback(
     (med: RecetarioMed) => {
@@ -125,7 +126,12 @@ function RecetarioMedicinePicker({ value, onChange }: RecetarioMedicinePickerPro
       <Popover.Dropdown>
         <ScrollArea.Autosize mah={300}>
           <Box p="xs">
-            {results.length === 0 && !isLoading && (
+            {isUnavailable && (
+              <Text size="sm" c="red" ta="center" py="sm">
+                {t('recetario.service_unavailable')}
+              </Text>
+            )}
+            {!isUnavailable && results.length === 0 && !isLoading && (
               <Text size="sm" c="dimmed" ta="center" py="sm">
                 {debouncedSearch ? t('common.no_results') : t('forms.type_to_search_medications')}
               </Text>
