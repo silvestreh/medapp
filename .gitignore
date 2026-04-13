@@ -29,6 +29,10 @@ pnpm-debug.log*
 
 # Testing
 coverage
+e2e/.auth/
+e2e/.env
+playwright-report/
+test-results/
 
 # Panda CSS generated
 styled-system/

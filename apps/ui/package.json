@@ -11,7 +11,9 @@
     "start": "NODE_OPTIONS='--import ./instrumentation.server.mjs' remix-serve ./build/server/index.js",
     "typecheck": "tsc",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@athelas/brand": "workspace:*",
@@ -79,6 +81,7 @@
   },
   "devDependencies": {
     "@pandacss/dev": "^1.8.1",
+    "@playwright/test": "^1.59.1",
     "@remix-run/dev": "^2.16.5",
     "@types/lodash": "^4.17.16",
     "@types/qrcode": "^1.5.6",
@@ -88,6 +91,7 @@
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "autoprefixer": "^10.4.21",
+    "dotenv": "^17.4.2",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^10.1.2",
     "eslint-import-resolver-typescript": "^4.3.4",
