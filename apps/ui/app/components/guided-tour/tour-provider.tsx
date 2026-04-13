@@ -1,4 +1,12 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type PropsWithChildren,
+} from 'react';
 
 import { useFeathers, useAccount } from '~/components/provider';
 

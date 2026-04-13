@@ -112,7 +112,9 @@ export default function ResetPassword() {
           {t('auth.reset_password_title')}
         </Title>
         <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-          <Text ta="center" mb="lg">{t('auth.password_reset_success')}</Text>
+          <Text ta="center" mb="lg">
+            {t('auth.password_reset_success')}
+          </Text>
           <Button component={Link} to="/login" fullWidth>
             {t('auth.sign_in')}
           </Button>

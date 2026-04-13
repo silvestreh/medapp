@@ -243,19 +243,22 @@ export default function StudyDetail() {
     // immediately (e.g. "Save and Leave") still leaves fresh data in the cache.
     pendingSaveDraftsRef.current = { ...resultDrafts };
     if (Object.keys(resultDrafts).length > 0) {
-      mutateStudy((currentStudy: any) => {
-        if (!currentStudy) return currentStudy;
-        const updatedResults = [...(currentStudy.results || [])];
-        for (const [type, data] of Object.entries(resultDrafts)) {
-          const idx = updatedResults.findIndex((r: any) => r.type === type);
-          if (idx >= 0) {
-            updatedResults[idx] = { ...updatedResults[idx], data };
-          } else {
-            updatedResults.push({ type, data });
+      mutateStudy(
+        (currentStudy: any) => {
+          if (!currentStudy) return currentStudy;
+          const updatedResults = [...(currentStudy.results || [])];
+          for (const [type, data] of Object.entries(resultDrafts)) {
+            const idx = updatedResults.findIndex((r: any) => r.type === type);
+            if (idx >= 0) {
+              updatedResults[idx] = { ...updatedResults[idx], data };
+            } else {
+              updatedResults.push({ type, data });
+            }
           }
-        }
-        return { ...currentStudy, results: updatedResults };
-      }, { revalidate: false });
+          return { ...currentStudy, results: updatedResults };
+        },
+        { revalidate: false }
+      );
     }
 
     fetcher.submit({ data: JSON.stringify(payload) }, { method: 'post' });

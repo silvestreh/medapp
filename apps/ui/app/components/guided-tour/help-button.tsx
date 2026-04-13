@@ -69,10 +69,7 @@ const HelpButton: React.FC<HelpButtonProps> = ({ asMenuItem = false }) => {
         >
           {t('tour.start_tour')}
         </Menu.Item>
-        <Menu.Item
-          leftSection={<BookOpenIcon size={16} />}
-          onClick={handleReadDocs}
-        >
+        <Menu.Item leftSection={<BookOpenIcon size={16} />} onClick={handleReadDocs}>
           {t('tour.read_docs')}
         </Menu.Item>
       </>
@@ -96,10 +93,7 @@ const HelpButton: React.FC<HelpButtonProps> = ({ asMenuItem = false }) => {
         >
           {t('tour.start_tour')}
         </Menu.Item>
-        <Menu.Item
-          leftSection={<BookOpenIcon size={16} />}
-          onClick={handleReadDocs}
-        >
+        <Menu.Item leftSection={<BookOpenIcon size={16} />} onClick={handleReadDocs}>
           {t('tour.read_docs')}
         </Menu.Item>
       </Menu.Dropdown>

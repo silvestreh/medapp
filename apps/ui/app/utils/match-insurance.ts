@@ -8,10 +8,7 @@ export interface InsuranceMatchResult {
   matchedName: string | null;
 }
 
-export function matchInsurance(
-  shortName: string,
-  insurances: RecetarioInsurance[]
-): InsuranceMatchResult {
+export function matchInsurance(shortName: string, insurances: RecetarioInsurance[]): InsuranceMatchResult {
   if (!shortName) return { matchType: 'none', matchedName: null };
   const needle = shortName.toLowerCase().trim();
 

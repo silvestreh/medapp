@@ -192,7 +192,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       });
     } catch (err) {
       if (isRecetarioUnavailable(err)) {
-        return json({ intent: 'get-patient-data', recetarioUnavailable: true, recetarioData: null, matchedPrepagaId: null, mhsPatientData: null });
+        return json({
+          intent: 'get-patient-data',
+          recetarioUnavailable: true,
+          recetarioData: null,
+          matchedPrepagaId: null,
+          mhsPatientData: null,
+        });
       }
       throw err;
     }

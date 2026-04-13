@@ -739,7 +739,8 @@ export const es = {
     forgot_password_title: 'Restablecer contraseña',
     forgot_password_description: 'Ingresá tu email y te enviaremos un enlace para restablecer tu contraseña.',
     send_reset_link: 'Enviar enlace',
-    reset_link_sent: 'Si existe una cuenta con ese email, te enviamos un enlace para restablecer tu contraseña. Revisá tu bandeja de entrada.',
+    reset_link_sent:
+      'Si existe una cuenta con ese email, te enviamos un enlace para restablecer tu contraseña. Revisá tu bandeja de entrada.',
     back_to_login: 'Volver al inicio de sesión',
     reset_password_title: 'Nueva contraseña',
     new_password: 'Nueva contraseña',
@@ -753,7 +754,8 @@ export const es = {
     reset_failed: 'Error al restablecer la contraseña. Intentá de nuevo.',
     email_not_confirmed: 'Por favor confirmá tu email antes de iniciar sesión. Revisá tu bandeja de entrada.',
     check_your_email: 'Revisá tu email',
-    check_your_email_description: 'Te enviamos un enlace de confirmación a tu email. Hacé clic en el enlace para activar tu cuenta.',
+    check_your_email_description:
+      'Te enviamos un enlace de confirmación a tu email. Hacé clic en el enlace para activar tu cuenta.',
     email_confirmed_title: 'Confirmación de email',
     email_confirmed_description: 'Tu email fue confirmado. Ya podés iniciar sesión.',
     confirmation_link_expired: 'Este enlace de confirmación expiró. Por favor solicitá uno nuevo.',
@@ -852,7 +854,8 @@ export const es = {
     passkeys_add: 'Agregar llave de acceso',
     passkeys_add_success: 'Llave de acceso registrada exitosamente.',
     passkeys_add_error: 'Error al registrar llave de acceso.',
-    passkeys_extension_error: 'Una extensión del navegador interfirió con el registro. Desactive extensiones de contraseñas e intente de nuevo.',
+    passkeys_extension_error:
+      'Una extensión del navegador interfirió con el registro. Desactive extensiones de contraseñas e intente de nuevo.',
     passkeys_remove: 'Eliminar',
     passkeys_remove_confirm: '¿Está seguro que desea eliminar esta llave de acceso?',
     passkeys_remove_success: 'Llave de acceso eliminada.',
@@ -1182,7 +1185,8 @@ export const es = {
     share_whatsapp: 'WhatsApp',
     share_email: 'Email',
     share_success: 'Documento compartido exitosamente',
-    mixed_medicines_error: 'No se pueden mezclar medicamentos del vademécum con medicamentos ingresados manualmente. Todos deben ser del mismo tipo.',
+    mixed_medicines_error:
+      'No se pueden mezclar medicamentos del vademécum con medicamentos ingresados manualmente. Todos deben ser del mismo tipo.',
     history_title: 'Recetas',
     history_empty: 'Sin recetas aún',
     status_pending: 'Pendiente',
@@ -1416,7 +1420,8 @@ export const es = {
     tab_anchors: 'Blockchain',
     anchors_title: 'Anclajes Blockchain',
     anchors_total: 'anclajes',
-    anchors_empty: 'No hay anclajes de blockchain aún. Se crean automáticamente cuando SOLANA_KEYPAIR está configurada.',
+    anchors_empty:
+      'No hay anclajes de blockchain aún. Se crean automáticamente cuando SOLANA_KEYPAIR está configurada.',
     anchors_col_chain: 'Cadena',
     anchors_col_records: 'Registros',
     anchors_col_merkle_root: 'Merkle Root',
@@ -1442,7 +1447,8 @@ export const es = {
     anchors_unverified: 'Sin verificar',
     anchors_verifying_progress: 'Verificando {{completed}}/{{total}}…',
     anchors_verified_at: 'Verificado el {{date}}',
-    anchors_verify_inconclusive_detail: '{{ok}} coinciden, {{inconclusive}} no se pudieron verificar (RPC no disponible), {{fail}} no coinciden.',
+    anchors_verify_inconclusive_detail:
+      '{{ok}} coinciden, {{inconclusive}} no se pudieron verificar (RPC no disponible), {{fail}} no coinciden.',
   },
   password_checklist: {
     strength_weak: 'Débil',

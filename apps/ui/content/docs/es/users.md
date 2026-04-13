@@ -8,13 +8,13 @@ La pantalla muestra una tabla con todos los miembros de la organización:
 
 <!-- TODO: Agregar screenshot de la lista de usuarios -->
 
-| Columna | Descripción |
-|---------|-------------|
-| **Usuario** | Nombre de usuario |
-| **Nombre** | Nombre completo |
-| **Email** | Dirección de correo |
-| **Roles** | Roles asignados |
-| **Acciones** | Eliminar miembro |
+| Columna      | Descripción         |
+| ------------ | ------------------- |
+| **Usuario**  | Nombre de usuario   |
+| **Nombre**   | Nombre completo     |
+| **Email**    | Dirección de correo |
+| **Roles**    | Roles asignados     |
+| **Acciones** | Eliminar miembro    |
 
 ## Invitar usuarios
 
@@ -27,12 +27,12 @@ El usuario recibirá un email con un enlace para unirse a la organización.
 
 ## Roles disponibles
 
-| Rol | Permisos |
-|-----|----------|
-| **Administrador (owner)** | Acceso total: configuración de organización, usuarios, WhatsApp, asistente IA |
-| **Médico** | Consultas, estudios, recetas, facturación, firma digital, verificación de identidad |
-| **Prescriptor** | Emitir recetas en nombre de médicos delegados, gestionar prácticas delegadas |
-| **Recepcionista** | Gestión de pacientes y turnos |
+| Rol                       | Permisos                                                                            |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| **Administrador (owner)** | Acceso total: configuración de organización, usuarios, WhatsApp, asistente IA       |
+| **Médico**                | Consultas, estudios, recetas, facturación, firma digital, verificación de identidad |
+| **Prescriptor**           | Emitir recetas en nombre de médicos delegados, gestionar prácticas delegadas        |
+| **Recepcionista**         | Gestión de pacientes y turnos                                                       |
 
 ## Cambiar roles
 

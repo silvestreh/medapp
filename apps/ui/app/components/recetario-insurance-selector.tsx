@@ -22,10 +22,7 @@ export function RecetarioInsuranceSelector({
 }: RecetarioInsuranceSelectorProps) {
   const { t } = useTranslation();
 
-  const data = useMemo(
-    () => insurances.map(i => i.name),
-    [insurances]
-  );
+  const data = useMemo(() => insurances.map(i => i.name), [insurances]);
 
   const handleChange = useCallback(
     (val: string) => {

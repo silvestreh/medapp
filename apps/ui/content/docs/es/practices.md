@@ -33,13 +33,13 @@ Para cada obra social puedes configurar:
 
 <!-- TODO: Agregar screenshot del formulario de precios -->
 
-| Campo | Descripción |
-|-------|-------------|
-| **Tipo de precio** | Precio fijo (monto en $) o multiplicador (unidades x valor base) |
-| **Código de práctica** | Código médico usado para la facturación |
-| **Precio normal** | Precio para atención en horario normal |
-| **Precio de guardia** | Precio para atención en guardia |
-| **Costos extra** | Costos adicionales por sección de estudio (hemoglobina, etc.) |
+| Campo                  | Descripción                                                      |
+| ---------------------- | ---------------------------------------------------------------- |
+| **Tipo de precio**     | Precio fijo (monto en $) o multiplicador (unidades x valor base) |
+| **Código de práctica** | Código médico usado para la facturación                          |
+| **Precio normal**      | Precio para atención en horario normal                           |
+| **Precio de guardia**  | Precio para atención en guardia                                  |
+| **Costos extra**       | Costos adicionales por sección de estudio (hemoglobina, etc.)    |
 
 ### Modo de precios
 

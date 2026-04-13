@@ -79,7 +79,11 @@ export function SireTreatmentForm({ patientId, initialData, onSubmit }: SireTrea
         />
       </Group>
 
-      <TextInput label={t('sire.indication')} placeholder={t('sire.placeholder_indication')} {...form.getInputProps('indication')} />
+      <TextInput
+        label={t('sire.indication')}
+        placeholder={t('sire.placeholder_indication')}
+        {...form.getInputProps('indication')}
+      />
 
       <Group grow>
         <DateInput label={t('sire.start_date')} valueFormat="YYYY-MM-DD" {...form.getInputProps('startDate')} />

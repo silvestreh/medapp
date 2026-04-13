@@ -27,11 +27,11 @@ La pantalla de recetas muestra:
 
 ### Estados de una receta
 
-| Estado | Significado |
-|--------|-------------|
-| **Pendiente** | La receta fue emitida y está vigente |
-| **Completada** | La receta fue dispensada |
-| **Cancelada** | La receta fue anulada |
+| Estado         | Significado                          |
+| -------------- | ------------------------------------ |
+| **Pendiente**  | La receta fue emitida y está vigente |
+| **Completada** | La receta fue dispensada             |
+| **Cancelada**  | La receta fue anulada                |
 
 ## Emitir una receta
 

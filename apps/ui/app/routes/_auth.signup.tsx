@@ -65,9 +65,7 @@ export default function Signup() {
           {t('auth.check_your_email')}
         </Title>
         <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-          <Text ta="center">
-            {t('auth.check_your_email_description')}
-          </Text>
+          <Text ta="center">{t('auth.check_your_email_description')}</Text>
         </Paper>
       </Container>
     );

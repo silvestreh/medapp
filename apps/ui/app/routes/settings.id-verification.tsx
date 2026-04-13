@@ -259,9 +259,7 @@ export default function SettingsIdVerification() {
         <Stack gap="md">
           {isLicenseVerified && (
             <Alert color="green" title={t('identity_verification.license_verified')}>
-              <Text size="sm">
-                {t('identity_verification.license_verified_desc')}
-              </Text>
+              <Text size="sm">{t('identity_verification.license_verified_desc')}</Text>
             </Alert>
           )}
           {!isLicenseVerified && licenseError && licenseError !== 'sssalud_unreachable' && (
@@ -276,14 +274,9 @@ export default function SettingsIdVerification() {
             </Alert>
           )}
           {!isLicenseVerified && (licenseError === 'sssalud_unreachable' || !licenseError) && (
-            <Alert
-              color="yellow"
-              title={t('identity_verification.license_pending')}
-            >
+            <Alert color="yellow" title={t('identity_verification.license_pending')}>
               <Stack gap="xs">
-                <Text size="sm">
-                  {t('identity_verification.license_pending_desc')}
-                </Text>
+                <Text size="sm">{t('identity_verification.license_pending_desc')}</Text>
                 <Group>
                   <Button
                     size="xs"

@@ -195,7 +195,11 @@ export default function UsersIndex() {
   }, []);
 
   const tourSteps = getUsersSteps(t);
-  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('users', tourSteps);
+  const {
+    run: tourRun,
+    stepIndex: tourStepIndex,
+    handleCallback: tourHandleCallback,
+  } = useSectionTour('users', tourSteps);
 
   return (
     <Container>
@@ -260,7 +264,13 @@ export default function UsersIndex() {
                   {t('users.col_email')}
                 </Table.Th>
               )}
-              <Table.Th data-tour="users-roles" style={{ border: '1px solid var(--mantine-primary-color-1)' }} fw={500} fz="md" py="0.5em">
+              <Table.Th
+                data-tour="users-roles"
+                style={{ border: '1px solid var(--mantine-primary-color-1)' }}
+                fw={500}
+                fz="md"
+                py="0.5em"
+              >
                 {t('users.col_role')}
               </Table.Th>
               <Table.Th

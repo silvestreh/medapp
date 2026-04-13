@@ -1,14 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  ActionIcon,
-  Text,
-  Popover,
-  ScrollArea,
-  Box,
-  Table,
-  Loader,
-  TextInput,
-} from '@mantine/core';
+import { ActionIcon, Text, Popover, ScrollArea, Box, Table, Loader, TextInput } from '@mantine/core';
 import { useFetcher } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';

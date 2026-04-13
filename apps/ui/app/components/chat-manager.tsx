@@ -125,19 +125,22 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
   const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastPersistedRef = useRef<string>('');
 
-  const persistHeads = useCallback(async (heads: PersistedHead[]) => {
-    if (!client || !user?.id) return;
-    const serialized = JSON.stringify(heads);
-    if (serialized === lastPersistedRef.current) return;
-    try {
-      await client.service('users').patch(user.id, {
-        preferences: { chatHeads: heads },
-      });
-      lastPersistedRef.current = serialized;
-    } catch {
-      // best-effort persistence
-    }
-  }, [client, user?.id]);
+  const persistHeads = useCallback(
+    async (heads: PersistedHead[]) => {
+      if (!client || !user?.id) return;
+      const serialized = JSON.stringify(heads);
+      if (serialized === lastPersistedRef.current) return;
+      try {
+        await client.service('users').patch(user.id, {
+          preferences: { chatHeads: heads },
+        });
+        lastPersistedRef.current = serialized;
+      } catch {
+        // best-effort persistence
+      }
+    },
+    [client, user?.id]
+  );
 
   // Load chat heads from server on mount
   useEffect(() => {
@@ -345,15 +348,18 @@ export function ChatManagerProvider({ children }: PropsWithChildren) {
     []
   );
 
-  const closeChat = useCallback((patientId: string) => {
-    setChats(prev => {
-      const next = prev.filter(c => c.patientId !== patientId);
-      // Persist immediately so a quick page refresh doesn't restore the closed head
-      if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
-      persistHeads(toPersistedHeads(next));
-      return next;
-    });
-  }, [persistHeads]);
+  const closeChat = useCallback(
+    (patientId: string) => {
+      setChats(prev => {
+        const next = prev.filter(c => c.patientId !== patientId);
+        // Persist immediately so a quick page refresh doesn't restore the closed head
+        if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+        persistHeads(toPersistedHeads(next));
+        return next;
+      });
+    },
+    [persistHeads]
+  );
 
   const activateChat = useCallback((patientId: string) => {
     setChats(prev => prev.map(c => ({ ...c, isActive: c.patientId === patientId })));

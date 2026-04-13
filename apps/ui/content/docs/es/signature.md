@@ -22,11 +22,11 @@ Para firmar documentos digitalmente, es necesario cargar un certificado de firma
 
 El sistema muestra el estado actual del certificado:
 
-| Estado | Descripción |
-|--------|-------------|
-| **Sin certificado** | No se ha cargado ningún certificado |
-| **Válido** | El certificado está cargado y vigente |
-| **Encriptado** | El certificado requiere contraseña para cada firma |
+| Estado              | Descripción                                        |
+| ------------------- | -------------------------------------------------- |
+| **Sin certificado** | No se ha cargado ningún certificado                |
+| **Válido**          | El certificado está cargado y vigente              |
+| **Encriptado**      | El certificado requiere contraseña para cada firma |
 
 ### Eliminar un certificado
 

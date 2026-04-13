@@ -59,11 +59,11 @@ En la lista de passkeys registradas, haz clic en el botón de eliminar junto a l
 
 ### Ventajas de las passkeys
 
-| Característica | Contraseña | Passkey |
-|---------------|------------|---------|
-| **Resistente a phishing** | No | Sí |
-| **Requiere memorización** | Sí | No |
-| **Vinculada al dispositivo** | No | Sí |
-| **Compatible con biometría** | No | Sí |
+| Característica               | Contraseña | Passkey |
+| ---------------------------- | ---------- | ------- |
+| **Resistente a phishing**    | No         | Sí      |
+| **Requiere memorización**    | Sí         | No      |
+| **Vinculada al dispositivo** | No         | Sí      |
+| **Compatible con biometría** | No         | Sí      |
 
 > Las passkeys son el método de autenticación más seguro disponible. Se recomienda registrar al menos una como respaldo.

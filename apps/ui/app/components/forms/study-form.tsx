@@ -155,7 +155,7 @@ export function StudyForm({ schema, initialData, onChange, readOnly }: StudyForm
 
   const form = useForm<StudyResultData>({
     initialValues: buildInitialValues(schema, initialData),
-    onValuesChange: (values) => {
+    onValuesChange: values => {
       if (!readOnlyRef.current && !isInitializingRef.current) {
         onChangeRef.current(values);
       }

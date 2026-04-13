@@ -31,13 +31,13 @@ Al seleccionar un paciente, verás su historial organizado en un **árbol de enc
 
 En la barra superior encontrarás las acciones principales:
 
-| Acción | Descripción |
-|--------|-------------|
-| **Prescribir** | Abre el modal para emitir una receta o una orden médica |
-| **Imprimir** | Genera un PDF con el historial del paciente para imprimir |
-| **Exportar** | Exporta el historial como PDF firmado digitalmente |
-| **Asistente IA** | Abre el chat con el asistente de inteligencia artificial |
-| **Nuevo encuentro** | Crea un nuevo encuentro para este paciente |
+| Acción              | Descripción                                               |
+| ------------------- | --------------------------------------------------------- |
+| **Prescribir**      | Abre el modal para emitir una receta o una orden médica   |
+| **Imprimir**        | Genera un PDF con el historial del paciente para imprimir |
+| **Exportar**        | Exporta el historial como PDF firmado digitalmente        |
+| **Asistente IA**    | Abre el chat con el asistente de inteligencia artificial  |
+| **Nuevo encuentro** | Crea un nuevo encuentro para este paciente                |
 
 ## Nuevo encuentro
 

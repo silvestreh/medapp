@@ -12,17 +12,17 @@ Haz clic en tu **avatar** en la esquina superior derecha y selecciona **"Configu
 
 Las secciones visibles dependen de tu rol:
 
-| Sección | Roles |
-|---------|-------|
-| **Perfil** | Todos |
-| **Seguridad** | Todos |
-| **Verificación de identidad** | Médicos |
-| **Firma digital** | Médicos |
-| **Prácticas** | Médicos, Prescriptores |
-| **Organización** | Administradores |
-| **WhatsApp** | Administradores |
-| **Recetas** | Administradores, Médicos, Prescriptores |
-| **Asistente** | Administradores |
+| Sección                       | Roles                                   |
+| ----------------------------- | --------------------------------------- |
+| **Perfil**                    | Todos                                   |
+| **Seguridad**                 | Todos                                   |
+| **Verificación de identidad** | Médicos                                 |
+| **Firma digital**             | Médicos                                 |
+| **Prácticas**                 | Médicos, Prescriptores                  |
+| **Organización**              | Administradores                         |
+| **WhatsApp**                  | Administradores                         |
+| **Recetas**                   | Administradores, Médicos, Prescriptores |
+| **Asistente**                 | Administradores                         |
 
 ## Perfil
 

@@ -201,9 +201,7 @@ export function PracticeSelector({
 }: PracticeSelectorProps) {
   const { t } = useTranslation();
 
-  const label = insurerName
-    ? `${t('recetario.practices_label')} (${insurerName})`
-    : t('recetario.practices_label');
+  const label = insurerName ? `${t('recetario.practices_label')} (${insurerName})` : t('recetario.practices_label');
 
   const selectedIds = useMemo(() => new Set(selected.map(rp => rp.practice.id)), [selected]);
 

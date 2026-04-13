@@ -54,13 +54,13 @@ Las recetas emitidas por prescriptores en tu nombre aparecen en tu lista de rece
 
 Para que el sistema de delegaciones funcione correctamente:
 
-| Requisito | Quién |
-|-----------|-------|
-| Tener la integración con Recetario habilitada | Administrador |
-| Tener el rol de **médico** | El que delega |
-| Tener el rol de **prescriptor** | El que recibe la delegación |
-| Estar verificado (KYC aprobado) | El médico |
-| Tener firma digital configurada | El médico |
+| Requisito                                     | Quién                       |
+| --------------------------------------------- | --------------------------- |
+| Tener la integración con Recetario habilitada | Administrador               |
+| Tener el rol de **médico**                    | El que delega               |
+| Tener el rol de **prescriptor**               | El que recibe la delegación |
+| Estar verificado (KYC aprobado)               | El médico                   |
+| Tener firma digital configurada               | El médico                   |
 
 ## Preguntas frecuentes
 

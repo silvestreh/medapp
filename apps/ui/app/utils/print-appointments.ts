@@ -4,11 +4,7 @@ import { getMedicareLabel } from '~/components/medicare-display';
 import { printHtmlContent } from '~/utils/print-pdf';
 
 function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function buildRow(time: string, timeBg: string, content: string): string {
@@ -18,12 +14,7 @@ function buildRow(time: string, timeBg: string, content: string): string {
   </tr>`;
 }
 
-export function printAppointments(
-  slots: Slot[],
-  title: string,
-  freeLabel: string,
-  privateLabel: string,
-): void {
+export function printAppointments(slots: Slot[], title: string, freeLabel: string, privateLabel: string): void {
   const rows = slots
     .map(slot => {
       const time = slot.appointment?.extra ? 'ST' : dayjs(slot.date).format('HH:mm');
@@ -40,7 +31,7 @@ export function printAppointments(
         time,
         timeBg,
         `<strong>${escapeHtml(lastName.toUpperCase())}</strong>, ${escapeHtml(firstName)}<br/>
-        <span style="color:#868E96;font-size:0.85em">${escapeHtml(insurance)}</span>`,
+        <span style="color:#868E96;font-size:0.85em">${escapeHtml(insurance)}</span>`
       );
     })
     .join('');

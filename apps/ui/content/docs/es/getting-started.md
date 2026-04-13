@@ -35,12 +35,12 @@ Antes de comenzar, te recomendamos completar estos pasos en orden:
 
 El sistema utiliza roles para controlar el acceso a las diferentes funcionalidades:
 
-| Rol | Descripción |
-|-----|-------------|
-| **Médico** | Acceso completo a consultas, estudios, recetas y facturación |
-| **Prescriptor** | Puede emitir recetas en nombre de médicos que le delegaron acceso |
-| **Recepcionista** | Gestión de pacientes y turnos |
-| **Administrador** | Configuración de la organización, usuarios y WhatsApp |
+| Rol               | Descripción                                                       |
+| ----------------- | ----------------------------------------------------------------- |
+| **Médico**        | Acceso completo a consultas, estudios, recetas y facturación      |
+| **Prescriptor**   | Puede emitir recetas en nombre de médicos que le delegaron acceso |
+| **Recepcionista** | Gestión de pacientes y turnos                                     |
+| **Administrador** | Configuración de la organización, usuarios y WhatsApp             |
 
 ## Soporte
 

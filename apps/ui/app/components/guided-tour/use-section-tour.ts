@@ -77,7 +77,7 @@ export function useSectionTour(tourId: string, steps: Step[]): UseSectionTourRet
         setStepIndex(nextIndex);
       }
     },
-    [tourId, completeTour, steps.length],
+    [tourId, completeTour, steps.length]
   );
 
   return { steps, run, stepIndex, handleCallback };

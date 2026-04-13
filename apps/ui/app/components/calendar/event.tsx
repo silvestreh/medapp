@@ -146,7 +146,11 @@ export function Event({ event, date, isFirstInRow, isLastInRow, style }: EventPr
       }}
     >
       {isFirstDay && <EventTitle>{event.title}</EventTitle>}
-      {isMultiDay && isFirstInRow && <EventTitle style={{ paddingLeft: '2em' }}>{event.title} {t('calendar.continues')}</EventTitle>}
+      {isMultiDay && isFirstInRow && (
+        <EventTitle style={{ paddingLeft: '2em' }}>
+          {event.title} {t('calendar.continues')}
+        </EventTitle>
+      )}
       {!isMultiDay && !event.allDay && !event.extra && <Time>{startDate.format('HH:mm')}</Time>}
       {event.extra && <Time>(ST)</Time>}
     </EventBox>

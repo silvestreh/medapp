@@ -156,7 +156,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function SettingsPracticesPage() {
   const { t } = useTranslation();
-  const { practices, codes, prepagas, delegatedMedics, selectedMedicId, isMedic, isAdmin } = useLoaderData<typeof loader>();
+  const { practices, codes, prepagas, delegatedMedics, selectedMedicId, isMedic, isAdmin } =
+    useLoaderData<typeof loader>();
   const revalidator = useRevalidator();
   const navigate = useNavigate();
   const [selectedPractice, setSelectedPractice] = useState<Practice | null>(null);

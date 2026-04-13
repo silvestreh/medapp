@@ -6,7 +6,13 @@ import { useTranslation } from 'react-i18next';
 
 const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 const DAY_FULL_I18N_KEYS = [
-  'day_monday', 'day_tuesday', 'day_wednesday', 'day_thursday', 'day_friday', 'day_saturday', 'day_sunday',
+  'day_monday',
+  'day_tuesday',
+  'day_wednesday',
+  'day_thursday',
+  'day_friday',
+  'day_saturday',
+  'day_sunday',
 ] as const;
 
 interface SireDoseFormProps {

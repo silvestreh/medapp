@@ -1,7 +1,20 @@
 import { useEffect, useRef } from 'react';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useActionData, Form, useNavigation, useFetcher, useRevalidator } from '@remix-run/react';
-import { ActionIcon, Alert, Badge, Button, Group, Loader, Progress, Stack, Table, Text, Title, Tooltip } from '@mantine/core';
+import {
+  ActionIcon,
+  Alert,
+  Badge,
+  Button,
+  Group,
+  Loader,
+  Progress,
+  Stack,
+  Table,
+  Text,
+  Title,
+  Tooltip,
+} from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import {
   CheckCircleIcon,
@@ -37,11 +50,11 @@ interface AnchorItem {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
 
-  const anchors = await client.service('solana-anchors').find({
+  const anchors = (await client.service('solana-anchors').find({
     query: {
       $sort: { createdAt: -1 },
     },
-  }) as any[];
+  })) as any[];
 
   return json({ anchors });
 };

@@ -24,13 +24,13 @@ En la barra superior, selecciona el médico cuya facturación quieres revisar.
 
 La tabla muestra cada práctica facturada con:
 
-| Columna | Descripción |
-|---------|-------------|
-| **Fecha** | Fecha de la práctica |
-| **Tipo** | Consulta o estudio |
+| Columna         | Descripción              |
+| --------------- | ------------------------ |
+| **Fecha**       | Fecha de la práctica     |
+| **Tipo**        | Consulta o estudio       |
 | **Obra social** | Obra social del paciente |
-| **Paciente** | Nombre del paciente |
-| **Costo** | Monto facturado |
+| **Paciente**    | Nombre del paciente      |
+| **Costo**       | Monto facturado          |
 
 ## Prácticas sin costos
 

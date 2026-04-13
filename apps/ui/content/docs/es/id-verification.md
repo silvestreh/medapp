@@ -28,10 +28,10 @@ Una vez escaneado el DNI:
 
 ### Paso 3: Resultado
 
-| Estado | Significado |
-|--------|-------------|
-| **Pendiente** | La verificación está en proceso |
-| **Aprobado** | La identidad fue verificada exitosamente |
+| Estado        | Significado                                  |
+| ------------- | -------------------------------------------- |
+| **Pendiente** | La verificación está en proceso              |
+| **Aprobado**  | La identidad fue verificada exitosamente     |
 | **Rechazado** | La verificación falló (se muestra el motivo) |
 
 ## Si la verificación es rechazada

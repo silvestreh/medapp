@@ -30,12 +30,12 @@ Los resultados se actualizan en tiempo real mientras escribes.
 
 Cada registro de paciente incluye:
 
-| Campo | Descripción |
-|-------|-------------|
+| Campo                | Descripción                                      |
+| -------------------- | ------------------------------------------------ |
 | **Datos personales** | Nombre, apellido, documento, fecha de nacimiento |
-| **Contacto** | Teléfono, email, dirección |
-| **Obra social** | Nombre de la obra social, número de afiliado |
-| **Historial** | Accesible desde la sección de Consultas |
+| **Contacto**         | Teléfono, email, dirección                       |
+| **Obra social**      | Nombre de la obra social, número de afiliado     |
+| **Historial**        | Accesible desde la sección de Consultas          |
 
 ## Acceder al historial
 

@@ -39,8 +39,7 @@ export function AccountingTableHeader({
                 size="xs"
                 checked={unbilledCount > 0 && selectedForBillingSize === unbilledCount}
                 indeterminate={
-                  (selectedForBillingSize > 0 && selectedForBillingSize < unbilledCount) ||
-                  selectedForBackfillSize > 0
+                  (selectedForBillingSize > 0 && selectedForBillingSize < unbilledCount) || selectedForBackfillSize > 0
                 }
                 onChange={onHeaderCheckboxChange}
               />
@@ -52,14 +51,10 @@ export function AccountingTableHeader({
                 </Menu.Target>
                 <Menu.Dropdown>
                   {unbilledCount > 0 && (
-                    <Menu.Item onClick={onSelectAllBilling}>
-                      {t('accounting.select_all_unbilled')}
-                    </Menu.Item>
+                    <Menu.Item onClick={onSelectAllBilling}>{t('accounting.select_all_unbilled')}</Menu.Item>
                   )}
                   {hasUncosted && (
-                    <Menu.Item onClick={onSelectAllBackfill}>
-                      {t('accounting.select_all_backfillable')}
-                    </Menu.Item>
+                    <Menu.Item onClick={onSelectAllBackfill}>{t('accounting.select_all_backfillable')}</Menu.Item>
                   )}
                 </Menu.Dropdown>
               </Menu>

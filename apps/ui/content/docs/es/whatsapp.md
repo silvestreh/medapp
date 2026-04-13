@@ -21,11 +21,11 @@ La integración con WhatsApp permite enviar mensajes a pacientes directamente de
 
 El sistema muestra el estado actual de la conexión:
 
-| Estado | Significado |
-|--------|-------------|
-| **Conectado** | WhatsApp está vinculado y funcionando |
-| **Desconectado** | La sesión expiró o fue cerrada — es necesario volver a vincular |
-| **Sin configurar** | No se ha vinculado ninguna cuenta |
+| Estado             | Significado                                                     |
+| ------------------ | --------------------------------------------------------------- |
+| **Conectado**      | WhatsApp está vinculado y funcionando                           |
+| **Desconectado**   | La sesión expiró o fue cerrada — es necesario volver a vincular |
+| **Sin configurar** | No se ha vinculado ninguna cuenta                               |
 
 ## Uso de WhatsApp en el sistema
 

@@ -270,7 +270,11 @@ export default function NewEncounter() {
   }
 
   const tourSteps = getEncounterNewSteps(t);
-  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('encounter-new', tourSteps);
+  const {
+    run: tourRun,
+    stepIndex: tourStepIndex,
+    handleCallback: tourHandleCallback,
+  } = useSectionTour('encounter-new', tourSteps);
 
   return (
     <Container className="encounters-container">

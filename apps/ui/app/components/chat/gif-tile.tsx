@@ -91,12 +91,7 @@ export function GifTile({ gif, onSelect, onCreatorSearch }: GifTileProps) {
       onPointerLeave={handleDismiss}
       onContextMenu={e => e.preventDefault()}
     >
-      <Image
-        src={gif.images.fixed_width_small.url}
-        alt={gif.title}
-        w="100%"
-        radius={6}
-      />
+      <Image src={gif.images.fixed_width_small.url} alt={gif.title} w="100%" radius={6} />
       {showCreator && (
         <Box
           onClick={handleDismiss}

@@ -24,13 +24,13 @@ Porcentaje de estudios que tienen resultados cargados vs. los que están pendien
 
 ## Gráficos
 
-| Gráfico | Descripción |
-|---------|-------------|
-| **Totales por tipo** | Cantidad de estudios por tipo (anemia, anticoagulación, etc.) |
-| **Por obra social** | Distribución de estudios por obra social |
-| **Por grupo etario** | Distribución de estudios por rango de edad del paciente |
-| **Por género** | Distribución por género |
-| **Tendencia temporal** | Evolución de la cantidad de estudios en el tiempo |
-| **Por nacionalidad** | Distribución de pacientes por nacionalidad |
+| Gráfico                | Descripción                                                   |
+| ---------------------- | ------------------------------------------------------------- |
+| **Totales por tipo**   | Cantidad de estudios por tipo (anemia, anticoagulación, etc.) |
+| **Por obra social**    | Distribución de estudios por obra social                      |
+| **Por grupo etario**   | Distribución de estudios por rango de edad del paciente       |
+| **Por género**         | Distribución por género                                       |
+| **Tendencia temporal** | Evolución de la cantidad de estudios en el tiempo             |
+| **Por nacionalidad**   | Distribución de pacientes por nacionalidad                    |
 
 > Si el rango de fechas es mayor a 90 días, se muestra una advertencia ya que la cantidad de datos puede afectar el rendimiento.

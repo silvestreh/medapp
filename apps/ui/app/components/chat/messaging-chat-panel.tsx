@@ -1687,7 +1687,12 @@ export function MessagingChatPanel({
 
         {/* GIF picker */}
         {isGiphyActive && (
-          <GifPicker searchTerm={giphySearchTerm} onSelect={handleGifSelect} onClose={handleGifPickerClose} onCreatorSearch={handleGiphyCreatorSearch} />
+          <GifPicker
+            searchTerm={giphySearchTerm}
+            onSelect={handleGifSelect}
+            onClose={handleGifPickerClose}
+            onCreatorSearch={handleGiphyCreatorSearch}
+          />
         )}
 
         {/* Pending attachments preview */}

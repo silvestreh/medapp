@@ -263,7 +263,12 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
   }
 
   const finalInsurers = [
-    { id: PARTICULAR_INSURER_ID, shortName: 'Particular', denomination: 'Particular', tiers: [] as { name: string; code: number | null }[] },
+    {
+      id: PARTICULAR_INSURER_ID,
+      shortName: 'Particular',
+      denomination: 'Particular',
+      tiers: [] as { name: string; code: number | null }[],
+    },
     ...mergedInsurerIds
       .map(id => {
         const insurer = insurerById.get(id);
@@ -862,7 +867,12 @@ export default function AccountingSettingsPage() {
   }, []);
 
   const handleAddInsurer = useCallback(
-    (prepaga: { id: string; shortName: string; denomination: string; tiers?: { name: string; code: number | null }[] }) => {
+    (prepaga: {
+      id: string;
+      shortName: string;
+      denomination: string;
+      tiers?: { name: string; code: number | null }[];
+    }) => {
       if (insurers.some(i => i.id === prepaga.id)) {
         setActiveInsurerId(prepaga.id);
         setShowAddInsurer(false);
@@ -870,7 +880,12 @@ export default function AccountingSettingsPage() {
       }
       setInsurers(prev => [
         ...prev,
-        { id: prepaga.id, shortName: prepaga.shortName, denomination: prepaga.denomination, tiers: prepaga.tiers || [] },
+        {
+          id: prepaga.id,
+          shortName: prepaga.shortName,
+          denomination: prepaga.denomination,
+          tiers: prepaga.tiers || [],
+        },
       ]);
       setInsurerPrices(prev => {
         if (prev[prepaga.id]) return prev;
@@ -896,7 +911,12 @@ export default function AccountingSettingsPage() {
       const prepagaList = (Array.isArray(response) ? response : ((response as any).data ?? [])) as Prepaga[];
       setInsurers(prev => [
         ...prev,
-        ...prepagaList.map(p => ({ id: p.id, shortName: p.shortName, denomination: p.denomination, tiers: p.tiers || [] })),
+        ...prepagaList.map(p => ({
+          id: p.id,
+          shortName: p.shortName,
+          denomination: p.denomination,
+          tiers: p.tiers || [],
+        })),
       ]);
     } finally {
       setLoadingHistorical(false);
@@ -992,7 +1012,11 @@ export default function AccountingSettingsPage() {
   }, [uncostedPractices, feathersClient, t]);
 
   const tourSteps = getAccountingSettingsSteps(t);
-  const { run: tourRun, stepIndex: tourStepIndex, handleCallback: tourHandleCallback } = useSectionTour('accounting-settings', tourSteps);
+  const {
+    run: tourRun,
+    stepIndex: tourStepIndex,
+    handleCallback: tourHandleCallback,
+  } = useSectionTour('accounting-settings', tourSteps);
 
   return (
     <Layout>
@@ -1205,9 +1229,7 @@ export default function AccountingSettingsPage() {
       </Sidebar>
 
       <Content>
-        {!activeInsurer && (
-          <Text c="dimmed">{t('common.no_results')}</Text>
-        )}
+        {!activeInsurer && <Text c="dimmed">{t('common.no_results')}</Text>}
         {activeInsurer && (
           <Stack gap="0">
             <Group justify="space-between" mb="md">

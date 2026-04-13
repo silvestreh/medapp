@@ -9,11 +9,7 @@ interface AccountingRecordRowProps {
   record: AccountingRecord;
   unbilledIdx: number;
   selectedForBilling: Set<string>;
-  onToggleBilling: (
-    practiceCostId: string,
-    idx: number,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => void;
+  onToggleBilling: (practiceCostId: string, idx: number, e: React.ChangeEvent<HTMLInputElement>) => void;
   translateType: (kind: string) => string;
   t: TFunction;
 }

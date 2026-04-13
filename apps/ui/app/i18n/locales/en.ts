@@ -751,7 +751,8 @@ export const en: typeof es = {
     reset_failed: 'Failed to reset password. Please try again.',
     email_not_confirmed: 'Please confirm your email before logging in. Check your inbox.',
     check_your_email: 'Check your email',
-    check_your_email_description: "We've sent a confirmation link to your email address. Click the link to activate your account.",
+    check_your_email_description:
+      "We've sent a confirmation link to your email address. Click the link to activate your account.",
     email_confirmed_title: 'Email confirmation',
     email_confirmed_description: 'Your email has been confirmed. You can now log in.',
     confirmation_link_expired: 'This confirmation link has expired. Please request a new one.',
@@ -849,7 +850,8 @@ export const en: typeof es = {
     passkeys_add: 'Add passkey',
     passkeys_add_success: 'Passkey registered successfully.',
     passkeys_add_error: 'Failed to register passkey.',
-    passkeys_extension_error: 'A browser extension interfered with passkey registration. Try disabling password manager extensions and retry.',
+    passkeys_extension_error:
+      'A browser extension interfered with passkey registration. Try disabling password manager extensions and retry.',
     passkeys_remove: 'Remove',
     passkeys_remove_confirm: 'Are you sure you want to remove this passkey?',
     passkeys_remove_success: 'Passkey removed.',
@@ -1178,7 +1180,8 @@ export const en: typeof es = {
     share_whatsapp: 'WhatsApp',
     share_email: 'Email',
     share_success: 'Document shared successfully',
-    mixed_medicines_error: 'Cannot mix medicines from the vademecum with manually entered ones. All must be of the same type.',
+    mixed_medicines_error:
+      'Cannot mix medicines from the vademecum with manually entered ones. All must be of the same type.',
     history_title: 'Prescriptions',
     history_empty: 'No prescriptions yet',
     status_pending: 'Pending',
@@ -1436,7 +1439,8 @@ export const en: typeof es = {
     anchors_unverified: 'Unverified',
     anchors_verifying_progress: 'Verifying {{completed}}/{{total}}…',
     anchors_verified_at: 'Verified at {{date}}',
-    anchors_verify_inconclusive_detail: '{{ok}} match, {{inconclusive}} could not be verified (RPC unavailable), {{fail}} mismatch.',
+    anchors_verify_inconclusive_detail:
+      '{{ok}} match, {{inconclusive}} could not be verified (RPC unavailable), {{fail}} mismatch.',
   },
   password_checklist: {
     strength_weak: 'Weak',
@@ -1497,7 +1501,7 @@ export const en: typeof es = {
     },
     users: {
       invite: 'Invite new users to your organization.',
-      roles: "Assign roles to each user to control their permissions.",
+      roles: 'Assign roles to each user to control their permissions.',
       remove: 'Remove users from your organization.',
     },
     stats: {
@@ -1525,7 +1529,7 @@ export const en: typeof es = {
       practice_type: 'Choose between fixed price or multiplier for each practice type.',
       practice_code: 'Assign the medical practice code for billing.',
       base_value: 'Set the base name and value for multiplier calculations.',
-      copy_from: "Copy pricing configuration from another insurer.",
+      copy_from: 'Copy pricing configuration from another insurer.',
       save: 'Save all pricing and code changes.',
       visibility: 'Hide or show this insurer in the billing dashboard.',
       backfill: 'Find uncosted practices in a date range and assign costs in bulk.',

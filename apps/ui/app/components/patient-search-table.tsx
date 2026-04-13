@@ -112,7 +112,12 @@ interface PatientSearchTableProps {
   resultsTourId?: string;
 }
 
-const PatientSearchTable: FC<PatientSearchTableProps> = ({ basePath = '/encounters', columns = DEFAULT_COLUMNS, searchTourId = 'encounters-search', resultsTourId }) => {
+const PatientSearchTable: FC<PatientSearchTableProps> = ({
+  basePath = '/encounters',
+  columns = DEFAULT_COLUMNS,
+  searchTourId = 'encounters-search',
+  resultsTourId,
+}) => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('q') || '';

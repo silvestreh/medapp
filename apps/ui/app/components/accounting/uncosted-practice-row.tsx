@@ -9,11 +9,7 @@ interface UncostedPracticeRowProps {
   practice: UncostedPractice;
   idx: number;
   selectedForBackfill: Set<string>;
-  onToggleBackfill: (
-    practiceId: string,
-    idx: number,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => void;
+  onToggleBackfill: (practiceId: string, idx: number, e: React.ChangeEvent<HTMLInputElement>) => void;
   translateType: (kind: string) => string;
   insurerNameById: Map<string, string>;
   t: TFunction;

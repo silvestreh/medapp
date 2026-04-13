@@ -39,7 +39,6 @@ type Prepaga = {
   denomination: string;
 };
 
-
 const ContentWrapper = styled('div', {
   base: {
     padding: '1rem',
@@ -143,7 +142,10 @@ export default function AccountingDashboardPage() {
     };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+    };
   }, []);
 
   useEffect(() => {
@@ -260,9 +262,7 @@ export default function AccountingDashboardPage() {
       if (selectedPracticeType === 'encounter') {
         result = result.filter(p => p.practiceType === 'encounters');
       } else {
-        result = result.filter(
-          p => p.practiceType === 'studies' && p.studies?.includes(selectedPracticeType)
-        );
+        result = result.filter(p => p.practiceType === 'studies' && p.studies?.includes(selectedPracticeType));
       }
     }
     return result;
@@ -335,22 +335,31 @@ export default function AccountingDashboardPage() {
     return insurers.filter((insurer: Prepaga) => !hiddenInsurers.includes(insurer.id));
   }, [insurers, hiddenInsurers]);
 
-  const insurerSelectData = useMemo(() => [
-    { value: 'all', label: t('common.all') },
-    ...visibleInsurers.map((i: Prepaga) => ({ value: i.id, label: i.shortName })),
-  ], [visibleInsurers, t]);
+  const insurerSelectData = useMemo(
+    () => [
+      { value: 'all', label: t('common.all') },
+      ...visibleInsurers.map((i: Prepaga) => ({ value: i.id, label: i.shortName })),
+    ],
+    [visibleInsurers, t]
+  );
 
-  const practiceTypeSelectData = useMemo(() => [
-    { value: 'all', label: t('common.all') },
-    ...availablePracticeTypes.map(type => ({ value: type, label: translateType(type) })),
-  ], [availablePracticeTypes, translateType, t]);
+  const practiceTypeSelectData = useMemo(
+    () => [
+      { value: 'all', label: t('common.all') },
+      ...availablePracticeTypes.map(type => ({ value: type, label: translateType(type) })),
+    ],
+    [availablePracticeTypes, translateType, t]
+  );
 
-  const statusSelectData = useMemo(() => [
-    { value: 'all', label: t('common.all') },
-    { value: 'billed', label: t('accounting.billed') },
-    { value: 'unbilled', label: t('accounting.unbilled') },
-    { value: 'uncosted', label: t('accounting.uncosted') },
-  ], [t]);
+  const statusSelectData = useMemo(
+    () => [
+      { value: 'all', label: t('common.all') },
+      { value: 'billed', label: t('accounting.billed') },
+      { value: 'unbilled', label: t('accounting.unbilled') },
+      { value: 'uncosted', label: t('accounting.uncosted') },
+    ],
+    [t]
+  );
 
   const insurerNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -661,11 +670,14 @@ export default function AccountingDashboardPage() {
                 </Menu.Target>
                 <Menu.Dropdown>
                   <Menu.Label>{t('accounting.practice_type')}</Menu.Label>
-                  <Menu.Item onClick={() => handleSelectPracticeType('all')} fw={selectedPracticeType === 'all' ? 700 : 400}>
+                  <Menu.Item
+                    onClick={() => handleSelectPracticeType('all')}
+                    fw={selectedPracticeType === 'all' ? 700 : 400}
+                  >
                     {t('common.all')}
                   </Menu.Item>
                   <Menu.Divider />
-                  {availablePracticeTypes.map((type) => (
+                  {availablePracticeTypes.map(type => (
                     <Menu.Item
                       key={type}
                       onClick={() => handleSelectPracticeType(type)}
@@ -697,10 +709,16 @@ export default function AccountingDashboardPage() {
                   <Menu.Item onClick={() => handleSelectStatus('billed')} fw={selectedStatus === 'billed' ? 700 : 400}>
                     {t('accounting.billed')}
                   </Menu.Item>
-                  <Menu.Item onClick={() => handleSelectStatus('unbilled')} fw={selectedStatus === 'unbilled' ? 700 : 400}>
+                  <Menu.Item
+                    onClick={() => handleSelectStatus('unbilled')}
+                    fw={selectedStatus === 'unbilled' ? 700 : 400}
+                  >
                     {t('accounting.unbilled')}
                   </Menu.Item>
-                  <Menu.Item onClick={() => handleSelectStatus('uncosted')} fw={selectedStatus === 'uncosted' ? 700 : 400}>
+                  <Menu.Item
+                    onClick={() => handleSelectStatus('uncosted')}
+                    fw={selectedStatus === 'uncosted' ? 700 : 400}
+                  >
                     {t('accounting.uncosted')}
                   </Menu.Item>
                 </Menu.Dropdown>
@@ -758,7 +776,9 @@ export default function AccountingDashboardPage() {
                 onChange={e => handleSelectStatus(e.currentTarget.value as 'all' | 'billed' | 'unbilled' | 'uncosted')}
               />
               <Stack gap={4}>
-                <Text fw={500} size="sm">{t('common.date_range')}</Text>
+                <Text fw={500} size="sm">
+                  {t('common.date_range')}
+                </Text>
                 <DateRangePopover
                   value={rangeFilter}
                   onApply={handleApplyRange}
@@ -798,37 +818,59 @@ export default function AccountingDashboardPage() {
                 series={[{ name: 'revenue', color: 'blue.6' }]}
               />
             )}
-            {!isDesktop && (() => {
-              const colors = ['teal.6', 'blue.6', 'violet.6', 'orange.6', 'pink.6', 'cyan.6', 'yellow.6', 'grape.6', 'lime.6', 'indigo.6'];
-              const pieData = revenueByInsurer.map((item, i) => ({
-                name: item.insurer,
-                value: item.revenue,
-                color: colors[i % colors.length],
-              }));
-              return (
-                <Stack gap="sm">
-                  <PieChart
-                    h={260}
-                    size={200}
-                    data={pieData}
-                    withTooltip
-                    tooltipDataSource="segment"
-                    labelsType="percent"
-                    withLabels
-                    withLabelsLine
-                    mx="auto"
-                  />
-                  <Group gap="sm" justify="center" wrap="wrap">
-                    {pieData.map(item => (
-                      <Group key={item.name} gap={6} wrap="nowrap">
-                        <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: `var(--mantine-color-${item.color.replace('.', '-')})`, flexShrink: 0 }} />
-                        <Text size="xs" c="dimmed">{item.name}</Text>
-                      </Group>
-                    ))}
-                  </Group>
-                </Stack>
-              );
-            })()}
+            {!isDesktop &&
+              (() => {
+                const colors = [
+                  'teal.6',
+                  'blue.6',
+                  'violet.6',
+                  'orange.6',
+                  'pink.6',
+                  'cyan.6',
+                  'yellow.6',
+                  'grape.6',
+                  'lime.6',
+                  'indigo.6',
+                ];
+                const pieData = revenueByInsurer.map((item, i) => ({
+                  name: item.insurer,
+                  value: item.revenue,
+                  color: colors[i % colors.length],
+                }));
+                return (
+                  <Stack gap="sm">
+                    <PieChart
+                      h={260}
+                      size={200}
+                      data={pieData}
+                      withTooltip
+                      tooltipDataSource="segment"
+                      labelsType="percent"
+                      withLabels
+                      withLabelsLine
+                      mx="auto"
+                    />
+                    <Group gap="sm" justify="center" wrap="wrap">
+                      {pieData.map(item => (
+                        <Group key={item.name} gap={6} wrap="nowrap">
+                          <div
+                            style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: '50%',
+                              backgroundColor: `var(--mantine-color-${item.color.replace('.', '-')})`,
+                              flexShrink: 0,
+                            }}
+                          />
+                          <Text size="xs" c="dimmed">
+                            {item.name}
+                          </Text>
+                        </Group>
+                      ))}
+                    </Group>
+                  </Stack>
+                );
+              })()}
           </Paper>
         )}
 
@@ -839,63 +881,63 @@ export default function AccountingDashboardPage() {
         )}
 
         <div className={css({ overflowX: 'auto', lg: { overflow: 'visible' } })}>
-        <Table
-          ref={tableRef}
-          data-tour="accounting-table"
-          bg="white"
-          className={css({
-            minWidth: '700px',
-            '& .accounting-thead': {
-              lg: {
-                position: 'sticky',
-                top: '5rem',
-                zIndex: 1,
+          <Table
+            ref={tableRef}
+            data-tour="accounting-table"
+            bg="white"
+            className={css({
+              minWidth: '700px',
+              '& .accounting-thead': {
+                lg: {
+                  position: 'sticky',
+                  top: '5rem',
+                  zIndex: 1,
+                },
               },
-            },
-            lg: {
-              marginTop: '1rem',
-              marginLeft: '-2rem',
-              width: 'calc(100% + 4rem)',
-            },
-          })}
-        >
-          <AccountingTableHeader
-            unbilledCount={unbilledRecords.length}
-            hasUncosted={hasUncosted}
-            selectedForBillingSize={selectedForBilling.size}
-            selectedForBackfillSize={selectedForBackfill.size}
-            onHeaderCheckboxChange={handleHeaderCheckboxChange}
-            onSelectAllBilling={handleToggleBillingSelectAll}
-            onSelectAllBackfill={handleToggleSelectAll}
-            t={t}
-          />
-          <Table.Tbody>
-            {records.map((record, index) => (
-              <AccountingRecordRow
-                key={`${record.id}-${record.kind}-${index}`}
-                record={record}
-                unbilledIdx={record.billedAt ? -1 : unbilledRecords.indexOf(record)}
-                selectedForBilling={selectedForBilling}
-                onToggleBilling={handleToggleBillingSelect}
-                translateType={translateType}
-                t={t}
-              />
-            ))}
-            {filteredUncostedPractices.map((practice, idx) => (
-              <UncostedPracticeRow
-                key={`uncosted-${practice.practiceId}`}
-                practice={practice}
-                idx={idx}
-                selectedForBackfill={selectedForBackfill}
-                onToggleBackfill={handleToggleBackfillSelect}
-                translateType={translateType}
-                insurerNameById={insurerNameById}
-                t={t}
-                isFirst={idx === 0}
-              />
-            ))}
-          </Table.Tbody>
-        </Table>
+              lg: {
+                marginTop: '1rem',
+                marginLeft: '-2rem',
+                width: 'calc(100% + 4rem)',
+              },
+            })}
+          >
+            <AccountingTableHeader
+              unbilledCount={unbilledRecords.length}
+              hasUncosted={hasUncosted}
+              selectedForBillingSize={selectedForBilling.size}
+              selectedForBackfillSize={selectedForBackfill.size}
+              onHeaderCheckboxChange={handleHeaderCheckboxChange}
+              onSelectAllBilling={handleToggleBillingSelectAll}
+              onSelectAllBackfill={handleToggleSelectAll}
+              t={t}
+            />
+            <Table.Tbody>
+              {records.map((record, index) => (
+                <AccountingRecordRow
+                  key={`${record.id}-${record.kind}-${index}`}
+                  record={record}
+                  unbilledIdx={record.billedAt ? -1 : unbilledRecords.indexOf(record)}
+                  selectedForBilling={selectedForBilling}
+                  onToggleBilling={handleToggleBillingSelect}
+                  translateType={translateType}
+                  t={t}
+                />
+              ))}
+              {filteredUncostedPractices.map((practice, idx) => (
+                <UncostedPracticeRow
+                  key={`uncosted-${practice.practiceId}`}
+                  practice={practice}
+                  idx={idx}
+                  selectedForBackfill={selectedForBackfill}
+                  onToggleBackfill={handleToggleBackfillSelect}
+                  translateType={translateType}
+                  insurerNameById={insurerNameById}
+                  t={t}
+                  isFirst={idx === 0}
+                />
+              ))}
+            </Table.Tbody>
+          </Table>
         </div>
 
         {(selectedForBilling.size > 0 || (hasUncosted && selectedForBackfill.size > 0)) && (
