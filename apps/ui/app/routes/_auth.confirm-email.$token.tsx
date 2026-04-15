@@ -8,7 +8,7 @@ import createFeathersClient from '~/feathers';
 export async function loader({ params }: LoaderFunctionArgs) {
   const token = params.token;
   if (!token) {
-    return json({ confirmed: false, error: 'invalid' });
+    return json({ confirmed: false, error: 'auth.confirmation_link_invalid' as const });
   }
 
   const apiUrl = process.env.API_URL ?? 'http://localhost:3030';
@@ -20,9 +20,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
       token,
     });
     return json({ confirmed: true, error: null });
-  } catch (error: any) {
-    const message = error?.response?.data?.message || error?.data?.message || error?.message || '';
-    const errorKey = message.includes('expired') ? 'auth.confirmation_link_expired' : 'auth.confirmation_link_invalid';
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } }; data?: { message?: string }; message?: string };
+    const message = err?.response?.data?.message || err?.data?.message || err?.message || '';
+    const errorKey = message.includes('expired') ? 'auth.confirmation_link_expired' as const : 'auth.confirmation_link_invalid' as const;
     return json({ confirmed: false, error: errorKey });
   }
 }
@@ -52,7 +53,7 @@ export default function ConfirmEmail() {
         {!confirmed && (
           <>
             <Text ta="center" c="red" mb="lg">
-              {t(error || 'auth.confirmation_link_invalid')}
+              {t(error ?? 'auth.confirmation_link_invalid')}
             </Text>
             <Text c="dimmed" size="sm" ta="center">
               <Anchor component={Link} to="/login" fw={600}>

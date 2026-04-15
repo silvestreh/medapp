@@ -68,14 +68,26 @@ export const defaultMedicine = (): MedicineRow => ({
 
 export const formatDate = (d: string | Date | null | undefined) => {
   if (!d) return '';
+  // If already a YYYY-MM-DD string, use directly — avoids Date timezone pitfalls
+  if (typeof d === 'string') {
+    const m = d.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  }
   const date = d instanceof Date ? d : new Date(d);
   if (isNaN(date.getTime())) return '';
-  return date.toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 export const parseDate = (d: string | Date | null | undefined): Date | null => {
   if (!d) return null;
   if (d instanceof Date) return d;
-  const parsed = new Date(String(d).split('T')[0] + 'T00:00:00');
+  const match = String(d).match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  }
+  const parsed = new Date(String(d));
   return isNaN(parsed.getTime()) ? null : parsed;
 };

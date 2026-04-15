@@ -115,9 +115,17 @@ export function reverseMapGender(gender: string | null | undefined): string {
 
 export function formatBirthDate(date: string | Date | null | undefined): string {
   if (!date) return '';
+  // Extract YYYY-MM-DD directly from the string to avoid timezone shifts
+  if (typeof date === 'string') {
+    const match = date.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+  }
   const d = date instanceof Date ? date : new Date(date);
   if (isNaN(d.getTime())) return '';
-  return d.toISOString().split('T')[0]; // YYYY-MM-DD
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export function mapDocumentType(docType: string | null | undefined): string {

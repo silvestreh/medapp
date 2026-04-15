@@ -95,6 +95,15 @@ export function extractCountryCode(phone: string): { countryCode: string; localN
   return { countryCode: '54', localNumber: digits };
 }
 
+/** Parse a YYYY-MM-DD string into a local-midnight Date for Mantine DateInput. */
+export function parseDateLocal(value: string): Date {
+  const m = value.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+  return new Date(value);
+}
+
 export function parsePatientToFormValues(patient: any): PatientFormValues {
   const pd = patient.personalData || {};
   const cd = patient.contactData || {};
@@ -105,7 +114,7 @@ export function parsePatientToFormValues(patient: any): PatientFormValues {
     lastName: pd.lastName || '',
     nationality: pd.nationality || 'AR',
     maritalStatus: pd.maritalStatus || '',
-    birthDate: pd.birthDate ? new Date(pd.birthDate) : null,
+    birthDate: pd.birthDate ? parseDateLocal(pd.birthDate) : null,
     gender: pd.gender || '',
     streetAddress: cd.streetAddress || '',
     city: cd.city || '',
@@ -176,8 +185,17 @@ export function buildFormPayload(values: PatientFormValues) {
       maritalStatus: maritalStatus || undefined,
       birthDate: (() => {
         if (birthDate == null) return undefined;
+        // Mantine DateInput may give us a YYYY-MM-DD string — use it directly
+        if (typeof birthDate === 'string') {
+          const m = (birthDate as string).match(/(\d{4})-(\d{2})-(\d{2})/);
+          if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+        }
         const d = birthDate instanceof Date ? birthDate : new Date(birthDate as unknown as string);
-        return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+        if (Number.isNaN(d.getTime())) return undefined;
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
       })(),
       gender: gender || undefined,
     },

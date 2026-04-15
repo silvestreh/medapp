@@ -13,7 +13,7 @@ import { getUser } from '~/utils/auth.server';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const handleError = Sentry.wrapHandleErrorWithSentry(async (error, { request }) => {
-  const user = await getUser(request);
+  const user = await getUser(request as Request);
   if (user) {
     Sentry.setUser({ id: user.id, email: user.contactData?.email, username: user.username });
   }

@@ -1,4 +1,6 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 import {
   encounterForms,
   FORM_KEY_ORDER,
@@ -262,7 +264,7 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
     patientRows.push(`<div class="patient-row"><span class="patient-label">${esc(patient.documentType)}:</span><span class="patient-value">${esc(patient.documentValue)}</span></div>`);
   }
   if (patient.birthDate) {
-    patientRows.push(`<div class="patient-row"><span class="patient-label">${esc(t.birthDate)}:</span><span class="patient-value">${esc(dayjs(patient.birthDate).format('DD/MM/YYYY'))}</span></div>`);
+    patientRows.push(`<div class="patient-row"><span class="patient-label">${esc(t.birthDate)}:</span><span class="patient-value">${esc(dayjs.utc(patient.birthDate).format('DD/MM/YYYY'))}</span></div>`);
   }
   if (patient.medicare) {
     const insuranceValue = patient.medicarePlan ? `${patient.medicare} &mdash; ${patient.medicarePlan}` : patient.medicare;

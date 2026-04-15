@@ -74,17 +74,28 @@ const CalendarContainer = styled('div', {
 const WEEKDAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 const WEEKDAY_I18N_KEYS = ['day_mon', 'day_tue', 'day_wed', 'day_thu', 'day_fri', 'day_sat', 'day_sun'] as const;
 
-function getAge(birthDate: string | Date | null | undefined): number | null {
+/** Parse a birth date string to dayjs, forcing local interpretation of YYYY-MM-DD. */
+function parseBirthDate(birthDate: string | Date | null | undefined): dayjs.Dayjs | null {
   if (!birthDate) return null;
+  if (birthDate instanceof Date) return dayjs(birthDate);
+  const match = String(birthDate).match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    // Build from local components — avoids new Date("YYYY-MM-DD") treating it as UTC
+    return dayjs(new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  }
   const date = dayjs(birthDate);
-  if (!date.isValid()) return null;
+  return date.isValid() ? date : null;
+}
+
+function getAge(birthDate: string | Date | null | undefined): number | null {
+  const date = parseBirthDate(birthDate);
+  if (!date) return null;
   return dayjs().diff(date, 'year');
 }
 
 function formatBirthDate(birthDate: string | Date | null | undefined): string | null {
-  if (!birthDate) return null;
-  const date = dayjs(birthDate);
-  if (!date.isValid()) return null;
+  const date = parseBirthDate(birthDate);
+  if (!date) return null;
   return date.format('DD/MM/YYYY');
 }
 

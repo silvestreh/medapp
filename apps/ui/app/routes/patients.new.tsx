@@ -18,6 +18,7 @@ import {
   PatientForm,
   EMPTY_PATIENT_FORM_VALUES,
   buildFormPayload,
+  parseDateLocal,
   type PatientFormValues,
 } from '~/components/forms/patient-form';
 import { getPageTitle } from '~/utils/meta';
@@ -136,7 +137,7 @@ export default function NewPatient() {
         lastName: existingPersonalData.lastName || '',
         nationality: existingPersonalData.nationality || 'AR',
         maritalStatus: existingPersonalData.maritalStatus || '',
-        birthDate: existingPersonalData.birthDate ? new Date(existingPersonalData.birthDate) : null,
+        birthDate: existingPersonalData.birthDate ? parseDateLocal(existingPersonalData.birthDate) : null,
         gender: existingPersonalData.gender || '',
         documentType: existingPersonalData.documentType || form.values.documentType,
       });

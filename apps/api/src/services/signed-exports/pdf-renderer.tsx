@@ -1,5 +1,7 @@
 import React from 'react';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 import {
   encounterForms,
   FORM_KEY_ORDER,
@@ -722,7 +724,7 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
           {patient.birthDate && (
             <View style={styles.patientRow}>
               <Text style={styles.patientLabel}>{t.birthDate}:</Text>
-              <Text style={styles.patientValue}>{dayjs(patient.birthDate).format('DD/MM/YYYY')}</Text>
+              <Text style={styles.patientValue}>{dayjs.utc(patient.birthDate).format('DD/MM/YYYY')}</Text>
             </View>
           )}
           {patient.medicare && (

@@ -14,7 +14,7 @@ const POLL_INTERVAL = 5_000;
 export function NewVersionBanner() {
   const [visible, setVisible] = useState(false);
   const { t } = useTranslation();
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   useEffect(() => {
     const version = window.__remixManifest?.version;
