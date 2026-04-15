@@ -150,6 +150,17 @@ export interface Appointment {
   startDate: Date;
 }
 
+export interface AppointmentReminder {
+  id: Id;
+  appointmentId: Id;
+  organizationId: Id;
+  patientId: Id;
+  sentAt: Date;
+  status: 'sent' | 'failed' | 'skipped';
+  messageId?: string | null;
+  errorMessage?: string | null;
+}
+
 export interface TimeOffEvent {
   id: Id;
   medicId: Id;

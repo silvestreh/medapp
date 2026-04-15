@@ -1,6 +1,7 @@
 import { Application } from '../declarations';
 import users from './users/users.service';
 import appointments from './appointments/appointments.service';
+import appointmentReminders from './appointment-reminders/appointment-reminders.service';
 import patients from './patients/patients.service';
 import personalData from './personal-data/personal-data.service';
 import contactData from './contact-data/contact-data.service';
@@ -71,6 +72,7 @@ import confirmations from './confirmations/confirmations.service';
 export default function (app: Application): void {
   app.configure(users);
   app.configure(appointments);
+  app.configure(appointmentReminders);
   app.configure(patients);
   app.configure(personalData);
   app.configure(contactData);

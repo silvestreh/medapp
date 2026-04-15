@@ -3,10 +3,6 @@ import * as authentication from '@feathersjs/authentication';
 import { checkPermissions } from '../../hooks/check-permissions';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
-import { includePatient } from './hooks/include-patient';
-import { addDuration } from './hooks/add-duration';
-import { omitForDeleted } from '../../hooks/omit-for-deleted';
-import { removeReminders } from './hooks/remove-reminders';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -24,19 +20,13 @@ export default {
     create: [],
     update: [],
     patch: [],
-    remove: [removeReminders()]
+    remove: []
   },
 
   after: {
-    all: [includePatient()],
-    find: [
-      omitForDeleted({ service: 'patients', fkey: 'patientId' }),
-      addDuration()
-    ],
-    get: [
-      omitForDeleted({ service: 'patients', fkey: 'patientId' }),
-      addDuration()
-    ],
+    all: [],
+    find: [],
+    get: [],
     create: [],
     update: [],
     patch: [],
