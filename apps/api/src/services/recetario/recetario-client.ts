@@ -240,6 +240,47 @@ export interface RecetarioMedication {
   };
 }
 
+const SENSITIVE_KEYS = new Set([
+  // Patient PII
+  'name', 'surname', 'firstName', 'lastName',
+  'email', 'phone', 'workPhone',
+  'documentNumber', 'nationalId', 'nationalIdType',
+  'insuranceNumber', 'birthDate',
+  'address', 'destination',
+  // Doctor credential data (large binary / sensitive)
+  'signature', 'signatureImage', 'password',
+  // Profile nested fields
+  'legend',
+]);
+
+function sanitizeForLogging(obj: unknown): unknown {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => sanitizeForLogging(item));
+  }
+  if (typeof obj === 'object' && obj !== null) {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (SENSITIVE_KEYS.has(key) && typeof value === 'string' && value.length > 0) {
+        result[key] = 'xxxxx';
+      } else if (typeof value === 'object' && value !== null) {
+        result[key] = sanitizeForLogging(value);
+      } else {
+        result[key] = value;
+      }
+    }
+    return result;
+  }
+  return obj;
+}
+
+export interface RecetarioErrorContext {
+  method: string;
+  url: string;
+  requestPayload?: unknown;
+  responseStatus?: number;
+  responseBody?: unknown;
+}
+
 function getRecetarioConfig(): RecetarioConfig {
   if (_config) return _config;
   return {
@@ -301,7 +342,27 @@ async function handleRequest<T>(request: Promise<{ data: T }>): Promise<T> {
       error.message ||
       'Recetario API error';
     const status = error.response?.status || 500;
-    throw Object.assign(new Error(`Recetario: ${message}`), { status });
+
+    let requestPayload: unknown;
+    if (error.config?.data) {
+      try {
+        requestPayload = typeof error.config.data === 'string'
+          ? JSON.parse(error.config.data)
+          : error.config.data;
+      } catch {
+        requestPayload = '[unparseable]';
+      }
+    }
+
+    const recetarioContext: RecetarioErrorContext = {
+      method: error.config?.method?.toUpperCase() || 'UNKNOWN',
+      url: error.config?.url || 'UNKNOWN',
+      requestPayload: sanitizeForLogging(requestPayload),
+      responseStatus: error.response?.status,
+      responseBody: error.response?.data,
+    };
+
+    throw Object.assign(new Error(`Recetario: ${message}`), { status, recetarioContext });
   }
 }
 

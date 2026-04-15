@@ -1,5 +1,6 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
 import Sentry from '../sentry';
+import type { RecetarioErrorContext } from '../services/recetario/recetario-client';
 
 /**
  * Captures unexpected errors in Sentry. Skips expected errors:
@@ -22,10 +23,26 @@ export const captureSentryError = (): Hook => {
     const isExpectedError = context.error.code === 401 || isLegacyNotFound || isAccessLogError || isPatientOtpBadRequest;
 
     if (!isExpectedError) {
-      if (context.params.user) {
-        Sentry.setUser({ id: context.params.user.id, email: context.params.user.email });
-      }
-      Sentry.captureException(context.error);
+      const recetarioContext: RecetarioErrorContext | undefined = context.error.recetarioContext;
+
+      Sentry.withScope((scope) => {
+        if (context.params.user) {
+          scope.setUser({ id: context.params.user.id, email: context.params.user.email });
+        }
+
+        if (recetarioContext) {
+          scope.setContext('recetario', {
+            calledBy: context.params.user?.email || context.params.user?.id || 'unknown',
+            method: recetarioContext.method,
+            url: recetarioContext.url,
+            requestPayload: recetarioContext.requestPayload,
+            responseStatus: recetarioContext.responseStatus,
+            responseBody: recetarioContext.responseBody,
+          });
+        }
+
+        Sentry.captureException(context.error);
+      });
     }
 
     return context;
