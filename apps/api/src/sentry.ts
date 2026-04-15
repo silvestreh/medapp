@@ -32,7 +32,13 @@ Sentry.init({
     const error = hint?.originalException as Record<string, unknown> | undefined;
     const statusCode = error?.code ?? error?.statusCode ?? error?.status;
 
-    if (statusCode === 401) {
+    if (statusCode === 401 || statusCode === '401') {
+      return null;
+    }
+
+    // Filter JWT expiration errors that bypass Feathers error wrapping
+    const errorName = error?.name as string | undefined;
+    if (errorName === 'TokenExpiredError' || errorName === 'JsonWebTokenError') {
       return null;
     }
 
