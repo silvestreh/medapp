@@ -35,43 +35,60 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   const isMedic = orgRoleIds.includes('medic');
   const isPrescriber = orgRoleIds.includes('prescriber');
   const isAdmin = orgRoleIds.includes('admin');
-  const canAccess = isMedic || isPrescriber || isAdmin || orgRoleIds.includes('accounting');
+  const isAccounting = orgRoleIds.includes('accounting');
+  const canAccess = isMedic || isPrescriber || isAdmin || isAccounting;
   if (!canAccess) {
     throw json({ error: 'Not authorized' }, { status: 403 });
   }
 
-  // For prescribers: fetch delegated medics so they can view medic-specific codes
+  // For non-medic users: build the list of medics they can manage codes for
   let delegatedMedics: any[] = [];
   let selectedMedicId = user.id;
 
-  if (!isMedic && isPrescriber && !isAdmin) {
+  if (!isMedic) {
     const url = new URL(request.url);
     const medicIdParam = url.searchParams.get('medicId');
+    const validMedicIds = new Set<string>();
 
-    const delegationsResponse = await client.service('prescription-delegations' as any).find({
-      query: { $limit: 200 },
-    });
-    const delegations = Array.isArray(delegationsResponse)
-      ? delegationsResponse
-      : ((delegationsResponse as any)?.data ?? []);
+    // 1. Prescribers: fetch medics via delegation records
+    if (isPrescriber) {
+      const delegationsResponse = await client.service('prescription-delegations' as any).find({
+        query: { $limit: 200 },
+      });
+      const delegations = Array.isArray(delegationsResponse)
+        ? delegationsResponse
+        : ((delegationsResponse as any)?.data ?? []);
 
-    const medicIds = new Set(delegations.map((d: any) => d.medicId));
+      for (const d of delegations) validMedicIds.add(d.medicId);
+    }
 
-    if (medicIds.size > 0) {
+    // 2. Accounting users: fetch ALL medics in the org (access via accounting:find permission)
+    if (isAccounting && validMedicIds.size === 0) {
+      const userRolesResponse = await client.service('user-roles').find({
+        query: { roleId: 'medic', $limit: 500 },
+      });
+      const medicUserRoles = Array.isArray(userRolesResponse)
+        ? userRolesResponse
+        : ((userRolesResponse as any)?.data ?? []);
+
+      for (const ur of medicUserRoles) validMedicIds.add(ur.userId);
+    }
+
+    if (validMedicIds.size > 0) {
       const membersResponse = await client.service('organization-users').find({
         query: { $populate: true, $limit: 200 },
       });
       const allMembers = Array.isArray(membersResponse) ? membersResponse : ((membersResponse as any)?.data ?? []);
 
-      delegatedMedics = allMembers.filter((m: any) => m.user && medicIds.has(m.userId)).map((m: any) => m.user);
+      delegatedMedics = allMembers.filter((m: any) => m.user && validMedicIds.has(m.userId)).map((m: any) => m.user);
 
       const firstMedicId = delegatedMedics[0]?.id;
-      selectedMedicId = medicIdParam && medicIds.has(medicIdParam) ? medicIdParam : firstMedicId || user.id;
+      selectedMedicId = medicIdParam && validMedicIds.has(medicIdParam) ? medicIdParam : firstMedicId || user.id;
     }
   }
 
   const codesQuery: Record<string, any> = { $limit: 500 };
-  if (!isMedic && isPrescriber && !isAdmin && selectedMedicId !== user.id) {
+  if (selectedMedicId && selectedMedicId !== user.id) {
     codesQuery.userId = selectedMedicId;
   }
 
@@ -126,11 +143,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
 
     if (intent === 'save-code') {
-      const data = parseFormJson<{ practiceId: string; insurerId: string; code: string }>(formData.get('data'));
+      const data = parseFormJson<{ practiceId: string; insurerId: string; code: string; userId?: string }>(formData.get('data'));
       await client.service('practice-codes' as any).create({
         practiceId: data.practiceId,
         insurerId: data.insurerId,
         code: data.code,
+        ...(data.userId ? { userId: data.userId } : {}),
       });
       return json({ ok: true, intent });
     }
@@ -301,6 +319,7 @@ export default function SettingsPracticesPage() {
         onClose={handleDrawerClose}
         isCreateMode={isCreateMode}
         onCreated={handlePracticeCreated}
+        selectedMedicId={selectedMedicId}
       />
     </Stack>
   );

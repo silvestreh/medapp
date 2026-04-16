@@ -15,9 +15,10 @@ interface PracticeDrawerProps {
   onClose: () => void;
   isCreateMode?: boolean;
   onCreated?: (practiceId: string) => void;
+  selectedMedicId?: string;
 }
 
-export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode, onCreated }: PracticeDrawerProps) {
+export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode, onCreated, selectedMedicId }: PracticeDrawerProps) {
   const { t } = useTranslation();
   const fetcher = useFetcher();
   const revalidator = useRevalidator();
@@ -107,17 +108,22 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode,
 
   const handleAddCode = useCallback(() => {
     if (!effectivePracticeId || !newInsurerId || !newCode.trim()) return;
+    const codeData: Record<string, string> = {
+      practiceId: effectivePracticeId,
+      insurerId: newInsurerId,
+      code: newCode.trim(),
+    };
+    if (selectedMedicId) {
+      codeData.userId = selectedMedicId;
+    }
     fetcher.submit(
-      {
-        intent: 'save-code',
-        data: JSON.stringify({ practiceId: effectivePracticeId, insurerId: newInsurerId, code: newCode.trim() }),
-      },
+      { intent: 'save-code', data: JSON.stringify(codeData) },
       { method: 'post' }
     );
     setNewInsurerId('');
     setNewCode('');
     setTimeout(() => revalidator.revalidate(), 300);
-  }, [effectivePracticeId, newInsurerId, newCode, fetcher, revalidator]);
+  }, [effectivePracticeId, newInsurerId, newCode, selectedMedicId, fetcher, revalidator]);
 
   const handleRemoveCode = useCallback(
     (codeId: string) => {
