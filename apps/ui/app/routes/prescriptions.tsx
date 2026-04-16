@@ -168,6 +168,16 @@ function isRecetarioUnavailable(err: unknown): boolean {
   return /recetario.*timeout|ECONNREFUSED|ETIMEDOUT/i.test(msg);
 }
 
+function isRecetarioCredentialInvalid(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : '';
+  return /credencial invalida/i.test(msg);
+}
+
+function isRecetarioError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : '';
+  return /^recetario:/i.test(msg);
+}
+
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { client } = await getAuthenticatedClient(request);
   const formData = await request.formData();
@@ -263,6 +273,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       if (isRecetarioUnavailable(err)) {
         return json({ intent: 'create-prescription', recetarioUnavailable: true, error: 'recetario_unavailable' });
       }
+      if (isRecetarioCredentialInvalid(err)) {
+        return json({ intent: 'create-prescription', error: 'recetario_credential_invalid' });
+      }
+      if (isRecetarioError(err)) {
+        const msg = err instanceof Error ? err.message : 'Unknown Recetario error';
+        return json({ intent: 'create-prescription', error: msg });
+      }
       throw err;
     }
   }
@@ -290,6 +307,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       if (isRecetarioUnavailable(err)) {
         return json({ intent: 'create-order', recetarioUnavailable: true, error: 'recetario_unavailable' });
       }
+      if (isRecetarioCredentialInvalid(err)) {
+        return json({ intent: 'create-order', error: 'recetario_credential_invalid' });
+      }
+      if (isRecetarioError(err)) {
+        const msg = err instanceof Error ? err.message : 'Unknown Recetario error';
+        return json({ intent: 'create-order', error: msg });
+      }
       throw err;
     }
   }
@@ -302,6 +326,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     } catch (err) {
       if (isRecetarioUnavailable(err)) {
         return json({ intent: 'cancel-prescription', recetarioUnavailable: true, error: 'recetario_unavailable' });
+      }
+      if (isRecetarioCredentialInvalid(err)) {
+        return json({ intent: 'cancel-prescription', error: 'recetario_credential_invalid' });
+      }
+      if (isRecetarioError(err)) {
+        const msg = err instanceof Error ? err.message : 'Unknown Recetario error';
+        return json({ intent: 'cancel-prescription', error: msg });
       }
       throw err;
     }
@@ -324,6 +355,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     } catch (err) {
       if (isRecetarioUnavailable(err)) {
         return json({ intent: 'share-prescription', recetarioUnavailable: true, error: 'recetario_unavailable' });
+      }
+      if (isRecetarioError(err)) {
+        const msg = err instanceof Error ? err.message : 'Unknown Recetario error';
+        return json({ intent: 'share-prescription', error: msg });
       }
       throw err;
     }

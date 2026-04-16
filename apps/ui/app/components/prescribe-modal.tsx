@@ -563,7 +563,16 @@ export function PrescribeModal({
       onSuccess();
       setStep(2);
     } else if (fetcher.data.error) {
-      showNotification({ color: 'red', message: fetcher.data.error });
+      if (fetcher.data.error === 'recetario_credential_invalid') {
+        showNotification({
+          color: 'orange',
+          title: 'Recetario',
+          message: t('recetario.credential_invalid'),
+          autoClose: 10000,
+        });
+      } else {
+        showNotification({ color: 'red', title: 'Recetario', message: fetcher.data.error });
+      }
     }
   }, [fetcher.state, fetcher.data]); // eslint-disable-line react-hooks/exhaustive-deps
 

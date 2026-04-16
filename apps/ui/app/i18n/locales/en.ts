@@ -1263,6 +1263,8 @@ export const en: typeof es = {
     add_practice: 'Add practice...',
     service_unavailable:
       'The prescription service (Recetario) is currently unavailable. Please try again in a few minutes.',
+    credential_invalid:
+      "The patient's insurance credential could not be validated by the insurer. This is a temporary issue that usually resolves within a few hours. Please try again later.",
   },
   identity_verification: {
     title: 'Identity Verification',

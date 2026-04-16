@@ -1269,6 +1269,8 @@ export const es = {
     add_practice: 'Agregar práctica...',
     service_unavailable:
       'El servicio de recetas (Recetario) no está disponible en este momento. Por favor, intente nuevamente en unos minutos.',
+    credential_invalid:
+      'No se pudo validar la credencial del paciente con la obra social. Este es un problema temporario que suele resolverse en unas horas. Por favor, intente nuevamente más tarde.',
   },
   identity_verification: {
     title: 'Verificación de Identidad',
