@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
+import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useNavigate, useRevalidator } from '@remix-run/react';
 import { Button, Group, Stack, Table, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -84,6 +84,11 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
 
       const firstMedicId = delegatedMedics[0]?.id;
       selectedMedicId = medicIdParam && validMedicIds.has(medicIdParam) ? medicIdParam : firstMedicId || user.id;
+
+      // Ensure the URL always reflects the selected medic
+      if (!medicIdParam && selectedMedicId !== user.id) {
+        return redirect(`/settings/practices?medicId=${selectedMedicId}`);
+      }
     }
   }
 
