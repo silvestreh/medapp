@@ -117,7 +117,6 @@ const FieldRowBase = styled('div', {
     flexDirection: 'column',
     padding: '1rem',
     borderBottom: '1px solid var(--mantine-color-gray-2)',
-    backgroundColor: 'white',
 
     '&:last-child': {
       borderBottom: 'none',

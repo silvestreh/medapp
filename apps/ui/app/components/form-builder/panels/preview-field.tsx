@@ -149,7 +149,7 @@ export function PreviewField({
   if (isCheckbox) {
     return (
       <div ref={setNodeRef} style={style}>
-        <FieldWrapper selected={isSelected} onClick={handleSelect}>
+        <FieldWrapper selected={isSelected || undefined} onClick={handleSelect}>
           <FieldRow>
             <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
               <DragHandle {...attributes} {...listeners}>
@@ -180,7 +180,7 @@ export function PreviewField({
   if (field.type === 'group') {
     return (
       <div ref={setNodeRef} style={style}>
-        <FieldWrapper selected={isSelected} onClick={handleSelect}>
+        <FieldWrapper selected={isSelected || undefined} onClick={handleSelect}>
           <FieldRow>
             <DragHandle {...attributes} {...listeners}>
               <DotsSixVerticalIcon size={16} />
@@ -207,7 +207,7 @@ export function PreviewField({
 
   return (
     <div ref={setNodeRef} style={style}>
-      <FieldWrapper selected={isSelected} onClick={handleSelect}>
+      <FieldWrapper selected={isSelected || undefined} onClick={handleSelect}>
         <FieldRow style={isTopLabel ? { flexDirection: 'column', alignItems: 'stretch' } : undefined}>
           <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
             <DragHandle {...attributes} {...listeners}>
