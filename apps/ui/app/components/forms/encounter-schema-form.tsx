@@ -11,6 +11,8 @@ import {
   StyledTitle,
   ItemHeader,
   IndentedSection,
+  FieldRow,
+  TriStateCheckbox,
 } from '~/components/forms/styles';
 import { EncounterFormField } from './encounter-form-field';
 import type {
@@ -69,6 +71,19 @@ function buildDefaultItem(itemFields: EncounterField[]): Record<string, any> {
   return item;
 }
 
+function ensureArrayDefaults(fields: EncounterField[], values: Record<string, any>): Record<string, any> {
+  const result = { ...values };
+  for (const field of fields) {
+    if (field.type === 'array' && field.name) {
+      if (!Array.isArray(result[field.name])) {
+        const minItems = field.minItems ?? 1;
+        result[field.name] = Array.from({ length: Math.max(minItems, 1) }, () => buildDefaultItem(field.itemFields));
+      }
+    }
+  }
+  return result;
+}
+
 interface FieldNodeProps {
   field: EncounterField;
   form: ReturnType<typeof useForm<EncounterFormValues>>;
@@ -77,9 +92,28 @@ interface FieldNodeProps {
   indented?: boolean;
 }
 
-function FieldNode({ field, form, readOnly, basePath, indented }: FieldNodeProps) {
+function isFieldEmpty(value: any): boolean {
+  if (value === null || value === undefined || value === '') return true;
+  if (value === 'indeterminate') return true;
+  if (Array.isArray(value)) return value.length === 0;
+  return false;
+}
+
+export function FieldNode({ field, form, readOnly, basePath, indented }: FieldNodeProps) {
   if (field.condition && !evaluateCondition(field.condition, form.values, basePath)) {
     return null;
+  }
+
+  // In read-only mode, hide leaf fields that have no value
+  if (readOnly && field.name && field.type !== 'tabs' && field.type !== 'group' && field.type !== 'array') {
+    const fieldPath = basePath ? `${basePath}.${field.name}` : field.name;
+    const parts = fieldPath.split('.');
+    let val: any = form.values;
+    for (const part of parts) {
+      if (val == null) break;
+      val = val[part];
+    }
+    if (isFieldEmpty(val)) return null;
   }
 
   if (field.type === 'tabs') {
@@ -152,6 +186,40 @@ function GroupNode({
   const Wrapper = field.indent ? IndentedSection : Stack;
   const wrapperProps = field.indent ? { 'data-indented-section': '' } : { gap: 0 as const };
 
+  // Toggle-based group: render a checkbox that shows/hides sub-fields
+  if (field.toggleLabel && field.name) {
+    const togglePath = basePath ? `${basePath}.${field.name}` : field.name;
+    const toggleValue = (() => {
+      const parts = togglePath.split('.');
+      let v: any = form.values;
+      for (const p of parts) {
+        if (v == null) return false;
+        v = v[p];
+      }
+      return v === true;
+    })();
+
+    return (
+      <Stack gap={0}>
+        <FormCard>
+          <FieldRow checkbox>
+            <TriStateCheckbox
+              label={field.toggleLabel}
+              value={toggleValue}
+              onChange={(val: any) => form.setFieldValue(togglePath, val === true)}
+              readOnly={readOnly}
+            />
+          </FieldRow>
+        </FormCard>
+        {toggleValue && (
+          <IndentedSection data-indented-section="">
+            <FieldList fields={field.fields} form={form} readOnly={readOnly} basePath={basePath} indented />
+          </IndentedSection>
+        )}
+      </Stack>
+    );
+  }
+
   return (
     <Wrapper {...wrapperProps}>
       {field.label && (
@@ -200,10 +268,15 @@ function ArrayNode({
 
   return (
     <Stack gap="md">
+      {field.label && (
+        <Text size="xl" fw={600} c="gray.8">
+          {tl(field.label)}
+        </Text>
+      )}
       {items.map((_item: any, index: number) => (
         <div key={index}>
           <ItemHeader>
-            <Text size="xl" c="dimmed" fw={500}>
+            <Text size="md" c="dimmed" fw={500}>
               {field.itemLabel
                 ? t(`ef.${field.itemLabel}`, { defaultValue: field.itemLabel, index: index + 1 })
                 : `#${index + 1}`}
@@ -331,7 +404,7 @@ export interface EncounterSchemaFormProps {
 export function EncounterSchemaForm({ schema, adapter, initialData, onChange, readOnly }: EncounterSchemaFormProps) {
   const { t } = useTranslation();
   const initialValues = useMemo(
-    () => adapter.fromLegacy(initialData),
+    () => ensureArrayDefaults(schema.fields, adapter.fromLegacy(initialData)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );

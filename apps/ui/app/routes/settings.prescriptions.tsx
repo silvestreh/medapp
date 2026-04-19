@@ -168,8 +168,14 @@ export default function SettingsPrescriptionsRoute() {
   const [showCanvas, setShowCanvas] = useState(false);
 
   const { delegations, orgPrescribers, isMedic, isPrescriber, userId } = loaderData;
-  const myDelegations = useMemo(() => delegations.filter((d: typeof delegations[number]) => d.medicId === userId), [delegations, userId]);
-  const grantedToMe = useMemo(() => delegations.filter((d: typeof delegations[number]) => d.prescriberId === userId), [delegations, userId]);
+  const myDelegations = useMemo(
+    () => delegations.filter((d: (typeof delegations)[number]) => d.medicId === userId),
+    [delegations, userId]
+  );
+  const grantedToMe = useMemo(
+    () => delegations.filter((d: (typeof delegations)[number]) => d.prescriberId === userId),
+    [delegations, userId]
+  );
 
   const missingOrgFields = useMemo(() => {
     const missing: string[] = [];
@@ -364,7 +370,7 @@ export default function SettingsPrescriptionsRoute() {
                 </Text>
               </FieldRow>
             )}
-            {myDelegations.map((d: typeof delegations[number]) => (
+            {myDelegations.map((d: (typeof delegations)[number]) => (
               <FieldRow key={d.id}>
                 <Group justify="space-between" w="100%">
                   <Text size="sm">{d.prescriberName}</Text>
@@ -386,7 +392,7 @@ export default function SettingsPrescriptionsRoute() {
             <Group mt="sm">
               <Select
                 placeholder={t('recetario.delegations_add')}
-                data={orgPrescribers.map((p: typeof orgPrescribers[number]) => ({ value: p.id, label: p.name }))}
+                data={orgPrescribers.map((p: (typeof orgPrescribers)[number]) => ({ value: p.id, label: p.name }))}
                 onChange={handleAddDelegation}
                 searchable
                 clearable
@@ -412,7 +418,7 @@ export default function SettingsPrescriptionsRoute() {
                 </Text>
               </FieldRow>
             )}
-            {grantedToMe.map((d: typeof delegations[number]) => (
+            {grantedToMe.map((d: (typeof delegations)[number]) => (
               <FieldRow key={d.id}>
                 <Text size="sm">{d.medicName}</Text>
               </FieldRow>

@@ -15,6 +15,7 @@ import {
   ChatCircleIcon,
   ShieldCheckIcon,
   DotsThreeIcon,
+  NotepadIcon,
   type IconProps,
 } from '@phosphor-icons/react';
 import intersection from 'lodash/intersection';
@@ -107,6 +108,7 @@ const NavItem = styled(ActionIcon, {
       yellow: {},
       red: {},
       teal: {},
+      violet: {},
     },
     active: {
       true: {},
@@ -159,6 +161,14 @@ const NavItem = styled(ActionIcon, {
       active: true,
       css: {
         backgroundColor: 'var(--mantine-color-teal-6)',
+        color: 'white',
+      },
+    },
+    {
+      tone: 'violet',
+      active: true,
+      css: {
+        backgroundColor: 'var(--mantine-color-violet-6)',
         color: 'white',
       },
     },
@@ -253,6 +263,13 @@ const sections: Section[] = [
     permissions: ['recetario:create', 'prescriptions:find'],
     path: '/prescriptions',
     color: 'teal',
+  },
+  {
+    labelKey: 'forms',
+    icon: <NotepadIcon />,
+    permissions: ['form-templates:create:all'],
+    path: '/forms',
+    color: 'violet',
   },
   {
     labelKey: 'users_roles',

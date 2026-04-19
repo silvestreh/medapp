@@ -297,6 +297,16 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     }
   }
 
+  let customForms: any[] = [];
+  try {
+    const result = await client.service('form-templates' as any).find({
+      query: { type: 'encounter', status: 'published' },
+    });
+    customForms = Array.isArray(result) ? result : (result as any)?.data || [];
+  } catch {
+    // form-templates service may not exist yet
+  }
+
   return {
     user,
     patient,
@@ -309,6 +319,7 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
     prescriptions,
     recetarioReady,
     sireData,
+    customForms,
   };
 });
 
@@ -561,6 +572,7 @@ export default function PatientEncounterDetail() {
           onPrescriptionClick={handlePrescriptionClick}
           onAttachmentClick={handleAttachmentClick}
           activeAttachmentIndex={activeAttachmentIndex}
+          customFormLabels={Object.fromEntries((data.customForms || []).map((cf: any) => [cf.formKey, cf.label]))}
         />
       </Sidebar>
 
@@ -577,6 +589,12 @@ export default function PatientEncounterDetail() {
                 encounter={selectedEncounter}
                 readOnly={!!selectedEncounter.id}
                 activeFormKey={activeFormKey}
+                customForms={(data.customForms || []).map((cf: any) => ({
+                  formKey: cf.formKey,
+                  label: cf.label,
+                  schema: cf.schema,
+                  currentVersionId: cf.currentVersionId,
+                }))}
               />
             )}
 

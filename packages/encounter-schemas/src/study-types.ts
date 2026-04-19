@@ -14,7 +14,7 @@ export interface StudySelectOption {
 export interface StudyField {
   name?: string;
   label?: string;
-  type: 'input' | 'textarea' | 'select' | 'title' | 'title-input' | 'separator';
+  type: 'input' | 'textarea' | 'select' | 'title' | 'title-input' | 'separator' | 'date' | 'tri-state-checkbox' | 'icd10' | 'medication';
   pattern?: string;
   placeholder?: string;
   reference?: string | StudyFieldReference;
@@ -22,6 +22,7 @@ export interface StudyField {
   method?: string;
   options?: StudySelectOption[];
   addsExtraCost?: boolean;
+  colSpan?: number;
 }
 
 export interface StudySchema {

@@ -8,8 +8,16 @@ import { FloppyDiskIcon } from '@phosphor-icons/react';
 
 import { EncounterSchemaForm } from './encounter-schema-form';
 import { encounterForms } from './encounter-schemas';
+import { CustomFormRenderer } from './custom-form-renderer';
 import { FormContainer } from './styles';
 import Portal from '~/components/portal';
+
+interface CustomFormTemplate {
+  formKey: string;
+  label: string;
+  schema: any;
+  currentVersionId?: string;
+}
 
 interface EncounterFormProps {
   encounter: any;
@@ -18,6 +26,7 @@ interface EncounterFormProps {
   onValuesChange?: (values: any) => void;
   insurerId?: string | null;
   encounterId?: string;
+  customForms?: CustomFormTemplate[];
 }
 
 const FORM_KEY_ORDER = [
@@ -66,6 +75,7 @@ export function EncounterForm({
   onValuesChange,
   insurerId,
   encounterId,
+  customForms = [],
 }: EncounterFormProps) {
   const { t } = useTranslation();
   const submit = useSubmit();
@@ -142,6 +152,22 @@ export function EncounterForm({
                 adapter={def.adapter}
                 initialData={form.values[formKey]}
                 onChange={handleSubFormChange(formKey)}
+                readOnly={readOnly}
+              />
+            );
+          })}
+
+          {customForms.map(cf => {
+            if (!shouldShow(cf.formKey)) return null;
+
+            return (
+              <CustomFormRenderer
+                key={cf.formKey}
+                schema={cf.schema}
+                initialData={form.values[cf.formKey]?.values}
+                onChange={values => {
+                  handleSubFormChange(cf.formKey)({ type: cf.formKey, values });
+                }}
                 readOnly={readOnly}
               />
             );

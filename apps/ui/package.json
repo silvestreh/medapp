@@ -18,6 +18,9 @@
   "dependencies": {
     "@athelas/brand": "workspace:*",
     "@athelas/encounter-schemas": "workspace:*",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@feathersjs/authentication-client": "^5.0.40",
@@ -58,6 +61,7 @@
     "emoji-mart": "^5.6.0",
     "i18next": "^23.16.8",
     "ical.js": "^2.1.0",
+    "immer": "^11.1.4",
     "isbot": "^5.1.27",
     "libphonenumber-js": "^1.12.38",
     "lodash": "^4.17.21",

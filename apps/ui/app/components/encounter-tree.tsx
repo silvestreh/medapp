@@ -73,6 +73,7 @@ interface EncounterTreeProps {
   activeStudyId?: string;
   activePrescriptionId?: string;
   activeAttachmentIndex?: number | null;
+  customFormLabels?: Record<string, string>;
 }
 
 const StyledAccordion = styled(Accordion, {
@@ -196,6 +197,7 @@ const EncounterTree: FC<EncounterTreeProps> = ({
   onStudyClick,
   onPrescriptionClick,
   onAttachmentClick,
+  customFormLabels = {},
 }) => {
   const { t } = useTranslation();
 
@@ -320,7 +322,9 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                           onClick={e => handleFormItemClick(e, encounter, key)}
                                           active={activeEncounterId === encounter.id && activeFormKey === key}
                                         >
-                                          {t(`forms.${encounter.data[key].type}` as any)}
+                                          {key.startsWith('custom/')
+                                            ? customFormLabels[key] || key
+                                            : t(`forms.${encounter.data[key].type}` as any)}
                                         </FormItem>
                                       ))}
                                   {encounter.data?.attachments?.map((att: any, i: number) => (

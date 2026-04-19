@@ -132,10 +132,21 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
   const patient = await client.service('patients').get(patientId);
   const insurerId = (patient as any).medicareId || null;
 
+  let customForms: any[] = [];
+  try {
+    const result = await client.service('form-templates' as any).find({
+      query: { type: 'encounter', status: 'published' },
+    });
+    customForms = Array.isArray(result) ? result : (result as any)?.data || [];
+  } catch {
+    // form-templates service may not exist yet
+  }
+
   return {
     patient,
     insurerId,
     encounterId: crypto.randomUUID(),
+    customForms,
   };
 });
 
@@ -338,6 +349,10 @@ export default function NewEncounter() {
           activeFormKey={activeFormKey}
           onFormClick={handleFormClick}
           onRemoveForm={handleRemoveForm}
+          customForms={(data.customForms || []).map((cf: any) => ({
+            formKey: cf.formKey,
+            label: cf.label,
+          }))}
         />
       </Sidebar>
 
@@ -351,6 +366,12 @@ export default function NewEncounter() {
               onValuesChange={handleValuesChange}
               insurerId={data.insurerId}
               encounterId={data.encounterId}
+              customForms={(data.customForms || []).map((cf: any) => ({
+                formKey: cf.formKey,
+                label: cf.label,
+                schema: cf.schema,
+                currentVersionId: cf.currentVersionId,
+              }))}
             />
           )}
           {!activeFormKey && (

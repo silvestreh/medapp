@@ -4,12 +4,18 @@ import { useTranslation } from 'react-i18next';
 import { XIcon } from '@phosphor-icons/react';
 import { styled } from '~/styled-system/jsx';
 
+interface CustomFormEntry {
+  formKey: string;
+  label: string;
+}
+
 interface NewEncounterSidebarProps {
   availableForms: (string | null)[];
   activeForms: (string | null)[];
   activeFormKey?: string;
   onFormClick: (formKey: string) => void;
   onRemoveForm: (formKey: string) => void;
+  customForms?: CustomFormEntry[];
 }
 
 const FormItem = styled('div', {
@@ -57,6 +63,7 @@ const NewEncounterSidebar: FC<NewEncounterSidebarProps> = ({
   activeFormKey,
   onFormClick,
   onRemoveForm,
+  customForms = [],
 }) => {
   const { t } = useTranslation();
 
@@ -98,6 +105,18 @@ const NewEncounterSidebar: FC<NewEncounterSidebarProps> = ({
             {t(`forms.${formKey}` as any)}
           </FormItem>
         )
+      )}
+
+      {customForms.length > 0 && (
+        <>
+          <Divider my="sm" />
+          <SectionTitle>{t('encounters.custom_forms', 'Custom Forms')}</SectionTitle>
+          {customForms.map(cf => (
+            <FormItem key={cf.formKey} active={activeFormKey === cf.formKey} onClick={() => onFormClick(cf.formKey)}>
+              {cf.label}
+            </FormItem>
+          ))}
+        </>
       )}
     </Stack>
   );

@@ -148,7 +148,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
 
     if (intent === 'save-code') {
-      const data = parseFormJson<{ practiceId: string; insurerId: string; code: string; userId?: string }>(formData.get('data'));
+      const data = parseFormJson<{ practiceId: string; insurerId: string; code: string; userId?: string }>(
+        formData.get('data')
+      );
       await client.service('practice-codes' as any).create({
         practiceId: data.practiceId,
         insurerId: data.insurerId,

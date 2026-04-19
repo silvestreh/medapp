@@ -18,7 +18,15 @@ interface PracticeDrawerProps {
   selectedMedicId?: string;
 }
 
-export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode, onCreated, selectedMedicId }: PracticeDrawerProps) {
+export function PracticeDrawer({
+  practice,
+  codes,
+  opened,
+  onClose,
+  isCreateMode,
+  onCreated,
+  selectedMedicId,
+}: PracticeDrawerProps) {
   const { t } = useTranslation();
   const fetcher = useFetcher();
   const revalidator = useRevalidator();
@@ -116,10 +124,7 @@ export function PracticeDrawer({ practice, codes, opened, onClose, isCreateMode,
     if (selectedMedicId) {
       codeData.userId = selectedMedicId;
     }
-    fetcher.submit(
-      { intent: 'save-code', data: JSON.stringify(codeData) },
-      { method: 'post' }
-    );
+    fetcher.submit({ intent: 'save-code', data: JSON.stringify(codeData) }, { method: 'post' });
     setNewInsurerId('');
     setNewCode('');
     setTimeout(() => revalidator.revalidate(), 300);

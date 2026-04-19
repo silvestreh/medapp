@@ -23,7 +23,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } }; data?: { message?: string }; message?: string };
     const message = err?.response?.data?.message || err?.data?.message || err?.message || '';
-    const errorKey = message.includes('expired') ? 'auth.confirmation_link_expired' as const : 'auth.confirmation_link_invalid' as const;
+    const errorKey = message.includes('expired')
+      ? ('auth.confirmation_link_expired' as const)
+      : ('auth.confirmation_link_invalid' as const);
     return json({ confirmed: false, error: errorKey });
   }
 }

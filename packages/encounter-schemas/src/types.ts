@@ -21,6 +21,7 @@ interface FieldBase {
   condition?: FieldCondition;
   variant?: 'stacked' | 'checkbox' | 'noOffset' | 'nested';
   indent?: boolean;
+  colSpan?: number;
 }
 
 export interface EncounterInputField extends FieldBase {
@@ -84,6 +85,7 @@ export interface EncounterTabsField extends FieldBase {
 
 export interface EncounterGroupField extends FieldBase {
   type: 'group';
+  toggleLabel?: string;
   fields: EncounterField[];
 }
 

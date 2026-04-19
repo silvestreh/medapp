@@ -84,7 +84,11 @@ export function EncounterFormField({ field, form, readOnly, basePath, indented }
   );
 
   if (field.type === 'title') {
-    return <StyledTitle size="h3">{tl(field.label)}</StyledTitle>;
+    return (
+      <Text size="lg" fw={600} c="gray.8">
+        {tl(field.label)}
+      </Text>
+    );
   }
 
   if (field.type === 'text') {
@@ -200,7 +204,20 @@ export function EncounterFormField({ field, form, readOnly, basePath, indented }
   }
 
   if (field.type === 'tri-state-checkbox') {
-    if (field.indent) {
+    // Label on the left: "Label: [ ]"
+    if (!field.variant || field.variant === 'stacked') {
+      return (
+        <FieldRow
+          label={field.label ? `${tl(field.label)}:` : undefined}
+          variant={field.variant === 'stacked' ? 'stacked' : undefined}
+        >
+          <TriStateCheckbox {...form.getInputProps(path)} readOnly={readOnly} />
+        </FieldRow>
+      );
+    }
+
+    // Legacy indent (group sub-fields)
+    if (field.indent && field.variant !== 'checkbox') {
       return (
         <IndentedSection>
           <FieldRow label="" variant="stacked">
@@ -209,6 +226,7 @@ export function EncounterFormField({ field, form, readOnly, basePath, indented }
         </IndentedSection>
       );
     }
+
     if (indented) {
       return (
         <FieldRow>
@@ -216,13 +234,21 @@ export function EncounterFormField({ field, form, readOnly, basePath, indented }
         </FieldRow>
       );
     }
+
+    // Label on the right: "[ ] Label" — with or without spacer
+    if (field.variant === 'checkbox' && field.indent) {
+      // With spacer (25% padding)
+      return (
+        <FieldRow checkbox>
+          <TriStateCheckbox label={tl(field.label)} {...form.getInputProps(path)} readOnly={readOnly} />
+        </FieldRow>
+      );
+    }
+
+    // Without spacer — checkbox + label from the left edge
     return (
-      <FieldRow
-        checkbox
-        noOffset={field.variant === 'noOffset' || undefined}
-        nested={field.variant === 'nested' || undefined}
-      >
-        <TriStateCheckbox label={field.label} {...form.getInputProps(path)} readOnly={readOnly} />
+      <FieldRow>
+        <TriStateCheckbox label={tl(field.label)} {...form.getInputProps(path)} readOnly={readOnly} />
       </FieldRow>
     );
   }

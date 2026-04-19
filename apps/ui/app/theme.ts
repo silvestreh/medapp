@@ -9,6 +9,14 @@ export const theme = createTheme({
     string
   >,
   components: {
+    Tabs: {
+      styles: {
+        list: {
+          border: '1px solid var(--mantine-color-gray-2)',
+          borderRadius: 'var(--mantine-radius-sm)',
+        },
+      },
+    },
     Table: {
       styles: {
         thead: {

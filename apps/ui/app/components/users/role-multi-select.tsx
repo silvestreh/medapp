@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Badge, Checkbox, Group, Popover, Stack, UnstyledButton } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 
-import { ROLE_COLORS } from './types';
+import { getRoleColor } from './types';
 
 interface RoleMultiSelectProps {
   value: string[];
@@ -55,7 +55,7 @@ export function RoleMultiSelect({ value, allRoles, userId, isCurrentUser }: Role
   );
 
   const badges = value.map(roleId => {
-    const color = ROLE_COLORS[roleId] ?? 'gray';
+    const color = getRoleColor(roleId);
     const label = allRoles.find(r => r.id === roleId)?.label ?? roleId;
     return (
       <Badge key={roleId} color={color} variant="light" size="sm">
@@ -91,7 +91,7 @@ export function RoleMultiSelect({ value, allRoles, userId, isCurrentUser }: Role
               <Checkbox
                 key={role.id}
                 label={
-                  <Badge color={ROLE_COLORS[role.id] ?? 'gray'} variant={isSelected ? 'filled' : 'light'} size="sm">
+                  <Badge color={getRoleColor(role.id)} variant={isSelected ? 'filled' : 'light'} size="sm">
                     {role.label}
                   </Badge>
                 }

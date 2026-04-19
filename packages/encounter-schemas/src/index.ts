@@ -1,6 +1,9 @@
 export * from './types';
 export * from './adapters';
 export * from './study-types';
+export * from './fieldset-types';
+export * from './fieldset-utils';
+export * from './custom-form-types';
 
 import type { EncounterSchema, EncounterFormAdapter } from './types';
 import type { StudySchema } from './study-types';

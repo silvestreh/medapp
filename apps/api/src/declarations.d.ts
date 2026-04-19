@@ -558,3 +558,27 @@ export interface SolanaAnchorLeaf {
   leafIndex: number;
   createdAt?: Date;
 }
+
+export interface FormTemplate {
+  id: Id;
+  organizationId: Id;
+  type: 'encounter' | 'study';
+  name: string;
+  label: string;
+  formKey: string;
+  schema: Record<string, any>;
+  status: 'draft' | 'published' | 'archived';
+  currentVersionId: Id | null;
+  createdBy: Id;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface FormTemplateVersion {
+  id: Id;
+  formTemplateId: Id;
+  version: number;
+  schema: Record<string, any>;
+  createdAt?: Date;
+  updatedAt?: Date;
+}

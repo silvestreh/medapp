@@ -48,6 +48,18 @@
     ]
   },
   {
+    "id": "form-designer",
+    "permissions": [
+      "form-templates:find",
+      "form-templates:get",
+      "form-templates:create:all",
+      "form-templates:patch:all",
+      "form-templates:remove:all",
+      "form-template-versions:find",
+      "form-template-versions:get"
+    ]
+  },
+  {
     "id": "accounting",
     "permissions": [
       "accounting:find",
@@ -137,7 +149,11 @@
       "practice-codes:create",
       "practice-codes:patch",
       "practice-codes:remove",
-      "prepagas:find"
+      "prepagas:find",
+      "form-templates:find",
+      "form-templates:get",
+      "form-template-versions:find",
+      "form-template-versions:get"
     ]
   },
   {
@@ -162,7 +178,11 @@
       "study-results:remove:all",
       "practice-costs:find",
       "practice-costs:get:all",
-      "prepagas:find"
+      "prepagas:find",
+      "form-templates:find",
+      "form-templates:get",
+      "form-template-versions:find",
+      "form-template-versions:get"
     ]
   },
   {

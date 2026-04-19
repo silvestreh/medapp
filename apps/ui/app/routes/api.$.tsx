@@ -70,6 +70,8 @@ const ALLOWED_PATHS = new Set([
   'sire-dose-logs',
   'sire-push-tokens',
   'patient-refresh-tokens',
+  'form-templates',
+  'form-template-versions',
   'healthz',
 ]);
 
