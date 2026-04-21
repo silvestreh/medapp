@@ -6,8 +6,7 @@ import { PlusIcon, TrashIcon } from '@phosphor-icons/react';
 
 import { FormContainer, FormCard, FormHeader, StyledTitle, ItemHeader } from '~/components/forms/styles';
 import { CustomFormFieldRenderer } from './custom-form-field';
-import type { FormTemplateSchema, Fieldset } from '@athelas/encounter-schemas';
-import type { CustomFormField, CustomFormValues } from '@athelas/encounter-schemas';
+import type { FormTemplateSchema, Fieldset, CustomFormField, CustomFormValues } from '@athelas/encounter-schemas';
 
 function buildDefaultItem(fields: CustomFormField[]): Record<string, any> {
   const item: Record<string, any> = {};
@@ -70,7 +69,6 @@ interface FieldsetRendererProps {
 }
 
 function StaticFieldset({ fieldset, form, readOnly }: FieldsetRendererProps) {
-  const { t } = useTranslation();
   const fields = fieldset.fields;
   const isTopLabel = fieldset.labelPosition === 'top';
   const columns = isTopLabel ? fieldset.columns || 1 : 1;
@@ -345,8 +343,6 @@ export interface CustomFormRendererProps {
 }
 
 export function CustomFormRenderer({ schema, initialData, onChange, readOnly }: CustomFormRendererProps) {
-  const { t } = useTranslation();
-
   const initialValues = useMemo(() => {
     const defaults = buildInitialValues(schema);
     return { ...defaults, ...(initialData || {}) };

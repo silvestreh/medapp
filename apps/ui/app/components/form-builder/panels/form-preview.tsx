@@ -34,6 +34,8 @@ const FormNameInput = styled(TextInput, {
   },
 });
 
+const stackStyle: React.CSSProperties = { maxWidth: 800, margin: '0 auto' };
+
 export function FormPreview() {
   const { state, dispatch } = useBuilder();
   const { t } = useTranslation();
@@ -57,20 +59,24 @@ export function FormPreview() {
     [dispatch]
   );
 
+  const stopPropagation = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
+
   return (
     <PreviewContainer onClick={handleClickBackground}>
-      <Stack gap="md" style={{ maxWidth: 800, margin: '0 auto' }}>
+      <Stack gap="md" style={stackStyle}>
         <FormNameInput
           placeholder={t('form_builder.form_name_placeholder')}
           value={state.label}
           onChange={handleNameChange}
-          onClick={e => e.stopPropagation()}
+          onClick={stopPropagation}
           variant="unstyled"
         />
 
         <SortableContext items={fieldsetIds} strategy={verticalListSortingStrategy}>
-          {state.fieldsets.map((fs, index) => (
-            <PreviewFieldset key={fs._id} fieldset={fs} index={index} />
+          {state.fieldsets.map(fs => (
+            <PreviewFieldset key={fs._id} fieldset={fs} />
           ))}
         </SortableContext>
       </Stack>

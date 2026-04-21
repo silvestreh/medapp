@@ -3,16 +3,11 @@ import { Text } from '@mantine/core';
 import type { UseFormReturnType } from '@mantine/form';
 import { styled } from '~/styled-system/jsx';
 
-import {
-  FieldRow,
-  StyledTextInput,
-  StyledTextarea,
-  StyledSelect,
-  StyledDateInput,
-  TriStateCheckbox,
-} from '~/components/forms/styles';
+import { FieldRow, StyledTextarea, StyledSelect, StyledDateInput, TriStateCheckbox } from '~/components/forms/styles';
 import { Icd10Selector } from '~/components/icd10-selector';
 import { MedicationSelector } from '~/components/medication-selector';
+import { formatReference, type FieldReference } from './format-reference';
+import { InlineUnitInput } from './inline-unit-input';
 import type { CustomFormField, CustomFormValues } from '@athelas/encounter-schemas';
 
 const Separator = styled('div', {
@@ -21,6 +16,31 @@ const Separator = styled('div', {
     margin: '0.5rem 0',
   },
 });
+
+const unitStyle: React.CSSProperties = {
+  color: 'var(--mantine-color-gray-6)',
+  fontSize: 'var(--mantine-font-size-sm)',
+  paddingRight: '4px',
+  whiteSpace: 'nowrap',
+};
+
+const referenceStyle: React.CSSProperties = {
+  color: 'var(--mantine-color-gray-6)',
+  fontSize: 'var(--mantine-font-size-xs)',
+  marginTop: 2,
+  lineHeight: 1.4,
+};
+
+function renderUnitSection(unit: string | undefined) {
+  return unit ? <span style={unitStyle}>{unit}</span> : null;
+}
+
+function renderReferenceHint(reference: FieldReference | undefined) {
+  if (!reference) return null;
+  const str = formatReference(reference);
+  if (!str) return null;
+  return <div style={referenceStyle}>Ref: {str}</div>;
+}
 
 interface CustomFormFieldProps {
   field: CustomFormField;
@@ -93,32 +113,35 @@ export function CustomFormFieldRenderer({
   }
 
   if (field.type === 'input') {
+    const hint = renderReferenceHint(field.reference);
     if (readOnly) {
       return (
-        <FieldRow label={field.label ? `${field.label}:` : undefined} variant={stacked}>
+        <FieldRow label={field.label ? `${field.label}:` : undefined} variant={stacked} hint={hint}>
           <Text size="sm" style={{ lineHeight: 1.75, minHeight: '1.75rem' }}>
             {value || ''}
+            {field.unit && value ? ` ${field.unit}` : ''}
           </Text>
         </FieldRow>
       );
     }
     return (
-      <FieldRow label={field.label ? `${field.label}:` : undefined} variant={stacked}>
-        <StyledTextInput
+      <FieldRow label={field.label ? `${field.label}:` : undefined} variant={stacked} hint={hint}>
+        <InlineUnitInput
           type={field.inputType || 'text'}
           placeholder={field.placeholder}
           value={value ?? ''}
           onChange={handleTextChange}
-          readOnly={readOnly}
+          unit={field.unit}
         />
       </FieldRow>
     );
   }
 
   if (field.type === 'textarea') {
+    const hint = renderReferenceHint(field.reference);
     if (readOnly) {
       return (
-        <FieldRow label={field.label ? `${field.label}:` : undefined} variant={stacked}>
+        <FieldRow label={field.label ? `${field.label}:` : undefined} variant={stacked} hint={hint}>
           <Text size="sm" style={{ lineHeight: 1.75, minHeight: '1.75rem', whiteSpace: 'pre-wrap' }}>
             {value || ''}
           </Text>
@@ -126,7 +149,7 @@ export function CustomFormFieldRenderer({
       );
     }
     return (
-      <FieldRow label={field.label ? `${field.label}:` : undefined} variant={stacked}>
+      <FieldRow label={field.label ? `${field.label}:` : undefined} variant={stacked} hint={hint}>
         <StyledTextarea
           placeholder={field.placeholder}
           value={value ?? ''}
@@ -134,6 +157,7 @@ export function CustomFormFieldRenderer({
           readOnly={readOnly}
           autosize
           minRows={field.minRows ?? 1}
+          rightSection={renderUnitSection(field.unit)}
         />
       </FieldRow>
     );
@@ -215,7 +239,7 @@ export function CustomFormFieldRenderer({
         <Icd10Selector
           value={value}
           onChange={handleIcd10Change}
-          multiSelect={!!(field as any).multi}
+          multiSelect={!!field.multi}
           readOnly={readOnly}
           variant="unstyled"
         />

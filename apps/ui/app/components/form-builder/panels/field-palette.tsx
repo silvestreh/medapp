@@ -1,61 +1,13 @@
 import { useCallback, useMemo } from 'react';
 import { Stack, Text, Divider } from '@mantine/core';
-import {
-  TextTIcon,
-  NoteBlankIcon,
-  ListBulletsIcon,
-  CalendarBlankIcon,
-  CheckSquareIcon,
-  FirstAidKitIcon,
-  PillIcon,
-  TextHOneIcon,
-  TextAlignLeftIcon,
-  MinusIcon,
-  TabsIcon,
-  SquaresFourIcon,
-  ListPlusIcon,
-  PlusIcon,
-} from '@phosphor-icons/react';
+import { PlusIcon } from '@phosphor-icons/react';
 import { useDraggable } from '@dnd-kit/core';
 import { styled } from '~/styled-system/jsx';
 import { useTranslation } from 'react-i18next';
 import { useBuilder } from '../builder-context';
-import { createDefaultField } from '../utils/field-defaults';
+import { createDefaultField, type CreatableFieldType } from '../utils/field-defaults';
 import { findFieldRecursive } from '../builder-reducer';
-import type { AnyField } from '../builder-types';
-
-interface PaletteFieldDef {
-  type: string;
-  labelKey: string;
-  icon: React.ElementType;
-  category: 'input' | 'structural';
-}
-
-const INPUT_FIELDS: PaletteFieldDef[] = [
-  { type: 'input', labelKey: 'palette_input', icon: TextTIcon, category: 'input' },
-  { type: 'textarea', labelKey: 'palette_textarea', icon: NoteBlankIcon, category: 'input' },
-  { type: 'select', labelKey: 'palette_select', icon: ListBulletsIcon, category: 'input' },
-  { type: 'date', labelKey: 'palette_date', icon: CalendarBlankIcon, category: 'input' },
-  { type: 'tri-state-checkbox', labelKey: 'palette_checkbox', icon: CheckSquareIcon, category: 'input' },
-  { type: 'icd10', labelKey: 'palette_icd10', icon: FirstAidKitIcon, category: 'input' },
-  { type: 'medication', labelKey: 'palette_medication', icon: PillIcon, category: 'input' },
-];
-
-const STRUCTURAL_FIELDS: PaletteFieldDef[] = [
-  { type: 'separator', labelKey: 'palette_separator', icon: MinusIcon, category: 'structural' },
-  { type: 'group', labelKey: 'palette_group', icon: SquaresFourIcon, category: 'structural' },
-];
-
-const ALL_PALETTE_FIELDS: PaletteFieldDef[] = [...INPUT_FIELDS, ...STRUCTURAL_FIELDS];
-
-const PALETTE_BY_TYPE: Record<string, PaletteFieldDef> = {};
-for (const def of ALL_PALETTE_FIELDS) {
-  if (!PALETTE_BY_TYPE[def.type]) {
-    PALETTE_BY_TYPE[def.type] = def;
-  }
-}
-
-export { PALETTE_BY_TYPE };
+import { FIELD_METADATA, INPUT_FIELD_TYPES, STRUCTURAL_FIELD_TYPES } from '../field-registry';
 
 const PaletteContainer = styled('div', {
   base: {
@@ -89,24 +41,24 @@ const PaletteItem = styled('button', {
   },
 });
 
-function DraggablePaletteItem({ def }: { def: PaletteFieldDef }) {
+function DraggablePaletteItem({ fieldType }: { fieldType: CreatableFieldType }) {
   const { dispatch, state } = useBuilder();
   const { t } = useTranslation();
+  const meta = FIELD_METADATA[fieldType];
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `palette-${def.type}`,
-    data: { source: 'palette', fieldType: def.type },
+    id: `palette-${fieldType}`,
+    data: { source: 'palette', fieldType },
   });
 
   const handleClick = useCallback(() => {
-    const field = createDefaultField(def.type as any);
+    const field = createDefaultField(fieldType, state.fieldsets);
     const targetFieldsetId = state.selectedFieldsetId || state.fieldsets[state.fieldsets.length - 1]?._id;
     if (!targetFieldsetId) return;
 
-    // If a group field is selected, add inside the group
     if (state.selectedFieldId) {
       const fs = state.fieldsets.find(f => f._id === targetFieldsetId);
       const selectedBf = fs ? findFieldRecursive(fs.fields, state.selectedFieldId) : null;
-      if (selectedBf && selectedBf.field.type === 'group') {
+      if (selectedBf?.field.type === 'group') {
         dispatch({
           type: 'ADD_FIELD',
           payload: { fieldsetId: targetFieldsetId, field, groupFieldId: state.selectedFieldId },
@@ -116,20 +68,15 @@ function DraggablePaletteItem({ def }: { def: PaletteFieldDef }) {
     }
 
     dispatch({ type: 'ADD_FIELD', payload: { fieldsetId: targetFieldsetId, field } });
-  }, [dispatch, def.type, state.selectedFieldsetId, state.selectedFieldId, state.fieldsets]);
+  }, [dispatch, fieldType, state.selectedFieldsetId, state.selectedFieldId, state.fieldsets]);
 
-  const Icon = def.icon;
+  const Icon = meta.icon;
+  const draggingStyle = useMemo(() => ({ opacity: isDragging ? 0.5 : 1 }), [isDragging]);
 
   return (
-    <PaletteItem
-      ref={setNodeRef}
-      onClick={handleClick}
-      style={{ opacity: isDragging ? 0.5 : 1 }}
-      {...listeners}
-      {...attributes}
-    >
+    <PaletteItem ref={setNodeRef} onClick={handleClick} style={draggingStyle} {...listeners} {...attributes}>
       <Icon size={16} />
-      <span>{t(`form_builder.${def.labelKey}` as any)}</span>
+      <span>{t(`form_builder.${meta.labelKey}`)}</span>
     </PaletteItem>
   );
 }
@@ -137,7 +84,6 @@ function DraggablePaletteItem({ def }: { def: PaletteFieldDef }) {
 export function FieldPalette() {
   const { state, dispatch } = useBuilder();
   const { t } = useTranslation();
-  const structuralFields = STRUCTURAL_FIELDS;
 
   const handleAddFieldset = useCallback(() => {
     const selectedIdx = state.fieldsets.findIndex(fs => fs._id === state.selectedFieldsetId);
@@ -153,8 +99,8 @@ export function FieldPalette() {
         {t('form_builder.fields')}
       </Text>
       <Stack gap={2}>
-        {INPUT_FIELDS.map(def => (
-          <DraggablePaletteItem key={def.type} def={def} />
+        {INPUT_FIELD_TYPES.map(type => (
+          <DraggablePaletteItem key={type} fieldType={type} />
         ))}
       </Stack>
 
@@ -164,8 +110,8 @@ export function FieldPalette() {
         {t('form_builder.structure')}
       </Text>
       <Stack gap={2}>
-        {structuralFields.map(def => (
-          <DraggablePaletteItem key={def.type} def={def} />
+        {STRUCTURAL_FIELD_TYPES.map(type => (
+          <DraggablePaletteItem key={type} fieldType={type} />
         ))}
       </Stack>
 

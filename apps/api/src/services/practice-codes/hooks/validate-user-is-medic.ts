@@ -1,5 +1,6 @@
 import { BadRequest } from '@feathersjs/errors';
 import { Hook, HookContext } from '@feathersjs/feathers';
+import logger from '../../../logger';
 
 export const validateUserIsMedic = (): Hook => {
   return async (context: HookContext): Promise<HookContext> => {
@@ -19,6 +20,13 @@ export const validateUserIsMedic = (): Hook => {
       },
       paginate: false,
     });
+
+    logger.debug(
+      '[practice-codes:validate-user-is-medic] userId=%s organizationId=%s matchedRoles=%d',
+      userId,
+      organizationId,
+      roles.length
+    );
 
     if (!roles.length) {
       throw new BadRequest('Practice codes can only be assigned to users with the medic role');

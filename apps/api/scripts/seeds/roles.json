@@ -219,7 +219,11 @@
       "studies:remove:all",
       "stats:find:all",
       "practice-costs:find:all",
-      "practice-costs:get:all"
+      "practice-costs:get:all",
+      "form-templates:find",
+      "form-templates:get",
+      "form-template-versions:find",
+      "form-template-versions:get"
     ]
   }
 ]

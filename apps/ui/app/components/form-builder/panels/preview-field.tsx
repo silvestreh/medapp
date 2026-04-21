@@ -2,15 +2,17 @@ import { useCallback, useMemo } from 'react';
 import { Select, Checkbox, ActionIcon, Group, Text } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useSortable } from '@dnd-kit/sortable';
-import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { DotsSixVerticalIcon, TrashIcon } from '@phosphor-icons/react';
 import { styled } from '~/styled-system/jsx';
 import { Icd10Selector } from '~/components/icd10-selector';
 import { MedicationSelector } from '~/components/medication-selector';
 import { useBuilder } from '../builder-context';
-import type { BuilderField } from '../builder-types';
+import type { AnyField, BuilderField } from '../builder-types';
 import { FieldRow, StyledTextInput, StyledTextarea } from '~/components/forms/styles';
+import { formatReference, type FieldReference } from '~/components/forms/format-reference';
+import { GroupDropZone } from './group-drop-zone';
+import { getCheckboxLayout } from '../utils/checkbox-layout';
 
 const FieldLabel = styled('div', {
   base: {
@@ -84,6 +86,11 @@ const DragHandle = styled('div', {
   },
 });
 
+const rowCenterStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', flex: 1 };
+const flexOneStyle: React.CSSProperties = { flex: 1 };
+const topLabelRowStyle: React.CSSProperties = { flexDirection: 'column', alignItems: 'stretch' };
+const topLabelContentStyle: React.CSSProperties = { paddingLeft: 24 };
+
 export function PreviewField({
   builderField,
   fieldsetId,
@@ -99,7 +106,8 @@ export function PreviewField({
     data: { type: 'field', fieldsetId, parentGroupId },
   });
 
-  const colSpan = (builderField.field as any).colSpan || 1;
+  const field = builderField.field;
+  const colSpan = field.colSpan || 1;
 
   const style = useMemo(
     () => ({
@@ -133,35 +141,22 @@ export function PreviewField({
     [dispatch, fieldsetId, builderField._id]
   );
 
-  const field = builderField.field;
-
-  const isCheckbox = field.type === 'tri-state-checkbox';
-  const isTopLabel = labelPosition === 'top' && !isCheckbox;
-  const hasLabel = 'label' in field && field.label;
-  const showLeftLabel = hasLabel && !isCheckbox && !isTopLabel;
-  // For checkboxes: label-left means "Label: []", label-right means "[] Label"
-  // When section labels are on top, checkbox label always goes right (no spacer)
-  const sectionIsTop = labelPosition === 'top';
-  const checkboxLabelOnRight = isCheckbox && (sectionIsTop || (field as any).variant === 'checkbox');
-  const checkboxWithSpacer = isCheckbox && !sectionIsTop && checkboxLabelOnRight && (field as any).indent;
-
-  // Checkboxes get special rendering: label left = "Label: []", label right = "[] Label"
-  if (isCheckbox) {
+  if (field.type === 'tri-state-checkbox') {
+    const layout = getCheckboxLayout(field, labelPosition);
     return (
       <div ref={setNodeRef} style={style}>
         <FieldWrapper selected={isSelected || undefined} onClick={handleSelect}>
           <FieldRow>
-            <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            <div style={rowCenterStyle}>
               <DragHandle {...attributes} {...listeners}>
                 <DotsSixVerticalIcon size={16} />
               </DragHandle>
 
-              {!checkboxLabelOnRight && hasLabel && <FieldLabel>{(field as any).label}:</FieldLabel>}
+              {layout.showLeftLabel && field.label && <FieldLabel>{field.label}:</FieldLabel>}
+              {layout.withSpacer && <FieldLabel />}
 
-              {checkboxWithSpacer && <FieldLabel />}
-
-              <div style={{ flex: 1 }}>
-                <Checkbox label={checkboxLabelOnRight ? (field as any).label : undefined} indeterminate />
+              <div style={flexOneStyle}>
+                <Checkbox label={layout.labelOnRight ? field.label : undefined} indeterminate />
               </div>
 
               <Group className="field-actions" gap={4} wrap="nowrap">
@@ -176,7 +171,6 @@ export function PreviewField({
     );
   }
 
-  // Groups get their own rendering with a droppable zone
   if (field.type === 'group') {
     return (
       <div ref={setNodeRef} style={style}>
@@ -185,13 +179,8 @@ export function PreviewField({
             <DragHandle {...attributes} {...listeners}>
               <DotsSixVerticalIcon size={16} />
             </DragHandle>
-            <div style={{ flex: 1 }}>
-              <Checkbox
-                label={(field as any).toggleLabel || (field as any).label || 'Group'}
-                checked={false}
-                readOnly
-                mb="xs"
-              />
+            <div style={flexOneStyle}>
+              <Checkbox label={field.toggleLabel || field.label || 'Group'} checked={false} readOnly mb="xs" />
               <GroupDropZone fieldId={builderField._id} fieldsetId={fieldsetId} builderField={builderField} />
             </div>
             <Group className="field-actions" gap={4} wrap="nowrap">
@@ -205,24 +194,28 @@ export function PreviewField({
     );
   }
 
+  const isTopLabel = labelPosition === 'top';
+  const hasLabel = Boolean(field.label);
+  const showLeftLabel = hasLabel && !isTopLabel;
+
   return (
     <div ref={setNodeRef} style={style}>
       <FieldWrapper selected={isSelected || undefined} onClick={handleSelect}>
-        <FieldRow style={isTopLabel ? { flexDirection: 'column', alignItems: 'stretch' } : undefined}>
-          <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+        <FieldRow style={isTopLabel ? topLabelRowStyle : undefined}>
+          <div style={rowCenterStyle}>
             <DragHandle {...attributes} {...listeners}>
               <DotsSixVerticalIcon size={16} />
             </DragHandle>
 
             {isTopLabel && hasLabel && (
               <Text size="sm" fw={500} c="gray.6" mb={4}>
-                {(field as any).label}
+                {field.label}
               </Text>
             )}
 
-            {showLeftLabel && <FieldLabel>{(field as any).label}:</FieldLabel>}
+            {showLeftLabel && <FieldLabel>{field.label}:</FieldLabel>}
 
-            {!isTopLabel && <div style={{ flex: 1 }}>{renderFieldPreview(field)}</div>}
+            {!isTopLabel && <div style={flexOneStyle}>{renderFieldPreview(field)}</div>}
 
             <Group className="field-actions" gap={4} wrap="nowrap">
               <ActionIcon variant="subtle" color="red" size="sm" onClick={handleRemove}>
@@ -231,158 +224,94 @@ export function PreviewField({
             </Group>
           </div>
 
-          {isTopLabel && <div style={{ paddingLeft: 24 }}>{renderFieldPreview(field)}</div>}
+          {isTopLabel && <div style={topLabelContentStyle}>{renderFieldPreview(field)}</div>}
         </FieldRow>
       </FieldWrapper>
     </div>
   );
 }
 
-function renderFieldPreview(field: any) {
+function renderFieldPreview(field: AnyField): React.ReactNode {
   switch (field.type) {
     case 'input':
-      return <StyledTextInput placeholder={field.placeholder || 'Text input'} type={field.inputType || 'text'} />;
+      return (
+        <>
+          <StyledTextInput
+            placeholder={field.placeholder || 'Text input'}
+            type={field.inputType || 'text'}
+            rightSection={renderUnitSection(field.unit)}
+          />
+          {renderReferenceHint(field.reference)}
+        </>
+      );
     case 'textarea':
-      return <StyledTextarea placeholder={field.placeholder || 'Text area'} autosize minRows={field.minRows || 2} />;
-    case 'select':
+      return (
+        <>
+          <StyledTextarea
+            placeholder={field.placeholder || 'Text area'}
+            autosize
+            minRows={field.minRows || 2}
+            rightSection={renderUnitSection(field.unit)}
+          />
+          {renderReferenceHint(field.reference)}
+        </>
+      );
+    case 'select': {
+      const flatOptions = (field.options ?? []).flatMap(o => ('items' in o ? o.items : [o]));
       return (
         <Select
           placeholder="Select an option"
-          data={
-            field.options?.map((o: any) => ({
-              value: o.value,
-              label: o.label,
-            })) || []
-          }
+          data={flatOptions.map(o => ({ value: o.value, label: o.label }))}
           clearable={field.clearable}
           variant="unstyled"
         />
       );
+    }
     case 'date':
       return <DateInput placeholder={field.valueFormat || 'DD/MM/YYYY'} variant="unstyled" />;
-    case 'tri-state-checkbox':
-      return null; // Handled separately in PreviewField render
     case 'icd10':
       return (
-        <Icd10Selector
-          value={field.multi ? [] : ''}
-          onChange={() => {}}
-          multiSelect={!!field.multi}
-          variant="unstyled"
-        />
+        <Icd10Selector value={field.multi ? [] : ''} onChange={noop} multiSelect={!!field.multi} variant="unstyled" />
       );
     case 'medication':
-      return <MedicationSelector value="" onChange={() => {}} />;
-    case 'title':
-      return (
-        <div
-          style={{
-            fontWeight: 600,
-            color: 'var(--mantine-color-blue-4)',
-            fontSize: 'var(--mantine-font-size-lg)',
-          }}
-        >
-          {field.label || 'Section Title'}
-        </div>
-      );
-    case 'text':
-      return (
-        <div style={{ color: 'var(--mantine-color-gray-6)', fontSize: 'var(--mantine-font-size-sm)' }}>
-          {field.label || 'Description text'}
-        </div>
-      );
+      return <MedicationSelector value="" onChange={noop} />;
     case 'separator':
-      return <div style={{ borderBottom: '1px solid var(--mantine-color-gray-3)', margin: '8px 0' }} />;
-    case 'tabs':
-      return (
-        <div
-          style={{
-            padding: '8px',
-            border: '1px dashed var(--mantine-color-gray-4)',
-            borderRadius: 'var(--mantine-radius-sm)',
-            color: 'var(--mantine-color-gray-5)',
-            fontSize: 'var(--mantine-font-size-sm)',
-          }}
-        >
-          Tabs ({field.tabs?.length || 0} tabs)
-        </div>
-      );
+      return <div style={separatorStyle} />;
+    case 'tri-state-checkbox':
     case 'group':
-      return null; // Rendered by GroupFieldPreview below
-    case 'array':
-      return (
-        <div
-          style={{
-            padding: '8px',
-            border: '1px dashed var(--mantine-color-gray-4)',
-            borderRadius: 'var(--mantine-radius-sm)',
-            color: 'var(--mantine-color-gray-5)',
-            fontSize: 'var(--mantine-font-size-sm)',
-          }}
-        >
-          Repeater: {field.itemLabel || 'Item'} ({field.itemFields?.length || 0} fields)
-        </div>
-      );
-    case 'title-input':
-      return (
-        <div
-          style={{
-            fontWeight: 600,
-            color: 'var(--mantine-color-blue-4)',
-            fontSize: 'var(--mantine-font-size-md)',
-          }}
-        >
-          {field.label || 'Title + Input'}
-        </div>
-      );
-    default:
-      return <StyledTextInput placeholder={`Unknown type: ${field.type}`} />;
+    case 'tabs':
+      return null; // handled by specialized branches or not placeable from palette
   }
 }
 
-function GroupDropZone({
-  fieldId,
-  fieldsetId,
-  builderField,
-}: {
-  fieldId: string;
-  fieldsetId: string;
-  builderField: BuilderField;
-}) {
-  const { setNodeRef, isOver } = useDroppable({
-    id: `group-drop-${fieldId}`,
-    data: { type: 'group-drop', fieldsetId, groupFieldId: fieldId },
-  });
+const separatorStyle: React.CSSProperties = {
+  borderBottom: '1px solid var(--mantine-color-gray-3)',
+  margin: '8px 0',
+};
 
-  const children = builderField._groupChildren || [];
+function noop() {}
 
-  return (
-    <div
-      style={{
-        marginLeft: '24px',
-        borderLeft: '2px solid var(--mantine-color-gray-3)',
-        backgroundColor: 'var(--mantine-color-gray-0)',
-        borderRadius: '0 var(--mantine-radius-sm) var(--mantine-radius-sm) 0',
-        minHeight: '40px',
-      }}
-    >
-      {children.map(child => (
-        <PreviewField key={child._id} builderField={child} fieldsetId={fieldsetId} parentGroupId={fieldId} />
-      ))}
-      <div
-        ref={setNodeRef}
-        style={{
-          padding: children.length > 0 ? '8px 12px' : '16px',
-          backgroundColor: isOver ? 'var(--mantine-color-blue-0)' : 'transparent',
-          borderRadius: 'var(--mantine-radius-sm)',
-          transition: 'background-color 200ms ease',
-          textAlign: 'center',
-        }}
-      >
-        <Text size="xs" c="gray.4">
-          {children.length === 0 ? 'Drop fields here' : '+'}
-        </Text>
-      </div>
-    </div>
-  );
+const unitStyle: React.CSSProperties = {
+  color: 'var(--mantine-color-gray-6)',
+  fontSize: 'var(--mantine-font-size-sm)',
+  paddingRight: '4px',
+  whiteSpace: 'nowrap',
+};
+
+const referenceStyle: React.CSSProperties = {
+  color: 'var(--mantine-color-gray-6)',
+  fontSize: 'var(--mantine-font-size-xs)',
+  marginTop: 2,
+  lineHeight: 1.4,
+};
+
+function renderUnitSection(unit: string | undefined) {
+  return unit ? <span style={unitStyle}>{unit}</span> : null;
+}
+
+function renderReferenceHint(reference: FieldReference | undefined) {
+  if (!reference) return null;
+  const str = formatReference(reference);
+  if (!str) return null;
+  return <div style={referenceStyle}>Ref: {str}</div>;
 }

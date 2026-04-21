@@ -13,7 +13,6 @@ import { FormCard } from '~/components/forms/styles';
 
 interface PreviewFieldsetProps {
   fieldset: BuilderFieldset;
-  index: number;
 }
 
 const FieldsetHeader = styled('div', {
@@ -60,6 +59,8 @@ const EmptyDropZone = styled('div', {
   },
 });
 
+const TabsWrapper = styled('div', { base: {} });
+
 const FieldsContainer = styled('div', {
   base: {
     '& > div + div': {
@@ -84,6 +85,19 @@ const FieldsContainer = styled('div', {
   },
 });
 
+const titleInputStyle: React.CSSProperties = { flex: 1 };
+
+function getGridStyle(columns: number): React.CSSProperties | undefined {
+  return columns > 1 ? { display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)` } : undefined;
+}
+
+function getDropZoneStyle(isOver: boolean): React.CSSProperties {
+  return {
+    borderColor: isOver ? 'var(--mantine-primary-color-4)' : undefined,
+    backgroundColor: isOver ? 'var(--mantine-color-blue-0)' : undefined,
+  };
+}
+
 function renderFieldsWithSeparators(
   fields: BuilderFieldset['fields'],
   columns: number,
@@ -107,7 +121,7 @@ function renderFieldsWithSeparators(
   let colsUsed = 0;
 
   for (const bf of fields) {
-    const span = Math.min((bf.field as any).colSpan || 1, columns);
+    const span = Math.min(bf.field.colSpan || 1, columns);
     if (colsUsed + span > columns && colsUsed > 0) {
       elements.push(<hr key={`sep-${bf._id}`} />);
       colsUsed = 0;
@@ -127,7 +141,7 @@ function renderFieldsWithSeparators(
   return elements;
 }
 
-export function PreviewFieldset({ fieldset, index }: PreviewFieldsetProps) {
+export function PreviewFieldset({ fieldset }: PreviewFieldsetProps) {
   const { state, dispatch } = useBuilder();
   const { t } = useTranslation();
   const isSelected = state.selectedFieldsetId === fieldset._id && !state.selectedFieldId;
@@ -189,13 +203,32 @@ export function PreviewFieldset({ fieldset, index }: PreviewFieldsetProps) {
     [dispatch, fieldset._id]
   );
 
+  const handleRemoveClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleRemove();
+    },
+    [handleRemove]
+  );
+
+  const cardStyle = useMemo(
+    () => ({ outline: isSelected ? '2px solid var(--mantine-primary-color-4)' : undefined }),
+    [isSelected]
+  );
+
+  const gridStyle = useMemo(() => getGridStyle(columns), [columns]);
+  const dropZoneStyle = useMemo(() => getDropZoneStyle(isOver), [isOver]);
+
+  const handleTabChange = useCallback(
+    (tabId: string | null) => {
+      if (tabId) dispatch({ type: 'SET_ACTIVE_TAB', payload: { fieldsetId: fieldset._id, tabId } });
+    },
+    [dispatch, fieldset._id]
+  );
+
   return (
     <div ref={setSortableRef} style={style}>
-      <FormCard
-        style={{
-          outline: isSelected ? '2px solid var(--mantine-primary-color-4)' : undefined,
-        }}
-      >
+      <FormCard style={cardStyle}>
         <FieldsetHeader onClick={handleSelectFieldset}>
           <FieldsetDragHandle {...attributes} {...listeners}>
             <DotsSixVerticalIcon size={18} />
@@ -208,14 +241,8 @@ export function PreviewFieldset({ fieldset, index }: PreviewFieldsetProps) {
             onChange={handleTitleChange}
             size="sm"
             fw={600}
-            style={{ flex: 1 }}
-            onClick={e => {
-              e.stopPropagation();
-              dispatch({
-                type: 'SELECT_FIELD',
-                payload: { fieldId: null, fieldsetId: fieldset._id },
-              });
-            }}
+            style={titleInputStyle}
+            onClick={handleSelectFieldset}
           />
 
           {fieldset.repeatable && (
@@ -232,15 +259,7 @@ export function PreviewFieldset({ fieldset, index }: PreviewFieldsetProps) {
 
           <Group gap={4}>
             {state.fieldsets.length > 1 && (
-              <ActionIcon
-                variant="subtle"
-                color="red"
-                size="sm"
-                onClick={e => {
-                  e.stopPropagation();
-                  handleRemove();
-                }}
-              >
+              <ActionIcon variant="subtle" color="red" size="sm" onClick={handleRemoveClick}>
                 <TrashIcon size={14} />
               </ActionIcon>
             )}
@@ -248,12 +267,10 @@ export function PreviewFieldset({ fieldset, index }: PreviewFieldsetProps) {
         </FieldsetHeader>
 
         {fieldset.tabs ? (
-          <div onClick={handleSelectFieldset}>
+          <TabsWrapper onClick={handleSelectFieldset}>
             <Tabs
               value={fieldset.activeTabId || fieldset.tabs[0]?._id}
-              onChange={tabId => {
-                if (tabId) dispatch({ type: 'SET_ACTIVE_TAB', payload: { fieldsetId: fieldset._id, tabId } });
-              }}
+              onChange={handleTabChange}
               variant={fieldset.tabStyle ?? 'pills'}
             >
               <Tabs.List grow mb="md" mx="md" mt="sm">
@@ -266,14 +283,13 @@ export function PreviewFieldset({ fieldset, index }: PreviewFieldsetProps) {
 
               {fieldset.tabs.map(tab => {
                 const tabFieldIds = tab.fields.map(f => f._id);
+                const isActiveTab = tab._id === (fieldset.activeTabId || fieldset.tabs![0]?._id);
                 return (
                   <Tabs.Panel key={tab._id} value={tab._id}>
                     <FieldsContainer
                       grid={columns > 1 || undefined}
-                      ref={tab._id === (fieldset.activeTabId || fieldset.tabs![0]?._id) ? setDroppableRef : undefined}
-                      style={
-                        columns > 1 ? { display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)` } : undefined
-                      }
+                      ref={isActiveTab ? setDroppableRef : undefined}
+                      style={gridStyle}
                     >
                       <SortableContext
                         items={tabFieldIds}
@@ -283,34 +299,20 @@ export function PreviewFieldset({ fieldset, index }: PreviewFieldsetProps) {
                       </SortableContext>
 
                       {tab.fields.length === 0 && (
-                        <EmptyDropZone
-                          style={{
-                            borderColor: isOver ? 'var(--mantine-primary-color-4)' : undefined,
-                            backgroundColor: isOver ? 'var(--mantine-color-blue-0)' : undefined,
-                          }}
-                        >
-                          {t('form_builder.drop_fields_here')}
-                        </EmptyDropZone>
+                        <EmptyDropZone style={dropZoneStyle}>{t('form_builder.drop_fields_here')}</EmptyDropZone>
                       )}
                     </FieldsContainer>
                   </Tabs.Panel>
                 );
               })}
             </Tabs>
-          </div>
+          </TabsWrapper>
         ) : (
           <FieldsContainer
             grid={columns > 1 || undefined}
             ref={setDroppableRef}
             onClick={handleSelectFieldset}
-            style={
-              columns > 1
-                ? {
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(${columns}, 1fr)`,
-                  }
-                : undefined
-            }
+            style={gridStyle}
           >
             <SortableContext
               items={fieldIds}
@@ -320,14 +322,7 @@ export function PreviewFieldset({ fieldset, index }: PreviewFieldsetProps) {
             </SortableContext>
 
             {fieldset.fields.length === 0 && (
-              <EmptyDropZone
-                style={{
-                  borderColor: isOver ? 'var(--mantine-primary-color-4)' : undefined,
-                  backgroundColor: isOver ? 'var(--mantine-color-blue-0)' : undefined,
-                }}
-              >
-                {t('form_builder.drop_fields_here')}
-              </EmptyDropZone>
+              <EmptyDropZone style={dropZoneStyle}>{t('form_builder.drop_fields_here')}</EmptyDropZone>
             )}
           </FieldsContainer>
         )}

@@ -1,20 +1,21 @@
-function uuid(): string {
-  return crypto.randomUUID();
-}
 import type { FormTemplateSchema, Fieldset, CustomFormField } from '@athelas/encounter-schemas';
 import type { BuilderState, BuilderField, BuilderFieldset, AnyField } from '../builder-types';
 
+function uuid(): string {
+  return crypto.randomUUID();
+}
+
 function fieldToBuilderField(field: AnyField): BuilderField {
   const bf: BuilderField = { _id: uuid(), field };
-  if (field.type === 'group' && 'fields' in field && Array.isArray((field as any).fields)) {
-    bf._groupChildren = ((field as any).fields as AnyField[]).map(fieldToBuilderField);
+  if (field.type === 'group' && Array.isArray(field.fields)) {
+    bf._groupChildren = field.fields.map(fieldToBuilderField);
   }
   return bf;
 }
 
 function builderFieldToSchema(bf: BuilderField): CustomFormField {
   if (bf.field.type === 'group' && bf._groupChildren) {
-    return { ...bf.field, fields: bf._groupChildren.map(builderFieldToSchema) } as CustomFormField;
+    return { ...bf.field, fields: bf._groupChildren.map(builderFieldToSchema) };
   }
   return bf.field;
 }
@@ -36,14 +37,14 @@ export function schemaToBuilderState(schema: FormTemplateSchema, formType: 'enco
       itemLabel: fs.itemLabel,
       minItems: fs.minItems,
       tabStyle: fs.tabStyle,
-      fields: (fs.fields as AnyField[]).map(fieldToBuilderField),
+      fields: fs.fields.map(fieldToBuilderField),
     };
     if (fs.tabs) {
       result.tabs = fs.tabs.map(tab => ({
         _id: uuid(),
         value: tab.value,
         label: tab.label,
-        fields: (tab.fields as AnyField[]).map(fieldToBuilderField),
+        fields: tab.fields.map(fieldToBuilderField),
       }));
       result.activeTabId = result.tabs[0]?._id;
     }

@@ -4,24 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 import { FieldRow, StyledTextInput, StyledTextarea, StyledSelect, StyledTitle } from '~/components/forms/styles';
 import { SafeHtml } from '~/components/safe-html';
-import type { StudyField, StudyFieldReference, StudySelectValue } from './study-form-types';
-
-// ---------------------------------------------------------------------------
-// Reference helpers
-// ---------------------------------------------------------------------------
-
-function formatReference(reference: string | StudyFieldReference): string {
-  if (typeof reference === 'string') return reference;
-
-  const parts: string[] = [];
-  if (reference.male) parts.push(`M: ${reference.male}`);
-  if (reference.female) parts.push(`F: ${reference.female}`);
-  if (reference.child && reference.child !== '–') parts.push(`Niño: ${reference.child}`);
-  if (reference.o) parts.push(`Grupo O: ${reference.o}`);
-  if (reference.other) parts.push(`Otros: ${reference.other}`);
-
-  return parts.join(' | ');
-}
+import { formatReference } from './format-reference';
+import type { StudyField, StudySelectValue } from './study-form-types';
 
 const ReferenceText = styled('span', {
   base: {

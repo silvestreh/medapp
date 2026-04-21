@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Button, Group, Badge, Box } from '@mantine/core';
 import { DndContext, DragOverlay, pointerWithin, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core';
 import { FloppyDiskIcon, RocketLaunchIcon } from '@phosphor-icons/react';
@@ -6,13 +6,13 @@ import { useNavigate } from '@remix-run/react';
 import { useTranslation } from 'react-i18next';
 import { styled } from '~/styled-system/jsx';
 import { useBuilder } from './builder-context';
-import { FieldPalette, PALETTE_BY_TYPE } from './panels/field-palette';
+import { FieldPalette } from './panels/field-palette';
 import { FormPreview } from './panels/form-preview';
+import { PaletteDragPreview } from './panels/palette-drag-preview';
 import { PropertyEditor } from './panels/property-editor';
-import { createDefaultField } from './utils/field-defaults';
+import { createDefaultField, type CreatableFieldType } from './utils/field-defaults';
 import { ToolbarTitle } from '~/components/toolbar-title';
 import Portal from '~/components/portal';
-import type { AnyField } from './builder-types';
 
 interface FormBuilderProps {
   onSave: (status?: 'draft' | 'published') => void;
@@ -81,8 +81,8 @@ export function FormBuilder({ onSave, isSaving }: FormBuilderProps) {
 
       // Palette → Preview: insert new field
       if (activeData?.source === 'palette') {
-        const fieldType = activeData.fieldType;
-        const field = createDefaultField(fieldType as any);
+        const fieldType = activeData.fieldType as CreatableFieldType;
+        const field = createDefaultField(fieldType, state.fieldsets);
 
         let targetFieldsetId: string | null = null;
         let atIndex: number | undefined;
@@ -212,7 +212,7 @@ export function FormBuilder({ onSave, isSaving }: FormBuilderProps) {
       <Portal id="toolbar">
         <ToolbarTitle
           title={state.label || t('form_builder.new_form')}
-          subTitle={t(`form_builder.type_${state.type}` as any)}
+          subTitle={t(state.type === 'study' ? 'form_builder.type_study' : 'form_builder.type_encounter')}
           onBack={handleBack}
         />
       </Portal>
@@ -260,29 +260,9 @@ export function FormBuilder({ onSave, isSaving }: FormBuilderProps) {
       </BuilderLayout>
 
       <DragOverlay>
-        {activeDragId?.startsWith('palette-') &&
-          (() => {
-            const fieldType = activeDragId.replace('palette-', '');
-            const def = PALETTE_BY_TYPE[fieldType];
-            const Icon = def?.icon;
-            return (
-              <div
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: 'white',
-                  borderRadius: 'var(--mantine-radius-sm)',
-                  boxShadow: 'var(--mantine-shadow-md)',
-                  fontSize: 'var(--mantine-font-size-sm)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                {Icon && <Icon size={16} />}
-                {def ? t(`form_builder.${def.labelKey}` as any) : fieldType}
-              </div>
-            );
-          })()}
+        {activeDragId?.startsWith('palette-') && (
+          <PaletteDragPreview fieldType={activeDragId.replace('palette-', '') as CreatableFieldType} />
+        )}
       </DragOverlay>
     </DndContext>
   );
