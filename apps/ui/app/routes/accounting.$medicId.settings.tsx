@@ -22,6 +22,7 @@ import {
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import uniqBy from 'lodash/uniqBy';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -456,10 +457,13 @@ export default function AccountingSettingsPage() {
 
   const activeTierOptions = useMemo(() => {
     if (!activeInsurer || !activeInsurer.tiers || activeInsurer.tiers.length === 0) return [];
-    return activeInsurer.tiers.map(tier => ({
-      value: tier.name,
-      label: tier.name,
-    }));
+    return uniqBy(
+      activeInsurer.tiers.map(tier => ({
+        value: tier.name,
+        label: tier.name,
+      })),
+      'value',
+    );
   }, [activeInsurer]);
 
   const activePrices = useMemo(

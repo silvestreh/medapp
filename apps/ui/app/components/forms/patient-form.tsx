@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { UseFormReturnType } from '@mantine/form';
 import { useTranslation } from 'react-i18next';
+import uniqBy from 'lodash/uniqBy';
 
 import {
   FormContainer,
@@ -248,7 +249,10 @@ export function PatientForm({
   const tierOptions = useMemo(() => {
     const tiers = (selectedPrepaga as { tiers?: PrepagaTier[] })?.tiers;
     if (!tiers || tiers.length === 0) return [];
-    return tiers.map(tier => ({ value: tier.name, label: tier.name }));
+    return uniqBy(
+      tiers.map(tier => ({ value: tier.name, label: tier.name })),
+      'value',
+    );
   }, [selectedPrepaga]);
 
   const handleInsurerChange = useCallback(
