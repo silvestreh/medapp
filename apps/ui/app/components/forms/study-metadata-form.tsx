@@ -27,9 +27,16 @@ interface StudyPatientInfo {
   prepaga?: { shortName: string; denomination: string } | null;
 }
 
+interface CustomStudyFormSummary {
+  formKey: string;
+  label: string;
+  name: string;
+}
+
 interface StudyMetadataFormProps {
   mode: 'create' | 'edit';
   studyTypeKeys: readonly string[];
+  customForms?: CustomStudyFormSummary[];
   selectedStudies: string[];
   onToggleStudy: (key: string) => void;
   noOrder: boolean;
@@ -97,6 +104,7 @@ const StyledAutocomplete = styled(Autocomplete, {
 export function StudyMetadataForm({
   mode,
   studyTypeKeys,
+  customForms = [],
   selectedStudies,
   onToggleStudy,
   noOrder,
@@ -303,6 +311,15 @@ export function StudyMetadataForm({
                 }
                 checked={selectedStudies.includes(key)}
                 onChange={() => onToggleStudy(key)}
+                disabled={readOnly}
+              />
+            ))}
+            {customForms.map(cf => (
+              <Checkbox
+                key={cf.formKey}
+                label={cf.label || cf.name}
+                checked={selectedStudies.includes(cf.formKey)}
+                onChange={() => onToggleStudy(cf.formKey)}
                 disabled={readOnly}
               />
             ))}

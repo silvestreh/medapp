@@ -12,6 +12,8 @@ import {
   type StudyField,
   type SelectOption,
   type SelectOptionGroup,
+  type FormTemplateSchema,
+  type CustomFormField,
 } from '@athelas/encounter-schemas';
 import { getPdfTranslations, translateLabel } from '@athelas/translations';
 
@@ -71,6 +73,19 @@ export interface PdfStudy {
   results: PdfStudyResult[];
 }
 
+export interface PdfCustomForm {
+  formKey: string;
+  label: string;
+  schema: FormTemplateSchema;
+}
+
+export interface PdfStudySignature {
+  image: string;
+  doctorName: string;
+  doctorTitle: string;
+  licenseNumber: string | null;
+}
+
 export interface PdfRenderOptions {
   organizationName: string;
   organizationLogoUrl?: string;
@@ -78,6 +93,8 @@ export interface PdfRenderOptions {
   patient: PdfPatientInfo;
   encounters: PdfEncounter[];
   studies: PdfStudy[];
+  customForms?: PdfCustomForm[];
+  studySignature?: PdfStudySignature;
   startDate?: string;
   endDate?: string;
   isSigned: boolean;
@@ -276,6 +293,115 @@ export function extractStudyLines(
     const label = tl(field.label || field.name).replace(/<[^>]*>/g, '');
     const reference = resolveStudyReference(field, patientGender);
     lines.push({ kind: 'field', label, value: val, reference });
+  }
+
+  return lines;
+}
+
+function formatCustomFieldValue(
+  field: CustomFormField,
+  value: any,
+  t: ReturnType<typeof getPdfTranslations>,
+  locale?: string,
+): string {
+  if (value === null || value === undefined || value === '') return '';
+  if (value === 'indeterminate') return '';
+
+  switch (field.type) {
+    case 'tri-state-checkbox':
+      if (value === true || value === 'si' || value === 'on') return t.yes;
+      if (value === false || value === 'no' || value === 'off') return t.no;
+      return '';
+    case 'date':
+      try {
+        return dayjs(value).format('DD/MM/YYYY');
+      } catch {
+        return String(value);
+      }
+    case 'icd10':
+      if (Array.isArray(value)) {
+        return value
+          .map((v: any) => {
+            if (!v) return '';
+            if (typeof v === 'string') return v;
+            return [v.code, v.label].filter(Boolean).join(' ').trim();
+          })
+          .filter(Boolean)
+          .join(', ');
+      }
+      return String(value);
+    case 'select': {
+      const options = (field.options ?? []) as (SelectOption | SelectOptionGroup)[];
+      for (const opt of options) {
+        if ('group' in opt && 'items' in opt) {
+          const match = (opt as SelectOptionGroup).items.find((i) => i.value === value);
+          if (match) return translateLabel(locale, match.label);
+        } else if ((opt as SelectOption).value === value) {
+          return translateLabel(locale, (opt as SelectOption).label);
+        }
+      }
+      return String(value);
+    }
+    default:
+      if (Array.isArray(value)) return value.filter(Boolean).join(', ');
+      return String(value);
+  }
+}
+
+export function extractCustomFormLines(
+  schema: FormTemplateSchema,
+  data: Record<string, any>,
+  t: ReturnType<typeof getPdfTranslations>,
+  locale?: string,
+): PdfLine[] {
+  const lines: PdfLine[] = [];
+  const tl = (label: string) => translateLabel(locale, label);
+
+  const processFields = (fields: CustomFormField[], values: Record<string, any>) => {
+    for (const field of fields) {
+      if (field.type === 'separator') continue;
+
+      if (field.type === 'group') {
+        if (field.label) lines.push({ kind: 'heading', label: tl(field.label) });
+        processFields(field.fields, values);
+        continue;
+      }
+
+      if (field.type === 'tabs') {
+        for (const tab of field.tabs) {
+          if (tab.label) lines.push({ kind: 'heading', label: tl(tab.label) });
+          processFields(tab.fields, values);
+        }
+        continue;
+      }
+
+      if (!field.name) continue;
+      const display = formatCustomFieldValue(field, values?.[field.name], t, locale);
+      if (!display) continue;
+      lines.push({ kind: 'field', label: tl(field.label || field.name), value: display });
+    }
+  };
+
+  for (const fs of schema.fieldsets) {
+    if (fs.title) lines.push({ kind: 'heading', label: tl(fs.title) });
+
+    if (fs.repeatable) {
+      const items = data?.[`repeater_${fs.id}`];
+      if (!Array.isArray(items)) continue;
+      items.forEach((item: any, idx: number) => {
+        const itemLabelTpl = fs.itemLabel || '#{{index}}';
+        const itemLabel = tl(itemLabelTpl).replace('{{index}}', String(idx + 1));
+        lines.push({ kind: 'heading', label: itemLabel });
+        processFields(fs.fields, item || {});
+      });
+    } else if (fs.tabs) {
+      for (const tab of fs.tabs) {
+        if (tab.label) lines.push({ kind: 'heading', label: tl(tab.label) });
+        processFields(tab.fields, data);
+      }
+    } else {
+      processFields(fs.fields, data);
+    }
   }
 
   return lines;
@@ -513,6 +639,27 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
       color: '#6b7280',
       textAlign: 'right',
     },
+    studySignatureBlock: {
+      marginTop: 32,
+      alignItems: 'flex-end',
+    },
+    studySignatureImage: {
+      width: 110,
+      height: 45,
+      objectFit: 'contain',
+      marginBottom: 2,
+    },
+    studySignatureName: {
+      fontSize: 8,
+      fontFamily: 'Helvetica-Bold',
+      color: '#111827',
+      textAlign: 'right',
+    },
+    studySignatureLicense: {
+      fontSize: 8,
+      color: '#4b5563',
+      textAlign: 'right',
+    },
     footer: {
       position: 'absolute',
       bottom: 20,
@@ -615,6 +762,10 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
 
   const timelineEntries: TimelineEntry[] = [];
 
+  const customFormByKey = new Map(
+    (options.customForms ?? []).map((cf) => [cf.formKey, cf]),
+  );
+
   for (const enc of encounters) {
     const encounterData = typeof enc.data === 'string' ? JSON.parse(enc.data) : enc.data;
     const sections: FormSectionData[] = [];
@@ -628,6 +779,19 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
       const lines = extractFormLines(formDef.schema, formValues, t, options.locale);
       if (lines.length === 0) continue;
       sections.push({ label: translateLabel(options.locale, formDef.schema.label), lines });
+    }
+
+    for (const [formKey, entry] of Object.entries(encounterData || {})) {
+      if (encounterForms[formKey]) continue;
+      const customForm = customFormByKey.get(formKey);
+      if (!customForm) continue;
+      const values = (entry as any)?.values ?? {};
+      const lines = extractCustomFormLines(customForm.schema, values, t, options.locale);
+      if (lines.length === 0) continue;
+      sections.push({
+        label: translateLabel(options.locale, customForm.label || customForm.schema.label),
+        lines,
+      });
     }
 
     const doctorLabel = `${enc.doctorTitle} ${enc.doctorName}`;
@@ -648,14 +812,25 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
   for (const study of studies) {
     const resultSections: FormSectionData[] = [];
     for (const result of study.results) {
-      const schema = studySchemas[result.type];
-      if (!schema) continue;
       const data = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
-      const lines = extractStudyLines(schema, data, options.patientGender, options.locale);
-      if (data.comments) lines.push({ kind: 'field', label: t.comments, value: String(data.comments) });
-      if (data.conclusion) lines.push({ kind: 'field', label: t.conclusion, value: String(data.conclusion) });
-      if (lines.length === 0) continue;
-      resultSections.push({ label: translateLabel(options.locale, schema.label), lines });
+      const schema = studySchemas[result.type];
+
+      if (schema) {
+        const lines = extractStudyLines(schema, data, options.patientGender, options.locale);
+        if (data.comments) lines.push({ kind: 'field', label: t.comments, value: String(data.comments) });
+        if (data.conclusion) lines.push({ kind: 'field', label: t.conclusion, value: String(data.conclusion) });
+        if (lines.length === 0) continue;
+        resultSections.push({ label: translateLabel(options.locale, schema.label), lines });
+      } else {
+        const customForm = customFormByKey.get(result.type);
+        if (!customForm) continue;
+        const lines = extractCustomFormLines(customForm.schema, data, t, options.locale);
+        if (lines.length === 0) continue;
+        resultSections.push({
+          label: translateLabel(options.locale, customForm.label || customForm.schema.label),
+          lines,
+        });
+      }
     }
 
     if (resultSections.length === 0) continue;
@@ -788,6 +963,21 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
 
         {!hasEntries && (
           <Text style={styles.emptyNote}>{t.noRecords}</Text>
+        )}
+
+        {options.studySignature && (
+          <View style={styles.studySignatureBlock} wrap={false}>
+            <Image
+              src={`data:image/png;base64,${options.studySignature.image}`}
+              style={styles.studySignatureImage}
+            />
+            <Text style={styles.studySignatureName}>
+              {options.studySignature.doctorTitle} {options.studySignature.doctorName}
+            </Text>
+            {options.studySignature.licenseNumber && (
+              <Text style={styles.studySignatureLicense}>M.N. {options.studySignature.licenseNumber}</Text>
+            )}
+          </View>
         )}
 
         {isSigned && (

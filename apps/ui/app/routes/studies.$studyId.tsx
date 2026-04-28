@@ -15,6 +15,7 @@ import { styled } from '~/styled-system/jsx';
 import { studySchemas } from '~/components/forms/study-schemas';
 import { StudyForm } from '~/components/forms/study-form';
 import { StudyMetadataForm } from '~/components/forms/study-metadata-form';
+import { CustomFormRenderer } from '~/components/forms/custom-form-renderer';
 import type { StudyResultData } from '~/components/forms/study-form-types';
 import { StyledTitle } from '~/components/forms/styles';
 import { getPageTitle } from '~/utils/meta';
@@ -35,11 +36,22 @@ export const meta: MetaFunction = ({ matches }) => {
 };
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
-  const { user } = await getAuthenticatedClient(request);
+  const { client, user } = await getAuthenticatedClient(request);
   const orgId = await getCurrentOrganizationId(request);
   const orgRoleIds = getCurrentOrgRoleIds(user, orgId);
   const isVerified = isMedicVerified(user, orgRoleIds);
-  return json({ isVerified });
+
+  let customForms: any[] = [];
+  try {
+    const result = await client.service('form-templates' as any).find({
+      query: { type: 'study', status: 'published' },
+    });
+    customForms = Array.isArray(result) ? result : (result as any)?.data || [];
+  } catch {
+    // form-templates service may not exist yet
+  }
+
+  return json({ isVerified, customForms });
 });
 
 export const action = async ({ params, request }: ActionFunctionArgs) => {
@@ -101,7 +113,11 @@ const PageContainer = styled('div', {
 
 export default function StudyDetail() {
   const { t, i18n } = useTranslation();
-  const { isVerified } = useLoaderData<typeof loader>();
+  const { isVerified, customForms } = useLoaderData<typeof loader>();
+  const customFormsByKey = useMemo(
+    () => new Map((customForms ?? []).map((cf: any) => [cf.formKey, cf])),
+    [customForms]
+  );
   const { studyId } = useParams();
   const navigate = useNavigate();
   const fetcher = useFetcher();
@@ -138,10 +154,11 @@ export default function StudyDetail() {
     }
   }, [client, studyId, study?.patientId, i18n.language]);
 
-  // Local draft state for result forms (saved through the unified study save action)
-  const [resultDrafts, setResultDrafts] = useState<Record<string, StudyResultData>>({});
+  // Local draft state for result forms (saved through the unified study save action).
+  // Values can be either built-in StudyResultData or a custom form's free-form values map.
+  const [resultDrafts, setResultDrafts] = useState<Record<string, Record<string, any>>>({});
   // Ref to keep drafts being saved (so we can update SWR cache after save succeeds)
-  const pendingSaveDraftsRef = useRef<Record<string, StudyResultData>>({});
+  const pendingSaveDraftsRef = useRef<Record<string, Record<string, any>>>({});
 
   // Local metadata state (initialized from study once loaded)
   const [metaDirty, setMetaDirty] = useState(false);
@@ -281,7 +298,7 @@ export default function StudyDetail() {
   ]);
 
   const handleResultDraftChange = useCallback(
-    (type: string) => (data: StudyResultData) => {
+    (type: string) => (data: Record<string, any>) => {
       setResultDrafts(prev => ({
         ...prev,
         [type]: data,
@@ -417,6 +434,7 @@ export default function StudyDetail() {
       <StudyMetadataForm
         mode="edit"
         studyTypeKeys={STUDY_TYPE_KEYS}
+        customForms={customForms}
         selectedStudies={currentStudies}
         onToggleStudy={toggleStudy}
         noOrder={noOrder ?? study.noOrder ?? false}
@@ -453,9 +471,10 @@ export default function StudyDetail() {
             <Tabs.List mb="sm" bd="1px solid var(--mantine-color-gray-2)" bdrs={4}>
               {currentStudies.map((type: string) => {
                 const schema = studySchemas[type];
+                const customForm = customFormsByKey.get(type) as any;
                 return (
                   <Tabs.Tab key={type} value={type}>
-                    {schema?.label ?? type}
+                    {schema?.label ?? customForm?.label ?? customForm?.name ?? type}
                   </Tabs.Tab>
                 );
               })}
@@ -463,7 +482,8 @@ export default function StudyDetail() {
 
             {currentStudies.map((type: string) => {
               const schema = studySchemas[type];
-              if (!schema) return null;
+              const customForm = customFormsByKey.get(type) as any;
+              if (!schema && !customForm) return null;
 
               const existingResult = results.find((r: any) => r.type === type);
               const resultData = existingResult?.data as StudyResultData | undefined;
@@ -472,12 +492,22 @@ export default function StudyDetail() {
 
               return (
                 <Tabs.Panel key={type} value={type}>
-                  <StudyForm
-                    schema={schema}
-                    initialData={initialResultData}
-                    onChange={handleResultDraftChange(type)}
-                    readOnly={!isVerified}
-                  />
+                  {schema && (
+                    <StudyForm
+                      schema={schema}
+                      initialData={initialResultData}
+                      onChange={handleResultDraftChange(type)}
+                      readOnly={!isVerified}
+                    />
+                  )}
+                  {!schema && customForm && (
+                    <CustomFormRenderer
+                      schema={customForm.schema}
+                      initialData={initialResultData}
+                      onChange={handleResultDraftChange(type)}
+                      readOnly={!isVerified}
+                    />
+                  )}
                 </Tabs.Panel>
               );
             })}

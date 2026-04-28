@@ -13,6 +13,7 @@ import {
   type FormSectionData,
   extractFormLines,
   extractStudyLines,
+  extractCustomFormLines,
 } from './pdf-renderer';
 
 function esc(s: string | null | undefined): string {
@@ -119,6 +120,19 @@ const CSS = `
   .signature-block { margin-top: 30px; padding-top: 12px; border-top: 1px solid #d1d5db; text-align: right; }
   .signature-text { font-size: 9pt; color: #6b7280; }
 
+  /* Study signature stamp */
+  .study-signature-block {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .study-signature-image { max-width: 120px; max-height: 50px; object-fit: contain; margin-bottom: 2px; }
+  .study-signature-name { font-size: 8pt; font-weight: bold; color: #111827; }
+  .study-signature-license { font-size: 8pt; color: #4b5563; }
+
   /* Footer */
   .footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; font-size: 8pt; color: #9ca3af; }
 `;
@@ -168,6 +182,10 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
 
   const entries: TimelineEntry[] = [];
 
+  const customFormByKey = new Map(
+    (options.customForms ?? []).map(cf => [cf.formKey, cf])
+  );
+
   for (const enc of encounters) {
     const encounterData = typeof enc.data === 'string' ? JSON.parse(enc.data) : enc.data;
     const sections: FormSectionData[] = [];
@@ -181,6 +199,16 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
       const lines = extractFormLines(formDef.schema, formValues, t, options.locale);
       if (lines.length === 0) continue;
       sections.push({ label: tl(formDef.schema.label), lines });
+    }
+
+    for (const [formKey, entry] of Object.entries(encounterData || {})) {
+      if (encounterForms[formKey]) continue;
+      const customForm = customFormByKey.get(formKey);
+      if (!customForm) continue;
+      const values = (entry as any)?.values ?? {};
+      const lines = extractCustomFormLines(customForm.schema, values, t, options.locale);
+      if (lines.length === 0) continue;
+      sections.push({ label: tl(customForm.label || customForm.schema.label), lines });
     }
 
     const doctorLabel = `${enc.doctorTitle} ${enc.doctorName}`;
@@ -208,14 +236,22 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
   for (const study of studies) {
     const resultSections: FormSectionData[] = [];
     for (const result of study.results) {
-      const schema = studySchemas[result.type];
-      if (!schema) continue;
       const data = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
-      const lines = extractStudyLines(schema, data, options.patientGender, options.locale);
-      if (data.comments) lines.push({ kind: 'field', label: t.comments, value: String(data.comments) });
-      if (data.conclusion) lines.push({ kind: 'field', label: t.conclusion, value: String(data.conclusion) });
-      if (lines.length === 0) continue;
-      resultSections.push({ label: tl(schema.label), lines });
+      const schema = studySchemas[result.type];
+
+      if (schema) {
+        const lines = extractStudyLines(schema, data, options.patientGender, options.locale);
+        if (data.comments) lines.push({ kind: 'field', label: t.comments, value: String(data.comments) });
+        if (data.conclusion) lines.push({ kind: 'field', label: t.conclusion, value: String(data.conclusion) });
+        if (lines.length === 0) continue;
+        resultSections.push({ label: tl(schema.label), lines });
+      } else {
+        const customForm = customFormByKey.get(result.type);
+        if (!customForm) continue;
+        const lines = extractCustomFormLines(customForm.schema, data, t, options.locale);
+        if (lines.length === 0) continue;
+        resultSections.push({ label: tl(customForm.label || customForm.schema.label), lines });
+      }
     }
 
     if (resultSections.length === 0) continue;
@@ -339,6 +375,16 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
           </div>`;
     }).join('')}</div>`;
 
+  // --- Study signature stamp ---
+
+  const studySignature = options.studySignature;
+  const studySignatureHtml = studySignature ? `
+    <div class="study-signature-block">
+      <img class="study-signature-image" src="data:image/png;base64,${esc(studySignature.image)}" alt="">
+      <div class="study-signature-name">${esc(studySignature.doctorTitle)} ${esc(studySignature.doctorName)}</div>
+      ${studySignature.licenseNumber ? `<div class="study-signature-license">M.N. ${esc(studySignature.licenseNumber)}</div>` : ''}
+    </div>` : '';
+
   // --- Signature ---
 
   const signatureHtml = isSigned ? `
@@ -366,6 +412,7 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
   ${patientHtml}
   ${dateRangeHtml}
   ${timelineHtml}
+  ${studySignatureHtml}
   ${signatureHtml}
   ${footerHtml}
 </body>

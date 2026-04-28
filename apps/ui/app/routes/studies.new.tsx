@@ -29,7 +29,7 @@ export const meta: MetaFunction = ({ matches }) => {
 };
 
 export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs) => {
-  const { user } = await getAuthenticatedClient(request);
+  const { client, user } = await getAuthenticatedClient(request);
   const orgId = await getCurrentOrganizationId(request);
   const orgRoleIds = getCurrentOrgRoleIds(user, orgId);
   const verified = isMedicVerified(user, orgRoleIds);
@@ -38,7 +38,17 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
     throw redirect('/studies');
   }
 
-  return json({ studyId: crypto.randomUUID() });
+  let customForms: any[] = [];
+  try {
+    const result = await client.service('form-templates' as any).find({
+      query: { type: 'study', status: 'published' },
+    });
+    customForms = Array.isArray(result) ? result : (result as any)?.data || [];
+  } catch {
+    // form-templates service may not exist yet
+  }
+
+  return json({ studyId: crypto.randomUUID(), customForms });
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -191,6 +201,7 @@ export default function NewStudy() {
       <StudyMetadataForm
         mode="create"
         studyTypeKeys={STUDY_TYPE_KEYS}
+        customForms={loaderData.customForms}
         selectedStudies={selectedStudies}
         onToggleStudy={toggleStudy}
         noOrder={noOrder}

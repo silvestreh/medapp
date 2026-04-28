@@ -8,9 +8,10 @@ import { pbkdf2Sync, createDecipheriv, createHash } from 'crypto';
 import dayjs from 'dayjs';
 
 import type { Application } from '../../declarations';
-import { renderMedicalHistoryPdf, PdfRenderOptions, PdfEncounter, PdfStudy } from './pdf-renderer';
+import { renderMedicalHistoryPdf, PdfRenderOptions, PdfEncounter, PdfStudy, PdfCustomForm, PdfStudySignature } from './pdf-renderer';
 import { renderMedicalHistoryHtml } from './html-renderer';
 import { getPdfTranslations } from '@athelas/translations';
+import { studySchemas, encounterForms } from '@athelas/encounter-schemas';
 
 export type ExportContent = 'encounters' | 'studies' | 'both';
 
@@ -166,6 +167,62 @@ export class SignedExports {
       })),
     }));
 
+    const customFormKeys = new Set<string>();
+    for (const study of pdfStudies) {
+      for (const result of study.results) {
+        if (!studySchemas[result.type]) customFormKeys.add(result.type);
+      }
+    }
+    for (const enc of pdfEncounters) {
+      for (const formKey of Object.keys(enc.data || {})) {
+        if (!encounterForms[formKey]) customFormKeys.add(formKey);
+      }
+    }
+
+    let customForms: PdfCustomForm[] = [];
+    if (customFormKeys.size > 0) {
+      try {
+        const templatesResult = await this.app.service('form-templates' as any).find({
+          query: {
+            status: 'published',
+            formKey: { $in: [...customFormKeys] },
+            ...(orgId ? { organizationId: orgId } : {}),
+          },
+          paginate: false,
+          ...internal(),
+        } as any);
+        const templatesList = Array.isArray(templatesResult) ? templatesResult : (templatesResult as any).data || [];
+        customForms = templatesList.map((tpl: any) => ({
+          formKey: tpl.formKey,
+          label: tpl.label || tpl.name,
+          schema: tpl.schema,
+        }));
+      } catch {
+        // form-templates service may not exist yet
+      }
+    }
+
+    let studySignature: PdfStudySignature | undefined;
+    if (studyId && studies.length > 0) {
+      const studyMedicId = (studies[0] as any).medicId;
+      if (studyMedicId) {
+        const sigSettingsResult = await this.app.service('md-settings').find({
+          query: { userId: studyMedicId, $limit: 1 },
+          paginate: false,
+          ...internal(),
+        } as any);
+        const sigSettings = Array.isArray(sigSettingsResult) ? sigSettingsResult[0] : null;
+        if (sigSettings?.signatureImage) {
+          studySignature = {
+            image: sigSettings.signatureImage,
+            doctorName: doctorNames[studyMedicId] || t.unknown,
+            doctorTitle: doctorTitles[studyMedicId] || 'Dr.',
+            licenseNumber: sigSettings.nationalLicenseNumber || null,
+          };
+        }
+      }
+    }
+
     const wantSign = Boolean(certificatePassword);
 
     const renderOptions: PdfRenderOptions = {
@@ -189,6 +246,8 @@ export class SignedExports {
       },
       encounters: pdfEncounters,
       studies: pdfStudies,
+      customForms,
+      studySignature,
       startDate,
       endDate,
       isSigned: wantSign,
