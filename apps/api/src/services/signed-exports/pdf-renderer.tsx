@@ -15,7 +15,7 @@ import {
   type FormTemplateSchema,
   type CustomFormField,
 } from '@athelas/encounter-schemas';
-import { getPdfTranslations, translateLabel } from '@athelas/translations';
+import { getPdfTranslations, translateLabel, getProvinceName } from '@athelas/translations';
 
 export interface PdfDoctorInfo {
   fullName: string;
@@ -84,6 +84,8 @@ export interface PdfStudySignature {
   doctorName: string;
   doctorTitle: string;
   licenseNumber: string | null;
+  stateLicense: string | null;
+  stateLicenseNumber: string | null;
 }
 
 export interface PdfRenderOptions {
@@ -308,43 +310,43 @@ function formatCustomFieldValue(
   if (value === 'indeterminate') return '';
 
   switch (field.type) {
-    case 'tri-state-checkbox':
-      if (value === true || value === 'si' || value === 'on') return t.yes;
-      if (value === false || value === 'no' || value === 'off') return t.no;
-      return '';
-    case 'date':
-      try {
-        return dayjs(value).format('DD/MM/YYYY');
-      } catch {
-        return String(value);
-      }
-    case 'icd10':
-      if (Array.isArray(value)) {
-        return value
-          .map((v: any) => {
-            if (!v) return '';
-            if (typeof v === 'string') return v;
-            return [v.code, v.label].filter(Boolean).join(' ').trim();
-          })
-          .filter(Boolean)
-          .join(', ');
-      }
-      return String(value);
-    case 'select': {
-      const options = (field.options ?? []) as (SelectOption | SelectOptionGroup)[];
-      for (const opt of options) {
-        if ('group' in opt && 'items' in opt) {
-          const match = (opt as SelectOptionGroup).items.find((i) => i.value === value);
-          if (match) return translateLabel(locale, match.label);
-        } else if ((opt as SelectOption).value === value) {
-          return translateLabel(locale, (opt as SelectOption).label);
-        }
-      }
+  case 'tri-state-checkbox':
+    if (value === true || value === 'si' || value === 'on') return t.yes;
+    if (value === false || value === 'no' || value === 'off') return t.no;
+    return '';
+  case 'date':
+    try {
+      return dayjs(value).format('DD/MM/YYYY');
+    } catch {
       return String(value);
     }
-    default:
-      if (Array.isArray(value)) return value.filter(Boolean).join(', ');
-      return String(value);
+  case 'icd10':
+    if (Array.isArray(value)) {
+      return value
+        .map((v: any) => {
+          if (!v) return '';
+          if (typeof v === 'string') return v;
+          return [v.code, v.label].filter(Boolean).join(' ').trim();
+        })
+        .filter(Boolean)
+        .join(', ');
+    }
+    return String(value);
+  case 'select': {
+    const options = (field.options ?? []) as (SelectOption | SelectOptionGroup)[];
+    for (const opt of options) {
+      if ('group' in opt && 'items' in opt) {
+        const match = (opt as SelectOptionGroup).items.find((i) => i.value === value);
+        if (match) return translateLabel(locale, match.label);
+      } else if ((opt as SelectOption).value === value) {
+        return translateLabel(locale, (opt as SelectOption).label);
+      }
+    }
+    return String(value);
+  }
+  default:
+    if (Array.isArray(value)) return value.filter(Boolean).join(', ');
+    return String(value);
   }
 }
 
@@ -705,54 +707,54 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
 
   function typeLabel(entry: TimelineEntry): string {
     switch (entry.type) {
-      case 'encounter': return t.encounter;
-      case 'study': return t.study;
-      case 'image-attachment':
-      case 'pdf-attachment': return t.attachmentLabel;
+    case 'encounter': return t.encounter;
+    case 'study': return t.study;
+    case 'image-attachment':
+    case 'pdf-attachment': return t.attachmentLabel;
     }
   }
 
   function EntryContent({ entry }: { entry: TimelineEntry }) {
     switch (entry.type) {
-      case 'encounter':
-        return (
-          <>
-            {entry.sections.map((section, i) => (
-              <View key={i} style={styles.formSection}>
-                <Text style={styles.formTitle}>{section.label}</Text>
-                <RenderedLines lines={section.lines} />
-              </View>
-            ))}
-          </>
-        );
-      case 'study':
-        return (
-          <>
-            {entry.resultSections.map((section, i) => (
-              <View key={i} style={styles.formSection}>
-                <Text style={styles.formTitle}>{section.label}</Text>
-                <RenderedLines lines={section.lines} showReference={entry.hasAnyReference} />
-              </View>
-            ))}
-          </>
-        );
-      case 'image-attachment':
-        return (
-          <View wrap={false}>
-            <Image
-              src={{ data: entry.attachment.buffer, format: entry.attachment.mimeType === 'image/jpeg' ? 'jpg' : 'png' }}
-              style={styles.attachmentImage}
-            />
-            <Text style={styles.attachmentFileName}>{entry.attachment.fileName}</Text>
-          </View>
-        );
-      case 'pdf-attachment':
-        return (
-          <View>
-            <Text style={{ fontSize: 9, color: '#1a1a1a' }}>{entry.fileName}</Text>
-            <Text style={styles.pdfAttachmentNote}>{t.seeAppendedPages}</Text>
-          </View>
-        );
+    case 'encounter':
+      return (
+        <>
+          {entry.sections.map((section, i) => (
+            <View key={i} style={styles.formSection}>
+              <Text style={styles.formTitle}>{section.label}</Text>
+              <RenderedLines lines={section.lines} />
+            </View>
+          ))}
+        </>
+      );
+    case 'study':
+      return (
+        <>
+          {entry.resultSections.map((section, i) => (
+            <View key={i} style={styles.formSection}>
+              <Text style={styles.formTitle}>{section.label}</Text>
+              <RenderedLines lines={section.lines} showReference={entry.hasAnyReference} />
+            </View>
+          ))}
+        </>
+      );
+    case 'image-attachment':
+      return (
+        <View wrap={false}>
+          <Image
+            src={{ data: entry.attachment.buffer, format: entry.attachment.mimeType === 'image/jpeg' ? 'jpg' : 'png' }}
+            style={styles.attachmentImage}
+          />
+          <Text style={styles.attachmentFileName}>{entry.attachment.fileName}</Text>
+        </View>
+      );
+    case 'pdf-attachment':
+      return (
+        <View>
+          <Text style={{ fontSize: 9, color: '#1a1a1a' }}>{entry.fileName}</Text>
+          <Text style={styles.pdfAttachmentNote}>{t.seeAppendedPages}</Text>
+        </View>
+      );
     }
   }
 
@@ -865,7 +867,7 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
   if (doctor.specialty) licenseLines.push(doctor.specialty);
   if (doctor.nationalLicenseNumber) licenseLines.push(`M.N. ${doctor.nationalLicenseNumber}`);
   if (doctor.stateLicense && doctor.stateLicenseNumber) {
-    licenseLines.push(`${doctor.stateLicense} ${doctor.stateLicenseNumber}`);
+    licenseLines.push(`M.P. (${getProvinceName(doctor.stateLicense, options.locale)}) ${doctor.stateLicenseNumber}`);
   }
 
   return renderToBuffer(
@@ -976,6 +978,11 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
             </Text>
             {options.studySignature.licenseNumber && (
               <Text style={styles.studySignatureLicense}>M.N. {options.studySignature.licenseNumber}</Text>
+            )}
+            {options.studySignature.stateLicense && options.studySignature.stateLicenseNumber && (
+              <Text style={styles.studySignatureLicense}>
+                M.P. ({getProvinceName(options.studySignature.stateLicense, options.locale)}) {options.studySignature.stateLicenseNumber}
+              </Text>
             )}
           </View>
         )}

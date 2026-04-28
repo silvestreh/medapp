@@ -1,0 +1,41 @@
+import type { PdfLocale } from './pdf';
+
+const provincesEs: Record<string, string> = {
+  'AR-A': 'Salta',
+  'AR-B': 'Buenos Aires',
+  'AR-C': 'Ciudad Autónoma de Buenos Aires',
+  'AR-D': 'San Luis',
+  'AR-E': 'Entre Ríos',
+  'AR-F': 'La Rioja',
+  'AR-G': 'Santiago del Estero',
+  'AR-H': 'Chaco',
+  'AR-J': 'San Juan',
+  'AR-K': 'Catamarca',
+  'AR-L': 'La Pampa',
+  'AR-M': 'Mendoza',
+  'AR-N': 'Misiones',
+  'AR-P': 'Formosa',
+  'AR-Q': 'Neuquén',
+  'AR-R': 'Río Negro',
+  'AR-S': 'Santa Fe',
+  'AR-T': 'Tucumán',
+  'AR-U': 'Chubut',
+  'AR-V': 'Tierra del Fuego',
+  'AR-W': 'Corrientes',
+  'AR-X': 'Córdoba',
+  'AR-Y': 'Jujuy',
+  'AR-Z': 'Santa Cruz',
+};
+
+const provincesEn: Record<string, string> = {
+  ...provincesEs,
+  'AR-C': 'Autonomous City of Buenos Aires',
+};
+
+export function getProvinceName(code: string | null | undefined, locale?: string): string {
+  if (!code) return '';
+  const map = locale?.startsWith('en') ? provincesEn : provincesEs;
+  return map[code] || code;
+}
+
+export type ProvinceLocale = PdfLocale;

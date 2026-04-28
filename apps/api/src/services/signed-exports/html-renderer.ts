@@ -6,7 +6,7 @@ import {
   FORM_KEY_ORDER,
   studySchemas,
 } from '@athelas/encounter-schemas';
-import { getPdfTranslations, translateLabel } from '@athelas/translations';
+import { getPdfTranslations, translateLabel, getProvinceName } from '@athelas/translations';
 import {
   type PdfRenderOptions,
   type PdfLine,
@@ -279,7 +279,7 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
   if (doctor.specialty) licenseLines.push(doctor.specialty);
   if (doctor.nationalLicenseNumber) licenseLines.push(`M.N. ${doctor.nationalLicenseNumber}`);
   if (doctor.stateLicense && doctor.stateLicenseNumber) {
-    licenseLines.push(`${doctor.stateLicense} ${doctor.stateLicenseNumber}`);
+    licenseLines.push(`M.P. (${getProvinceName(doctor.stateLicense, options.locale)}) ${doctor.stateLicenseNumber}`);
   }
 
   const headerHtml = `
@@ -383,6 +383,7 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
       <img class="study-signature-image" src="data:image/png;base64,${esc(studySignature.image)}" alt="">
       <div class="study-signature-name">${esc(studySignature.doctorTitle)} ${esc(studySignature.doctorName)}</div>
       ${studySignature.licenseNumber ? `<div class="study-signature-license">M.N. ${esc(studySignature.licenseNumber)}</div>` : ''}
+      ${studySignature.stateLicense && studySignature.stateLicenseNumber ? `<div class="study-signature-license">M.P. (${esc(getProvinceName(studySignature.stateLicense, options.locale))}) ${esc(studySignature.stateLicenseNumber)}</div>` : ''}
     </div>` : '';
 
   // --- Signature ---

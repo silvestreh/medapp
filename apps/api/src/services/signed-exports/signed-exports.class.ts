@@ -218,6 +218,8 @@ export class SignedExports {
             doctorName: doctorNames[studyMedicId] || t.unknown,
             doctorTitle: doctorTitles[studyMedicId] || 'Dr.',
             licenseNumber: sigSettings.nationalLicenseNumber || null,
+            stateLicense: sigSettings.stateLicense || null,
+            stateLicenseNumber: sigSettings.stateLicenseNumber || null,
           };
         }
       }
