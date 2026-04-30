@@ -298,6 +298,27 @@ describe('\'studies\' service', () => {
     });
   });
 
+  it('persists comment on create and patch', async () => {
+    const created = await app.service('studies').create({
+      date: new Date(),
+      studies: ['anemia'],
+      noOrder: false,
+      medicId: medic.id,
+      patientId: patient.id,
+      comment: 'Initial observations',
+    } as any);
+
+    let saved = await app.service('studies').get(created.id);
+    assert.strictEqual(saved.comment, 'Initial observations');
+
+    await app.service('studies').patch(created.id, {
+      comment: 'Updated observations',
+    } as any);
+
+    saved = await app.service('studies').get(created.id);
+    assert.strictEqual(saved.comment, 'Updated observations');
+  });
+
   it('stores insurerId for accounting', async () => {
     const created = await app.service('studies').create({
       date: new Date(),

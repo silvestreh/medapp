@@ -328,6 +328,7 @@ export interface Study {
   referringDoctor?: string | null;
   patientId: Id;
   insurerId?: Id | null;
+  comment?: string | null;
   results?: StudyResult[];
 }
 

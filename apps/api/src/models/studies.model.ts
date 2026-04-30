@@ -70,6 +70,10 @@ export default function (app: Application): typeof Model {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
+    },
+    comment: {
+      type: DataTypes.TEXT,
+      allowNull: true
     }
   }, {
     hooks: {
