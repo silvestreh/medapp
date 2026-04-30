@@ -1,5 +1,10 @@
 import type { QuickLinkPayload, DoctorPayload, PatientPayload } from './recetario-client';
 
+function toStr(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  return typeof value === 'string' ? value : String(value);
+}
+
 interface DoctorInput {
   personalData: {
     firstName?: string | null;
@@ -194,7 +199,7 @@ export function mapDoctorForAPI(doctor: DoctorInput): DoctorPayload {
   }
 
   return {
-    email: cd.email || '',
+    email: toStr(cd.email),
     name: pd.firstName || '',
     surname: pd.lastName || '',
     licenseType,
@@ -206,9 +211,9 @@ export function mapDoctorForAPI(doctor: DoctorInput): DoctorPayload {
     signature: md.signatureImage || undefined,
     profile: {
       legend: licenseNumber,
-      phone: (cd.phoneNumber || '').replace(/^tel:/i, ''),
+      phone: toStr(cd.phoneNumber).replace(/^tel:/i, ''),
       address: '',
-      email: cd.email || '',
+      email: toStr(cd.email),
     },
   };
 }
@@ -217,15 +222,15 @@ export function mapPatientForAPI(patient: PatientInput): PatientPayload {
   const { personalData: pd, contactData: cd } = patient;
 
   return {
-    healthInsurance: patient.insurerName || 'particular',
-    insuranceNumber: (patient.insurerName || 'particular').toLowerCase() === 'particular'
+    healthInsurance: toStr(patient.insurerName) || 'particular',
+    insuranceNumber: (toStr(patient.insurerName) || 'particular').toLowerCase() === 'particular'
       ? undefined
-      : (patient.medicareNumber || undefined),
+      : (toStr(patient.medicareNumber) || undefined),
     name: pd.firstName || '',
     surname: pd.lastName || '',
     documentNumber: sanitizeDocumentNumber(pd.documentValue),
-    email: cd.email || undefined,
-    phone: (cd.phoneNumber || '').replace(/^tel:/i, '') || undefined,
+    email: toStr(cd.email) || undefined,
+    phone: toStr(cd.phoneNumber).replace(/^tel:/i, '') || undefined,
     gender: mapGender(pd.gender),
     birthDate: formatBirthDate(pd.birthDate),
   };
