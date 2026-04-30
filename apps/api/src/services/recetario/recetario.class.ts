@@ -1,9 +1,11 @@
 import { BadRequest, Forbidden } from '@feathersjs/errors';
 import { randomUUID } from 'crypto';
 import dayjs from 'dayjs';
+import pRetry from 'p-retry';
 import { APP_SLUG } from '@athelas/brand';
 
 import type { Application } from '../../declarations';
+import logger from '../../logger';
 import { mapDoctorData, mapPatientData, mapDoctorForAPI, mapPatientForAPI, checkDoctorReadiness, sanitizeDocumentNumber, mapGender, reverseMapGender, reverseMapProvince, formatBirthDate } from './data-mapper';
 import * as recetarioClient from './recetario-client';
 import type { HealthInsurance } from './recetario-client';
@@ -11,6 +13,93 @@ import type { HealthInsurance } from './recetario-client';
 let _healthInsurancesCache: HealthInsurance[] | null = null;
 let _healthInsurancesCacheTime = 0;
 const INSURANCE_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+const RETRY_OPTIONS = { retries: 2, factor: 2, minTimeout: 500, maxTimeout: 3000 };
+
+// Per-attempt timeout for the PDF download in handleShare. Exposed via setter
+// so tests can shrink it without slowing the suite.
+let PDF_FETCH_TIMEOUT_MS = 30_000;
+export function setPdfFetchTimeoutForTesting(ms: number): void {
+  PDF_FETCH_TIMEOUT_MS = ms;
+}
+
+const IDEMPOTENCY_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+
+function isTimeoutError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const name = (err as { name?: string }).name;
+  return name === 'TimeoutError' || name === 'AbortError';
+}
+
+function isRetryableAxiosError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const axiosErr = err as { code?: string; response?: { status?: number } };
+  if (axiosErr.code && /ECONNRESET|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN/.test(axiosErr.code)) return true;
+  const status = axiosErr.response?.status;
+  // No response (network error) → retry. 5xx → retry. 4xx → don't.
+  if (status === undefined) return !axiosErr.code || /timeout/i.test(axiosErr.code);
+  return status >= 500;
+}
+
+type PdfFetchOutcome =
+  | { kind: 'ok'; buffer: Buffer }
+  | { kind: 'timeout' }
+  | { kind: 'server-error'; status: number }
+  | { kind: 'client-error'; status: number };
+
+async function fetchPdfWithRetry(pdfUrl: string): Promise<PdfFetchOutcome> {
+  try {
+    const buffer = await pRetry(async (attempt) => {
+      let response: Response;
+      try {
+        response = await fetch(pdfUrl, { signal: AbortSignal.timeout(PDF_FETCH_TIMEOUT_MS) });
+      } catch (err) {
+        if (isTimeoutError(err)) {
+          logger.warn(`[Recetario] PDF fetch attempt ${attempt} timed out after ${PDF_FETCH_TIMEOUT_MS}ms`);
+          // Tag as timeout so the outer catch can classify it.
+          (err as any).__recetarioTimeout = true;
+        } else {
+          logger.warn(`[Recetario] PDF fetch attempt ${attempt} network error: ${(err as Error).message}`);
+        }
+        throw err;
+      }
+
+      if (response.ok) {
+        if (attempt > 1) logger.warn(`[Recetario] PDF fetch succeeded on attempt ${attempt}`);
+        return Buffer.from(await response.arrayBuffer());
+      }
+
+      // Release the connection before retrying / aborting.
+      try { await response.body?.cancel(); } catch { /* noop */ }
+
+      if (response.status >= 500) {
+        logger.warn(`[Recetario] PDF fetch attempt ${attempt} got ${response.status}`);
+        const err: any = new Error(`Recetario PDF fetch failed: ${response.status}`);
+        err.__recetarioStatus = response.status;
+        throw err;
+      }
+
+      // 4xx: bail immediately, signed URL is bad/expired.
+      logger.warn(`[Recetario] PDF fetch got ${response.status}; not retrying`);
+      const innerErr: any = new Error(`Recetario PDF fetch failed: ${response.status}`);
+      innerErr.__recetarioStatus = response.status;
+      throw new pRetry.AbortError(innerErr);
+    }, RETRY_OPTIONS);
+
+    return { kind: 'ok', buffer };
+  } catch (err: any) {
+    if (isTimeoutError(err) || err?.__recetarioTimeout) {
+      return { kind: 'timeout' };
+    }
+    const status = err?.__recetarioStatus;
+    if (typeof status === 'number') {
+      if (status >= 500) return { kind: 'server-error', status };
+      return { kind: 'client-error', status };
+    }
+    // Network errors with no status — treat like a timeout for UX purposes.
+    return { kind: 'timeout' };
+  }
+}
 
 type RecetarioAction =
   | 'quick-link'
@@ -392,18 +481,26 @@ export class Recetario {
 
     let response: any;
     try {
-      response = await recetarioClient.createPrescription(payload);
-    } catch {
-      try {
-        response = await recetarioClient.createPrescription(payload);
-      } catch (retryError) {
-        await this.app.service('prescriptions').patch(
-          (prescriptionRecord as any).id,
-          { status: 'error' },
-          this.internal()
-        );
-        throw retryError;
-      }
+      response = await pRetry(
+        (attempt) => {
+          if (attempt > 1) logger.warn(`[Recetario] createPrescription retry ${attempt}`);
+          return recetarioClient.createPrescription(payload);
+        },
+        {
+          ...RETRY_OPTIONS,
+          onFailedAttempt: (err) => {
+            // Throwing from onFailedAttempt aborts retries and rejects with this error.
+            if (!isRetryableAxiosError(err)) throw err;
+          },
+        }
+      );
+    } catch (retryError) {
+      await this.app.service('prescriptions').patch(
+        (prescriptionRecord as any).id,
+        { status: 'error' },
+        this.internal()
+      );
+      throw retryError;
     }
 
     if (response.id) {
@@ -473,18 +570,26 @@ export class Recetario {
 
     let response: any;
     try {
-      response = await recetarioClient.createOrder(payload);
-    } catch {
-      try {
-        response = await recetarioClient.createOrder(payload);
-      } catch (retryError) {
-        await this.app.service('prescriptions').patch(
-          (prescriptionRecord as any).id,
-          { status: 'error' },
-          this.internal()
-        );
-        throw retryError;
-      }
+      response = await pRetry(
+        (attempt) => {
+          if (attempt > 1) logger.warn(`[Recetario] createOrder retry ${attempt}`);
+          return recetarioClient.createOrder(payload);
+        },
+        {
+          ...RETRY_OPTIONS,
+          onFailedAttempt: (err) => {
+            // Throwing from onFailedAttempt aborts retries and rejects with this error.
+            if (!isRetryableAxiosError(err)) throw err;
+          },
+        }
+      );
+    } catch (retryError) {
+      await this.app.service('prescriptions').patch(
+        (prescriptionRecord as any).id,
+        { status: 'error' },
+        this.internal()
+      );
+      throw retryError;
     }
 
     if (response.id) {
@@ -535,12 +640,31 @@ export class Recetario {
 
     if (!pdfUrl) throw new BadRequest('pdfUrl is required for sharing');
 
-    // Download the signed PDF URL from Recetario
-    const pdfResponse = await fetch(pdfUrl);
-    if (!pdfResponse.ok) {
-      throw new BadRequest(`Failed to fetch PDF from Recetario: ${pdfResponse.status}`);
+    // Idempotency: skip if the same prescription was shared to the same
+    // (channel, recipient) within the last IDEMPOTENCY_WINDOW_MS. Guards
+    // against the user clicking Share twice or retrying after a perceived
+    // failure where the send actually succeeded.
+    if (prescriptionId) {
+      const existing = await this.app.service('prescriptions').get(prescriptionId, this.internal()) as any;
+      const sameTarget = existing.sharedVia === shareChannel && existing.sharedTo === shareRecipient;
+      const lastSharedMs = existing.lastSharedAt ? new Date(existing.lastSharedAt).getTime() : 0;
+      const recent = lastSharedMs > 0 && Date.now() - lastSharedMs < IDEMPOTENCY_WINDOW_MS;
+      if (sameTarget && recent) {
+        return { success: true, deduplicated: true };
+      }
     }
-    const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
+
+    const outcome = await fetchPdfWithRetry(pdfUrl);
+    if (outcome.kind === 'timeout') {
+      throw new BadRequest('recetario timeout fetching PDF');
+    }
+    if (outcome.kind === 'server-error') {
+      throw new BadRequest(`recetario: PDF temporariamente no disponible (${outcome.status})`);
+    }
+    if (outcome.kind === 'client-error') {
+      throw new BadRequest(`recetario: enlace de PDF inválido o expirado (${outcome.status})`);
+    }
+    const pdfBuffer = outcome.buffer;
 
     if (shareChannel === 'whatsapp') {
       const record = prescriptionId
@@ -598,7 +722,7 @@ export class Recetario {
     if (prescriptionId) {
       await this.app.service('prescriptions').patch(
         prescriptionId,
-        { sharedVia: shareChannel, sharedTo: shareRecipient } as any,
+        { sharedVia: shareChannel, sharedTo: shareRecipient, lastSharedAt: new Date() } as any,
         this.internal()
       );
     }

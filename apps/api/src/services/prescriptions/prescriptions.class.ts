@@ -14,6 +14,7 @@ export interface Prescription {
   status: 'pending' | 'completed' | 'cancelled' | 'expired' | 'error';
   sharedVia: string | null;
   sharedTo: string | null;
+  lastSharedAt: Date | null;
   content: {
     diagnosis?: string;
     medicines?: { text: string; quantity: number; posology?: string; longTerm: boolean; genericOnly?: boolean; medicationId?: string }[];

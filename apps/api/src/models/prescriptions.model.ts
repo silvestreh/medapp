@@ -69,6 +69,10 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    lastSharedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     content: {
       type: DataTypes.JSONB,
       allowNull: true,
