@@ -1,5 +1,5 @@
 [build]
-builder = "NIXPACKS"
+builder = "RAILPACK"
 buildCommand = "pnpm --filter athelas-chat... build"
 watchPatterns = ["apps/chat/**"]
 
