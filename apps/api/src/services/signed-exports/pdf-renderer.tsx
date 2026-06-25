@@ -91,7 +91,14 @@ export interface PdfStudySignature {
 export interface PdfRenderOptions {
   organizationName: string;
   organizationLogoUrl?: string;
+  /** The user generating/signing the export (used for the signature block & signer identity). */
   doctor: PdfDoctorInfo;
+  /**
+   * The professional shown in the letterhead header. For a single-study export this is the
+   * study's medic of record, which may differ from the person printing it (e.g. a lab tech).
+   * Falls back to `doctor` when not provided.
+   */
+  headerDoctor?: PdfDoctorInfo;
   patient: PdfPatientInfo;
   encounters: PdfEncounter[];
   studies: PdfStudy[];
@@ -761,6 +768,7 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
   // --- Build chronological timeline ---
 
   const { organizationName, doctor, patient, encounters, studies, startDate, endDate, isSigned } = options;
+  const headerDoctor = options.headerDoctor ?? doctor;
 
   const timelineEntries: TimelineEntry[] = [];
 
@@ -864,10 +872,10 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
     : t.fullHistory;
 
   const licenseLines: string[] = [];
-  if (doctor.specialty) licenseLines.push(doctor.specialty);
-  if (doctor.nationalLicenseNumber) licenseLines.push(`M.N. ${doctor.nationalLicenseNumber}`);
-  if (doctor.stateLicense && doctor.stateLicenseNumber) {
-    licenseLines.push(`M.P. (${getProvinceName(doctor.stateLicense, options.locale)}) ${doctor.stateLicenseNumber}`);
+  if (headerDoctor.specialty) licenseLines.push(headerDoctor.specialty);
+  if (headerDoctor.nationalLicenseNumber) licenseLines.push(`M.N. ${headerDoctor.nationalLicenseNumber}`);
+  if (headerDoctor.stateLicense && headerDoctor.stateLicenseNumber) {
+    licenseLines.push(`M.P. (${getProvinceName(headerDoctor.stateLicense, options.locale)}) ${headerDoctor.stateLicenseNumber}`);
   }
 
   return renderToBuffer(
@@ -880,7 +888,7 @@ export async function renderMedicalHistoryPdf(options: PdfRenderOptions): Promis
           <View>
             <Text style={styles.orgName}>{organizationName}</Text>
             <Text style={styles.doctorInfo}>
-              {doctor.title} {doctor.fullName}
+              {headerDoctor.title} {headerDoctor.fullName}
               {licenseLines.length > 0 ? ` — ${licenseLines.join(' | ')}` : ''}
             </Text>
           </View>

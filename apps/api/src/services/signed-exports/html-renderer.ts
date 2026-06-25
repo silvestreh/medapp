@@ -161,6 +161,7 @@ function renderSections(sections: FormSectionData[], showReference = false): str
 
 export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
   const { organizationName, organizationLogoUrl, doctor, patient, encounters, studies, startDate, endDate, isSigned } = options;
+  const headerDoctor = options.headerDoctor ?? doctor;
   const t = getPdfTranslations(options.locale);
   const tl = (label: string) => translateLabel(options.locale, label);
 
@@ -276,10 +277,10 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
   // --- Render header ---
 
   const licenseLines: string[] = [];
-  if (doctor.specialty) licenseLines.push(doctor.specialty);
-  if (doctor.nationalLicenseNumber) licenseLines.push(`M.N. ${doctor.nationalLicenseNumber}`);
-  if (doctor.stateLicense && doctor.stateLicenseNumber) {
-    licenseLines.push(`M.P. (${getProvinceName(doctor.stateLicense, options.locale)}) ${doctor.stateLicenseNumber}`);
+  if (headerDoctor.specialty) licenseLines.push(headerDoctor.specialty);
+  if (headerDoctor.nationalLicenseNumber) licenseLines.push(`M.N. ${headerDoctor.nationalLicenseNumber}`);
+  if (headerDoctor.stateLicense && headerDoctor.stateLicenseNumber) {
+    licenseLines.push(`M.P. (${getProvinceName(headerDoctor.stateLicense, options.locale)}) ${headerDoctor.stateLicenseNumber}`);
   }
 
   const headerHtml = `
@@ -287,7 +288,7 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
       ${organizationLogoUrl ? `<img class="org-logo" src="${esc(organizationLogoUrl)}" alt="">` : ''}
       <div>
         <div class="org-name">${esc(organizationName)}</div>
-        <div class="doctor-info">${esc(doctor.title)} ${esc(doctor.fullName)}${licenseLines.length > 0 ? ` &mdash; ${licenseLines.map(esc).join(' | ')}` : ''}</div>
+        <div class="doctor-info">${esc(headerDoctor.title)} ${esc(headerDoctor.fullName)}${licenseLines.length > 0 ? ` &mdash; ${licenseLines.map(esc).join(' | ')}` : ''}</div>
       </div>
     </header>`;
 
@@ -303,8 +304,13 @@ export function renderMedicalHistoryHtml(options: PdfRenderOptions): string {
     patientRows.push(`<div class="patient-row"><span class="patient-label">${esc(t.birthDate)}:</span><span class="patient-value">${esc(dayjs.utc(patient.birthDate).format('DD/MM/YYYY'))}</span></div>`);
   }
   if (patient.medicare) {
-    const insuranceValue = patient.medicarePlan ? `${patient.medicare} &mdash; ${patient.medicarePlan}` : patient.medicare;
-    patientRows.push(`<div class="patient-row"><span class="patient-label">${esc(t.healthInsurance)}:</span><span class="patient-value">${esc(insuranceValue)}</span></div>`);
+    // Escape each part on its own and keep `&mdash;` as a raw entity — running the whole
+    // string (entity included) through esc() would turn `&` into `&amp;`, printing a literal
+    // "&mdash;" instead of an em dash.
+    const insuranceValue = patient.medicarePlan
+      ? `${esc(patient.medicare)} &mdash; ${esc(patient.medicarePlan)}`
+      : esc(patient.medicare);
+    patientRows.push(`<div class="patient-row"><span class="patient-label">${esc(t.healthInsurance)}:</span><span class="patient-value">${insuranceValue}</span></div>`);
   }
 
   const patientHtml = `

@@ -8,7 +8,7 @@ import { pbkdf2Sync, createDecipheriv, createHash } from 'crypto';
 import dayjs from 'dayjs';
 
 import type { Application } from '../../declarations';
-import { renderMedicalHistoryPdf, PdfRenderOptions, PdfEncounter, PdfStudy, PdfCustomForm, PdfStudySignature } from './pdf-renderer';
+import { renderMedicalHistoryPdf, PdfRenderOptions, PdfDoctorInfo, PdfEncounter, PdfStudy, PdfCustomForm, PdfStudySignature } from './pdf-renderer';
 import { renderMedicalHistoryHtml } from './html-renderer';
 import { getPdfTranslations } from '@athelas/translations';
 import { studySchemas, encounterForms } from '@athelas/encounter-schemas';
@@ -203,6 +203,10 @@ export class SignedExports {
     }
 
     let studySignature: PdfStudySignature | undefined;
+    // For a single-study export the letterhead must reflect the study's medic of record, not
+    // whoever is printing it (a lab tech or lab owner is not the medic). Falls back to the
+    // printing user for multi-record exports where there is no single responsible medic.
+    let headerDoctor: PdfDoctorInfo | undefined;
     if (studyId && studies.length > 0) {
       const studyMedicId = (studies[0] as any).medicId;
       if (studyMedicId) {
@@ -212,6 +216,16 @@ export class SignedExports {
           ...internal(),
         } as any);
         const sigSettings = Array.isArray(sigSettingsResult) ? sigSettingsResult[0] : null;
+
+        headerDoctor = {
+          fullName: doctorNames[studyMedicId] || t.unknown,
+          title: doctorTitles[studyMedicId] || 'Dr.',
+          specialty: sigSettings?.medicalSpecialty || null,
+          nationalLicenseNumber: sigSettings?.nationalLicenseNumber || null,
+          stateLicense: sigSettings?.stateLicense || null,
+          stateLicenseNumber: sigSettings?.stateLicenseNumber || null,
+        };
+
         if (sigSettings?.signatureImage) {
           studySignature = {
             image: sigSettings.signatureImage,
@@ -238,6 +252,7 @@ export class SignedExports {
         stateLicense: mdSettings?.stateLicense || null,
         stateLicenseNumber: mdSettings?.stateLicenseNumber || null,
       },
+      headerDoctor,
       patient: {
         fullName: [patientPersonalData.firstName, patientPersonalData.lastName].filter(Boolean).join(' ') || '',
         documentType: patientPersonalData.documentType || null,

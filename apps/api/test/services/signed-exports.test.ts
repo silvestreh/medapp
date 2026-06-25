@@ -387,6 +387,85 @@ describe('\'signed-exports\' service', () => {
     });
   });
 
+  describe('study print header (HTML output)', () => {
+    let printLabTech: any;
+    let insuredPatient: any;
+    let insuredStudy: any;
+
+    before(async () => {
+      // A lab tech who prints studies but is NOT the medic of record.
+      printLabTech = await app.service('users').create({
+        username: 'export.header.labtech',
+        password: 'SuperSecret1!',
+        personalData: {
+          firstName: 'Tech',
+          lastName: 'Printer',
+          documentType: 'DNI',
+          documentValue: '33000444',
+        },
+      });
+      await app.service('organization-users').create({ organizationId: org.id, userId: printLabTech.id } as any);
+      await app.service('user-roles').create({ userId: printLabTech.id, roleId: 'lab-tech', organizationId: org.id } as any);
+
+      insuredPatient = await app.service('patients').create({
+        medicare: 'OSDE BINARIO',
+        medicarePlan: '210',
+        medicareNumber: '424242',
+        personalData: {
+          firstName: 'Lucas',
+          lastName: 'Cardenas',
+          documentType: 'DNI',
+          documentValue: '42274793',
+        },
+      });
+
+      insuredStudy = await app.service('studies').create({
+        date: new Date('2026-06-11'),
+        protocol: 77145,
+        studies: ['anemia'],
+        noOrder: false,
+        medicId: medic.id,
+        patientId: insuredPatient.id,
+      });
+
+      await app.service('study-results').create({
+        data: { hemoglobin: '15.2 g/dL' },
+        studyId: insuredStudy.id,
+        type: 'anemia',
+      });
+    });
+
+    it('shows the study medic of record in the header, not the printing lab tech', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: insuredPatient.id,
+        studyId: insuredStudy.id,
+        content: 'studies',
+        delivery: 'download',
+        outputFormat: 'html',
+      }, { user: printLabTech, orgRoleIds: ['lab-tech'], organizationId: org.id } as any);
+
+      assert.strictEqual(result.success, true);
+      assert.ok(result.html, 'HTML output is present');
+
+      const header = result.html.split('</header>')[0];
+      assert.ok(header.includes('Export Doctor'), 'Header shows the study medic of record');
+      assert.ok(!result.html.includes('Tech Printer'), 'Printing lab tech is not presented as the medic');
+    });
+
+    it('renders the health-insurance em dash without double-escaping the entity', async () => {
+      const result: any = await app.service('signed-exports').create({
+        patientId: insuredPatient.id,
+        studyId: insuredStudy.id,
+        content: 'studies',
+        delivery: 'download',
+        outputFormat: 'html',
+      }, { user: printLabTech, orgRoleIds: ['lab-tech'], organizationId: org.id } as any);
+
+      assert.ok(result.html.includes('OSDE BINARIO &mdash; 210'), 'Insurance row uses a single em-dash entity');
+      assert.ok(!result.html.includes('&amp;mdash;'), 'Entity is not double-escaped into literal text');
+    });
+  });
+
   describe('print (unsigned download) flow', () => {
     it('generates an unsigned PDF with both encounters and studies for printing', async () => {
       const result: any = await app.service('signed-exports').create({
