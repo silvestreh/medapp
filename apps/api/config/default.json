@@ -53,6 +53,14 @@
     "apiUrl": "EVOLUTION_API_URL",
     "apiKey": "EVOLUTION_API_KEY"
   },
+  "redis": {
+    "url": "REDIS_URL"
+  },
+  "railway": {
+    "apiToken": "RAILWAY_API_TOKEN",
+    "evolutionServiceId": "RAILWAY_EVOLUTION_SERVICE_ID",
+    "evolutionEnvironmentId": "RAILWAY_EVOLUTION_ENVIRONMENT_ID"
+  },
   "uploads": {
     "dir": "./public/uploads"
   }

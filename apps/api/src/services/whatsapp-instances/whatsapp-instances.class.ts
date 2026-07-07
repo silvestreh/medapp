@@ -1,6 +1,7 @@
 import { BadRequest, GeneralError } from '@feathersjs/errors';
 import type { Params } from '@feathersjs/feathers';
 import type { Application } from '../../declarations';
+import { checkInstanceConnected, getEvolutionConfig as getSharedEvolutionConfig } from '../whatsapp/utils/check-instance-connected';
 
 export interface WhatsAppInstanceSettings {
   instanceName: string;
@@ -48,10 +49,7 @@ export class WhatsAppInstances {
   }
 
   private getEvolutionConfig(): EvolutionConfig {
-    const config = (this.app.get as any)('evolution') || {};
-    const apiUrl = config.apiUrl || process.env.EVOLUTION_API_URL || '';
-    const apiKey = config.apiKey || process.env.EVOLUTION_API_KEY || '';
-    return { apiUrl: apiUrl.replace(/\/$/, ''), apiKey };
+    return getSharedEvolutionConfig(this.app);
   }
 
   private async getOrganization(params: Params) {
@@ -164,41 +162,9 @@ export class WhatsAppInstances {
   }
 
   private async checkStatus(params: Params): Promise<CheckStatusResult> {
-    const { apiUrl, apiKey } = this.getEvolutionConfig();
     const org = await this.getOrganization(params) as any;
-    const waSettings = org.settings?.whatsapp as WhatsAppInstanceSettings | undefined;
-
-    if (!waSettings?.instanceName) {
-      return { action: 'check-status', connected: false };
-    }
-
-    const response = await fetch(`${apiUrl}/instance/connectionState/${waSettings.instanceName}`, {
-      method: 'GET',
-      headers: { apikey: apiKey },
-    });
-
-    if (!response.ok) {
-      return { action: 'check-status', connected: false };
-    }
-
-    const result = await response.json() as any;
-    const isConnected = result.instance?.state === 'open' || result.state === 'open';
-
-    // Sync cached state with actual connection state
-    if (isConnected !== waSettings.connected) {
-      const settings = { ...(org.settings || {}) };
-      settings.whatsapp = {
-        ...waSettings,
-        connected: isConnected,
-        ...(isConnected ? { connectedAt: waSettings.connectedAt || new Date().toISOString() } : {}),
-      };
-      await this.app.service('organizations').patch(org.id, { settings });
-    }
-
-    return {
-      action: 'check-status',
-      connected: isConnected,
-    };
+    const result = await checkInstanceConnected(this.app, org.id);
+    return { action: 'check-status', connected: result.connected };
   }
 
   private async disconnect(params: Params): Promise<DisconnectResult> {

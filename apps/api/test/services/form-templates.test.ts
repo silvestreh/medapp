@@ -183,7 +183,8 @@ describe('\'form-templates\' service', () => {
       const result = await client.service('form-templates').find();
       assert.ok(result.data.length > 0, 'Medic can find templates');
 
-      // Clean up
+      // Clean up — unpublish before removing to satisfy preventPublishedRemoval hook
+      await app.service('form-templates').patch(template.id, { status: 'draft' });
       await app.service('form-templates').remove(template.id);
     });
 
@@ -304,12 +305,12 @@ describe('\'form-templates\' service', () => {
             fieldsets: [
               {
                 id: 'fs-1',
-                fields: [{ type: 'icd10', name: 'diag', label: 'Diagnosis' }],
+                fields: [{ type: 'text', name: 'note', label: 'Note' }],
               },
             ],
           },
         });
-        assert.fail('Should reject icd10 in study form');
+        assert.fail('Should reject encounter-only type in study form');
       } catch (error: any) {
         assert.strictEqual(error.name, 'BadRequest');
       }
