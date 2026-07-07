@@ -93,10 +93,10 @@ const StyledInput = styled('input', {
 
 function isValidIcd10Id(id: string): boolean {
   if (id.length > 7) return false;
-  if (!/^[A-Za-z0-9.\-]+$/.test(id)) return false;
+  if (!/^[A-Za-z0-9.-]+$/.test(id)) return false;
   const letterCount = (id.match(/[A-Za-z]/g) || []).length;
   if (letterCount > 2) return false;
-  const specialCount = (id.match(/[.\-]/g) || []).length;
+  const specialCount = (id.match(/[.-]/g) || []).length;
   if (specialCount > 1) return false;
   return true;
 }
@@ -160,6 +160,10 @@ export function Icd10Selector({
 
   // Fetch initial root nodes or search
   useEffect(() => {
+    // Requests can resolve out of order (broad searches are slower than
+    // specific ones); discard any response that isn't from the latest request.
+    let stale = false;
+
     const fetchData = async () => {
       if (!client || !opened || readOnly) return;
 
@@ -171,7 +175,7 @@ export function Icd10Selector({
             query: { $search: debouncedSearch },
           });
 
-          if (result.data) {
+          if (!stale && result.data) {
             const newNodes: Record<string, Icd10Node> = {};
             result.data.forEach((node: any) => {
               newNodes[node.id] = {
@@ -188,25 +192,33 @@ export function Icd10Selector({
             query: { parent: null, $limit: 50 },
           });
 
-          const newNodes: Record<string, Icd10Node> = {};
-          result.data.forEach((node: any) => {
-            newNodes[node.id] = {
-              ...node,
-              isBranch: !!(node.children && node.children.length > 0),
-            };
-          });
-          setNodes(newNodes);
-          setRootIds(result.data.map((n: any) => n.id));
-          setExpandedIds(new Set());
+          if (!stale) {
+            const newNodes: Record<string, Icd10Node> = {};
+            result.data.forEach((node: any) => {
+              newNodes[node.id] = {
+                ...node,
+                isBranch: !!(node.children && node.children.length > 0),
+              };
+            });
+            setNodes(newNodes);
+            setRootIds(result.data.map((n: any) => n.id));
+            setExpandedIds(new Set());
+          }
         }
       } catch (err) {
         console.error('Error fetching ICD-10 data:', err);
       } finally {
-        setLoading(false);
+        if (!stale) {
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
+
+    return () => {
+      stale = true;
+    };
   }, [client, opened, debouncedSearch, readOnly]);
 
   // Fetch selected names if value changes
