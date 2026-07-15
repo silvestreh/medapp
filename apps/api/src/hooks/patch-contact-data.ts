@@ -26,6 +26,20 @@ const patchContactData = (entity: Entity): Hook => async (context: HookContext) 
       merged,
       { provider: undefined }
     );
+  } else {
+    const { id: contactDataId } = await app.service('contact-data').create({
+      streetAddress: contactData.streetAddress,
+      city: contactData.city,
+      province: contactData.province,
+      country: contactData.country,
+      phoneNumber: contactData.phoneNumber,
+      email: contactData.email
+    }, { provider: undefined });
+
+    await app.service(`${entity}-contact-data`).create({
+      ownerId: result.id,
+      contactDataId
+    }, { provider: undefined });
   }
 
   return context;

@@ -85,8 +85,18 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
       promises.push(client.service('contact-data').patch(contactDataId, contactData));
     }
 
-    if (patientFields) {
-      promises.push(client.service('patients').patch(patientId, patientFields));
+    // Without an existing contact-data entry the contact-data service can't be
+    // called directly (create is internal-only) — patients.patch creates and
+    // links one through its patchContactData hook.
+    const createContactData = !contactDataId && contactData && Object.keys(contactData).length > 0;
+
+    if (patientFields || createContactData) {
+      promises.push(
+        client.service('patients').patch(patientId, {
+          ...patientFields,
+          ...(createContactData ? { contactData } : {}),
+        })
+      );
     }
 
     await Promise.all(promises);
