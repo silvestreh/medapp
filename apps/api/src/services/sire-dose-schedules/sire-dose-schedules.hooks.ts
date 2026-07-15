@@ -1,6 +1,6 @@
 import { HooksObject } from '@feathersjs/feathers';
 import authenticateProviderOrPatient from '../../hooks/authenticate-provider-or-patient';
-import scopeToPatient from '../../hooks/scope-to-patient';
+import scopeSchedulesToPatient from './hooks/scope-schedules-to-patient';
 import mockTestUser from '../../hooks/mock-test-user';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
@@ -22,8 +22,8 @@ const authHook = authenticateProviderOrPatient(['https://sire.athel.as']);
 export default {
   before: {
     all: [authHook, mockTestUser('sire-dose-schedules')],
-    find: [scopeToPatient()],
-    get: [scopeToPatient()],
+    find: [scopeSchedulesToPatient()],
+    get: [],
     create: [
       verifyOrganizationMembership(),
       blockSuperAdmin(),
@@ -45,7 +45,7 @@ export default {
   after: {
     all: [],
     find: [],
-    get: [],
+    get: [scopeSchedulesToPatient()],
     create: [pushOnScheduleChange],
     update: [],
     patch: [pushOnScheduleChange],
