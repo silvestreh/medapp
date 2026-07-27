@@ -6,18 +6,20 @@ import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { requestOtp, verifyOtp } from '~/api.server';
 import { getPatientToken, setPatientToken } from '~/session.server';
-import type { SlugLoaderData } from './$slug';
+import { resolveBookingContext } from '~/host.server';
+import type { SlugLoaderData } from './($slug)';
 
 export const meta: MetaFunction = ({ matches }) => {
-  const slugData = matches.find(m => m.id === 'routes/$slug')?.data as { organization?: { name: string } } | undefined;
+  const slugData = matches.find(m => m.id === 'routes/($slug)')?.data as { organization?: { name: string } } | undefined;
   const orgName = slugData?.organization?.name;
   return [{ title: orgName ? `Iniciar sesión | ${orgName}` : 'Iniciar sesión' }];
 };
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const { basePath } = resolveBookingContext(request, params);
   const token = await getPatientToken(request);
   if (token) {
-    return redirect(`/${params.slug}`);
+    return redirect(basePath || '/');
   }
   return json({});
 };
@@ -31,6 +33,7 @@ interface ActionResult {
 }
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
+  const { slug, basePath } = resolveBookingContext(request, params);
   const formData = await request.formData();
   const step = formData.get('step') as string;
   const documentNumber = formData.get('documentNumber') as string;
@@ -41,7 +44,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   if (step === 'request-otp') {
     try {
-      const result = await requestOtp(documentNumber, params.slug!);
+      const result = await requestOtp(documentNumber, slug!);
 
       if (result.status === 'otp_sent') {
         return json<ActionResult>({ step: 'otp', documentNumber, maskedPhone: result.maskedPhone });
@@ -70,9 +73,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     }
 
     try {
-      const result = await verifyOtp(documentNumber, code, params.slug!);
+      const result = await verifyOtp(documentNumber, code, slug!);
       const cookieHeader = await setPatientToken(request, result.accessToken);
-      return redirect(`/${params.slug}`, {
+      return redirect(basePath || '/', {
         headers: { 'Set-Cookie': cookieHeader },
       });
     } catch (err: any) {
@@ -92,7 +95,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 export default function AuthPage() {
   const { t } = useTranslation();
   const actionData = useActionData<typeof action>();
-  const slugData = useRouteLoaderData<SlugLoaderData>('routes/$slug');
+  const slugData = useRouteLoaderData<SlugLoaderData>('routes/($slug)');
   const logoUrl = slugData?.organization?.logoUrl;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { useLoaderData, useFetcher, useParams, Link } from '@remix-run/react';
+import { useLoaderData, useFetcher, Link } from '@remix-run/react';
 import { Button, TextInput, Title, Text, Radio, Modal, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { DatePicker } from '@mantine/dates';
@@ -19,32 +19,35 @@ import {
   type MedicData,
   type AnonymizedSlot,
 } from '~/api.server';
+import { resolveBookingContext } from '~/host.server';
 
 dayjs.locale('es');
 
 export const meta: MetaFunction = ({ matches }) => {
-  const slugData = matches.find(m => m.id === 'routes/$slug')?.data as { organization?: { name: string } } | undefined;
+  const slugData = matches.find(m => m.id === 'routes/($slug)')?.data as { organization?: { name: string } } | undefined;
   const orgName = slugData?.organization?.name;
   return [{ title: orgName ? `Nuevo turno | ${orgName}` : 'Nuevo turno' }];
 };
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const { basePath } = resolveBookingContext(request, params);
   const token = await getPatientToken(request);
 
   if (!token) {
-    return redirect(`/${params.slug}/auth`);
+    return redirect(`${basePath}/auth`);
   }
 
   try {
     const medics = await findMedics(token);
     const turnstileSiteKey = process.env.TURNSTILE_SITE_KEY || '';
-    return json({ medics, turnstileSiteKey });
+    return json({ medics, turnstileSiteKey, basePath });
   } catch {
-    return redirect(`/${params.slug}/auth`);
+    return redirect(`${basePath}/auth`);
   }
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request, params }: ActionFunctionArgs) => {
+  resolveBookingContext(request, params);
   const token = await getPatientToken(request);
 
   if (!token) {
@@ -364,8 +367,7 @@ function getUniqueSpecialties(medics: MedicData[]): string[] {
 
 export default function BookingPage() {
   const { t } = useTranslation();
-  const params = useParams();
-  const { medics, turnstileSiteKey } = useLoaderData<typeof loader>();
+  const { medics, turnstileSiteKey, basePath } = useLoaderData<typeof loader>();
   const slotsFetcher = useFetcher<{ intent: string; slots?: AnonymizedSlot[] }>();
   const bookingFetcher = useFetcher<{ intent: string; ok?: boolean; error?: string }>();
 
@@ -725,7 +727,7 @@ export default function BookingPage() {
               interpolation: { escapeValue: false },
             })}
           </Text>
-          <Button component={Link} to={`/${params.slug}`} mt="md">
+          <Button component={Link} to={basePath || '/'} mt="md">
             OK
           </Button>
         </Stack>

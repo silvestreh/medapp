@@ -23,7 +23,7 @@ const MAX_OTP_REQUESTS = 5;
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 function isValidSlug(slug: string): boolean {
-  return slug.length >= 2 && slug.length <= 100 && SLUG_RE.test(slug);
+  return slug.length >= 2 && slug.length <= 63 && SLUG_RE.test(slug);
 }
 
 export class PatientOtp {

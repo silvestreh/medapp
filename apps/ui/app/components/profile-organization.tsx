@@ -11,17 +11,25 @@ import type { action } from '~/routes/settings.organization';
 import Portal from '~/components/portal';
 import { FormCard, FieldRow, StyledTextInput, SectionTitle, FormHeader } from '~/components/forms/styles';
 
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function isValidSlug(slug: string): boolean {
+  return slug.length >= 2 && slug.length <= 63 && SLUG_RE.test(slug);
+}
+
 interface ProfileOrganizationProps {
   currentOrg: { id: string; name: string; slug: string; settings?: Record<string, any> };
+  bookingHostSuffix: string;
   showFormActions: boolean;
 }
 
-export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrganizationProps) {
+export function ProfileOrganization({ currentOrg, bookingHostSuffix, showFormActions }: ProfileOrganizationProps) {
   const { t } = useTranslation();
   const client = useFeathers();
   const revalidator = useRevalidator();
   const orgFetcher = useFetcher<typeof action>();
   const [orgName, setOrgName] = useState(currentOrg.name);
+  const [orgSlug, setOrgSlug] = useState(currentOrg.slug);
   const [isUploading, setIsUploading] = useState(false);
   const [orgAddress, setOrgAddress] = useState(currentOrg.settings?.healthCenter?.address || '');
   const [orgPhone, setOrgPhone] = useState(currentOrg.settings?.healthCenter?.phone || '');
@@ -40,7 +48,16 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
       revalidator.revalidate();
     }
     if (orgFetcher.data && !orgFetcher.data.ok && orgFetcher.data.intent === 'update-organization') {
-      notifications.show({ message: t('profile.org_save_error'), color: 'red' });
+      const slugError = (orgFetcher.data as { slugError?: string }).slugError;
+      if (slugError === 'taken') {
+        notifications.show({ message: t('profile.org_slug_taken'), color: 'red' });
+      } else if (slugError === 'reserved') {
+        notifications.show({ message: t('profile.org_slug_reserved'), color: 'red' });
+      } else if (slugError === 'invalid') {
+        notifications.show({ message: t('profile.org_slug_invalid'), color: 'red' });
+      } else {
+        notifications.show({ message: t('profile.org_save_error'), color: 'red' });
+      }
     }
   }, [orgFetcher.data, revalidator, t]);
 
@@ -48,12 +65,20 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
     setOrgName(e.currentTarget.value);
   }, []);
 
+  const handleOrgSlugChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const cleaned = e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    setOrgSlug(cleaned);
+  }, []);
+
+  const slugValid = isValidSlug(orgSlug);
+
   const handleSaveOrg = useCallback(() => {
     orgFetcher.submit(
       {
         intent: 'update-organization',
         orgId: currentOrg.id,
         name: orgName,
+        slug: orgSlug,
         address: orgAddress,
         phone: orgPhone,
         email: orgEmail,
@@ -62,7 +87,7 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
       },
       { method: 'post' }
     );
-  }, [currentOrg.id, orgName, orgAddress, orgPhone, orgEmail, orgLogoUrl, orgRefesId, orgFetcher]);
+  }, [currentOrg.id, orgName, orgSlug, orgAddress, orgPhone, orgEmail, orgLogoUrl, orgRefesId, orgFetcher]);
 
   useHotkeys([['mod+S', handleSaveOrg]], []);
 
@@ -74,6 +99,18 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
       <FormCard>
         <FieldRow label={`${t('profile.org_name')}:`} variant="stacked">
           <StyledTextInput value={orgName} onChange={handleOrgNameChange} />
+        </FieldRow>
+        <FieldRow label={`${t('profile.org_slug')}:`} variant="stacked">
+          <StyledTextInput
+            value={orgSlug}
+            onChange={handleOrgSlugChange}
+            error={!slugValid ? t('profile.org_slug_invalid') : undefined}
+            description={
+              slugValid
+                ? `https://${orgSlug}.${bookingHostSuffix} — ${t('profile.org_slug_warning')}`
+                : t('profile.org_slug_warning')
+            }
+          />
         </FieldRow>
         <FieldRow label={`${t('profile.org_address')}:`} variant="stacked">
           <StyledTextInput
@@ -141,6 +178,7 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
                         intent: 'update-organization',
                         orgId: currentOrg.id,
                         name: orgName,
+                        slug: orgSlug,
                         address: orgAddress,
                         phone: orgPhone,
                         email: orgEmail,
@@ -174,7 +212,9 @@ export function ProfileOrganization({ currentOrg, showFormActions }: ProfileOrga
               }
               disabled={
                 !orgName.trim() ||
+                !slugValid ||
                 (orgName === currentOrg.name &&
+                  orgSlug === currentOrg.slug &&
                   orgAddress === (currentOrg.settings?.healthCenter?.address || '') &&
                   orgPhone === (currentOrg.settings?.healthCenter?.phone || '') &&
                   orgEmail === (currentOrg.settings?.healthCenter?.email || '') &&

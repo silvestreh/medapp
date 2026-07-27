@@ -11,31 +11,40 @@ import 'dayjs/locale/es';
 import { styled } from '~/styled-system/jsx';
 import { getPatientToken } from '~/session.server';
 import { findBookings, cancelBooking, type PatientBooking } from '~/api.server';
+import { resolveBookingContext } from '~/host.server';
 
 dayjs.locale('es');
 
 export const meta: MetaFunction = ({ matches }) => {
-  const slugData = matches.find(m => m.id === 'routes/$slug')?.data as { organization?: { name: string } } | undefined;
+  const slugData = matches.find(m => m.id === 'routes/($slug)')?.data as { organization?: { name: string } } | undefined;
   const orgName = slugData?.organization?.name;
   return [{ title: orgName ? `Mis turnos | ${orgName}` : 'Mis turnos' }];
 };
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const { slug, basePath } = resolveBookingContext(request, params);
+
+  // No org context (e.g. legacy host root): the layout renders the stub, don't redirect.
+  if (!slug) {
+    return json({ bookings: [] as PatientBooking[], basePath });
+  }
+
   const token = await getPatientToken(request);
 
   if (!token) {
-    return redirect(`/${params.slug}/auth`);
+    return redirect(`${basePath}/auth`);
   }
 
   try {
     const bookings = await findBookings(token);
-    return json({ bookings, slug: params.slug! });
+    return json({ bookings, basePath });
   } catch {
-    return redirect(`/${params.slug}/auth`);
+    return redirect(`${basePath}/auth`);
   }
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request, params }: ActionFunctionArgs) => {
+  resolveBookingContext(request, params);
   const token = await getPatientToken(request);
 
   if (!token) {
@@ -232,7 +241,7 @@ const EmptyIcon = styled('div', {
 
 export default function BookingsIndexPage() {
   const { t } = useTranslation();
-  const { bookings, slug } = useLoaderData<typeof loader>();
+  const { bookings, basePath } = useLoaderData<typeof loader>();
   const cancelFetcher = useFetcher<{ ok: boolean; error?: string }>();
   const [cancelTarget, setCancelTarget] = useState<PatientBooking | null>(null);
   const [confirmOpen, { open: openConfirm, close: closeConfirm }] = useDisclosure(false);
@@ -268,7 +277,7 @@ export default function BookingsIndexPage() {
               : ''}
           </Text>
         </div>
-        <Button component={Link} to={`/${slug}/new-appointment`} leftSection={<CalendarPlusIcon size={16} />}>
+        <Button component={Link} to={`${basePath}/new-appointment`} leftSection={<CalendarPlusIcon size={16} />}>
           {t('booking.new_appointment')}
         </Button>
       </Header>
@@ -284,7 +293,7 @@ export default function BookingsIndexPage() {
               {t('booking.choose_medic_subtitle')}
             </Text>
           </div>
-          <Button component={Link} to={`/${slug}/new-appointment`} leftSection={<CalendarPlusIcon size={16} />}>
+          <Button component={Link} to={`${basePath}/new-appointment`} leftSection={<CalendarPlusIcon size={16} />}>
             {t('booking.new_appointment')}
           </Button>
         </EmptyState>

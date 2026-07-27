@@ -4,15 +4,20 @@ import { Container, ActionIcon, Text, Title, Stack } from '@mantine/core';
 import { SignOutIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { getOrganization, type OrganizationInfo } from '~/api.server';
+import { resolveBookingContext } from '~/host.server';
 
-export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const slug = params.slug!;
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const { slug, basePath } = resolveBookingContext(request, params);
+
+  if (!slug) {
+    return json({ organization: null, basePath, error: false as const, noOrg: true as const });
+  }
 
   try {
     const organization = await getOrganization(slug);
-    return json({ organization, error: false as const });
+    return json({ organization, basePath, error: false as const, noOrg: false as const });
   } catch {
-    return json({ organization: null, error: true as const }, { status: 404 });
+    return json({ organization: null, basePath, error: true as const, noOrg: false as const }, { status: 404 });
   }
 };
 
@@ -24,14 +29,27 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
 export type SlugLoaderData = {
   organization: OrganizationInfo | null;
+  basePath: string;
   error: boolean;
+  noOrg: boolean;
 };
 
 export default function SlugLayout() {
   const { t } = useTranslation();
-  const data = useRouteLoaderData<typeof loader>('routes/$slug');
+  const data = useRouteLoaderData<typeof loader>('routes/($slug)');
   const location = useLocation();
   const isAuthPage = location.pathname.endsWith('/auth');
+
+  if (data?.noOrg) {
+    return (
+      <Container size="xs" py="xl" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <Stack align="center" gap="md">
+          <Title order={3}>{t('booking.title')}</Title>
+          <Text c="dimmed">{t('common.navigate_to_org')}</Text>
+        </Stack>
+      </Container>
+    );
+  }
 
   if (data?.error || !data?.organization) {
     return (

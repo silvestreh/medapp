@@ -288,6 +288,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       isOrgOwner,
       currentOrg,
       signingCertificate,
+      bookingHostSuffix: process.env.BOOKING_HOST_SUFFIX || 'athelas.cloud',
     });
   } catch (error) {
     throw redirect('/login');

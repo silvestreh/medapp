@@ -56,3 +56,4 @@ venv/
 *.enc
 lib/
 !apps/ui/app/lib/
+*.dump

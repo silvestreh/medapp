@@ -29,7 +29,9 @@ const handleSignupOrganization = () => async (context: HookContext) => {
   const { organizations, organization_users, user_roles } = sequelize.models;
 
   const orgId = randomUUID();
-  const slug = `${slugify(orgName)}-${randomUUID().slice(0, 8)}`;
+  // Keep the full slug within the 63-char DNS label limit (54 + hyphen + 8-char suffix).
+  const base = slugify(orgName).slice(0, 54).replace(/-+$/, '') || 'org';
+  const slug = `${base}-${randomUUID().slice(0, 8)}`;
 
   await organizations.create({
     id: orgId,

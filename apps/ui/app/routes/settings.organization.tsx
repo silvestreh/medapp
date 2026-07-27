@@ -26,6 +26,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const email = String(formData.get('email') || '');
       const logoUrl = String(formData.get('logoUrl') || '');
       const refesId = String(formData.get('refesId') || '');
+      const slug = String(formData.get('slug') || '');
 
       const org = await client.service('organizations').get(orgId);
       const settings = { ...((org as any)?.settings || {}) };
@@ -38,13 +39,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       };
       settings.refesId = refesId || undefined;
 
-      await client.service('organizations').patch(orgId, { name, settings });
+      const patchData: Record<string, unknown> = { name, settings };
+      if (slug && slug !== (org as any)?.slug) {
+        patchData.slug = slug;
+      }
+
+      await client.service('organizations').patch(orgId, patchData);
       return json({ ok: true, intent });
     }
 
     return json({ ok: false, intent, error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
-    return json({ ok: false, intent, error: error?.message || 'Operation failed' }, { status: 400 });
+    const slugError = error?.errors?.slug as 'invalid' | 'reserved' | 'taken' | undefined;
+    return json({ ok: false, intent, error: error?.message || 'Operation failed', slugError }, { status: 400 });
   }
 };
 
@@ -53,5 +60,11 @@ export default function ProfileOrganizationRoute() {
 
   if (!parentData?.isOrgOwner || !parentData.currentOrg) return null;
 
-  return <ProfileOrganization currentOrg={parentData.currentOrg} showFormActions />;
+  return (
+    <ProfileOrganization
+      currentOrg={parentData.currentOrg}
+      bookingHostSuffix={parentData.bookingHostSuffix}
+      showFormActions
+    />
+  );
 }
