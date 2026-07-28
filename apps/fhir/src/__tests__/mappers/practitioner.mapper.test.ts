@@ -50,11 +50,13 @@ describe('Practitioner Mapper', () => {
     assert.strictEqual(refeps.system, 'http://refeps.msal.gob.ar');
     assert.strictEqual(refeps.value, 'MN-12345');
     assert.strictEqual(refeps.type?.coding?.[0].code, 'AC');
+    // Practitioner-ar-core fixes the REFEPS identifier use to 'usual'
+    assert.strictEqual(refeps.use, 'usual');
   });
 
-  it('should include title as prefix', () => {
+  it('should not map the title as prefix (forbidden by Practitioner-ar-core)', () => {
     const result = mapPractitioner(basePractitioner);
-    assert.deepStrictEqual(result.name?.[0].prefix, ['Dra.']);
+    assert.strictEqual(result.name?.[0].prefix, undefined);
   });
 
   it('should include specialty and state license in qualifications', () => {

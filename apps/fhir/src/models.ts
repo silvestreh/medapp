@@ -21,6 +21,7 @@ export interface Models {
   encounters: DecryptableModel;
   prescriptions: ModelStatic<Model>;
   icd_10: ModelStatic<Model>;
+  refes_establishments: ModelStatic<Model>;
   medications: ModelStatic<Model>;
   access_logs: ModelStatic<Model>;
 }
@@ -147,6 +148,16 @@ export function defineModels(sequelize: Sequelize): Models {
     children: { type: DataTypes.JSONB, allowNull: true },
   });
 
+  // REFES registry mirror, synced by apps/api's refes-sync cron.
+  // Used to enrich canonical Organization resources with official names.
+  const refes_establishments = sequelize.define('refes_establishments', {
+    id: { type: DataTypes.STRING, primaryKey: true },
+    name: { type: DataTypes.TEXT, allowNull: false },
+    province: { type: DataTypes.STRING, allowNull: true },
+    city: { type: DataTypes.STRING, allowNull: true },
+    address: { type: DataTypes.TEXT, allowNull: true },
+  });
+
   const medications = sequelize.define('medications', {
     id: { type: DataTypes.STRING, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
     commercialNamePresentation: { type: DataTypes.TEXT, allowNull: true },
@@ -235,6 +246,7 @@ export function defineModels(sequelize: Sequelize): Models {
     encounters,
     prescriptions,
     icd_10,
+    refes_establishments,
     medications,
     access_logs,
   };

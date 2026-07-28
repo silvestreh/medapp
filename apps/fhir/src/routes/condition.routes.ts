@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Models } from '../models';
 import { parseEncounterData } from '../utils/encounter-parser';
 import { mapConditions } from '../mappers/condition.mapper';
-import { createSearchBundle, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
+import { createSearchBundle, absoluteSelfUrl, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
 import type { Condition } from '@medplum/fhirtypes';
 
 export function createConditionRoutes(models: Models): Router {
@@ -72,7 +72,7 @@ export function createConditionRoutes(models: Models): Router {
 
       const total = allConditions.length;
       const paginated = allConditions.slice(offset, offset + count);
-      res.json(createSearchBundle(paginated, total));
+      res.json(createSearchBundle(paginated, total, absoluteSelfUrl(req.originalUrl)));
     } catch (error) {
       console.error('Error searching conditions:', error);
       res.status(500).json(

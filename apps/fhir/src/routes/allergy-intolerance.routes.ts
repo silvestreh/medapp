@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Models } from '../models';
 import { parseEncounterData } from '../utils/encounter-parser';
 import { mapDrugAllergies, mapGeneralAllergies } from '../mappers/allergy-intolerance.mapper';
-import { createSearchBundle, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
+import { createSearchBundle, absoluteSelfUrl, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
 import type { AllergyIntolerance } from '@medplum/fhirtypes';
 
 export function createAllergyIntoleranceRoutes(models: Models): Router {
@@ -50,7 +50,7 @@ export function createAllergyIntoleranceRoutes(models: Models): Router {
 
       const total = allAllergies.length;
       const paginated = allAllergies.slice(offset, offset + count);
-      res.json(createSearchBundle(paginated, total));
+      res.json(createSearchBundle(paginated, total, absoluteSelfUrl(req.originalUrl)));
     } catch (error) {
       console.error('Error searching allergies:', error);
       res.status(500).json(

@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Op } from 'sequelize';
 import { Models } from '../models';
 import { mapPatient } from '../mappers/patient.mapper';
-import { createSearchBundle, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
+import { createSearchBundle, absoluteSelfUrl, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
 import { decryptPatientRecord, encryptValue } from '../utils/decrypt';
 
 export function createPatientRoutes(models: Models): Router {
@@ -66,7 +66,7 @@ export function createPatientRoutes(models: Models): Router {
       });
 
       const patients = rows.map((row) => mapPatient(decryptPatientRecord(row.get({ plain: true }))));
-      res.json(createSearchBundle(patients, total));
+      res.json(createSearchBundle(patients, total, absoluteSelfUrl(req.originalUrl)));
     } catch (error) {
       console.error('Error searching patients:', error);
       res.status(500).json(

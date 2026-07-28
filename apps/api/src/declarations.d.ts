@@ -26,6 +26,28 @@ export interface Laboratory {
   name: string;
 }
 
+export interface RefesEstablishment {
+  id: string;
+  name: string;
+  province: string | null;
+  provinceId: string | null;
+  department: string | null;
+  departmentId: string | null;
+  city: string | null;
+  cityId: string | null;
+  postalCode: string | null;
+  address: string | null;
+  website: string | null;
+  financing: string | null;
+  typologyId: string | null;
+  typologyAcronym: string | null;
+  typologyName: string | null;
+  longitude: string | null;
+  latitude: string | null;
+  isActive?: boolean;
+  lastSeenAt?: Date | string | null;
+}
+
 export interface Medication {
   id: string;
   commercialNamePresentation: string;

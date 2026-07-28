@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Models } from '../models';
 import { parseEncounterData } from '../utils/encounter-parser';
 import { mapMedicationHistory, mapPrescriptionMedications } from '../mappers/medication-statement.mapper';
-import { createSearchBundle, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
+import { createSearchBundle, absoluteSelfUrl, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
 import type { MedicationStatement } from '@medplum/fhirtypes';
 
 export function createMedicationStatementRoutes(models: Models): Router {
@@ -71,7 +71,7 @@ export function createMedicationStatementRoutes(models: Models): Router {
 
       const total = allStatements.length;
       const paginated = allStatements.slice(offset, offset + count);
-      res.json(createSearchBundle(paginated, total));
+      res.json(createSearchBundle(paginated, total, absoluteSelfUrl(req.originalUrl)));
     } catch (error) {
       console.error('Error searching medication statements:', error);
       res.status(500).json(

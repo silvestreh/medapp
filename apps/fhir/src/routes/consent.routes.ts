@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { createSearchBundle, createOperationOutcome } from '../utils/fhir-helpers';
+import { createSearchBundle, absoluteSelfUrl, createOperationOutcome } from '../utils/fhir-helpers';
 
 export function createConsentRoutes(): Router {
   const router = Router();
@@ -16,7 +16,7 @@ export function createConsentRoutes(): Router {
     }
 
     // No consent denials — patient data may be shared
-    res.json(createSearchBundle([], 0));
+    res.json(createSearchBundle([], 0, absoluteSelfUrl(req.originalUrl)));
   });
 
   return router;

@@ -52,6 +52,33 @@ describe('MedicationStatement Mapper', () => {
       const results = mapMedicationHistory(items, context);
       assert.strictEqual(results[0].status, 'unknown');
     });
+
+    it('should fall back to the encounter date for effective[x]', () => {
+      const items = [{
+        droga: 'Aspirina',
+        ant_fecha: null,
+        efectivo: true as const,
+        efecto_adverso: '',
+        ant_comments: '',
+      }];
+      const results = mapMedicationHistory(items, { ...context, encounterDate: '2024-03-10T12:00:00Z' });
+      assert.strictEqual(results[0].effectiveDateTime, '2024-03-10');
+    });
+
+    it('should assert data-absent-reason when no date is known (IPS requires effective[x])', () => {
+      const items = [{
+        droga: 'Aspirina',
+        ant_fecha: null,
+        efectivo: true as const,
+        efecto_adverso: '',
+        ant_comments: '',
+      }];
+      const results = mapMedicationHistory(items, context);
+      assert.strictEqual(results[0].effectiveDateTime, undefined);
+      const primitiveExt = (results[0] as { _effectiveDateTime?: { extension: { url: string; valueCode?: string }[] } })._effectiveDateTime;
+      assert.strictEqual(primitiveExt?.extension[0].url, 'http://hl7.org/fhir/StructureDefinition/data-absent-reason');
+      assert.strictEqual(primitiveExt?.extension[0].valueCode, 'unknown');
+    });
   });
 
   describe('Prescription Medications', () => {

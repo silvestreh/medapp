@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { mapOrganization } from '../../mappers/organization.mapper';
+import { mapOrganization, canonicalOrganizationId } from '../../mappers/organization.mapper';
 
 describe('Organization Mapper', () => {
   const baseOrg = {
@@ -14,9 +14,24 @@ describe('Organization Mapper', () => {
     const result = mapOrganization(baseOrg);
 
     assert.strictEqual(result.resourceType, 'Organization');
-    assert.strictEqual(result.id, 'org-uuid-123');
+    // Canonical resource id derives from the REFES code so tenant orgs
+    // sharing an establishment dedupe into one resource
+    assert.strictEqual(result.id, 'refes-REFES-00001');
     assert.strictEqual(result.name, 'Hospital Joaquín Corvalán');
     assert.strictEqual(result.active, true);
+  });
+
+  it('should keep the row id when there is no REFES id', () => {
+    const noRefes = { ...baseOrg, settings: {} };
+    assert.strictEqual(mapOrganization(noRefes).id, 'org-uuid-123');
+    assert.strictEqual(canonicalOrganizationId(noRefes), 'org-uuid-123');
+    assert.strictEqual(canonicalOrganizationId(baseOrg), 'refes-REFES-00001');
+  });
+
+  it('should prefer the official REFES name when provided', () => {
+    const result = mapOrganization(baseOrg, 'HOSPITAL GENERAL JOAQUÍN CORVALÁN');
+    assert.strictEqual(result.name, 'HOSPITAL GENERAL JOAQUÍN CORVALÁN');
+    assert.ok(result.text?.div?.includes('HOSPITAL GENERAL JOAQUÍN CORVALÁN'));
   });
 
   it('should include AR.FHIR.CORE profile', () => {
@@ -24,28 +39,23 @@ describe('Organization Mapper', () => {
     assert.ok(result.meta?.profile?.includes('http://fhir.msal.gob.ar/core/StructureDefinition/Organization-ar-core'));
   });
 
-  it('should include REFES identifier when available', () => {
+  it('should include a single REFES identifier with use=usual (AR profile)', () => {
     const result = mapOrganization(baseOrg);
-    const refes = result.identifier?.find(i => i.system === 'http://refes.msal.gob.ar');
-    assert.ok(refes);
-    assert.strictEqual(refes!.value, 'REFES-00001');
-    assert.strictEqual(refes!.use, 'official');
+    // Organization-ar-core allows exactly one identifier (REFES, use fixed to 'usual')
+    assert.strictEqual(result.identifier?.length, 1);
+    const refes = result.identifier![0];
+    assert.strictEqual(refes.system, 'http://refes.msal.gob.ar');
+    assert.strictEqual(refes.value, 'REFES-00001');
+    assert.strictEqual(refes.use, 'usual');
   });
 
-  it('should always include domain identifier', () => {
-    const result = mapOrganization(baseOrg);
-    const domain = result.identifier?.find(i => i.use === 'usual');
-    assert.ok(domain);
-    assert.strictEqual(domain!.value, 'org-uuid-123');
-  });
-
-  it('should handle organization without REFES ID', () => {
+  it('should fall back to the domain identifier without REFES ID', () => {
     const noRefes = { ...baseOrg, settings: {} };
     const result = mapOrganization(noRefes);
-    const refes = result.identifier?.find(i => i.system === 'http://refes.msal.gob.ar');
-    assert.strictEqual(refes, undefined);
-    // Should still have domain identifier
     assert.strictEqual(result.identifier?.length, 1);
+    const domain = result.identifier![0];
+    assert.strictEqual(domain.use, 'usual');
+    assert.strictEqual(domain.value, 'org-uuid-123');
   });
 
   it('should handle inactive organization', () => {

@@ -1,5 +1,6 @@
 import type { Patient, Identifier, ContactPoint, Address, Extension } from '@medplum/fhirtypes';
 import { AR_SYSTEMS, DOMAIN_SYSTEM } from '../utils/identifiers';
+import { narrative } from '../utils/fhir-helpers';
 
 interface PersonalData {
   firstName?: string;
@@ -172,6 +173,7 @@ export function mapPatient(internal: InternalPatient): Patient {
     meta: {
       profile: ['http://fhir.msal.gob.ar/core/StructureDefinition/Patient-ar-core'],
     },
+    text: narrative(pd ? `${pd.firstName || ''} ${pd.lastName || ''}`.trim() || 'Paciente' : 'Paciente'),
     active: !internal.deleted,
   };
 

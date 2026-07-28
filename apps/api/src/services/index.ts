@@ -16,6 +16,7 @@ import studies from './studies/studies.service';
 import studyResults from './study-results/study-results.service';
 import icd10 from './icd-10/icd-10.service';
 import laboratories from './laboratories/laboratories.service';
+import refesEstablishments from './refes-establishments/refes-establishments.service';
 import medications from './medications/medications.service';
 import timeOffEvents from './time-off-events/time-off-events.service';
 import prepagas from './prepagas/prepagas.service';
@@ -89,6 +90,7 @@ export default function (app: Application): void {
   app.configure(studyResults);
   app.configure(icd10);
   app.configure(laboratories);
+  app.configure(refesEstablishments);
   app.configure(medications);
   app.configure(timeOffEvents);
   app.configure(prepagas);

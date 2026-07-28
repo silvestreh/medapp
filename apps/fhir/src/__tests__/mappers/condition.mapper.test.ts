@@ -25,7 +25,10 @@ describe('Condition Mapper', () => {
     assert.strictEqual(result.resourceType, 'Condition');
     assert.strictEqual(result.code?.coding?.[0].system, 'http://hl7.org/fhir/sid/icd-10');
     assert.strictEqual(result.code?.coding?.[0].code, 'I10');
-    assert.strictEqual(result.code?.coding?.[0].display, 'Hipertensión esencial (primaria)');
+    // Spanish label lives in code.text — coding.display must stay empty
+    // (the terminology server only accepts its canonical displays)
+    assert.strictEqual(result.code?.coding?.[0].display, undefined);
+    assert.strictEqual(result.code?.text, 'Hipertensión esencial (primaria)');
     assert.strictEqual(result.subject?.reference, 'Patient/patient-001');
     assert.strictEqual(result.recorder?.reference, 'Practitioner/medic-001');
     assert.strictEqual(result.onsetDateTime, '2023-06-01');
@@ -45,7 +48,7 @@ describe('Condition Mapper', () => {
     assert.strictEqual(result.note, undefined);
   });
 
-  it('should handle unknown ICD code (no display)', () => {
+  it('should handle unknown ICD code (no text)', () => {
     const result = mapCondition(
       { issueId: 'Z99.9', date: null, description: '' },
       context,
@@ -54,7 +57,7 @@ describe('Condition Mapper', () => {
     );
 
     assert.strictEqual(result.code?.coding?.[0].code, 'Z99.9');
-    assert.strictEqual(result.code?.coding?.[0].display, undefined);
+    assert.strictEqual(result.code?.text, undefined);
   });
 
   it('should map multiple conditions', () => {

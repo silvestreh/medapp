@@ -1,6 +1,7 @@
-import type { Composition, Reference } from '@medplum/fhirtypes';
+import type { Composition, CompositionSection, Identifier } from '@medplum/fhirtypes';
 import { v4 as uuidv4 } from 'uuid';
 import { AR_SYSTEMS, LOINC_CODES } from '../utils/identifiers';
+import { narrative } from '../utils/fhir-helpers';
 
 interface FhirResource {
   resourceType: string;
@@ -9,29 +10,69 @@ interface FhirResource {
 
 interface CompositionInput {
   patientId: string;
-  practitionerId: string;
-  organizationId: string;
+  // Composition-ar-ips-core forbids author/custodian references (0..0) and
+  // requires logical identifiers instead: the author is the authoring
+  // *institution* in the REFES namespace, and the custodian is the domain
+  // registered with the national federator (federador.msal.gob.ar/uri).
+  authorIdentifier: { system?: string; value: string };
+  custodianIdentifier: { system?: string; value: string };
   conditions: FhirResource[];
   allergies: FhirResource[];
   medications: FhirResource[];
 }
 
-function makeEntryReferences(resources: FhirResource[]): Reference[] {
-  return resources.map((r) => ({
-    reference: `${r.resourceType}/${r.id}`,
-  }));
+function toIdentifier(input: { system?: string; value: string }): Identifier {
+  const identifier: Identifier = { value: input.value };
+  if (input.system) identifier.system = input.system;
+  return identifier;
+}
+
+// NOTE: coding.display is intentionally omitted from LOINC codings — the
+// bundle language is es-AR and the terminology server rejects any display
+// that isn't its canonical es-AR string. Section slicing matches on
+// system+code only.
+function buildSection(
+  title: string,
+  loincCode: string,
+  resources: FhirResource[],
+  emptyText: string,
+  emptyReasonCode: 'nilknown' | 'unavailable' = 'nilknown'
+): CompositionSection {
+  const section: CompositionSection = {
+    title,
+    code: {
+      coding: [{ system: AR_SYSTEMS.LOINC, code: loincCode }],
+    },
+    text: {
+      status: 'generated',
+      div: resources.length > 0
+        ? '<div xmlns="http://www.w3.org/1999/xhtml"><p>Ver recursos adjuntos</p></div>'
+        : `<div xmlns="http://www.w3.org/1999/xhtml"><p>${emptyText}</p></div>`,
+    },
+  };
+
+  if (resources.length > 0) {
+    section.entry = resources.map((r) => ({ reference: `${r.resourceType}/${r.id}` }));
+  } else {
+    section.emptyReason = {
+      coding: [{ system: 'http://terminology.hl7.org/CodeSystem/list-empty-reason', code: emptyReasonCode }],
+    };
+  }
+
+  return section;
 }
 
 export function mapComposition(input: CompositionInput): Composition {
   const now = new Date().toISOString();
 
-  const composition: Composition = {
+  return {
     resourceType: 'Composition',
     id: uuidv4(),
     meta: {
       profile: ['http://fhir.msal.gob.ar/core/StructureDefinition/Composition-ar-ips-core'],
     },
     language: 'es-AR',
+    text: narrative('Resumen del Paciente (IPS Argentina)'),
     identifier: {
       system: 'urn:ietf:rfc:3986',
       value: `urn:uuid:${uuidv4()}`,
@@ -41,100 +82,31 @@ export function mapComposition(input: CompositionInput): Composition {
       coding: [{
         system: AR_SYSTEMS.LOINC,
         code: LOINC_CODES.PATIENT_SUMMARY,
-        display: 'Patient summary Document',
       }],
+      text: 'Resumen del paciente',
     },
     subject: {
       reference: `Patient/${input.patientId}`,
     },
     date: now,
     author: [{
-      reference: `Practitioner/${input.practitionerId}`,
+      type: 'Organization',
+      identifier: toIdentifier(input.authorIdentifier),
     }],
     title: 'Resumen del Paciente (IPS Argentina)',
     custodian: {
-      reference: `Organization/${input.organizationId}`,
+      type: 'Organization',
+      identifier: toIdentifier(input.custodianIdentifier),
     },
-    section: [],
+    section: [
+      // The Immunizations section keeps emptyReason: Immunization-ar-core
+      // demands lotNumber/protocolApplied/location, so an absent-info
+      // placeholder can never conform. There is no immunization data in
+      // this system.
+      buildSection('Inmunizaciones', LOINC_CODES.IMMUNIZATIONS, [], 'No hay datos de vacunación disponibles', 'unavailable'),
+      buildSection('Problemas', LOINC_CODES.CONDITIONS, input.conditions, 'No se registran antecedentes patológicos'),
+      buildSection('Medicación', LOINC_CODES.MEDICATIONS, input.medications, 'No se registra medicación'),
+      buildSection('Alergias e Intolerancias', LOINC_CODES.ALLERGIES, input.allergies, 'No se registran alergias'),
+    ],
   };
-
-  // Immunizations section (emptyReason - no data available)
-  composition.section!.push({
-    title: 'Inmunizaciones',
-    code: {
-      coding: [{ system: AR_SYSTEMS.LOINC, code: LOINC_CODES.IMMUNIZATIONS, display: 'History of Immunization Narrative' }],
-    },
-    text: {
-      status: 'generated',
-      div: '<div xmlns="http://www.w3.org/1999/xhtml"><p>No hay datos de vacunación disponibles</p></div>',
-    },
-    emptyReason: {
-      coding: [{ system: 'http://terminology.hl7.org/CodeSystem/list-empty-reason', code: 'unavailable', display: 'Unavailable' }],
-    },
-  });
-
-  // Conditions section
-  composition.section!.push({
-    title: 'Problemas',
-    code: {
-      coding: [{ system: AR_SYSTEMS.LOINC, code: LOINC_CODES.CONDITIONS, display: 'Problem list - Reported' }],
-    },
-    text: {
-      status: 'generated',
-      div: input.conditions.length > 0
-        ? '<div xmlns="http://www.w3.org/1999/xhtml"><p>Ver recursos adjuntos</p></div>'
-        : '<div xmlns="http://www.w3.org/1999/xhtml"><p>No se registran antecedentes patológicos</p></div>',
-    },
-    ...(input.conditions.length > 0
-      ? { entry: makeEntryReferences(input.conditions) }
-      : {
-        emptyReason: {
-          coding: [{ system: 'http://terminology.hl7.org/CodeSystem/list-empty-reason', code: 'nilknown', display: 'Nil Known' }],
-        },
-      }),
-  });
-
-  // Medications section
-  composition.section!.push({
-    title: 'Medicación',
-    code: {
-      coding: [{ system: AR_SYSTEMS.LOINC, code: LOINC_CODES.MEDICATIONS, display: 'History of Medication use Narrative' }],
-    },
-    text: {
-      status: 'generated',
-      div: input.medications.length > 0
-        ? '<div xmlns="http://www.w3.org/1999/xhtml"><p>Ver recursos adjuntos</p></div>'
-        : '<div xmlns="http://www.w3.org/1999/xhtml"><p>No se registra medicación</p></div>',
-    },
-    ...(input.medications.length > 0
-      ? { entry: makeEntryReferences(input.medications) }
-      : {
-        emptyReason: {
-          coding: [{ system: 'http://terminology.hl7.org/CodeSystem/list-empty-reason', code: 'nilknown', display: 'Nil Known' }],
-        },
-      }),
-  });
-
-  // Allergies section
-  composition.section!.push({
-    title: 'Alergias e Intolerancias',
-    code: {
-      coding: [{ system: AR_SYSTEMS.LOINC, code: LOINC_CODES.ALLERGIES, display: 'Allergies and adverse reactions Document' }],
-    },
-    text: {
-      status: 'generated',
-      div: input.allergies.length > 0
-        ? '<div xmlns="http://www.w3.org/1999/xhtml"><p>Ver recursos adjuntos</p></div>'
-        : '<div xmlns="http://www.w3.org/1999/xhtml"><p>No se registran alergias</p></div>',
-    },
-    ...(input.allergies.length > 0
-      ? { entry: makeEntryReferences(input.allergies) }
-      : {
-        emptyReason: {
-          coding: [{ system: 'http://terminology.hl7.org/CodeSystem/list-empty-reason', code: 'nilknown', display: 'Nil Known' }],
-        },
-      }),
-  });
-
-  return composition;
 }

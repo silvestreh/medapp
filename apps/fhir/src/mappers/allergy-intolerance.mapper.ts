@@ -1,4 +1,6 @@
 import type { AllergyIntolerance } from '@medplum/fhirtypes';
+import { IPS_ABSENT_UNKNOWN_SYSTEM } from '../utils/identifiers';
+import { narrative } from '../utils/fhir-helpers';
 
 interface DrugAllergyInput {
   drug: string;
@@ -45,6 +47,7 @@ export function mapDrugAllergies(
     meta: {
       profile: ['http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'],
     },
+    text: narrative(`Alergia a medicamento: ${entry.drug}`),
     clinicalStatus: {
       coding: [{ system: 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical', code: 'active' }],
     },
@@ -76,6 +79,7 @@ export function mapGeneralAllergies(
       meta: {
         profile: ['http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'],
       },
+      text: narrative(`Alergia: ${meta.display}: ${value}`),
       clinicalStatus: {
         coding: [{ system: 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical', code: 'active' }],
       },
@@ -95,4 +99,29 @@ export function mapGeneralAllergies(
       },
     };
   });
+}
+
+// IPS placeholder for patients with no recorded allergies.
+export function mapNoKnownAllergies(patientId: string): AllergyIntolerance {
+  return {
+    resourceType: 'AllergyIntolerance',
+    id: `${patientId}-no-known-allergies`,
+    meta: {
+      profile: ['http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips'],
+    },
+    text: narrative('No se registran alergias'),
+    clinicalStatus: {
+      coding: [{ system: 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical', code: 'active' }],
+    },
+    code: {
+      coding: [{
+        system: IPS_ABSENT_UNKNOWN_SYSTEM,
+        code: 'no-known-allergies',
+        display: 'No known allergies',
+      }],
+    },
+    patient: {
+      reference: `Patient/${patientId}`,
+    },
+  };
 }

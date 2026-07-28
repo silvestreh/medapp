@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import type { CapabilityStatement } from '@medplum/fhirtypes';
+import { narrative } from '../utils/fhir-helpers';
 
 const router = Router();
 
 router.get('/metadata', (_req, res) => {
   const capability: CapabilityStatement = {
     resourceType: 'CapabilityStatement',
+    text: narrative('Athelas FHIR Wrapper — HL7 Argentina AR.FHIR.CORE'),
     status: 'active',
     date: new Date().toISOString(),
     kind: 'instance',
@@ -48,7 +50,7 @@ router.get('/metadata', (_req, res) => {
           operation: [
             {
               name: 'summary',
-              definition: 'http://hl7.org/fhir/OperationDefinition/Patient-summary',
+              definition: 'http://hl7.org/fhir/uv/ips/OperationDefinition/summary',
             },
             {
               name: 'match',
@@ -84,7 +86,7 @@ router.get('/metadata', (_req, res) => {
         },
         {
           type: 'Condition',
-          profile: 'http://fhir.msal.gob.ar/core/StructureDefinition/Condition-ar-core',
+          profile: 'http://hl7.org/fhir/uv/ips/StructureDefinition/Condition-uv-ips',
           interaction: [
             { code: 'search-type' },
           ],
@@ -94,7 +96,7 @@ router.get('/metadata', (_req, res) => {
         },
         {
           type: 'AllergyIntolerance',
-          profile: 'http://fhir.msal.gob.ar/core/StructureDefinition/AllergyIntolerance-ar-core',
+          profile: 'http://hl7.org/fhir/uv/ips/StructureDefinition/AllergyIntolerance-uv-ips',
           interaction: [
             { code: 'search-type' },
           ],
@@ -104,7 +106,7 @@ router.get('/metadata', (_req, res) => {
         },
         {
           type: 'MedicationStatement',
-          profile: 'http://fhir.msal.gob.ar/core/StructureDefinition/MedicationStatement-ar-core',
+          profile: 'http://hl7.org/fhir/uv/ips/StructureDefinition/MedicationStatement-uv-ips',
           interaction: [
             { code: 'search-type' },
           ],

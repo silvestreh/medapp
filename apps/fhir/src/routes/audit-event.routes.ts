@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Op } from 'sequelize';
 import { Models } from '../models';
 import { mapAuditEvent } from '../mappers/audit-event.mapper';
-import { createSearchBundle, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
+import { createSearchBundle, absoluteSelfUrl, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
 
 export function createAuditEventRoutes(models: Models): Router {
   const router = Router();
@@ -68,7 +68,7 @@ export function createAuditEventRoutes(models: Models): Router {
         });
       });
 
-      res.json(createSearchBundle(auditEvents, total));
+      res.json(createSearchBundle(auditEvents, total, absoluteSelfUrl(req.originalUrl)));
     } catch (error) {
       console.error('Error searching audit events:', error);
       res.status(500).json(

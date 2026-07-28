@@ -1,5 +1,6 @@
 import type { Condition } from '@medplum/fhirtypes';
-import { AR_SYSTEMS } from '../utils/identifiers';
+import { AR_SYSTEMS, IPS_ABSENT_UNKNOWN_SYSTEM } from '../utils/identifiers';
+import { narrative } from '../utils/fhir-helpers';
 
 interface ConditionInput {
   issueId: string;
@@ -26,18 +27,21 @@ export function mapCondition(
     meta: {
       profile: ['http://hl7.org/fhir/uv/ips/StructureDefinition/Condition-uv-ips'],
     },
+    text: narrative(icdLookup?.[input.issueId] || `ICD-10 ${input.issueId}`),
     clinicalStatus: {
       coding: [{
         system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
         code: 'active',
       }],
     },
+    // The Spanish ICD-10 label goes in code.text — the terminology server
+    // only accepts its own canonical display strings for coding.display.
     code: {
       coding: [{
         system: AR_SYSTEMS.ICD10,
         code: input.issueId,
-        display: icdLookup?.[input.issueId] || undefined,
       }],
+      text: icdLookup?.[input.issueId] || undefined,
     },
     subject: {
       reference: `Patient/${context.patientId}`,
@@ -67,4 +71,32 @@ export function mapConditions(
   icdLookup?: Record<string, string>
 ): Condition[] {
   return items.map((item, index) => mapCondition(item, context, index, icdLookup));
+}
+
+// IPS placeholder for patients with no recorded problems.
+export function mapNoKnownProblems(patientId: string): Condition {
+  return {
+    resourceType: 'Condition',
+    id: `${patientId}-no-known-problems`,
+    meta: {
+      profile: ['http://hl7.org/fhir/uv/ips/StructureDefinition/Condition-uv-ips'],
+    },
+    text: narrative('No se registran antecedentes patológicos'),
+    clinicalStatus: {
+      coding: [{
+        system: 'http://terminology.hl7.org/CodeSystem/condition-clinical',
+        code: 'active',
+      }],
+    },
+    code: {
+      coding: [{
+        system: IPS_ABSENT_UNKNOWN_SYSTEM,
+        code: 'no-known-problems',
+        display: 'No known problems',
+      }],
+    },
+    subject: {
+      reference: `Patient/${patientId}`,
+    },
+  };
 }

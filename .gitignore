@@ -49,7 +49,6 @@ venv/
 
 # Misc
 .DS_Store
-*.pem
 .cache
 .temp
 *.tsbuildinfo
@@ -57,3 +56,7 @@ venv/
 lib/
 !apps/ui/app/lib/
 *.dump
+
+# Certs
+*.pem
+!apps/api/config/certs/sectigo-dv-r36.pem

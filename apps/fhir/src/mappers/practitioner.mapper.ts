@@ -1,5 +1,6 @@
 import type { Practitioner, Identifier, Extension } from '@medplum/fhirtypes';
 import { AR_SYSTEMS, DOMAIN_SYSTEM } from '../utils/identifiers';
+import { narrative } from '../utils/fhir-helpers';
 
 interface PersonalData {
   firstName?: string;
@@ -40,11 +41,11 @@ function buildIdentifiers(user: InternalPractitioner, pd: PersonalData): Identif
     assigner: { display: 'RENAPER' },
   });
 
-  // REFEPSid
+  // REFEPSid — Practitioner-ar-core fixes use to 'usual'
   const mds = user.md_setting;
   if (mds?.nationalLicenseNumber) {
     identifiers.push({
-      use: 'official',
+      use: 'usual',
       type: {
         coding: [{ system: 'http://terminology.hl7.org/CodeSystem/v2-0203', code: 'AC' }],
         text: 'REFEPS',
@@ -54,7 +55,7 @@ function buildIdentifiers(user: InternalPractitioner, pd: PersonalData): Identif
     });
   }
 
-  // Domain identifier
+  // Domain identifier (open slicing on system — matches no AR slice, which is allowed)
   identifiers.push({
     use: 'usual',
     system: DOMAIN_SYSTEM,
@@ -72,17 +73,18 @@ interface HumanNameWithExtensions {
   _family?: { extension: Extension[] };
 }
 
-function buildName(pd: PersonalData, mds?: MdSettings): HumanNameWithExtensions[] {
+function buildName(pd: PersonalData): HumanNameWithExtensions[] {
   const fathersFamily: Extension = {
     url: 'http://hl7.org/fhir/StructureDefinition/humanname-fathers-family',
     valueString: pd.lastName || '',
   };
 
+  // Note: Practitioner-ar-core forbids name.prefix (0..0), so the title
+  // (e.g. "Dra.") is intentionally not mapped.
   return [{
     use: 'official',
     family: pd.lastName || undefined,
     given: pd.firstName ? [pd.firstName] : undefined,
-    prefix: mds?.title ? [mds.title] : undefined,
     _family: pd.lastName ? { extension: [fathersFamily] } : undefined,
   }];
 }
@@ -97,13 +99,14 @@ export function mapPractitioner(internal: InternalPractitioner): Practitioner {
     meta: {
       profile: ['http://fhir.msal.gob.ar/core/StructureDefinition/Practitioner-ar-core'],
     },
+    text: narrative(pd ? `${pd.firstName || ''} ${pd.lastName || ''}`.trim() || 'Profesional' : 'Profesional'),
     active: true,
   };
 
   if (pd) {
     practitioner.identifier = buildIdentifiers(internal, pd);
     // Cast needed: _family extension is valid FHIR but not in @medplum/fhirtypes
-    practitioner.name = buildName(pd, mds) as Practitioner['name'];
+    practitioner.name = buildName(pd) as Practitioner['name'];
     practitioner.gender = (pd.gender as Practitioner['gender']) || undefined;
     practitioner.birthDate = pd.birthDate || undefined;
   }

@@ -6,6 +6,7 @@ import { scheduleLicenseRevalidation } from './cron/license-revalidation';
 import { scheduleSolanaAnchoring } from './cron/solana-anchoring';
 import { scheduleAppointmentReminders } from './cron/appointment-reminders';
 import { scheduleEvolutionHealthCheck } from './cron/evolution-health-check';
+import { scheduleRefesSync } from './cron/refes-sync';
 import { startWhatsappWorker } from './queues/whatsapp-queue';
 import createAppointmentRemindersModel from './models/appointment-reminders.model';
 
@@ -27,6 +28,7 @@ server.on('listening', () => {
   scheduleSolanaAnchoring(app);
   scheduleAppointmentReminders(app);
   scheduleEvolutionHealthCheck(app);
+  scheduleRefesSync(app);
   startWhatsappWorker(app);
 
 

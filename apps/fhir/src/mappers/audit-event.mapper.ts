@@ -1,5 +1,9 @@
 import type { AuditEvent, AuditEventAgent, AuditEventEntity, CodeableConcept } from '@medplum/fhirtypes';
 import { DOMAIN_SYSTEM } from '../utils/identifiers';
+import { narrative } from '../utils/fhir-helpers';
+
+const DCM_SYSTEM = 'http://dicom.nema.org/resources/ontology/DCM';
+const AUDIT_EVENT_TYPE_SYSTEM = 'http://terminology.hl7.org/CodeSystem/audit-event-type';
 
 interface InternalAccessLog {
   id: string;
@@ -36,16 +40,17 @@ const PURPOSE_MAP: Record<string, { code: string; display: string }> = {
   share: { code: 'HDIRECT', display: 'directory' },
 };
 
-const RESOURCE_TYPE_MAP: Record<string, { code: string; display: string }> = {
-  encounters: { code: 'rest', display: 'RESTful Operation' },
-  studies: { code: 'rest', display: 'RESTful Operation' },
-  prescriptions: { code: 'rest', display: 'RESTful Operation' },
-  'shared-access': { code: 'rest', display: 'RESTful Operation' },
-  authentication: { code: '110114', display: 'User Authentication' },
-  'access-control': { code: '110113', display: 'Security Alert' },
-  configuration: { code: '110128', display: 'Application Activity' },
-  system: { code: '110128', display: 'Application Activity' },
-  'user-management': { code: '110136', display: 'Security Roles Changed' },
+// 'rest' lives in the FHIR audit-event-type code system, not in DICOM's DCM.
+const RESOURCE_TYPE_MAP: Record<string, { system: string; code: string; display: string }> = {
+  encounters: { system: AUDIT_EVENT_TYPE_SYSTEM, code: 'rest', display: 'RESTful Operation' },
+  studies: { system: AUDIT_EVENT_TYPE_SYSTEM, code: 'rest', display: 'RESTful Operation' },
+  prescriptions: { system: AUDIT_EVENT_TYPE_SYSTEM, code: 'rest', display: 'RESTful Operation' },
+  'shared-access': { system: AUDIT_EVENT_TYPE_SYSTEM, code: 'rest', display: 'RESTful Operation' },
+  authentication: { system: DCM_SYSTEM, code: '110114', display: 'User Authentication' },
+  'access-control': { system: DCM_SYSTEM, code: '110113', display: 'Security Alert' },
+  configuration: { system: DCM_SYSTEM, code: '110128', display: 'Application Activity' },
+  system: { system: DCM_SYSTEM, code: '110128', display: 'Application Activity' },
+  'user-management': { system: DCM_SYSTEM, code: '110136', display: 'Security Roles Changed' },
 };
 
 const RESOURCE_SUBTYPE_MAP: Record<string, { code: string; display: string }> = {
@@ -142,9 +147,9 @@ export function mapAuditEvent(log: InternalAccessLog): AuditEvent {
   // Override type for system startup/shutdown events
   let resolvedTypeInfo = typeInfo;
   if (log.resource === 'system' && log.metadata?.event === 'startup') {
-    resolvedTypeInfo = { code: '110120', display: 'Application Start' };
+    resolvedTypeInfo = { system: DCM_SYSTEM, code: '110120', display: 'Application Start' };
   } else if (log.resource === 'system' && log.metadata?.event === 'shutdown') {
-    resolvedTypeInfo = { code: '110121', display: 'Application Stop' };
+    resolvedTypeInfo = { system: DCM_SYSTEM, code: '110121', display: 'Application Stop' };
   }
 
   // Determine outcome: '0' = success, '8' = serious failure (for denials)
@@ -153,8 +158,9 @@ export function mapAuditEvent(log: InternalAccessLog): AuditEvent {
   const auditEvent: AuditEvent = {
     resourceType: 'AuditEvent',
     id: log.id,
+    text: narrative(`Evento de auditoría: ${log.resource} / ${log.action}`),
     type: {
-      system: 'http://dicom.nema.org/resources/ontology/DCM',
+      system: resolvedTypeInfo.system,
       code: resolvedTypeInfo.code,
       display: resolvedTypeInfo.display,
     },

@@ -9,6 +9,7 @@ import { BuildingsIcon, UploadIcon } from '@phosphor-icons/react';
 import { useFeathers } from '~/components/provider';
 import type { action } from '~/routes/settings.organization';
 import Portal from '~/components/portal';
+import { RefesSearch } from '~/components/refes-search';
 import { FormCard, FieldRow, StyledTextInput, SectionTitle, FormHeader } from '~/components/forms/styles';
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -68,6 +69,10 @@ export function ProfileOrganization({ currentOrg, bookingHostSuffix, showFormAct
   const handleOrgSlugChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const cleaned = e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
     setOrgSlug(cleaned);
+  }, []);
+
+  const handleRefesChange = useCallback((refesId: string) => {
+    setOrgRefesId(refesId);
   }, []);
 
   const slugValid = isValidSlug(orgSlug);
@@ -130,15 +135,14 @@ export function ProfileOrganization({ currentOrg, bookingHostSuffix, showFormAct
             onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgEmail(e.currentTarget.value)}
           />
         </FieldRow>
-        <FieldRow label={`${t('profile.org_refes_id', 'REFES ID')}:`} variant="stacked">
-          <StyledTextInput
+        <FieldRow label={`${t('profile.org_refes_id', 'Establecimiento (REFES)')}:`} variant="stacked">
+          <RefesSearch
             value={orgRefesId}
-            placeholder="Ej: 10001234"
+            onChange={handleRefesChange}
             description={t(
               'profile.org_refes_id_description',
-              'Identificador del Registro Federal de Establecimientos de Salud (REFES)'
+              'Establecimiento del Registro Federal de Establecimientos de Salud (REFES) donde se brinda la atención'
             )}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setOrgRefesId(e.currentTarget.value)}
           />
         </FieldRow>
         <FieldRow label={`${t('profile.org_logo')}:`} variant="stacked">

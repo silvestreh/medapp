@@ -27,6 +27,7 @@ const ALLOWED_PATHS = new Set([
   'icd-10',
   'laboratories',
   'medications',
+  'refes-establishments',
   'time-off-events',
   'prepagas',
   'referring-doctors',

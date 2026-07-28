@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Models } from '../models';
-import { createSearchBundle, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
+import { createSearchBundle, absoluteSelfUrl, createOperationOutcome, parseFhirSearchParams } from '../utils/fhir-helpers';
 import { DOMAIN_SYSTEM } from '../utils/identifiers';
 import type { DocumentReference } from '@medplum/fhirtypes';
 
@@ -61,7 +61,7 @@ export function createDocumentReferenceRoutes(models: Models): Router {
         };
       });
 
-      res.json(createSearchBundle(docRefs, total));
+      res.json(createSearchBundle(docRefs, total, absoluteSelfUrl(req.originalUrl)));
     } catch (error) {
       console.error('Error searching document references:', error);
       res.status(500).json(
