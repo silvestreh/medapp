@@ -23,7 +23,7 @@ export default {
       enforceActiveOrganization()
     ],
     find: [scopeToMedic()],
-    get: [],
+    get: [scopeToMedic()],
     create: [
       setGrantingMedic(),
       validateGrantedIsMedic(),

@@ -23,7 +23,7 @@ export default {
       enforceActiveOrganization()
     ],
     find: [scopeToUser()],
-    get: [],
+    get: [scopeToUser()],
     create: [
       setMedicId(),
       validatePrescriberRole(),

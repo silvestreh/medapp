@@ -27,16 +27,25 @@ export const loader = authenticatedLoader(async ({ params, request }: LoaderFunc
 
   const { client } = await getAuthenticatedClient(request);
 
-  const [patient, treatmentsResult, readingsResult, schedulesResult] = await Promise.all([
+  const [patient, treatmentsResult, readingsResult] = await Promise.all([
     client.service('patients').get(patientId),
     client.service('sire-treatments').find({ query: { patientId, $sort: { createdAt: -1 } } }),
     client.service('sire-readings').find({ query: { patientId, $sort: { date: -1, createdAt: -1 }, $limit: 50 } }),
-    client.service('sire-dose-schedules').find({ query: { $sort: { startDate: -1, createdAt: -1 }, $limit: 50 } }),
   ]);
+
+  const treatments = (treatmentsResult as any).data || treatmentsResult;
+
+  // sire_dose_schedules has no patientId column — scope through the patient's treatments
+  const treatmentIds = (treatments as any[]).map((treatment) => treatment.id);
+  const schedulesResult = treatmentIds.length > 0
+    ? await client.service('sire-dose-schedules').find({
+        query: { treatmentId: { $in: treatmentIds }, $sort: { startDate: -1, createdAt: -1 }, $limit: 50 },
+      })
+    : { data: [] };
 
   return {
     patient,
-    treatments: (treatmentsResult as any).data || treatmentsResult,
+    treatments,
     readings: (readingsResult as any).data || readingsResult,
     schedules: (schedulesResult as any).data || schedulesResult,
   };

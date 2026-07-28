@@ -5,6 +5,7 @@ import { disallow } from 'feathers-hooks-common';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { blockSuperAdmin } from '../../hooks/block-super-admin';
+import scopeQueryToOrganization from '../../hooks/scope-query-to-organization';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -12,7 +13,7 @@ const { authenticate } = authentication.hooks;
 export default {
   before: {
     all: [authenticate('jwt'), verifyOrganizationMembership(), blockSuperAdmin()],
-    find: [],
+    find: [scopeQueryToOrganization()],
     get: [disallow('external')],
     create: [enforceActiveOrganization()],
     update: [disallow('external')],

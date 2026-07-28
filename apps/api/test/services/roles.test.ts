@@ -42,6 +42,12 @@ describe('\'roles\' service', () => {
       medicareNumber: '12345'
     });
 
+    // patients.get is scoped to the active organization via organization_patients
+    await app.service('organization-patients').create({
+      organizationId: org.id,
+      patientId: patient.id,
+    } as any);
+
     await app.service('roles').create({
       id: 'limited-patch',
       permissions: [

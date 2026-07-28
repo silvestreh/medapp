@@ -1,12 +1,18 @@
+import * as authentication from '@feathersjs/authentication';
+import { disallow } from 'feathers-hooks-common';
+
+const { authenticate } = authentication.hooks;
+
 export default {
   before: {
-    all: [],
+    // Reference catalog: authenticated reads, internal-only writes
+    all: [authenticate('jwt')],
     find: [],
     get: [],
-    create: [],
-    update: [],
-    patch: [],
-    remove: []
+    create: [disallow('external')],
+    update: [disallow('external')],
+    patch: [disallow('external')],
+    remove: [disallow('external')]
   },
 
   after: {

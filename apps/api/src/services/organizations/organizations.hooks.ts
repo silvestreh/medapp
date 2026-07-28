@@ -2,6 +2,7 @@ import { HooksObject } from '@feathersjs/feathers';
 import * as authentication from '@feathersjs/authentication';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import restrictToOrgOwner from './hooks/restrict-to-org-owner';
+import restrictOrgReads from './hooks/restrict-org-reads';
 import validateSlug from './hooks/validate-slug';
 import { disallow } from 'feathers-hooks-common';
 import { protectIsActive } from './hooks/protect-is-active';
@@ -13,7 +14,7 @@ const { authenticate } = authentication.hooks;
 export default {
   before: {
     all: [authenticate('jwt')],
-    find: [],
+    find: [restrictOrgReads()],
     get: [],
     create: [protectIsActive(), validateSlug()],
     update: [validateSlug()],
@@ -31,7 +32,7 @@ export default {
   after: {
     all: [],
     find: [],
-    get: [],
+    get: [restrictOrgReads()],
     create: [],
     update: [],
     patch: [registerHealthCenter(), logConfigChange()],

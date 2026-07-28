@@ -67,7 +67,7 @@ export default {
       checkPermissions({ scopeToOrganization: false })
     ],
     find: [scopeToUser()],
-    get: [],
+    get: [scopeToUser()],
     create: [setUserId(), validateUserIsMedic()],
     update: [disallow('external')],
     patch: [scopeToUser()],

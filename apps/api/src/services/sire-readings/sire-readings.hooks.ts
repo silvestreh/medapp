@@ -1,7 +1,10 @@
 import { HooksObject } from '@feathersjs/feathers';
+import { disallow } from 'feathers-hooks-common';
 import authenticateProviderOrPatient from '../../hooks/authenticate-provider-or-patient';
 import scopeToPatient from '../../hooks/scope-to-patient';
 import mockTestUser from '../../hooks/mock-test-user';
+import scopeChildRecordsToMedic from '../../hooks/scope-child-records-to-medic';
+import verifyPatientTreatmentOwnership from '../../hooks/verify-patient-treatment-ownership';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { blockSuperAdmin } from '../../hooks/block-super-admin';
@@ -16,33 +19,56 @@ const pushOnNewReading = sendSirePush({
 
 const authHook = authenticateProviderOrPatient(['https://sire.athel.as']);
 
+// Providers reach readings through their accessible treatments (own, shared
+// via shared-encounter-access, or sire-treatments:find:all)
+const scopeToTreatments = scopeChildRecordsToMedic({
+  parentService: 'sire-treatments',
+  foreignKey: 'treatmentId',
+});
+
 export default {
   before: {
     all: [authHook, mockTestUser('sire-readings')],
-    find: [scopeToPatient()],
-    get: [scopeToPatient()],
+    find: [
+      verifyOrganizationMembership(),
+      blockSuperAdmin(),
+      scopeToTreatments,
+      scopeToPatient(),
+    ],
+    get: [
+      verifyOrganizationMembership(),
+      blockSuperAdmin(),
+      scopeToPatient(),
+    ],
     create: [
       verifyOrganizationMembership(),
       blockSuperAdmin(),
       enforceActiveOrganization(),
+      scopeToTreatments,
+      scopeToPatient(),
+      verifyPatientTreatmentOwnership(),
     ],
-    update: [],
+    update: [disallow('external')],
     patch: [
       verifyOrganizationMembership(),
       blockSuperAdmin(),
       enforceActiveOrganization(),
+      scopeToTreatments,
+      scopeToPatient(),
     ],
     remove: [
       verifyOrganizationMembership(),
       blockSuperAdmin(),
       enforceActiveOrganization(),
+      scopeToTreatments,
+      scopeToPatient(),
     ]
   },
 
   after: {
     all: [],
     find: [],
-    get: [],
+    get: [scopeToTreatments],
     create: [pushOnNewReading],
     update: [],
     patch: [],
