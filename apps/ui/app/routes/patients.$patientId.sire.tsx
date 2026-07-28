@@ -232,6 +232,17 @@ export default function SireManagement() {
     [schedules]
   );
 
+  // Latest schedule for the active treatment, excluding the one already attached
+  // to the reading being edited (schedules are sorted newest-first by the loader)
+  const lastSchedule = useMemo(() => {
+    if (!activeTreatment) return null;
+    return (
+      (schedules as any[]).find(
+        (s: any) => s.treatmentId === activeTreatment.id && (!editingReading || s.readingId !== editingReading.id)
+      ) || null
+    );
+  }, [schedules, activeTreatment, editingReading]);
+
   const handleBackToList = useCallback(() => {
     if (callbackUrlRef.current) {
       navigate(callbackUrlRef.current);
@@ -346,6 +357,7 @@ export default function SireManagement() {
             treatmentId={activeTreatment.id}
             initialReading={editingReading}
             initialSchedule={editingReading ? findScheduleForReading(editingReading) : null}
+            lastSchedule={lastSchedule}
             nextControlDate={activeTreatment.nextControlDate}
             onSubmit={handleSubmitControl}
             onDelete={editingReading?.id ? handleDeleteReading : undefined}

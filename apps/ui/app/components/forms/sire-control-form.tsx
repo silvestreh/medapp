@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Stack, Group, Button, NumberInput, Textarea, Title, Divider } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
+import { RepeatIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
@@ -12,6 +13,8 @@ interface SireControlFormProps {
   /** When editing an existing entry */
   initialReading?: any;
   initialSchedule?: any;
+  /** Most recent dose schedule for this treatment, used to prefill via "Repeat last schedule" */
+  lastSchedule?: any;
   nextControlDate?: string | null;
   onSubmit: (data: {
     reading: Record<string, any>;
@@ -26,6 +29,7 @@ export function SireControlForm({
   treatmentId,
   initialReading,
   initialSchedule,
+  lastSchedule,
   nextControlDate,
   onSubmit,
   onDelete,
@@ -102,6 +106,21 @@ export function SireControlForm({
     form.setFieldValue('includeDose', !form.values.includeDose);
   }, [form]);
 
+  const handleRepeatLastSchedule = useCallback(() => {
+    if (!lastSchedule) return;
+    form.setValues({
+      includeDose: true,
+      monday: lastSchedule.schedule?.monday ?? '',
+      tuesday: lastSchedule.schedule?.tuesday ?? '',
+      wednesday: lastSchedule.schedule?.wednesday ?? '',
+      thursday: lastSchedule.schedule?.thursday ?? '',
+      friday: lastSchedule.schedule?.friday ?? '',
+      saturday: lastSchedule.schedule?.saturday ?? '',
+      sunday: lastSchedule.schedule?.sunday ?? '',
+      doseNotes: lastSchedule.notes || '',
+    });
+  }, [form, lastSchedule]);
+
   const isEditing = !!initialReading?.id;
 
   return (
@@ -135,9 +154,21 @@ export function SireControlForm({
 
       <Group justify="space-between">
         <Title order={5}>{t('sire.dose_schedule')}</Title>
-        <Button variant="subtle" size="xs" onClick={handleToggleDose}>
-          {form.values.includeDose ? t('sire.remove_schedule') : t('sire.add_schedule')}
-        </Button>
+        <Group gap="xs">
+          {lastSchedule && (
+            <Button
+              variant="subtle"
+              size="xs"
+              leftSection={<RepeatIcon size={14} />}
+              onClick={handleRepeatLastSchedule}
+            >
+              {t('sire.repeat_last_schedule')}
+            </Button>
+          )}
+          <Button variant="subtle" size="xs" onClick={handleToggleDose}>
+            {form.values.includeDose ? t('sire.remove_schedule') : t('sire.add_schedule')}
+          </Button>
+        </Group>
       </Group>
 
       {form.values.includeDose && (

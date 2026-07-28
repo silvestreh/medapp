@@ -1620,6 +1620,7 @@ export const es = {
     // Buttons
     remove_schedule: 'Quitar esquema',
     add_schedule: 'Agregar esquema',
+    repeat_last_schedule: 'Repetir último esquema',
     update: 'Actualizar',
     save: 'Guardar',
     delete: 'Eliminar',

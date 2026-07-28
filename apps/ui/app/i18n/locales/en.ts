@@ -1612,6 +1612,7 @@ export const en: typeof es = {
     // Buttons
     remove_schedule: 'Remove schedule',
     add_schedule: 'Add schedule',
+    repeat_last_schedule: 'Repeat last schedule',
     update: 'Update',
     save: 'Save',
     delete: 'Delete',
