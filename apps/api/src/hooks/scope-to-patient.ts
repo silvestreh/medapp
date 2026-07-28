@@ -17,7 +17,12 @@ const scopeToPatient = (): Hook => async (context: HookContext): Promise<HookCon
       patientId: patient.id,
     };
   } else if (context.method === 'get') {
-    // Will verify after fetch
+    // feathers-sequelize merges params.query into the where clause on get,
+    // so foreign records come back as NotFound instead of leaking
+    context.params.query = {
+      ...context.params.query,
+      patientId: patient.id,
+    };
   } else if (context.method === 'create') {
     if (context.data) {
       context.data.patientId = patient.id;

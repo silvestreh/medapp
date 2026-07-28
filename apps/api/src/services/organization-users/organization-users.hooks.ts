@@ -5,6 +5,7 @@ import { enforceActiveOrganization } from '../../hooks/enforce-active-organizati
 import { authorizeOrgManagement } from '../../hooks/authorize-org-management';
 import populateMembers, { stripPopulateFlag } from './hooks/populate-members';
 import filterByOrganizationId from './hooks/filter-by-organization-id';
+import scopeQueryToOrganization from '../../hooks/scope-query-to-organization';
 
 const cascadeRemoveUserRoles = () => async (context: any) => {
   if (!context.result) return context;
@@ -25,7 +26,7 @@ export default {
   before: {
     all: [authenticate('jwt'), verifyOrganizationMembership()],
     find: [stripPopulateFlag(), filterByOrganizationId()],
-    get: [],
+    get: [scopeQueryToOrganization()],
     create: [enforceActiveOrganization(), authorizeOrgManagement()],
     update: [],
     patch: [enforceActiveOrganization()],

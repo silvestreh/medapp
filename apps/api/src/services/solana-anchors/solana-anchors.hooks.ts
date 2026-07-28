@@ -7,8 +7,9 @@ import { disablePagination } from './hooks/disable-pagination';
 const { authenticate } = authentication.hooks;
 
 const requireSuperAdmin = () => async (context: HookContext): Promise<HookContext> => {
+  if (context.params.provider === undefined) return context;
   if (!context.params.user?.isSuperAdmin) {
-    throw new Forbidden('Only super admins can trigger anchoring');
+    throw new Forbidden('Only super admins can access anchors');
   }
   return context;
 };
@@ -16,8 +17,8 @@ const requireSuperAdmin = () => async (context: HookContext): Promise<HookContex
 export default {
   before: {
     all: [authenticate('jwt')],
-    find: [disablePagination()],
-    get: [],
+    find: [requireSuperAdmin(), disablePagination()],
+    get: [requireSuperAdmin()],
     create: [requireSuperAdmin()],
     update: [disallow('external')],
     patch: [disallow('external')],

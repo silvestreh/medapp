@@ -10,6 +10,7 @@ import { findByPersonalData, sortByPersonalDataRank } from '../../hooks/find-by-
 import includeData from '../../hooks/include-data';
 import { encryptFields, decryptFields } from '../../hooks/encryption';
 import { scopePatientsToOrganization } from '../../hooks/scope-patients-to-organization';
+import verifyPatientInOrganization from '../../hooks/verify-patient-in-organization';
 import { linkPatientToOrganization } from '../../hooks/link-patient-to-organization';
 import { populateMedicare } from './hooks/populate-medicare';
 import patchPersonalData from '../../hooks/patch-personal-data';
@@ -31,7 +32,7 @@ export default {
       scopePatientsToOrganization(),
       findByPersonalData({ junctionService: 'patient-personal-data', foreignKey: 'id' })
     ],
-    get: [],
+    get: [verifyPatientInOrganization()],
     create: [
       encryptFields('medicareNumber', 'mugshot', 'gender')
     ],

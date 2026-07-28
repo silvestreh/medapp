@@ -1,11 +1,13 @@
 import { HooksObject } from '@feathersjs/feathers';
-import * as authentication from '@feathersjs/authentication';
+import { disallow } from 'feathers-hooks-common';
 
-const { authenticate } = authentication.hooks;
-
+// Internal-only junction table (patient ↔ organization). It is consumed by
+// hooks like scopePatientsToOrganization / linkPatientToOrganization; exposing
+// it externally would leak the patient↔org mapping and allow linking foreign
+// patients into one's own organization.
 export default {
   before: {
-    all: [authenticate('jwt')],
+    all: [disallow('external')],
     find: [],
     get: [],
     create: [],

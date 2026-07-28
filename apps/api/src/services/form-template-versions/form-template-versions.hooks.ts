@@ -4,6 +4,7 @@ import { disallow } from 'feathers-hooks-common';
 
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
+import scopeVersionsToOrganization from './hooks/scope-versions-to-organization';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -15,7 +16,7 @@ export default {
       verifyOrganizationMembership(),
       enforceActiveOrganization(),
     ],
-    find: [],
+    find: [scopeVersionsToOrganization()],
     get: [],
     create: [disallow('external')],
     update: [disallow('external')],
@@ -26,7 +27,7 @@ export default {
   after: {
     all: [],
     find: [],
-    get: [],
+    get: [scopeVersionsToOrganization()],
     create: [],
     update: [],
     patch: [],

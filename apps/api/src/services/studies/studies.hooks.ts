@@ -11,7 +11,7 @@ import extractStudyResults from './hooks/extract-study-results';
 import upsertStudyResults from './hooks/upsert-study-results';
 import { clearReferringDoctor, populateReferringDoctor } from './hooks/resolve-referring-doctor';
 import sanitizeReferringDoctor from './hooks/sanitize-referring-doctor';
-import restrictToMedic from './hooks/restrict-to-medic';
+import restrictToMedicWithShares from '../../hooks/restrict-to-medic-with-shares';
 import { sortByPersonalDataRank } from '../../hooks/find-by-personal-data';
 import searchStudies from './hooks/search-studies';
 import { requireVerifiedLicense } from '../../hooks/require-verified-license';
@@ -24,6 +24,10 @@ import preventPatientChangeWithResults from './hooks/prevent-patient-change-with
 
 const { authenticate } = authentication.hooks;
 
+// Reads honor patient-level share grants (shared-encounter-access);
+// patch/remove stay owner-only
+const restrictToMedic = restrictToMedicWithShares();
+
 export default {
   before: {
     all: [
@@ -34,13 +38,13 @@ export default {
       checkPermissions()
     ],
     find: [
-      restrictToMedic(),
+      restrictToMedic,
       searchStudies()
     ],
-    get: [restrictToMedic()],
+    get: [restrictToMedic],
     create: [
       requireVerifiedLicense(),
-      restrictToMedic(),
+      restrictToMedic,
       sanitizeReferringDoctor(),
       clearReferringDoctor(),
       autoProtocol(),
@@ -49,13 +53,13 @@ export default {
     update: [],
     patch: [
       requireVerifiedLicense(),
-      restrictToMedic(),
+      restrictToMedic,
       preventPatientChangeWithResults(),
       sanitizeReferringDoctor(),
       clearReferringDoctor(),
       extractStudyResults()
     ],
-    remove: [restrictToMedic()]
+    remove: [restrictToMedic]
   },
 
   after: {

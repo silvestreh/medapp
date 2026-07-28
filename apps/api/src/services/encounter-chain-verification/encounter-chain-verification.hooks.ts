@@ -4,6 +4,7 @@ import { disallow } from 'feathers-hooks-common';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { enforceActiveOrganization } from '../../hooks/enforce-active-organization';
 import { blockSuperAdmin } from '../../hooks/block-super-admin';
+import verifyPatientInOrganization from '../../hooks/verify-patient-in-organization';
 
 const { authenticate } = authentication.hooks;
 
@@ -15,7 +16,7 @@ export default {
       blockSuperAdmin(),
       enforceActiveOrganization()
     ],
-    find: [],
+    find: [verifyPatientInOrganization({ source: 'query' })],
     get: [disallow('external')],
     create: [disallow('external')],
     update: [disallow('external')],

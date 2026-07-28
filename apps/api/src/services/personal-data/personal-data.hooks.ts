@@ -4,6 +4,7 @@ import { disallow } from 'feathers-hooks-common';
 import { encryptFields, decryptFields } from '../../hooks/encryption';
 import queryEncryptedFields from '../../hooks/query-encrypted-fields';
 import sanitizePersonalData from './hooks/sanitize-personal-data';
+import requireDocumentQuery from './hooks/require-document-query';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -12,6 +13,7 @@ export default {
   before: {
     all: [ authenticate('jwt') ],
     find: [
+      requireDocumentQuery(),
       queryEncryptedFields('documentValue', 'birthDate'),
     ],
     get: [ disallow('external') ],
