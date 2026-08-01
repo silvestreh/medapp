@@ -194,28 +194,34 @@ export class PatientOtp {
       attempts: 0,
     });
 
-    // Send OTP via WhatsApp
-    try {
-      const organizationId = await this.resolveOrganizationId(slug);
-      if (organizationId) {
-        await this.app.service('whatsapp').create({
-          type: 'text',
-          organizationId,
-          to: result.phone,
-          body: `Tu código de verificación es: ${code}\n\nExpira en 5 minutos.`,
-        });
-      } else {
-        console.warn('[Patient OTP] No organization slug provided, skipping WhatsApp send');
-      }
-    } catch (err) {
-      console.error('[Patient OTP] Failed to send WhatsApp message:', err);
-    }
+    // Send OTP via WhatsApp without blocking the response — a slow or waking
+    // Evolution API must not delay login past the client's request timeout.
+    void this.sendOtpViaWhatsApp(slug, result.phone, code);
 
     if (process.env.NODE_ENV !== 'production') {
       console.log(`[Patient OTP] Code for document ${documentNumber}: ${code}`);
     }
 
     return { action: 'request-otp', status: 'otp_sent', maskedPhone: this.maskPhone(result.phone) };
+  }
+
+  private async sendOtpViaWhatsApp(slug: string | undefined, phone: string, code: string): Promise<void> {
+    try {
+      const organizationId = await this.resolveOrganizationId(slug);
+      if (!organizationId) {
+        console.warn('[Patient OTP] No organization slug provided, skipping WhatsApp send');
+        return;
+      }
+
+      await this.app.service('whatsapp').create({
+        type: 'text',
+        organizationId,
+        to: phone,
+        body: `Tu código de verificación es: ${code}\n\nExpira en 5 minutos.`,
+      });
+    } catch (err) {
+      console.error('[Patient OTP] Failed to send WhatsApp message:', err);
+    }
   }
 
   private async listOrganizations() {

@@ -13,6 +13,10 @@ export function getEvolutionConfig(app: Application): EvolutionConfig {
   return { apiUrl, apiKey };
 }
 
+// A sleeping/wedged Evolution API would otherwise hold this request open
+// indefinitely, stalling every caller in the send path.
+const CONNECTION_STATE_TIMEOUT_MS = 5000;
+
 export interface InstanceConnectionResult {
   ok: boolean;
   connected: boolean;
@@ -46,6 +50,7 @@ export async function checkInstanceConnected(
     response = await fetch(`${apiUrl}/instance/connectionState/${waSettings.instanceName}`, {
       method: 'GET',
       headers: { apikey: apiKey },
+      signal: AbortSignal.timeout(CONNECTION_STATE_TIMEOUT_MS),
     });
   } catch {
     return { ok: false, connected: false, instanceName: waSettings.instanceName, reason: 'evolution-unreachable' };
