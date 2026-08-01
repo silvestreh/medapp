@@ -74,6 +74,40 @@ describe('\'patient-otp\' service', () => {
       assert.equal(result.status, 'no_phone');
     });
 
+    it('does not block the response on the WhatsApp send', async () => {
+      const slowSendDoc = `slowsend${Date.now()}`;
+      await app.service('patients').create({
+        personalData: {
+          firstName: 'SlowSend',
+          lastName: 'Patient',
+          documentValue: slowSendDoc,
+        },
+        contactData: {
+          phoneNumber: ['cel:1155551111'],
+        },
+      } as any);
+
+      const whatsapp = app.service('whatsapp') as any;
+      const originalCreate = whatsapp.create;
+      whatsapp.create = () =>
+        new Promise((resolve) => setTimeout(() => resolve({ sent: true }), 1500));
+
+      try {
+        const started = Date.now();
+        const result: any = await app.service('patient-otp').create({
+          action: 'request-otp',
+          documentNumber: slowSendDoc,
+          slug: testOrgSlugAuth,
+        });
+        const elapsed = Date.now() - started;
+
+        assert.equal(result.status, 'otp_sent');
+        assert.ok(elapsed < 1000, `response waited on the WhatsApp send (${elapsed}ms)`);
+      } finally {
+        whatsapp.create = originalCreate;
+      }
+    });
+
     it('throws BadRequest when documentNumber is missing', async () => {
       try {
         await app.service('patient-otp').create({
