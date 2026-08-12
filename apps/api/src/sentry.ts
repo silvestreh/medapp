@@ -32,7 +32,13 @@ Sentry.init({
     const error = hint?.originalException as Record<string, unknown> | undefined;
     const statusCode = error?.code ?? error?.statusCode ?? error?.status;
 
-    if (statusCode === 401 || statusCode === '401') {
+    // 4xx means the caller sent something we rejected on purpose — bad slugs
+    // from subdomain scanners, expired sessions, malformed payloads. Not defects.
+    // The `captureSentryError` hook already skips these, but
+    // `Sentry.setupExpressErrorHandler` re-captures them at the Express layer
+    // (mechanism: auto.middleware.express), so the filter has to live here too.
+    const status = typeof statusCode === 'string' ? Number(statusCode) : statusCode;
+    if (typeof status === 'number' && status >= 400 && status < 500) {
       return null;
     }
 

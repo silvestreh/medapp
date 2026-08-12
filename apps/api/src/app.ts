@@ -26,6 +26,7 @@ import authentication from './authentication';
 import sequelize from './sequelize';
 import qs from 'qs';
 import { setupIdentityVerificationWebhook } from './webhooks/identity-verification';
+import { clientIpKey } from './utils/rate-limit-key';
 // Don't remove this comment. It's needed to format import lines nicely.
 const app: Application = express(feathers());
 export type HookContext<T = any> = { app: Application } & FeathersHookContext<T>;
@@ -132,6 +133,7 @@ if (process.env.NODE_ENV !== 'test') {
     max: parseInt(process.env.AUTH_RATE_LIMIT_MAX || '10', 10),
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: clientIpKey,
     skip: (req) => req.body?.strategy !== 'local',
     message: { message: 'Too many login attempts, please try again later' },
   });
@@ -142,6 +144,7 @@ if (process.env.NODE_ENV !== 'test') {
     max: 5,
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: clientIpKey,
     message: { message: 'Too many requests, please try again later' },
   });
   app.use('/confirmations', confirmationsLimiter);
@@ -151,6 +154,7 @@ if (process.env.NODE_ENV !== 'test') {
     max: 200,
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: clientIpKey,
     message: { message: 'Too many requests, please try again later' },
   });
   app.use('/patient-otp', patientOtpLimiter);

@@ -6,7 +6,7 @@ import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { requestOtp, verifyOtp } from '~/api.server';
 import { getPatientToken, setPatientToken } from '~/session.server';
-import { resolveBookingContext } from '~/host.server';
+import { resolveBookingContext, getClientIp } from '~/host.server';
 import type { SlugLoaderData } from './($slug)';
 
 export const meta: MetaFunction = ({ matches }) => {
@@ -34,6 +34,7 @@ interface ActionResult {
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const { slug, basePath } = resolveBookingContext(request, params);
+  const clientIp = getClientIp(request);
   const formData = await request.formData();
   const step = formData.get('step') as string;
   const documentNumber = formData.get('documentNumber') as string;
@@ -44,7 +45,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   if (step === 'request-otp') {
     try {
-      const result = await requestOtp(documentNumber, slug!);
+      const result = await requestOtp(documentNumber, slug!, clientIp);
 
       if (result.status === 'otp_sent') {
         return json<ActionResult>({ step: 'otp', documentNumber, maskedPhone: result.maskedPhone });
@@ -73,7 +74,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     }
 
     try {
-      const result = await verifyOtp(documentNumber, code, slug!);
+      const result = await verifyOtp(documentNumber, code, slug!, clientIp);
       const cookieHeader = await setPatientToken(request, result.accessToken);
       return redirect(basePath || '/', {
         headers: { 'Set-Cookie': cookieHeader },

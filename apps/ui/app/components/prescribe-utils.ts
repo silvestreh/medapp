@@ -25,6 +25,33 @@ export function formatPhoneForDisplay(digits: string, callingCode: string): stri
     : formatted.replace(`+${callingCode}`, '').trim();
 }
 
+/**
+ * Parses a stored contact phone (e.g. "tel:+5492214567890", ["cel:+54911..."], 549...)
+ * into the calling-code + local-digits pair used by the share-via-WhatsApp inputs.
+ * For Argentina the mobile "9" between country code and area code is stripped,
+ * since sending re-adds it when building the full number.
+ */
+export function parseStoredPhone(raw: unknown): { country: string; digits: string } {
+  const first = String((Array.isArray(raw) ? raw[0] : raw) ?? '');
+  const digits = first.replace(/^(tel:|cel:)/i, '').replace(/[^0-9]/g, '');
+
+  // Only trust an explicit international prefix ("+") — bare local numbers
+  // (e.g. "1112345678") would otherwise false-match short country codes.
+  if (first.includes('+')) {
+    const codes = COUNTRY_PHONE_OPTIONS.map(o => o.value).sort((a, b) => b.length - a.length);
+    for (const code of codes) {
+      if (digits.startsWith(code) && digits.length > code.length) {
+        const local = digits.slice(code.length);
+        return { country: code, digits: code === '54' ? local.replace(/^9/, '') : local };
+      }
+    }
+  } else if (digits.startsWith('549') && digits.length > 10) {
+    return { country: '54', digits: digits.slice(3) };
+  }
+
+  return { country: '54', digits };
+}
+
 export interface RecetarioMed {
   id: number;
   brand: string;

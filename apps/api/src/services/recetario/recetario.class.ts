@@ -6,7 +6,7 @@ import { APP_SLUG } from '@athelas/brand';
 
 import type { Application } from '../../declarations';
 import logger from '../../logger';
-import { mapDoctorData, mapPatientData, mapDoctorForAPI, mapPatientForAPI, checkDoctorReadiness, sanitizeDocumentNumber, mapGender, reverseMapGender, reverseMapProvince, formatBirthDate } from './data-mapper';
+import { mapDoctorData, mapPatientData, mapDoctorForAPI, mapPatientForAPI, checkDoctorReadiness, sanitizeDocumentNumber, mapGender, reverseMapGender, reverseMapProvince, formatBirthDate, flattenAndSortMedications } from './data-mapper';
 import * as recetarioClient from './recetario-client';
 import type { HealthInsurance } from './recetario-client';
 
@@ -746,15 +746,7 @@ export class Recetario {
     const { search } = data;
     if (!search || search.length < 3) throw new BadRequest('Search term must be at least 3 characters long');
     const medications = await recetarioClient.getMedications(search);
-    // Flatten so each package becomes its own selectable entry with the correct externalId
-    const flattened = medications.flatMap((med: any) => {
-      const packages = Array.isArray(med.packages) ? med.packages : med.packages ? [med.packages] : [];
-      if (packages.length === 0) {
-        return [{ ...med, packages: undefined }];
-      }
-      return packages.map((pkg: any) => ({ ...med, packages: pkg }));
-    });
-    return { success: true, medications: flattened };
+    return { success: true, medications: flattenAndSortMedications(medications) };
   }
 
   private async handleRegisterHealthCenter(data: RecetarioCreateData, params: any): Promise<RecetarioResult> {

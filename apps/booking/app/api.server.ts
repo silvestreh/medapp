@@ -37,8 +37,12 @@ export interface AnonymizedSlot {
 
 // -- patient-otp (public, no auth) --
 
-export async function getOrganization(slug: string): Promise<OrganizationInfo> {
-  const client = createClient();
+// Mirrors `$limit` in the API's `list-organizations`. A full page means the list
+// may be truncated, so it can't be treated as the complete set of slugs.
+const ORGANIZATION_PAGE_SIZE = 50;
+
+export async function getOrganization(slug: string, clientIp?: string | null): Promise<OrganizationInfo> {
+  const client = createClient(undefined, clientIp);
   const result = await client.service('patient-otp').create({
     action: 'get-organization',
     slug,
@@ -46,8 +50,21 @@ export async function getOrganization(slug: string): Promise<OrganizationInfo> {
   return result.organization;
 }
 
-export async function requestOtp(documentNumber: string, slug: string) {
+export async function listOrganizationSlugs(): Promise<{ slugs: string[]; complete: boolean }> {
   const client = createClient();
+  const result = await client.service('patient-otp').create({
+    action: 'list-organizations',
+  }) as { organizations?: Array<{ slug: string }> };
+
+  const organizations = result.organizations ?? [];
+  return {
+    slugs: organizations.map(org => org.slug),
+    complete: organizations.length < ORGANIZATION_PAGE_SIZE,
+  };
+}
+
+export async function requestOtp(documentNumber: string, slug: string, clientIp?: string | null) {
+  const client = createClient(undefined, clientIp);
   return await client.service('patient-otp').create({
     action: 'request-otp',
     documentNumber,
@@ -55,8 +72,8 @@ export async function requestOtp(documentNumber: string, slug: string) {
   }) as { action: string; status: 'otp_sent' | 'not_found' | 'no_phone' | 'rate_limited'; maskedPhone?: string };
 }
 
-export async function verifyOtp(documentNumber: string, code: string, slug: string) {
-  const client = createClient();
+export async function verifyOtp(documentNumber: string, code: string, slug: string, clientIp?: string | null) {
+  const client = createClient(undefined, clientIp);
   return await client.service('authentication').create({
     strategy: 'patient-otp',
     documentNumber,

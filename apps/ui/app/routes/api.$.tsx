@@ -5,6 +5,20 @@ const PROXY_SECRET = process.env.PROXY_SECRET || '';
 
 const FORWARDED_HEADERS = ['content-type', 'authorization', 'accept', 'organization-id'];
 
+/**
+ * The API sees this proxy's private-network address on every relayed request,
+ * so its rate limiters need the address we observed to key on. Cloudflare sets
+ * `cf-connecting-ip` authoritatively; the left-most `x-forwarded-for` entry is
+ * the fallback (client-settable, but no worse than one shared bucket for all).
+ */
+function getClientIp(request: Request): string | null {
+  const cfConnectingIp = request.headers.get('cf-connecting-ip');
+  if (cfConnectingIp) return cfConnectingIp.trim();
+
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  return forwardedFor?.split(',')[0].trim() || null;
+}
+
 // Allowlist of valid first-segment API paths. Requests not matching are
 // rejected with 404 before reaching the backend.
 const ALLOWED_PATHS = new Set([
@@ -98,6 +112,11 @@ function forwardHeaders(request: Request): HeadersInit {
   }
   if (PROXY_SECRET) {
     headers['x-proxy-token'] = PROXY_SECRET;
+
+    const clientIp = getClientIp(request);
+    if (clientIp) {
+      headers['x-client-ip'] = clientIp;
+    }
   }
   return headers;
 }

@@ -4,7 +4,8 @@ import { Container, ActionIcon, Text, Title, Stack } from '@mantine/core';
 import { SignOutIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { getOrganization, type OrganizationInfo } from '~/api.server';
-import { resolveBookingContext } from '~/host.server';
+import { resolveBookingContext, getClientIp } from '~/host.server';
+import { couldBeOrganization } from '~/organizations.server';
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const { slug, basePath } = resolveBookingContext(request, params);
@@ -13,11 +14,20 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     return json({ organization: null, basePath, error: false as const, noOrg: true as const });
   }
 
+  const notFound = () =>
+    json({ organization: null, basePath, error: true as const, noOrg: false as const }, { status: 404 });
+
+  // Wildcard DNS lands every invented hostname here; answer scanner probes
+  // without spending an API call on them (see organizations.server.ts).
+  if (!(await couldBeOrganization(slug))) {
+    return notFound();
+  }
+
   try {
-    const organization = await getOrganization(slug);
+    const organization = await getOrganization(slug, getClientIp(request));
     return json({ organization, basePath, error: false as const, noOrg: false as const });
   } catch {
-    return json({ organization: null, basePath, error: true as const, noOrg: false as const }, { status: 404 });
+    return notFound();
   }
 };
 

@@ -28,6 +28,7 @@ interface PrescriptionDetailProps {
     } | null;
     recetarioDocumentIds?: { id: number; type: string; url: string }[];
   };
+  patient?: any;
   onCancelled?: () => void;
 }
 
@@ -38,7 +39,7 @@ const statusColors: Record<string, string> = {
   expired: 'gray',
 };
 
-export function PrescriptionDetail({ prescription: rx, onCancelled }: PrescriptionDetailProps) {
+export function PrescriptionDetail({ prescription: rx, patient, onCancelled }: PrescriptionDetailProps) {
   const { t } = useTranslation();
   const cancelFetcher = useFetcher<any>();
   const [confirming, setConfirming] = useState(false);
@@ -165,6 +166,7 @@ export function PrescriptionDetail({ prescription: rx, onCancelled }: Prescripti
         opened={shareOpened}
         onClose={() => setShareOpened(false)}
         onSuccess={() => {}}
+        patient={patient}
         initialPrescriptionResult={sharePrescriptionResult}
       />
     </FormContainer>

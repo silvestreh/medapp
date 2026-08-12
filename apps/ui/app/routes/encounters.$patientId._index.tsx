@@ -642,6 +642,7 @@ export default function PatientEncounterDetail() {
             {selectedPrescription && (
               <PrescriptionDetail
                 prescription={selectedPrescription}
+                patient={data.patient}
                 onCancelled={() => {
                   revalidate();
                   clearSelection();

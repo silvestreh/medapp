@@ -12,6 +12,22 @@ export function getRequestHost(request: Request): string {
   return raw.split(',')[0].trim().split(':')[0].toLowerCase();
 }
 
+/**
+ * The address this request came from, forwarded to the API so its rate limiters
+ * key on the real caller. Without it every booking request shares one bucket,
+ * because the API only ever sees this app's private-network address.
+ *
+ * Cloudflare sets `cf-connecting-ip` authoritatively; the left-most
+ * `x-forwarded-for` entry is the fallback.
+ */
+export function getClientIp(request: Request): string | null {
+  const cfConnectingIp = request.headers.get('cf-connecting-ip');
+  if (cfConnectingIp) return cfConnectingIp.trim();
+
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  return forwardedFor?.split(',')[0].trim() || null;
+}
+
 function getHostSuffix(): string {
   return (process.env.BOOKING_HOST_SUFFIX || '').toLowerCase();
 }

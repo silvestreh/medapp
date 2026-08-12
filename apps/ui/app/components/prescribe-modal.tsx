@@ -51,9 +51,9 @@ import {
   formatPhoneForDisplay,
   formatDate,
   parseDate,
+  parseStoredPhone,
   defaultMedicine,
   type MedicineRow,
-  type RecetarioSelectedMedication,
 } from '~/components/prescribe-utils';
 import { RecetarioMedicinePicker } from '~/components/recetario-medicine-picker';
 
@@ -105,6 +105,15 @@ export function PrescribeModal({
   const [shareEmail, setShareEmail] = useState('');
   const [sharePhoneCountry, setSharePhoneCountry] = useState('54');
   const [sharePhone, setSharePhone] = useState('');
+  // Both channels submit through the same fetcher — remember which one is in
+  // flight so each button shows its own loading state.
+  const [shareChannel, setShareChannel] = useState<'email' | 'whatsapp' | null>(null);
+  // Contact data already stored on the patient record — used to decide whether a
+  // recipient entered at the share step should be saved as the patient's contact data.
+  const [patientContactData, setPatientContactData] = useState<{ email: string; phone: string }>({
+    email: '',
+    phone: '',
+  });
 
   const [rxDiagnosisId, setRxDiagnosisId] = useState('');
   const [rxDiagnosis, setRxDiagnosis] = useState('');
@@ -185,7 +194,8 @@ export function PrescribeModal({
     const pd = p.personalData || {};
     const cd = p.contactData || {};
     const email = cd.email || '';
-    const phone = (String(cd.phoneNumber) || '').replace(/^tel:/i, '');
+    const rawPhone = String((Array.isArray(cd.phoneNumber) ? cd.phoneNumber[0] : cd.phoneNumber) ?? '');
+    const phone = rawPhone.replace(/^tel:/i, '');
     const values = {
       documentValue: pd.documentValue || '',
       documentType: pd.documentType || 'DNI',
@@ -205,8 +215,11 @@ export function PrescribeModal({
       if (!values[key]) missing.add(key);
     }
     setMissingPatientFields(missing);
+    setPatientContactData({ email, phone: rawPhone });
     setShareEmail(email);
-    setSharePhone(phone);
+    const parsedPhone = parseStoredPhone(cd.phoneNumber);
+    setSharePhoneCountry(parsedPhone.country);
+    setSharePhone(parsedPhone.digits);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-fill from props synchronously (if available)
@@ -411,8 +424,6 @@ export function PrescribeModal({
         }
         return next;
       });
-      setShareEmail(prev => prev || mhsPatientData.email || '');
-      setSharePhone(prev => prev || mhsPatientData.phone || '');
     }
     if (recetarioData) {
       patientForm.setValues((prev: any) => {
@@ -432,8 +443,16 @@ export function PrescribeModal({
         }
         return next;
       });
-      setShareEmail(prev => prev || recetarioData.email || '');
-      setSharePhone(prev => prev || recetarioData.phone || '');
+    }
+    const gapEmail = mhsPatientData?.email || recetarioData?.email || '';
+    const gapPhone = mhsPatientData?.phone || recetarioData?.phone || '';
+    if (!shareEmail && gapEmail) {
+      setShareEmail(gapEmail);
+    }
+    if (!sharePhone && gapPhone) {
+      const parsedPhone = parseStoredPhone(gapPhone);
+      setSharePhoneCountry(parsedPhone.country);
+      setSharePhone(parsedPhone.digits);
     }
     if (filledByGapFill.length > 0) {
       setMissingPatientFields(prev => {
@@ -527,6 +546,8 @@ export function PrescribeModal({
       setShareEmail('');
       setSharePhoneCountry('54');
       setSharePhone('');
+      setShareChannel(null);
+      setPatientContactData({ email: '', phone: '' });
       rxForm.reset();
       orderForm.reset();
       patientForm.reset();
@@ -621,6 +642,12 @@ export function PrescribeModal({
         },
         { method: 'post' }
       );
+      // The patch above stores any email/phone from the form, so the share step
+      // must not treat those fields as missing anymore.
+      setPatientContactData(prev => ({
+        email: prev.email || pv.email || '',
+        phone: prev.phone || (pv.phone ? `tel:${pv.phone}` : ''),
+      }));
     }
 
     setStep(1);
@@ -727,8 +754,32 @@ export function PrescribeModal({
     );
   };
 
-  const handleShareEmail = () => {
+  // Save a share recipient as the patient's contact data — only when the patient
+  // has none stored for that field; existing contact data is never overwritten.
+  const saveMissingContactData = useCallback(
+    (field: 'email' | 'phone', value: string) => {
+      const patientId = selectedPatientId || patient?.id;
+      if (!patientId || !value) return;
+      if (field === 'email' && patientContactData.email) return;
+      if (field === 'phone' && patientContactData.phone) return;
+      updatePatientFetcher.submit(
+        {
+          intent: 'update-patient-data',
+          data: JSON.stringify({
+            patientId,
+            contactData: field === 'email' ? { email: value } : { phoneNumber: `tel:${value}` },
+          }),
+        },
+        { method: 'post' }
+      );
+      setPatientContactData(prev => ({ ...prev, [field]: value }));
+    },
+    [selectedPatientId, patient, patientContactData, updatePatientFetcher]
+  );
+
+  const handleShareEmail = useCallback(() => {
     if (!prescriptionResult || !shareEmail.trim()) return;
+    setShareChannel('email');
     shareFetcher.submit(
       {
         intent: 'share-prescription',
@@ -741,12 +792,14 @@ export function PrescribeModal({
       },
       { method: 'post' }
     );
-  };
+    saveMissingContactData('email', shareEmail.trim());
+  }, [prescriptionResult, shareEmail, shareFetcher, saveMissingContactData]);
 
-  const handleShareWhatsApp = () => {
+  const handleShareWhatsApp = useCallback(() => {
     if (!prescriptionResult || !sharePhone.trim()) return;
     const digits = sharePhone.replace(/[^0-9]/g, '');
     const fullPhone = sharePhoneCountry === '54' ? `549${digits}` : sharePhoneCountry + digits;
+    setShareChannel('whatsapp');
     shareFetcher.submit(
       {
         intent: 'share-prescription',
@@ -759,7 +812,8 @@ export function PrescribeModal({
       },
       { method: 'post' }
     );
-  };
+    saveMissingContactData('phone', `+${fullPhone}`);
+  }, [prescriptionResult, sharePhone, sharePhoneCountry, shareFetcher, saveMissingContactData]);
 
   const addMedicine = () => {
     if (rxForm.values.medicines.length < 3) {
@@ -1163,7 +1217,11 @@ export function PrescribeModal({
               value={shareEmail}
               onChange={e => setShareEmail(e.currentTarget.value)}
             />
-            <Button loading={shareFetcher.state !== 'idle'} disabled={!shareEmail.trim()} onClick={handleShareEmail}>
+            <Button
+              loading={shareFetcher.state !== 'idle' && shareChannel === 'email'}
+              disabled={!shareEmail.trim() || (shareFetcher.state !== 'idle' && shareChannel !== 'email')}
+              onClick={handleShareEmail}
+            >
               {t('recetario.share_email')}
             </Button>
           </Group>
@@ -1184,7 +1242,11 @@ export function PrescribeModal({
               value={formatPhoneForDisplay(sharePhone, sharePhoneCountry)}
               onChange={e => setSharePhone(e.currentTarget.value.replace(/[^0-9]/g, ''))}
             />
-            <Button loading={shareFetcher.state !== 'idle'} disabled={!sharePhone.trim()} onClick={handleShareWhatsApp}>
+            <Button
+              loading={shareFetcher.state !== 'idle' && shareChannel === 'whatsapp'}
+              disabled={!sharePhone.trim() || (shareFetcher.state !== 'idle' && shareChannel !== 'whatsapp')}
+              onClick={handleShareWhatsApp}
+            >
               {t('recetario.share_whatsapp')}
             </Button>
           </Group>

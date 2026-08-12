@@ -697,7 +697,11 @@ export default function PrescriptionsPage() {
                 {expandedId === rx.id && (
                   <Table.Tr style={{ '--tr-hover-bg': 'transparent', background: 'var(--mantine-color-gray-0)' }}>
                     <Table.Td colSpan={7} p="xl">
-                      <PrescriptionDetail prescription={rx} onCancelled={() => setExpandedId(null)} />
+                      <PrescriptionDetail
+                        prescription={rx}
+                        patient={rx.patient}
+                        onCancelled={() => setExpandedId(null)}
+                      />
                     </Table.Td>
                   </Table.Tr>
                 )}
@@ -737,7 +741,7 @@ export default function PrescriptionsPage() {
               )}
               {expandedId === rx.id && (
                 <div role="presentation" style={{ marginTop: 8 }} onClick={e => e.stopPropagation()}>
-                  <PrescriptionDetail prescription={rx} onCancelled={() => setExpandedId(null)} />
+                  <PrescriptionDetail prescription={rx} patient={rx.patient} onCancelled={() => setExpandedId(null)} />
                   {rx.status === 'completed' && (
                     <Group justify="flex-end" mt="xs">
                       <RepeatButton rx={rx} onRepeat={handleRepeat} />

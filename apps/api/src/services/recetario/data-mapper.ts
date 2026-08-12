@@ -1,4 +1,4 @@
-import type { QuickLinkPayload, DoctorPayload, PatientPayload } from './recetario-client';
+import type { QuickLinkPayload, DoctorPayload, PatientPayload, RecetarioMedication } from './recetario-client';
 
 function toStr(value: unknown): string {
   if (value === null || value === undefined) return '';
@@ -234,6 +234,31 @@ export function mapPatientForAPI(patient: PatientInput): PatientPayload {
     gender: mapGender(pd.gender),
     birthDate: formatBirthDate(pd.birthDate),
   };
+}
+
+// The upstream API sometimes returns `packages` as an array; each package must become
+// its own selectable entry carrying the correct externalId.
+type RawMedication = Omit<RecetarioMedication, 'packages'> & {
+  packages?: RecetarioMedication['packages'] | NonNullable<RecetarioMedication['packages']>[];
+};
+
+const medicationCollator = new Intl.Collator('es', { sensitivity: 'base' });
+
+export function flattenAndSortMedications(medications: RawMedication[]): RecetarioMedication[] {
+  const flattened = medications.flatMap((med): RecetarioMedication[] => {
+    const packages = Array.isArray(med.packages) ? med.packages : med.packages ? [med.packages] : [];
+    if (packages.length === 0) {
+      return [{ ...med, packages: undefined }];
+    }
+    return packages.map((pkg) => ({ ...med, packages: pkg }));
+  });
+
+  return flattened.sort(
+    (a, b) =>
+      medicationCollator.compare(a.brand || '', b.brand || '') ||
+      medicationCollator.compare(a.packages?.name || '', b.packages?.name || '') ||
+      medicationCollator.compare(a.drug || '', b.drug || '')
+  );
 }
 
 export function checkDoctorReadiness(doctor: DoctorInput): { ready: boolean; missingFields: string[] } {
