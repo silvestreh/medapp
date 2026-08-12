@@ -16,23 +16,33 @@ function RecetarioMedicinePicker({ value, onChange }: RecetarioMedicinePickerPro
   const [opened, setOpened] = useState(false);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [results, setResults] = useState<RecetarioMed[]>([]);
   const searchFetcher = useFetcher<any>();
 
   useEffect(() => {
+    // Results from the previous term are stale as soon as the term changes
+    setResults([]);
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(timer);
   }, [search]);
 
   useEffect(() => {
-    if (debouncedSearch.length < 3) return;
+    if (!opened || debouncedSearch.trim().length < 3) return;
     searchFetcher.submit(
       { intent: 'search-recetario-medications', data: JSON.stringify({ search: debouncedSearch }) },
       { method: 'post' }
     );
   }, [debouncedSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const results: RecetarioMed[] = searchFetcher.data?.medications || [];
-  const isLoading = searchFetcher.state !== 'idle';
+  useEffect(() => {
+    if (searchFetcher.state !== 'idle' || !searchFetcher.data) return;
+    // Ignore responses for a term the user has already moved past
+    if (searchFetcher.data.search && searchFetcher.data.search !== search) return;
+    setResults(searchFetcher.data.medications || []);
+  }, [searchFetcher.state, searchFetcher.data, search]);
+
+  const hasSearchTerm = search.trim().length >= 3;
+  const isLoading = searchFetcher.state !== 'idle' || (opened && hasSearchTerm && search !== debouncedSearch);
   const isUnavailable = searchFetcher.data?.recetarioUnavailable === true;
 
   const handleSelect = useCallback(
@@ -124,7 +134,7 @@ function RecetarioMedicinePicker({ value, onChange }: RecetarioMedicinePickerPro
             )}
             {!isUnavailable && results.length === 0 && !isLoading && (
               <Text size="sm" c="dimmed" ta="center" py="sm">
-                {debouncedSearch ? t('common.no_results') : t('forms.type_to_search_medications')}
+                {hasSearchTerm ? t('common.no_results') : t('forms.type_to_search_medications')}
               </Text>
             )}
             {results.length > 0 && (

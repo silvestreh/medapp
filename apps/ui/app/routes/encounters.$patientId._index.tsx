@@ -115,7 +115,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   if (intent === 'search-recetario-medications') {
     const { search } = parseFormJson(formData.get('data')) as any;
     const result = await client.service('recetario' as any).create({ action: 'search-medications', search });
-    return json({ intent: 'search-recetario-medications', medications: (result as any).medications });
+    return json({ intent: 'search-recetario-medications', search, medications: (result as any).medications });
   }
 
   if (intent === 'create-prescription') {

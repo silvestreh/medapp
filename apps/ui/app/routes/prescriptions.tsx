@@ -237,11 +237,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const result = await client.service('recetario' as any).create({ action: 'search-medications', search });
       return json({
         intent: 'search-recetario-medications',
+        search,
         medications: (result as any).medications,
       });
     } catch (err) {
       if (isRecetarioUnavailable(err)) {
-        return json({ intent: 'search-recetario-medications', recetarioUnavailable: true, medications: [] });
+        return json({ intent: 'search-recetario-medications', search, recetarioUnavailable: true, medications: [] });
       }
       throw err;
     }
