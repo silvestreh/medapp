@@ -259,6 +259,48 @@ describe('\'access-logs\' service', () => {
       assert.strictEqual(logOther.previousLogId, null, 'No previous in this org chain');
     });
 
+    it('serializes concurrent log creation for one organization', async function () {
+      this.timeout(20000);
+
+      const concurrentOrg = await createTestOrganization();
+      const COUNT = 10;
+
+      const created = await Promise.all(
+        Array.from({ length: COUNT }, (_, i) =>
+          app.service('access-logs').create({
+            userId: chainUser.id,
+            organizationId: concurrentOrg.id,
+            resource: 'encounters',
+            patientId: chainPatient.id,
+            action: 'read',
+            ip: null,
+            metadata: { concurrentIndex: i },
+          })
+        )
+      ) as any[];
+
+      assert.strictEqual(created.length, COUNT, 'every concurrent create should succeed');
+
+      const ids = new Set(created.map((log) => log.id));
+      assert.strictEqual(ids.size, COUNT, 'every log should get a distinct id');
+
+      for (const log of created) {
+        assert.ok(log.hash, 'every log should have a hash');
+      }
+
+      // Serialized creation yields exactly one chain root; every other log
+      // links to a log from this same batch.
+      const roots = created.filter((log) => log.previousLogId === null);
+      assert.strictEqual(roots.length, 1, 'exactly one log should start the chain');
+      for (const log of created) {
+        if (log.previousLogId === null) continue;
+        assert.ok(
+          ids.has(log.previousLogId),
+          'every previousLogId should point at a log from this batch'
+        );
+      }
+    });
+
     it('skips hash chain for logs without organizationId', async () => {
       const log: any = await app.service('access-logs').create({
         userId: chainUser.id,

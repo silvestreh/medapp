@@ -1,5 +1,5 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
-import { QueryTypes } from 'sequelize';
+import { QueryTypes, Transaction } from 'sequelize';
 import { randomUUID } from 'crypto';
 import { computeAccessLogHash } from './access-log-hash';
 
@@ -13,17 +13,31 @@ export const computeAccessLogHashHook = (): Hook => {
 
     const sequelize = app.get('sequelizeClient');
 
-    // Acquire advisory lock to serialize log creation per organization
+    // Serialize log creation per organization with a transaction-level
+    // advisory lock. A session-level lock released in a later hook can land on
+    // a different pooled connection, where the unlock silently fails and the
+    // lock stays held by an idle connection. The transaction pins every query
+    // (lock, previous-log read, and the INSERT itself via params.sequelize) to
+    // one connection, and pg_advisory_xact_lock releases automatically at
+    // commit/rollback.
+    let transaction: Transaction | undefined = context.params.sequelize?.transaction;
+
+    if (!transaction) {
+      transaction = await sequelize.transaction();
+      context.params.sequelize = { ...context.params.sequelize, transaction };
+      // Only commit/rollback transactions this hook opened — a caller-provided
+      // transaction is the caller's to finish.
+      context.params._accessLogTransactionOwned = true;
+    }
+
     await sequelize.query(
-      'SELECT pg_advisory_lock(hashtext(:lockKey))',
+      'SELECT pg_advisory_xact_lock(hashtext(:lockKey))',
       {
         replacements: { lockKey: `access-log:${organizationId}` },
-        type: QueryTypes.SELECT
+        type: QueryTypes.SELECT,
+        transaction
       }
     );
-
-    // Store lock key so the release hook can unlock
-    context.params._accessLogLockKey = `access-log:${organizationId}`;
 
     // Find the most recent access log for this organization using raw query
     // to avoid triggering the full hook pipeline
@@ -34,7 +48,8 @@ export const computeAccessLogHashHook = (): Hook => {
        LIMIT 1`,
       {
         replacements: { organizationId },
-        type: QueryTypes.SELECT
+        type: QueryTypes.SELECT,
+        transaction
       }
     ) as Array<{ id: string; hash: string | null }>;
 

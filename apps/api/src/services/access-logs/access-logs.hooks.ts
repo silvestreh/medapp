@@ -5,7 +5,8 @@ import { Forbidden } from '@feathersjs/errors';
 import { verifyOrganizationMembership } from '../../hooks/verify-organization-membership';
 import { populateRefesId } from './hooks/populate-refes-id';
 import { computeAccessLogHashHook } from './hooks/compute-access-log-hash';
-import { releaseAccessLogLock } from './hooks/release-access-log-lock';
+import { commitAccessLogTransaction } from './hooks/commit-access-log-transaction';
+import { rollbackAccessLogTransaction } from './hooks/rollback-access-log-transaction';
 // Don't remove this comment. It's needed to format import lines nicely.
 
 const { authenticate } = authentication.hooks;
@@ -34,7 +35,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [releaseAccessLogLock()],
+    create: [commitAccessLogTransaction()],
     update: [],
     patch: [],
     remove: [],
@@ -44,7 +45,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [releaseAccessLogLock()],
+    create: [rollbackAccessLogTransaction()],
     update: [],
     patch: [],
     remove: [],

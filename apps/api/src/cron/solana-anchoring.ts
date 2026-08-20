@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { Sequelize, QueryTypes, Op } from 'sequelize';
+import { Sequelize, QueryTypes, Op, Transaction } from 'sequelize';
 import { Application } from '../declarations';
 import logger from '../logger';
 import Sentry from '../sentry';
@@ -22,22 +22,30 @@ interface SolanaAnchoringOptions {
 const MAX_RETRIES = 5;
 const LOW_BALANCE_THRESHOLD = 0.01;
 
-async function acquireLock(sequelize: Sequelize): Promise<boolean> {
+// The lock lives on the transaction's connection and is released automatically
+// when the transaction ends. Acquiring and releasing a session-level lock in
+// two separate pooled queries is not safe: the unlock can land on a different
+// connection, silently fail, and leave the lock held forever — after which
+// every later cycle's blocking pg_advisory_lock hangs on a pool connection.
+// pg_try_advisory_xact_lock never blocks: a busy lock just skips the cycle.
+async function acquireLock(
+  sequelize: Sequelize,
+  transaction: Transaction
+): Promise<boolean> {
   try {
-    await sequelize.query('SELECT pg_advisory_lock(hashtext(\'solana-anchoring\'))', {
-      type: QueryTypes.SELECT,
-    });
-    return true;
+    const [row] = await sequelize.query(
+      'SELECT pg_try_advisory_xact_lock(hashtext(\'solana-anchoring\')) AS locked',
+      { type: QueryTypes.SELECT, transaction }
+    ) as Array<{ locked: boolean }>;
+    return row?.locked === true;
   } catch {
     return false;
   }
 }
 
-async function releaseLock(sequelize: Sequelize): Promise<void> {
+async function releaseLock(transaction: Transaction): Promise<void> {
   try {
-    await sequelize.query('SELECT pg_advisory_unlock(hashtext(\'solana-anchoring\'))', {
-      type: QueryTypes.SELECT,
-    });
+    await transaction.rollback();
   } catch {
     // Lock release failure is not critical
   }
@@ -214,8 +222,13 @@ async function runAnchoring(app: Application, submitFn: SubmitFn): Promise<Ancho
 
   const sequelize: Sequelize = app.get('sequelizeClient');
 
-  const locked = await acquireLock(sequelize);
+  // Holds the advisory lock for the whole run; only the lock lives on this
+  // transaction — the anchoring queries below run on the pool as usual.
+  const lockTransaction = await sequelize.transaction();
+
+  const locked = await acquireLock(sequelize, lockTransaction);
   if (!locked) {
+    await releaseLock(lockTransaction);
     logger.warn('Solana anchoring: could not acquire lock, skipping cycle');
     return { ok: false, error: 'Could not acquire database lock — another anchoring may be in progress' };
   }
@@ -257,7 +270,7 @@ async function runAnchoring(app: Application, submitFn: SubmitFn): Promise<Ancho
     });
     return { ok: false, error: error.message };
   } finally {
-    await releaseLock(sequelize);
+    await releaseLock(lockTransaction);
   }
 }
 

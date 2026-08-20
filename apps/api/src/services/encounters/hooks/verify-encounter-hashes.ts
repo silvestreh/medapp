@@ -25,6 +25,33 @@ export const verifyEncounterHashes = (): Hook => {
         }
       }
 
+      // Predecessors can fall outside the result set (pagination, query
+      // filters); fetch their hashes with a raw query to avoid triggering
+      // hooks recursively
+      const missingIds = [...new Set(
+        sorted
+          .filter((encounter) => encounter.hash && encounter.previousEncounterId)
+          .map((encounter) => encounter.previousEncounterId as string)
+          .filter((id) => !hashById.has(id))
+      )];
+
+      if (missingIds.length > 0) {
+        const sequelize = context.app.get('sequelizeClient');
+        const results = await sequelize.query(
+          'SELECT id, hash FROM encounters WHERE id IN (:ids)',
+          {
+            replacements: { ids: missingIds },
+            type: QueryTypes.SELECT
+          }
+        ) as Array<{ id: string; hash: string | null }>;
+
+        for (const row of results) {
+          if (row.hash) {
+            hashById.set(row.id, row.hash);
+          }
+        }
+      }
+
       // Verify each encounter's hash
       for (const encounter of sorted) {
         if (!encounter.hash) {

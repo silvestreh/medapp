@@ -17,7 +17,8 @@ import { applySharedAccess } from './hooks/apply-shared-access';
 import { markSharedEncounters } from './hooks/mark-shared-encounters';
 import { logAccess } from '../../hooks/log-access';
 import { computeEncounterHashHook } from './hooks/compute-encounter-hash';
-import { releaseEncounterLock } from './hooks/release-encounter-lock';
+import { commitEncounterTransaction } from './hooks/commit-encounter-transaction';
+import { rollbackEncounterTransaction } from './hooks/rollback-encounter-transaction';
 import { verifyEncounterHashes } from './hooks/verify-encounter-hashes';
 // Don't remove this comment. It's needed to format import lines nicely.
 
@@ -66,7 +67,7 @@ export default {
       logAccess({ resource: 'encounters' })
     ],
     create: [
-      releaseEncounterLock(),
+      commitEncounterTransaction(),
       setCost('encounter'),
       logAccess({ resource: 'encounters'})
     ],
@@ -79,7 +80,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [releaseEncounterLock()],
+    create: [rollbackEncounterTransaction()],
     update: [],
     patch: [],
     remove: []

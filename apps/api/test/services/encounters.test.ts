@@ -235,5 +235,82 @@ describe('\'encounters\' service', () => {
       const retrieved = await service.get(created.id);
       assert.strictEqual(retrieved.tampered, true, 'Tampered encounter should be detected');
     });
+
+    it('does not flag paginated encounters whose predecessor is off-page', async () => {
+      const service = app.service('encounters');
+      const p = await createPatient();
+
+      const encounters: any[] = [];
+      for (let i = 0; i < 3; i++) {
+        encounters.push(await service.create({
+          data: { notes: { values: { text: `Page test ${i}` } } },
+          date: new Date(`2025-04-0${i + 1}`),
+          medicId: medic.id,
+          patientId: p.id,
+        }));
+      }
+
+      // Fetch only the newest 2: the oldest one on the page links to a
+      // predecessor outside the result set
+      const result = await service.find({
+        query: {
+          patientId: p.id,
+          $limit: 2,
+          $sort: { date: -1 },
+        },
+      }) as any;
+
+      assert.strictEqual(result.data.length, 2, 'Should return a partial page');
+      const pageIds = result.data.map((e: any) => e.id);
+      assert.ok(!pageIds.includes(encounters[0].id), 'Oldest encounter should be off-page');
+
+      for (const encounter of result.data) {
+        assert.strictEqual(
+          encounter.tampered,
+          false,
+          `Encounter ${encounter.id} should not be flagged tampered when its predecessor is off-page`
+        );
+      }
+    });
+
+    it('still detects tampered encounters on paginated find', async () => {
+      const service = app.service('encounters');
+      const sequelizeClient: Sequelize = app.get('sequelizeClient');
+      const p = await createPatient();
+
+      const encounters: any[] = [];
+      for (let i = 0; i < 3; i++) {
+        encounters.push(await service.create({
+          data: { notes: { values: { text: `Tamper page ${i}` } } },
+          date: new Date(`2025-05-0${i + 1}`),
+          medicId: medic.id,
+          patientId: p.id,
+        }));
+      }
+
+      // Tamper with the middle encounter, which lands on the fetched page
+      const tamperedData = JSON.stringify({ notes: { values: { text: 'TAMPERED!' } } });
+      const encryptionKey = process.env.ENCRYPTION_KEY;
+      await sequelizeClient.query(
+        'UPDATE encounters SET data = PGP_SYM_ENCRYPT(:data, :key) WHERE id = :id',
+        {
+          replacements: { data: tamperedData, key: encryptionKey, id: encounters[1].id }
+        }
+      );
+
+      const result = await service.find({
+        query: {
+          patientId: p.id,
+          $limit: 2,
+          $sort: { date: -1 },
+        },
+      }) as any;
+
+      const tampered = result.data.find((e: any) => e.id === encounters[1].id);
+      const intact = result.data.find((e: any) => e.id === encounters[2].id);
+      assert.ok(tampered, 'Tampered encounter should be on the page');
+      assert.strictEqual(tampered.tampered, true, 'Tampered encounter should be detected on find');
+      assert.strictEqual(intact.tampered, false, 'Intact encounter should not be flagged');
+    });
   });
 });

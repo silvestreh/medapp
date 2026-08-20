@@ -184,6 +184,26 @@ const FormItem = styled('div', {
   },
 });
 
+const EntrySubText = styled('p', {
+  base: {
+    fontSize: 'var(--mantine-font-size-xs)',
+    color: 'var(--mantine-color-gray-5)',
+    marginTop: '2px',
+    maxWidth: '250px',
+    lineClamp: 2,
+    textOverflow: 'ellipsis',
+    overflowWrap: 'break-word',
+  },
+
+  variants: {
+    active: {
+      true: {
+        color: 'white',
+      },
+    },
+  },
+});
+
 const EncounterTree: FC<EncounterTreeProps> = ({
   encounters,
   studies = [],
@@ -334,23 +354,11 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                       active={activeEncounterId === encounter.id && activeAttachmentIndex === i}
                                     >
                                       {getFileTypeLabel(att.mimeType, t)}
-                                      <Text
-                                        size="xs"
-                                        c={
-                                          activeEncounterId === encounter.id && activeAttachmentIndex === i
-                                            ? 'white'
-                                            : 'gray.5'
-                                        }
-                                        mt={2}
-                                        style={{
-                                          whiteSpace: 'nowrap',
-                                          overflow: 'hidden',
-                                          textOverflow: 'ellipsis',
-                                          maxWidth: '250px',
-                                        }}
+                                      <EntrySubText
+                                        active={activeEncounterId === encounter.id && activeAttachmentIndex === i}
                                       >
                                         {att.fileName} · {formatFileSize(att.fileSize)}
-                                      </Text>
+                                      </EntrySubText>
                                     </FormItem>
                                   ))}
                                 </EncounterBox>
@@ -375,9 +383,9 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                     active={activeStudyId === study.id}
                                   >
                                     Protocolo #{study.protocol}
-                                    <Text size="xs" c={activeStudyId === study.id ? 'white' : 'gray.5'} mt={2}>
+                                    <EntrySubText active={activeStudyId === study.id}>
                                       {studyTypes.join(', ')}
-                                    </Text>
+                                    </EntrySubText>
                                   </FormItem>
                                 </EncounterBox>
                               );
@@ -394,19 +402,9 @@ const EncounterTree: FC<EncounterTreeProps> = ({
                                 <FormItem onClick={e => handlePrescriptionClick(e, rx)} active={isActive}>
                                   {t(`recetario.type_${rx.type}` as any)}
                                   {rx.content?.diagnosis && (
-                                    <Text
-                                      size="xs"
-                                      c={isActive ? 'white' : 'gray.5'}
-                                      mt={2}
-                                      style={{
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        maxWidth: '250px',
-                                      }}
-                                    >
+                                    <EntrySubText active={isActive}>
                                       {rx.content.diagnosis}
-                                    </Text>
+                                    </EntrySubText>
                                   )}
                                 </FormItem>
                               </EncounterBox>
