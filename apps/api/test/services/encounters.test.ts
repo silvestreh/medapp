@@ -313,4 +313,45 @@ describe('\'encounters\' service', () => {
       assert.strictEqual(intact.tampered, false, 'Intact encounter should not be flagged');
     });
   });
+
+  describe('concurrent creation', () => {
+    it('creates encounters for many patients concurrently without pool starvation', async function () {
+      this.timeout(60000);
+      const service = app.service('encounters');
+      const suffix = Date.now().toString(36);
+
+      const patients = await Promise.all(
+        [...Array(10)].map((_, i) => app.service('patients').create({
+          medicare: `POOL-${suffix}-${i}`,
+          medicareNumber: String(i),
+        } as any))
+      );
+
+      // Each patient's encounters are created in order, all patients in
+      // parallel — the load shape that exhausted the connection pool when a
+      // single create needed more than one connection at a time (transaction
+      // held while other queries waited on the pool).
+      const results = await Promise.all(patients.map(async (p: any) => {
+        const created = [];
+        for (let i = 0; i < 3; i++) {
+          created.push(await service.create({
+            data: { notes: { values: { note: `control ${i}` } } },
+            date: new Date(Date.now() - (3 - i) * 60_000),
+            medicId: medic.id,
+            patientId: p.id,
+          } as any));
+        }
+        return created;
+      }));
+
+      assert.strictEqual(results.flat().length, 30, 'All concurrent creates should succeed');
+
+      // Each patient's hash chain must link correctly despite the concurrency
+      for (const created of results) {
+        const [first, second, third] = created;
+        assert.strictEqual(second.previousEncounterId, first.id, 'Second encounter links to first');
+        assert.strictEqual(third.previousEncounterId, second.id, 'Third encounter links to second');
+      }
+    });
+  });
 });

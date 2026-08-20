@@ -333,4 +333,47 @@ describe('\'studies\' service', () => {
     assert.strictEqual(saved.insurerId, prepaga.id);
     assert.strictEqual((saved as any).cost, undefined);
   });
+
+  describe('concurrent creation', () => {
+    it('assigns distinct sequential protocols to concurrently created studies', async function () {
+      this.timeout(60000);
+      const suffix = Date.now().toString(36);
+
+      const patients = await Promise.all(
+        [...Array(10)].map((_, i) => app.service('patients').create({
+          medicare: `PROTO-${suffix}-${i}`,
+          medicareNumber: String(i),
+        } as any))
+      );
+
+      const newest = (await app.service('studies').find({
+        query: { $limit: 1, $sort: { protocol: -1 } },
+        paginate: false,
+      } as any)) as any[];
+      const baseProtocol = newest[0]?.protocol ?? 0;
+
+      // No explicit protocol: every create goes through auto-protocol at the
+      // same time — the load shape that used to collide on the unique
+      // constraint when max+1 was read without serialization.
+      const created = await Promise.all(patients.map((p: any) =>
+        app.service('studies').create({
+          date: new Date(),
+          studies: ['anemia'],
+          noOrder: false,
+          medicId: medic.id,
+          patientId: p.id,
+        } as any)
+      ));
+
+      assert.strictEqual(created.length, 10, 'All concurrent creates should succeed');
+
+      const protocols = created.map((s: any) => s.protocol).sort((a: number, b: number) => a - b);
+      assert.strictEqual(new Set(protocols).size, 10, 'Protocols should be distinct');
+      assert.deepStrictEqual(
+        protocols,
+        [...Array(10)].map((_, i) => baseProtocol + i + 1),
+        'Protocols should be sequential from the previous max'
+      );
+    });
+  });
 });

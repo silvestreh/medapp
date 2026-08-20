@@ -7,6 +7,8 @@ import { blockSuperAdmin } from '../../hooks/block-super-admin';
 import populateResults from './hooks/populate-results';
 import populatePatient from './hooks/populate-patient';
 import autoProtocol from './hooks/auto-protocol';
+import { commitStudyTransaction } from './hooks/commit-study-transaction';
+import { rollbackStudyTransaction } from './hooks/rollback-study-transaction';
 import extractStudyResults from './hooks/extract-study-results';
 import upsertStudyResults from './hooks/upsert-study-results';
 import { clearReferringDoctor, populateReferringDoctor } from './hooks/resolve-referring-doctor';
@@ -47,8 +49,10 @@ export default {
       restrictToMedic,
       sanitizeReferringDoctor(),
       clearReferringDoctor(),
-      autoProtocol(),
-      extractStudyResults()
+      extractStudyResults(),
+      // Last on purpose: opens the protocol-serializing transaction, so the
+      // window between BEGIN and the INSERT stays as small as possible.
+      autoProtocol()
     ],
     update: [],
     patch: [
@@ -80,6 +84,9 @@ export default {
       logAccess({ resource: 'studies' })
     ],
     create: [
+      // First on purpose: commits the INSERT and releases the protocol lock
+      // before the remaining hooks run their own queries.
+      commitStudyTransaction(),
       upsertStudyResults(),
       setCost('study'),
       populateReferringDoctor(),
@@ -98,7 +105,7 @@ export default {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [rollbackStudyTransaction()],
     update: [],
     patch: [],
     remove: []

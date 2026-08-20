@@ -70,6 +70,12 @@ const TAMPERED_ENCOUNTER_COUNT = 3;
 // appended in date order.
 const CONCURRENCY = 10;
 
+// Encounter creates hold a transaction connection each (advisory-lock fix in
+// compute-encounter-hash). The pool defaults to 10 (DB_POOL_MAX in
+// src/sequelize.ts) — keep concurrency below it so transaction acquires can't
+// exhaust the pool if a commit stalls over the network.
+const ENCOUNTER_CONCURRENCY = 8;
+
 const RESET = process.argv.includes('--reset');
 
 // ── safety guards ────────────────────────────────────────────────────────────
@@ -117,6 +123,29 @@ async function serviceTotal(serviceName: string): Promise<number> {
     query: { $limit: 0 },
   } as any)) as any;
   return typeof result.total === 'number' ? result.total : (result as any[]).length;
+}
+
+// Studies have a globally unique auto-incremented `protocol` assigned by the
+// auto-protocol hook via max(protocol)+1 — which races under concurrent
+// creates (SequelizeUniqueConstraintError, "Validation error"). The hook
+// skips when `protocol` is provided, so the seed hands out numbers from a
+// single counter instead.
+let protocolInit: Promise<void> | null = null;
+let protocolCounter = 0;
+
+async function nextProtocol(): Promise<number> {
+  if (!protocolInit) {
+    protocolInit = (async () => {
+      const res = (await app.service('studies').find({
+        query: { $limit: 1, $sort: { protocol: -1 } },
+        paginate: false,
+      } as any)) as any[];
+      protocolCounter = res[0]?.protocol ?? 0;
+    })();
+  }
+  await protocolInit;
+  protocolCounter += 1;
+  return protocolCounter;
 }
 
 async function loadSeed<T>(filename: string): Promise<T> {
@@ -199,27 +228,19 @@ const MEDICAL_SPECIALTIES = [
   'Traumatología',
 ];
 
-const CONSULTATION_REASONS = [
-  'Control de rutina',
-  'Dolor torácico',
-  'Cefalea recurrente',
+// Acute, one-off consultation reasons any patient can present with.
+const ACUTE_REASONS = [
   'Dolor abdominal',
   'Fiebre persistente',
-  'Tos crónica',
-  'Mareos y vértigo',
-  'Control post-quirúrgico',
   'Dolor lumbar',
-  'Hipertensión arterial',
-  'Fatiga crónica',
   'Erupción cutánea',
-  'Control de diabetes',
-  'Dificultad respiratoria',
   'Dolor articular',
+  'Control post-quirúrgico',
+  'Dolor torácico',
 ];
 
-const EVOLUTION_NOTES = [
+const GENERIC_EVOLUTIONS = [
   'Paciente evoluciona favorablemente. Se mantiene esquema terapéutico actual.',
-  'Se ajusta medicación por hipertensión. Control en 15 días.',
   'Sin cambios significativos. Se solicitan estudios complementarios.',
   'Mejoría clínica notable. Se reduce dosis de analgésicos.',
   'Paciente refiere persistencia de síntomas. Se deriva a especialista.',
@@ -258,26 +279,162 @@ const ERYTHROPOIETIC_NOTES = [
   'Serie eritroide sin alteraciones morfológicas significativas.',
 ];
 
-const PERSONAL_HISTORY = [
-  'Hipertensión arterial',
-  'Diabetes mellitus tipo 2',
-  'Asma bronquial',
-  'Hipotiroidismo',
-  'Dislipemia',
-  'Cirugía de vesícula (2019)',
-  'Fractura de muñeca (2021)',
+// ── patient clinical profiles ────────────────────────────────────────────────
+// Each patient gets a stable profile (chronic conditions + SIRE indication)
+// decided once, so their encounters, antecedents, studies, and SIRE treatment
+// all tell the same clinical story.
+
+interface PatientCondition {
+  antecedent: string;
+  reasons: string[];
+  evolutions: string[];
+}
+
+const CONDITION_LIBRARY: PatientCondition[] = [
+  {
+    antecedent: 'Hipertensión arterial',
+    reasons: ['Hipertensión arterial', 'Cefalea recurrente', 'Mareos y vértigo', 'Control de rutina'],
+    evolutions: [
+      'Se ajusta medicación por hipertensión. Control en 15 días.',
+      'Cifras tensionales dentro del objetivo. Se mantiene esquema.',
+      'TA levemente elevada. Se refuerzan pautas de dieta hiposódica.',
+    ],
+  },
+  {
+    antecedent: 'Diabetes mellitus tipo 2',
+    reasons: ['Control de diabetes', 'Fatiga crónica', 'Control de rutina'],
+    evolutions: [
+      'Glucemias en objetivo. Se mantiene metformina.',
+      'HbA1c elevada. Se ajusta hipoglucemiante y se cita control en 30 días.',
+      'Se refuerza educación diabetológica y plan alimentario.',
+    ],
+  },
+  {
+    antecedent: 'Asma bronquial',
+    reasons: ['Dificultad respiratoria', 'Tos crónica', 'Control de rutina'],
+    evolutions: [
+      'Buen control con corticoide inhalado. Se mantiene esquema.',
+      'Exacerbación leve. Se indica broncodilatador de rescate.',
+    ],
+  },
+  {
+    antecedent: 'Hipotiroidismo',
+    reasons: ['Fatiga crónica', 'Control de rutina'],
+    evolutions: [
+      'TSH dentro de rango. Se mantiene levotiroxina.',
+      'Se ajusta dosis de levotiroxina. Control con TSH en 6 semanas.',
+    ],
+  },
+  {
+    antecedent: 'Dislipemia',
+    reasons: ['Control de rutina'],
+    evolutions: [
+      'Perfil lipídico mejorado. Continúa con estatinas.',
+      'Se refuerzan pautas higiénico-dietéticas. Control con laboratorio en 3 meses.',
+    ],
+  },
 ];
 
-function buildEncounterData(): Record<string, any> {
+const SIRE_INDICATIONS = [
+  'Fibrilación auricular',
+  'Trombosis venosa profunda',
+  'Prótesis valvular mecánica',
+  'Tromboembolismo pulmonar',
+];
+
+// Anticoagulated patients (SIRE) get a condition matching their indication.
+const SIRE_CONDITION_BY_INDICATION: Record<string, PatientCondition> = {
+  'Fibrilación auricular': {
+    antecedent: 'Fibrilación auricular',
+    reasons: ['Control de anticoagulación', 'Palpitaciones', 'Control de rutina'],
+    evolutions: [
+      'INR en rango terapéutico. Se mantiene dosis de anticoagulante.',
+      'Se ajusta dosis de anticoagulante según INR. Control en una semana.',
+    ],
+  },
+  'Trombosis venosa profunda': {
+    antecedent: 'Trombosis venosa profunda',
+    reasons: ['Control de anticoagulación', 'Dolor en miembro inferior', 'Control de rutina'],
+    evolutions: [
+      'INR en rango terapéutico. Sin signos de retrombosis.',
+      'Se ajusta dosis de anticoagulante según INR. Control en una semana.',
+    ],
+  },
+  'Prótesis valvular mecánica': {
+    antecedent: 'Reemplazo valvular mecánico',
+    reasons: ['Control de anticoagulación', 'Control de rutina'],
+    evolutions: [
+      'INR en rango objetivo para prótesis mecánica. Se mantiene esquema.',
+      'INR por debajo del objetivo. Se ajusta dosis y se cita control.',
+    ],
+  },
+  'Tromboembolismo pulmonar': {
+    antecedent: 'Tromboembolismo pulmonar',
+    reasons: ['Control de anticoagulación', 'Dificultad respiratoria', 'Control de rutina'],
+    evolutions: [
+      'INR en rango terapéutico. Buena tolerancia al esfuerzo.',
+      'Se ajusta dosis de anticoagulante según INR. Control en una semana.',
+    ],
+  },
+};
+
+const MISC_ANTECEDENTS = [
+  'Cirugía de vesícula (2019)',
+  'Fractura de muñeca (2021)',
+  'Apendicectomía en la infancia',
+  'Tabaquismo (abandonado)',
+];
+
+interface PatientProfile {
+  conditions: PatientCondition[];
+  antecedents: Array<{ name: string; date: string }>;
+  sireIndication: string | null;
+}
+
+function buildPatientProfile(): PatientProfile {
+  const conditions = faker.helpers.arrayElements(
+    CONDITION_LIBRARY,
+    faker.number.int({ min: 1, max: 2 }),
+  );
+
+  const sireIndication = Math.random() < SIRE_TREATMENT_RATIO
+    ? pickRandom(SIRE_INDICATIONS)
+    : null;
+  if (sireIndication) {
+    conditions.push(SIRE_CONDITION_BY_INDICATION[sireIndication]);
+  }
+
+  const antecedents = conditions.map((c) => ({
+    name: c.antecedent,
+    date: faker.date.past({ years: 10 }).toLocaleDateString('es-AR'),
+  }));
+  if (faker.datatype.boolean(0.3)) {
+    antecedents.push({
+      name: pickRandom(MISC_ANTECEDENTS),
+      date: faker.date.past({ years: 15 }).toLocaleDateString('es-AR'),
+    });
+  }
+
+  return { conditions, antecedents, sireIndication };
+}
+
+function buildEncounterData(profile: PatientProfile, isFirst: boolean): Record<string, any> {
   const data: Record<string, any> = {};
 
-  const reasonCount = faker.number.int({ min: 1, max: 3 });
+  // Mostly reasons tied to the patient's chronic conditions, with the
+  // occasional unrelated acute visit.
+  const conditionReasons = profile.conditions.flatMap((c) => c.reasons);
+  const reasonCount = faker.number.int({ min: 1, max: 2 });
   const reasonValues: Record<string, string> = {
     consulta_intern_count: String(reasonCount),
   };
   for (let i = 0; i < reasonCount; i++) {
-    reasonValues[`motivo_text_${i}`] = pickRandom(CONSULTATION_REASONS);
-    reasonValues[`motivo_descripcion_${i}`] = faker.datatype.boolean(0.4)
+    reasonValues[`motivo_text_${i}`] = faker.datatype.boolean(0.75)
+      ? pickRandom(conditionReasons)
+      : pickRandom(ACUTE_REASONS);
+    // The intake interview is more thorough: reasons always carry a
+    // description in the first encounter.
+    reasonValues[`motivo_descripcion_${i}`] = (isFirst || faker.datatype.boolean(0.4))
       ? pickRandom(REASON_DETAILS)
       : '';
   }
@@ -287,24 +444,28 @@ function buildEncounterData(): Record<string, any> {
   };
 
   if (faker.datatype.boolean(0.6)) {
+    const conditionEvolutions = profile.conditions.flatMap((c) => c.evolutions);
     data['general/evolucion_consulta_internacion'] = {
       type: 'general/evolucion_consulta_internacion',
-      values: { evo_descripcion: pickRandom(EVOLUTION_NOTES) },
+      values: {
+        evo_descripcion: faker.datatype.boolean(0.7)
+          ? pickRandom(conditionEvolutions)
+          : pickRandom(GENERIC_EVOLUTIONS),
+      },
     };
   }
 
-  if (faker.datatype.boolean(0.3)) {
-    const historyCount = faker.number.int({ min: 1, max: 2 });
+  // Antecedents are captured once, during the first (chronologically)
+  // encounter's intake interview — subsequent encounters don't repeat them.
+  if (isFirst) {
     const histValues: Record<string, string> = {
-      antecedente_count: String(historyCount),
+      antecedente_count: String(profile.antecedents.length),
     };
-    for (let i = 0; i < historyCount; i++) {
-      histValues[`antecedente_${i}`] = pickRandom(PERSONAL_HISTORY);
-      histValues[`fecha_antecedente_${i}`] = faker.date
-        .past({ years: 10 })
-        .toLocaleDateString('es-AR');
+    profile.antecedents.forEach((antecedent, i) => {
+      histValues[`antecedente_${i}`] = antecedent.name;
+      histValues[`fecha_antecedente_${i}`] = antecedent.date;
       histValues[`antecedente_descripcion_${i}`] = '';
-    }
+    });
     data['antecedentes/personales'] = {
       type: 'antecedentes/personales',
       values: histValues,
@@ -842,9 +1003,10 @@ async function seedEncounters(
   organizationId: string,
   medicIds: string[],
   patientIds: string[],
+  profiles: Map<string, PatientProfile>,
 ): Promise<number> {
   const encountersService = app.service('encounters');
-  const limit = pLimit(CONCURRENCY);
+  const limit = pLimit(ENCOUNTER_CONCURRENCY);
   let ok = 0;
   let processed = 0;
 
@@ -864,11 +1026,12 @@ async function seedEncounters(
     }
     dates.sort((a, b) => a.getTime() - b.getTime());
 
-    for (const date of dates) {
+    const profile = profiles.get(patientId) || buildPatientProfile();
+    for (let i = 0; i < dates.length; i++) {
       try {
         await encountersService.create({
-          data: buildEncounterData(),
-          date,
+          data: buildEncounterData(profile, i === 0),
+          date: dates[i],
           medicId: pickRandom(medicIds),
           patientId,
           organizationId,
@@ -918,6 +1081,7 @@ async function seedStudies(
       try {
         const study = (await studiesService.create({
           date,
+          protocol: await nextProtocol(),
           studies: studyTypes,
           noOrder: faker.datatype.boolean(0.2),
           medicId: pickRandom(medicIds),
@@ -1034,33 +1198,87 @@ async function seedAppointments(
   return ok;
 }
 
-const SIRE_INDICATIONS = [
-  'Fibrilación auricular',
-  'Trombosis venosa profunda',
-  'Prótesis valvular mecánica',
-  'Tromboembolismo pulmonar',
-];
-
 const DOSE_FRACTIONS = [null, 0.25, 0.5, 0.75, 1];
 
 async function seedSireTreatments(
   organizationId: string,
   medicIds: string[],
   patientIds: string[],
+  profiles: Map<string, PatientProfile>,
 ): Promise<number> {
   const treatmentsService = app.service('sire-treatments');
   const schedulesService = app.service('sire-dose-schedules');
   const readingsService = app.service('sire-readings');
+  const studiesService = app.service('studies');
+  const studyResultsService = app.service('study-results');
 
-  const sirePatients = patientIds.filter(() => Math.random() < SIRE_TREATMENT_RATIO);
+  // SIRE membership and indication come from the patient profile, so the
+  // treatment matches the antecedents and consultation reasons already
+  // recorded in the patient's encounters.
+  const sirePatients = patientIds.filter((id) => profiles.get(id)?.sireIndication);
   const limit = pLimit(CONCURRENCY);
   let ok = 0;
 
   await Promise.all(sirePatients.map((patientId) => limit(async () => {
     try {
       const medicId = pickRandom(medicIds);
-      const isMechanicalValve = faker.datatype.boolean(0.2);
-      const startDate = randomDateInMonth(faker.number.int({ min: 4, max: HISTORY_MONTHS - 1 }));
+      const indication = profiles.get(patientId)!.sireIndication!;
+      const isMechanicalValve = indication === 'Prótesis valvular mecánica';
+
+      // Consistency with the medical history: every SIRE patient has at least
+      // one anticoagulation study, and the treatment's 'lab' readings mirror
+      // those study results (same date, RIN→INR, quick) so both screens tell
+      // the same clinical story.
+      const studies = (await studiesService.find({
+        query: { patientId },
+        paginate: false,
+      } as any)) as any[];
+
+      let anticoagStudies = studies.filter((s) => (s.studies || []).includes('anticoagulation'));
+
+      if (anticoagStudies.length === 0) {
+        const result = buildStudyResult('anticoagulation');
+        const study = (await studiesService.create({
+          date: randomDateInMonth(faker.number.int({ min: 0, max: 3 })),
+          protocol: await nextProtocol(),
+          studies: ['anticoagulation'],
+          noOrder: faker.datatype.boolean(0.2),
+          medicId,
+          referringDoctor: null,
+          patientId,
+          organizationId,
+        } as any)) as any;
+        await studyResultsService.create({
+          studyId: study.id,
+          type: result.type,
+          data: result.data,
+        } as any);
+        anticoagStudies = [study];
+      }
+
+      const anticoagResults = (await studyResultsService.find({
+        query: { studyId: { $in: anticoagStudies.map((s) => s.id) }, type: 'anticoagulation' },
+        paginate: false,
+      } as any)) as any[];
+
+      const studyDateById = new Map<string, Date>(
+        anticoagStudies.map((s) => [String(s.id), new Date(s.date)]),
+      );
+      const labPoints = anticoagResults.map((r) => {
+        const d = typeof r.data === 'string' ? JSON.parse(r.data) : (r.data || {});
+        return {
+          date: studyDateById.get(String(r.studyId)) || new Date(),
+          inr: Number(d.rin) || Number(randomNum(1.5, 4.5)),
+          quick: Number(d.quick) || Number(randomNum(10, 16)),
+        };
+      });
+
+      // Treatment starts before the earliest lab reading
+      const earliestLab = labPoints.length > 0
+        ? new Date(Math.min(...labPoints.map((p) => p.date.getTime())))
+        : new Date();
+      const startDate = new Date(earliestLab);
+      startDate.setDate(startDate.getDate() - faker.number.int({ min: 7, max: 60 }));
 
       const treatment = (await treatmentsService.create({
         patientId,
@@ -1068,7 +1286,7 @@ async function seedSireTreatments(
         medicId,
         medication: pickRandom(['Acenocumarol', 'Warfarina']),
         tabletDoseMg: pickRandom([1, 4]),
-        indication: pickRandom(SIRE_INDICATIONS),
+        indication,
         targetInrMin: isMechanicalValve ? 2.5 : 2.0,
         targetInrMax: isMechanicalValve ? 3.5 : 3.0,
         startDate,
@@ -1092,9 +1310,23 @@ async function seedSireTreatments(
         createdById: medicId,
       } as any);
 
-      // INR readings between treatment start and now
-      const readingCount = faker.number.int({ min: 4, max: 8 });
-      for (let i = 0; i < readingCount; i++) {
+      // 'lab' readings mirror the patient's anticoagulation study results
+      for (const point of labPoints) {
+        await readingsService.create({
+          treatmentId: treatment.id,
+          patientId,
+          organizationId,
+          date: point.date,
+          inr: point.inr,
+          quick: point.quick,
+          percentage: Number(randomNum(60, 120, 0)),
+          source: 'lab',
+        } as any);
+      }
+
+      // Plus in-office 'provider' readings between treatment start and now
+      const providerReadings = faker.number.int({ min: 2, max: 5 });
+      for (let i = 0; i < providerReadings; i++) {
         await readingsService.create({
           treatmentId: treatment.id,
           patientId,
@@ -1103,7 +1335,7 @@ async function seedSireTreatments(
           inr: Number(randomNum(1.5, 4.5)),
           quick: Number(randomNum(10, 16)),
           percentage: Number(randomNum(60, 120, 0)),
-          source: pickRandom(['provider', 'lab']),
+          source: 'provider',
         } as any);
       }
 
@@ -1192,17 +1424,8 @@ async function tamperEncountersForDemo(
       const organizationId = existingOrgs[0].id;
       console.log(`\nOrganization "${ORG_SLUG}" already exists (${organizationId}).`);
 
-      // Top-up mode: seed features added after the main seed ran, without
-      // wiping the (expensive) existing data.
-      const sireTotal = await serviceTotal('sire-treatments');
-      if (sireTotal > 0) {
-        console.log('The staging database looks fully seeded — nothing else to do.');
-        console.log('Re-run with --reset to drop everything and reseed from scratch.');
-        process.exit(0);
-      }
-
-      console.log('Topping up existing data: SIRE treatments + integrity-demo tampering...');
-
+      // Top-up mode: complete whatever a previous (possibly aborted) run left
+      // missing, without wiping the expensive existing data.
       const medicRoles = (await app.service('user-roles').find({
         query: { organizationId, roleId: 'medic' },
         paginate: false,
@@ -1214,20 +1437,68 @@ async function tamperEncountersForDemo(
         paginate: false,
       } as any)) as any[];
       const patientIds = orgPatients.map((p) => String(p.patientId));
+      const profiles = new Map(patientIds.map((id) => [id, buildPatientProfile()]));
 
-      console.log(`\nCreating SIRE treatments for ~${Math.round(SIRE_TREATMENT_RATIO * 100)}% of ${patientIds.length} patients...`);
-      const sireCount = await seedSireTreatments(organizationId, medicIds, patientIds);
-      console.log(`  Created ${sireCount} treatments (with dose schedules and INR readings).`);
+      let didWork = false;
 
-      console.log(`\nTampering ${TAMPERED_ENCOUNTER_COUNT} encounters for the integrity demo...`);
-      const tampered = await tamperEncountersForDemo(patientIds);
-      console.log('\n=== INTENTIONALLY tampered encounters (integrity demo) ===');
-      console.log('  These MUST show the red integrity warning in the UI:');
-      for (const t of tampered) {
-        console.log(`  encounter ${t.id} — patient ${t.patientId} — ${t.date}`);
+      // 1. Patients an aborted encounter phase left without any history
+      const missingEncounters: string[] = [];
+      const checkLimit = pLimit(CONCURRENCY);
+      await Promise.all(patientIds.map((id) => checkLimit(async () => {
+        const res = (await app.service('encounters').find({
+          query: { patientId: id, $limit: 0 },
+        } as any)) as any;
+        const total = typeof res.total === 'number' ? res.total : (res as any[]).length;
+        if (total === 0) missingEncounters.push(id);
+      })));
+
+      if (missingEncounters.length > 0) {
+        didWork = true;
+        console.log(`\n${missingEncounters.length} patients have no encounters — creating their histories...`);
+        const created = await seedEncounters(organizationId, medicIds, missingEncounters, profiles);
+        console.log(`  Created ${created} encounters.`);
       }
 
-      console.log('\nDone!');
+      // 1b. Patients left without studies (e.g. by the auto-protocol races)
+      const missingStudies: string[] = [];
+      await Promise.all(patientIds.map((id) => checkLimit(async () => {
+        const res = (await app.service('studies').find({
+          query: { patientId: id, $limit: 0 },
+        } as any)) as any;
+        const total = typeof res.total === 'number' ? res.total : (res as any[]).length;
+        if (total === 0) missingStudies.push(id);
+      })));
+
+      if (missingStudies.length > 0) {
+        didWork = true;
+        console.log(`\n${missingStudies.length} patients have no studies — creating them...`);
+        const created = await seedStudies(organizationId, medicIds, missingStudies);
+        console.log(`  Created ${created} studies.`);
+      }
+
+      // 2. SIRE treatments (added to the seed after the first full runs)
+      const sireTotal = await serviceTotal('sire-treatments');
+      if (sireTotal === 0) {
+        didWork = true;
+        console.log(`\nCreating SIRE treatments for ~${Math.round(SIRE_TREATMENT_RATIO * 100)}% of ${patientIds.length} patients...`);
+        const sireCount = await seedSireTreatments(organizationId, medicIds, patientIds, profiles);
+        console.log(`  Created ${sireCount} treatments (with dose schedules and INR readings).`);
+
+        console.log(`\nTampering ${TAMPERED_ENCOUNTER_COUNT} encounters for the integrity demo...`);
+        const tampered = await tamperEncountersForDemo(patientIds);
+        console.log('\n=== INTENTIONALLY tampered encounters (integrity demo) ===');
+        console.log('  These MUST show the red integrity warning in the UI:');
+        for (const t of tampered) {
+          console.log(`  encounter ${t.id} — patient ${t.patientId} — ${t.date}`);
+        }
+      }
+
+      if (!didWork) {
+        console.log('The staging database looks fully seeded — nothing else to do.');
+        console.log('Re-run with --reset to drop everything and reseed from scratch.');
+      } else {
+        console.log('\nDone!');
+      }
       process.exit(0);
     }
 
@@ -1267,10 +1538,11 @@ async function tamperEncountersForDemo(
 
     console.log(`\nCreating ${PATIENT_COUNT} patients...`);
     const patientIds = await seedPatients(organizationId, insurers);
+    const profiles = new Map(patientIds.map((id) => [id, buildPatientProfile()]));
     console.log(`  Created ${patientIds.length} patients.`);
 
     console.log(`\nCreating encounters (${ENCOUNTERS_PER_MONTH.min}–${ENCOUNTERS_PER_MONTH.max}/month over ${HISTORY_MONTHS} months per patient)...`);
-    const encounterCount = await seedEncounters(organizationId, medicIds, patientIds);
+    const encounterCount = await seedEncounters(organizationId, medicIds, patientIds, profiles);
     console.log(`  Created ${encounterCount} encounters.`);
 
     console.log(`\nCreating studies with results (${STUDIES_PER_MONTH.min}–${STUDIES_PER_MONTH.max}/month over ${HISTORY_MONTHS} months per patient)...`);
@@ -1282,7 +1554,7 @@ async function tamperEncountersForDemo(
     console.log(`  Created ${appointmentCount} appointments.`);
 
     console.log(`\nCreating SIRE treatments for ~${Math.round(SIRE_TREATMENT_RATIO * 100)}% of patients...`);
-    const sireCount = await seedSireTreatments(organizationId, medicIds, patientIds);
+    const sireCount = await seedSireTreatments(organizationId, medicIds, patientIds, profiles);
     console.log(`  Created ${sireCount} treatments (with dose schedules and INR readings).`);
 
     console.log(`\nTampering ${TAMPERED_ENCOUNTER_COUNT} encounters for the integrity demo...`);

@@ -26,6 +26,14 @@ export default function (app: Application): void {
     define: {
       freezeTableName: true
     },
+    // Encounter and access-log creation each hold a transaction (advisory-lock
+    // hash chains), and access logging runs fire-and-forget alongside the main
+    // request — so concurrent creates need roughly two connections each. The
+    // Sequelize default pool of 5 starves under that load ("Operation timeout"
+    // on acquire). DB_POOL_MAX tunes it per environment.
+    pool: {
+      max: parseInt(process.env.DB_POOL_MAX || '10', 10)
+    },
     ...(process.env.DB_SSL === 'true' && {
       dialectOptions: {
         ssl: {
