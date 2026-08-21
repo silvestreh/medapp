@@ -2,6 +2,13 @@
   "host": "HOST",
   "port": "PORT",
   "postgres": "DB_URL",
+  "encryptionKey": "ENCRYPTION_KEY",
+  "authentication": {
+    "secret": "AUTH_SECRET",
+    "jwtOptions": {
+      "audience": "AUTH_AUDIENCE"
+    }
+  },
   "uploads": {
     "dir": "/data/uploads"
   },
