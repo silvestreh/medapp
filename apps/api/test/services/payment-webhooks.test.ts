@@ -185,9 +185,10 @@ describe('payment webhooks', function () {
   });
 
   it('rejects a stale timestamp', async () => {
+    // Older than the 6-hour tolerance (kept wide for MP's slow retry cycle).
     const req = makeSignedRequest({
       paymentId: 'mp-pay-stale',
-      ts: Math.floor(Date.now() / 1000) - 3600,
+      ts: Math.floor(Date.now() / 1000) - 7 * 3600,
     });
     const res = makeRes();
     await handler(req, res);

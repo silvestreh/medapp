@@ -22,10 +22,28 @@ import {
   MpTokenResponse,
 } from './mercado-pago-client';
 import { mapMpPaymentToCharge, minorUnitsToMpAmount } from './mercado-pago-mapper';
+import logger from '../../../../logger';
+
+// Without offline_access in the granted scope MP issues no usable refresh
+// token, and the 180-day silent renewal breaks — surface it loudly instead of
+// discovering it when the token expires.
+const warnIfNoOfflineAccess = (token: MpTokenResponse, context: string): void => {
+  if (typeof token.scope === 'string' && !token.scope.includes('offline_access')) {
+    logger.warn(
+      'MercadoPago %s: granted scope "%s" lacks offline_access — token refresh will not work; enable it in the MP application panel',
+      context,
+      token.scope
+    );
+  }
+};
 
 const MP_AUTHORIZATION_URL = 'https://auth.mercadopago.com/authorization';
 // Reject webhook notifications whose signature timestamp is older than this.
-const WEBHOOK_MAX_AGE_MS = 5 * 60 * 1000;
+// Deliberately wide: MP retries undelivered notifications every 15+ minutes
+// and the docs don't say whether retries are re-signed with a fresh ts, so a
+// tight window could permanently reject legitimate retries. Replay attacks are
+// already neutralized by the durable (provider, providerEventId) dedupe.
+const WEBHOOK_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
 export interface MercadoPagoProviderConfig {
   clientId: string;
@@ -75,12 +93,14 @@ export class MercadoPagoProvider implements PaymentProvider {
       codeVerifier: params.codeVerifier,
     });
 
+    warnIfNoOfflineAccess(token, 'code exchange');
     return toCredentials(token);
   }
 
   async refreshCredentials(credentials: ProviderCredentials): Promise<ProviderCredentials> {
     const token = await refreshOAuthToken(this.config, credentials.refreshToken);
 
+    warnIfNoOfflineAccess(token, 'token refresh');
     return toCredentials(token);
   }
 
@@ -106,7 +126,9 @@ export class MercadoPagoProvider implements PaymentProvider {
         back_urls: params.backUrls,
         ...(params.expiresAt && {
           expires: true,
-          expiration_date_to: params.expiresAt.toISOString(),
+          // MP documents ISO-8601 with a UTC offset ("...-04:00"), never a
+          // trailing 'Z' — format accordingly to dodge invalid_expiration_date_to.
+          expiration_date_to: params.expiresAt.toISOString().replace('Z', '+00:00'),
         }),
       },
       params.idempotencyKey
@@ -129,10 +151,12 @@ export class MercadoPagoProvider implements PaymentProvider {
   }
 
   async refundCharge(params: RefundParams): Promise<Refund> {
+    // Key varies with the amount so a retry of the SAME refund dedupes while a
+    // legitimately different refund (e.g. a later partial) gets its own key.
     const refund = await createRefund(
       params.credentials.accessToken,
       params.providerPaymentId,
-      `refund:${params.providerPaymentId}`,
+      `refund:${params.providerPaymentId}:${params.amount ?? 'full'}`,
       params.amount != null ? minorUnitsToMpAmount(params.amount) : undefined
     );
 
@@ -180,7 +204,11 @@ export class MercadoPagoProvider implements PaymentProvider {
       return { valid: false, reason: 'stale signature timestamp' };
     }
 
-    const rawDataId = request.query['data.id'] ?? (request.body as any)?.data?.id;
+    // The documented manifest template takes data.id from the QUERY STRING
+    // only — MP omits the id section from its own signature when the query
+    // param is absent, so falling back to the body here would compute a
+    // signature MP never produced.
+    const rawDataId = request.query['data.id'];
     const dataId = rawDataId != null ? String(rawDataId).toLowerCase() : '';
 
     // Manifest template per Mercado Pago's spec; sections are only included

@@ -132,6 +132,7 @@ export function exchangeOAuthCode(
   return handleRequest<MpTokenResponse>({
     method: 'post',
     url: '/oauth/token',
+    headers: { Accept: 'application/json' },
     data: {
       client_id: appConfig.clientId,
       client_secret: appConfig.clientSecret,
@@ -150,6 +151,7 @@ export function refreshOAuthToken(
   return handleRequest<MpTokenResponse>({
     method: 'post',
     url: '/oauth/token',
+    headers: { Accept: 'application/json' },
     data: {
       client_id: appConfig.clientId,
       client_secret: appConfig.clientSecret,

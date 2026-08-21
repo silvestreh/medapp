@@ -119,6 +119,11 @@ account.
 - OAuth is authorization-code + PKCE; the `state` is random, single-use
   (atomic claim), 10-min TTL, and the callback identity comes **only** from
   the stored state row. `client_secret` never leaves `apps/api`.
+  MP application panel prerequisites: **enable the PKCE authorization-code
+  flow** on the application (once enabled, MP requires `code_challenge`), and
+  ensure the granted scope includes **`offline_access`** — without it MP
+  issues no refresh token and the 180-day renewal breaks (the adapter logs a
+  warning when the exchanged scope lacks it).
 - Ciphertext is never selected on an external path
   (`payment-connections.class.ts`, llm-api-keys style); `hooks/
   strip-payment-secrets.ts` is the defense-in-depth layer; `hooks/
