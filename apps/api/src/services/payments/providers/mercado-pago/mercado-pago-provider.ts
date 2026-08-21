@@ -146,9 +146,19 @@ export class MercadoPagoProvider implements PaymentProvider {
       params.idempotencyKey
     );
 
+    // In production, always use init_point (real checkout). In non-production
+    // a test-seller preference carries a sandbox_init_point that completes the
+    // sandbox flow; init_point rejects the test payer with a generic error.
+    // Production preferences from real sellers have no sandbox_init_point, so
+    // the fallback keeps prod on init_point even if this branch were reached.
+    const checkoutUrl =
+      process.env.NODE_ENV !== 'production' && preference.sandbox_init_point
+        ? preference.sandbox_init_point
+        : preference.init_point;
+
     return {
       providerChargeId: preference.id,
-      checkoutUrl: preference.init_point,
+      checkoutUrl,
       status: 'pending',
       amount: params.amount,
       externalReference: params.externalReference,
