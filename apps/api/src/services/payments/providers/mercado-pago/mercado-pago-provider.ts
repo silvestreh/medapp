@@ -146,19 +146,14 @@ export class MercadoPagoProvider implements PaymentProvider {
       params.idempotencyKey
     );
 
-    // In production, always use init_point (real checkout). In non-production
-    // a test-seller preference carries a sandbox_init_point that completes the
-    // sandbox flow; init_point rejects the test payer with a generic error.
-    // Production preferences from real sellers have no sandbox_init_point, so
-    // the fallback keeps prod on init_point even if this branch were reached.
-    const checkoutUrl =
-      process.env.NODE_ENV !== 'production' && preference.sandbox_init_point
-        ? preference.sandbox_init_point
-        : preference.init_point;
-
+    // Always use init_point. Mercado Pago's legacy sandbox host
+    // (sandbox.mercadopago.com.ar, exposed as sandbox_init_point) has been
+    // decommissioned and no longer resolves — test mode now runs through the
+    // regular checkout URL and is "test" purely by virtue of the test-seller
+    // credentials that own the preference plus a test-buyer login.
     return {
       providerChargeId: preference.id,
-      checkoutUrl,
+      checkoutUrl: preference.init_point,
       status: 'pending',
       amount: params.amount,
       externalReference: params.externalReference,

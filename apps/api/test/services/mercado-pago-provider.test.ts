@@ -28,28 +28,18 @@ describe('MercadoPagoProvider.createCharge checkout URL', function () {
     setMercadoPagoRequestImplForTesting(null);
   });
 
-  it('uses sandbox_init_point in non-production when present', async () => {
-    // NODE_ENV=test in the suite → non-production.
+  // MP's legacy sandbox host (sandbox_init_point) is decommissioned; the
+  // provider must always hand back init_point. Test vs live is decided by the
+  // credentials that own the preference, never by the checkout URL.
+  it('uses init_point even when a legacy sandbox_init_point is present', async () => {
     stubPreference({ id: 'pref-1', init_point: 'https://www.mp/checkout', sandbox_init_point: 'https://sandbox.mp/checkout' });
-    const result = await charge();
-    assert.strictEqual(result.checkoutUrl, 'https://sandbox.mp/checkout');
-  });
-
-  it('falls back to init_point when no sandbox_init_point is returned', async () => {
-    stubPreference({ id: 'pref-2', init_point: 'https://www.mp/checkout' });
     const result = await charge();
     assert.strictEqual(result.checkoutUrl, 'https://www.mp/checkout');
   });
 
-  it('uses init_point in production even if a sandbox URL is present', async () => {
-    const prev = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    try {
-      stubPreference({ id: 'pref-3', init_point: 'https://www.mp/checkout', sandbox_init_point: 'https://sandbox.mp/checkout' });
-      const result = await charge();
-      assert.strictEqual(result.checkoutUrl, 'https://www.mp/checkout');
-    } finally {
-      process.env.NODE_ENV = prev;
-    }
+  it('uses init_point when no sandbox URL is returned', async () => {
+    stubPreference({ id: 'pref-2', init_point: 'https://www.mp/checkout' });
+    const result = await charge();
+    assert.strictEqual(result.checkoutUrl, 'https://www.mp/checkout');
   });
 });

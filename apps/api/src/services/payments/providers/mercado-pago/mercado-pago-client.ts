@@ -41,7 +41,6 @@ export interface MpPreferencePayload {
 export interface MpPreferenceResponse {
   id: string;
   init_point: string;
-  sandbox_init_point?: string;
 }
 
 export interface MpRefundResponse {
