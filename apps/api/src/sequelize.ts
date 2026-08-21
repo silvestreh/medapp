@@ -185,6 +185,15 @@ export default function (app: Application): void {
       } catch (e: any) {
         console.error('Error creating appointments slot unique index:', e?.message || e);
       }
+
+      // Hold-expiry sweep index (partial, so it stays tiny).
+      try {
+        await sequelize.query(`CREATE INDEX IF NOT EXISTS appointments_hold_expiry_idx
+          ON "appointments" ("holdExpiresAt")
+          WHERE status IN ('pending_payment', 'expired')`);
+      } catch (e: any) {
+        console.error('Error creating appointments hold expiry index:', e?.message || e);
+      }
     };
 
     // setup() can run more than once (tests boot the app in a root hook and

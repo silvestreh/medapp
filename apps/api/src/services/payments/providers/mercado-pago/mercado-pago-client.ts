@@ -1,5 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import type { MpPaymentResponse } from './mercado-pago-mapper';
+import type { ProviderErrorContext } from '../../domain';
+import { sanitizeForLog } from '../../../../utils/sanitize-for-log';
 
 // Typed HTTP wrapper for the Mercado Pago API, in the recetario-client style:
 // every request goes through handleRequest, errors carry a sanitized context,
@@ -13,9 +15,7 @@ export interface MpTokenResponse {
   refresh_token: string;
   user_id: number | string;
   expires_in: number;
-  token_type?: string;
   scope?: string;
-  live_mode?: boolean;
 }
 
 export interface MpPreferencePayload {
@@ -33,7 +33,6 @@ export interface MpPreferencePayload {
     failure: string;
     pending: string;
   };
-  auto_return?: 'approved';
   expires?: boolean;
   expiration_date_to?: string;
 }
@@ -48,41 +47,6 @@ export interface MpRefundResponse {
   status?: string;
   amount?: number;
 }
-
-export interface MercadoPagoErrorContext {
-  method: string;
-  url: string;
-  responseStatus?: number;
-  responseBody?: unknown;
-}
-
-// Never let credentials or OAuth material reach logs, thrown errors, or Sentry.
-const SENSITIVE_KEYS = new Set([
-  'access_token',
-  'refresh_token',
-  'client_secret',
-  'code',
-  'code_verifier',
-  'authorization',
-  'token',
-]);
-
-export const sanitizeMpPayload = (value: unknown): unknown => {
-  if (Array.isArray(value)) {
-    return value.map(sanitizeMpPayload);
-  }
-
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
-        key,
-        SENSITIVE_KEYS.has(key.toLowerCase()) ? 'xxxxx' : sanitizeMpPayload(entry),
-      ])
-    );
-  }
-
-  return value;
-};
 
 type MpRequestImpl = (config: AxiosRequestConfig) => Promise<{ data: unknown }>;
 
@@ -108,14 +72,16 @@ async function handleRequest<T>(config: AxiosRequestConfig): Promise<T> {
       'Mercado Pago API error';
     const status = axiosError.response?.status ?? 500;
 
-    const mercadoPagoContext: MercadoPagoErrorContext = {
+    // Never let credentials or OAuth material reach logs, thrown errors, or Sentry.
+    const providerContext: ProviderErrorContext = {
+      provider: 'mercado_pago',
       method: String(config.method ?? 'get').toUpperCase(),
       url: String(config.url ?? ''),
       responseStatus: axiosError.response?.status,
-      responseBody: sanitizeMpPayload(axiosError.response?.data),
+      responseBody: sanitizeForLog(axiosError.response?.data),
     };
 
-    throw Object.assign(new Error(`MercadoPago: ${message}`), { status, mercadoPagoContext });
+    throw Object.assign(new Error(`MercadoPago: ${message}`), { status, providerContext });
   }
 }
 

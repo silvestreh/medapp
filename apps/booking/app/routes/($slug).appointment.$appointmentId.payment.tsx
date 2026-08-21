@@ -280,7 +280,7 @@ export default function AppointmentPaymentPage() {
           {payment && (
             <Text c="dimmed">
               {t('booking.payment.refunded_message', {
-                amount: formatMoneyMinor(payment.refundStatus === 'completed' ? payment.amount : payment.amount, payment.currency),
+                amount: formatMoneyMinor(payment.amount, payment.currency),
               })}
             </Text>
           )}

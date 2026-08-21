@@ -3,8 +3,8 @@ import { BadRequest, NotFound, Unavailable } from '@feathersjs/errors';
 import type { Id, Params } from '@feathersjs/feathers';
 import type { Application } from '../../declarations';
 import type { ProviderCredentials } from '../payments/domain';
-import { getProvider } from '../payments/provider-registry';
-import { resolveAmount } from '../payments/amount-resolver';
+import { getDefaultProviderId, getProvider } from '../payments/provider-registry';
+import { DisplayFee, resolveAmount, toDisplayFee } from '../payments/amount-resolver';
 import { getPaymentsConfig, isPaymentsConfigured } from '../../utils/payments-config';
 import logger from '../../logger';
 
@@ -40,7 +40,7 @@ export interface PaymentConnectionPublic {
   // Display-only: the professional's resolved consultation fee for the
   // requesting organization, so the settings UI can show it before any
   // payment-settings row exists. Booking always re-resolves server-side.
-  resolvedFee?: { amount: number; feeMinor: number; currency: string; chargePortion: number } | null;
+  resolvedFee?: DisplayFee | null;
 }
 
 export interface DecryptedConnection extends ProviderCredentials {
@@ -88,18 +88,19 @@ export class PaymentConnections {
       throw new BadRequest('Authenticated user required');
     }
 
-    const row = await this.model.findOne({
-      where: { userId },
-      attributes: SAFE_ATTRIBUTES,
-      raw: true,
-    });
-
-    const resolvedFee = await this.resolveDisplayFee(String(userId), params);
+    const [row, resolvedFee] = await Promise.all([
+      this.model.findOne({
+        where: { userId },
+        attributes: SAFE_ATTRIBUTES,
+        raw: true,
+      }),
+      this.resolveDisplayFee(String(userId), params),
+    ]);
 
     if (!row) {
       return {
         connected: false,
-        provider: 'mercado_pago',
+        provider: getDefaultProviderId(),
         status: 'disconnected',
         providerAccountId: null,
         accountHint: null,
@@ -157,12 +158,7 @@ export class PaymentConnections {
         chargePortion: settings?.chargePortion ?? 100,
       });
 
-      return resolved && {
-        amount: resolved.amount,
-        feeMinor: resolved.feeMinor,
-        currency: resolved.currency,
-        chargePortion: resolved.chargePortion,
-      };
+      return toDisplayFee(resolved);
     } catch {
       return null;
     }
@@ -183,7 +179,7 @@ export class PaymentConnections {
       throw new BadRequest('Authenticated user required');
     }
 
-    const providerId = data.provider ?? 'mercado_pago';
+    const providerId = data.provider ?? getDefaultProviderId();
     const provider = getProvider(providerId);
 
     // Cryptographically random, single-use, short-lived state bound to this
@@ -248,9 +244,23 @@ export class PaymentConnections {
   // ---------------------------------------------------------------------
 
   async getDecryptedCredentials(userId: string): Promise<DecryptedConnection | null> {
+    return this.findDecrypted({ userId });
+  }
+
+  // First-contact webhook lookup: the notification names the provider-side
+  // seller account, not our user. Scoped by provider — account ids are only
+  // unique within one.
+  async getDecryptedCredentialsByAccount(
+    provider: string,
+    providerAccountId: string
+  ): Promise<DecryptedConnection | null> {
+    return this.findDecrypted({ provider, providerAccountId });
+  }
+
+  private async findDecrypted(where: Record<string, unknown>): Promise<DecryptedConnection | null> {
     const model = this.model;
     const row = await model.findOne({
-      where: { userId },
+      where,
       attributes: model.decryptedAttributes,
       raw: true,
     });

@@ -73,7 +73,7 @@ describe('payment token refresh cron', function () {
       expiresAt: new Date(Date.now() + 180 * 24 * 3600 * 1000),
     });
 
-    await refreshPaymentTokens(app, { jitter: false });
+    await refreshPaymentTokens(app);
 
     const connection = await service().getDecryptedCredentials(String(medic.id));
     assert.strictEqual(connection?.accessToken, 'token-ok-v2');
@@ -88,7 +88,7 @@ describe('payment token refresh cron', function () {
       throw new Error('MercadoPago: gateway timeout');
     };
 
-    await refreshPaymentTokens(app, { jitter: false });
+    await refreshPaymentTokens(app);
 
     const connection = await service().getDecryptedCredentials(String(medic.id));
     assert.strictEqual(connection?.status, 'refresh_failed');
@@ -103,7 +103,7 @@ describe('payment token refresh cron', function () {
       throw new Error('MercadoPago: invalid_grant');
     };
 
-    await refreshPaymentTokens(app, { jitter: false });
+    await refreshPaymentTokens(app);
 
     const connection = await service().getDecryptedCredentials(String(medic.id));
     assert.strictEqual(connection?.status, 'disconnected');
@@ -117,7 +117,7 @@ describe('payment token refresh cron', function () {
 
     // Force retries to be due immediately instead of waiting out the backoff.
     for (let i = 0; i < 5; i++) {
-      await refreshPaymentTokens(app, { jitter: false });
+      await refreshPaymentTokens(app);
       await service().markConnectionStatus(String(medic.id), (
         await service().getDecryptedCredentials(String(medic.id))
       )?.status ?? 'refresh_failed', { nextRefreshRetry: null });

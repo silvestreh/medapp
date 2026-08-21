@@ -63,6 +63,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS appointments_medic_slot_active_unique
   ON appointments ("medicId", "startDate")
   WHERE status IN ('pending_payment', 'confirmed') AND extra = false;
 
+-- Hold-expiry sweep (cron/payment-hold-expiry.ts, every minute) — partial index
+-- so the minute job never scans the whole appointments table.
+CREATE INDEX IF NOT EXISTS appointments_hold_expiry_idx
+  ON appointments ("holdExpiresAt")
+  WHERE status IN ('pending_payment', 'expired');
+
 -- ---------------------------------------------------------------------------
 -- 5. Medic role permissions (skip if roles are re-seeded from
 --    scripts/seeds/roles.json, which already contains these).

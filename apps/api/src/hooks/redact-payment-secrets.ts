@@ -22,8 +22,10 @@ const redactPaymentSecrets = (): Hook => async (context: HookContext): Promise<H
     error.data = sanitizeForLog(error.data);
   }
 
-  if (error.mercadoPagoContext && typeof error.mercadoPagoContext === 'object') {
-    error.mercadoPagoContext = sanitizeForLog(error.mercadoPagoContext);
+  // Provider HTTP clients attach their (already sanitized) request context
+  // under this one agreed field — scrub again as defense in depth.
+  if (error.providerContext && typeof error.providerContext === 'object') {
+    error.providerContext = sanitizeForLog(error.providerContext);
   }
 
   return context;

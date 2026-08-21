@@ -24,21 +24,12 @@ export const loader = authenticatedLoader(async ({ request }: LoaderFunctionArgs
   const { client } = await getAuthenticatedClient(request);
   const url = new URL(request.url);
 
-  let settings: PaymentSettingsRecord | null = null;
-  try {
-    const response = await client.service('payment-settings' as any).find({ query: { $limit: 1 } });
-    const rows = Array.isArray(response) ? response : (response as any)?.data || [];
-    settings = rows[0] || null;
-  } catch {
-    // payment-settings table may not exist yet
-  }
-
-  let connection: PaymentConnection | null = null;
-  try {
-    connection = (await client.service('payment-connections' as any).get('current')) as PaymentConnection;
-  } catch {
-    // payment-connections table may not exist yet
-  }
+  const [settingsResponse, connection] = await Promise.all([
+    client.service('payment-settings' as any).find({ query: { $limit: 1 } }),
+    client.service('payment-connections' as any).get('current') as Promise<PaymentConnection>,
+  ]);
+  const rows = Array.isArray(settingsResponse) ? settingsResponse : (settingsResponse as any)?.data || [];
+  const settings: PaymentSettingsRecord | null = rows[0] || null;
 
   return json({
     settings,

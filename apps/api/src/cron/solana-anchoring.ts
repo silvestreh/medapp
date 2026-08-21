@@ -1,9 +1,10 @@
 import cron from 'node-cron';
-import { Sequelize, QueryTypes, Op, Transaction } from 'sequelize';
+import { Sequelize, QueryTypes, Op } from 'sequelize';
 import { Application } from '../declarations';
 import logger from '../logger';
 import Sentry from '../sentry';
 import { buildMerkleTree } from '../utils/merkle-tree';
+import { withTryXactLock } from '../utils/advisory-lock';
 import {
   getSolanaKeypair,
   getSolanaNetwork,
@@ -21,35 +22,6 @@ interface SolanaAnchoringOptions {
 
 const MAX_RETRIES = 5;
 const LOW_BALANCE_THRESHOLD = 0.01;
-
-// The lock lives on the transaction's connection and is released automatically
-// when the transaction ends. Acquiring and releasing a session-level lock in
-// two separate pooled queries is not safe: the unlock can land on a different
-// connection, silently fail, and leave the lock held forever — after which
-// every later cycle's blocking pg_advisory_lock hangs on a pool connection.
-// pg_try_advisory_xact_lock never blocks: a busy lock just skips the cycle.
-async function acquireLock(
-  sequelize: Sequelize,
-  transaction: Transaction
-): Promise<boolean> {
-  try {
-    const [row] = await sequelize.query(
-      'SELECT pg_try_advisory_xact_lock(hashtext(\'solana-anchoring\')) AS locked',
-      { type: QueryTypes.SELECT, transaction }
-    ) as Array<{ locked: boolean }>;
-    return row?.locked === true;
-  } catch {
-    return false;
-  }
-}
-
-async function releaseLock(transaction: Transaction): Promise<void> {
-  try {
-    await transaction.rollback();
-  } catch {
-    // Lock release failure is not critical
-  }
-}
 
 interface UnanchoredRecord {
   id: string;
@@ -221,57 +193,55 @@ async function runAnchoring(app: Application, submitFn: SubmitFn): Promise<Ancho
   }
 
   const sequelize: Sequelize = app.get('sequelizeClient');
+  let result: AnchoringResult = { ok: false };
 
-  // Holds the advisory lock for the whole run; only the lock lives on this
-  // transaction — the anchoring queries below run on the pool as usual.
-  const lockTransaction = await sequelize.transaction();
+  // pg_try_advisory_xact_lock never blocks: a busy lock just skips the cycle.
+  const locked = await withTryXactLock(sequelize, 'solana-anchoring', async () => {
+    try {
+      // Retry failed anchors first
+      await retryFailedAnchors(sequelize, submitFn);
 
-  const locked = await acquireLock(sequelize, lockTransaction);
+      // Anchor new encounters
+      await anchorChain(sequelize, 'encounters', 'encounters', 'date', submitFn);
+
+      // Anchor new access logs
+      await anchorChain(sequelize, 'access_logs', 'access_logs', 'createdAt', submitFn);
+
+      // Check wallet balance
+      const balance = await getWalletBalance();
+      if (balance !== null && balance < LOW_BALANCE_THRESHOLD) {
+        const msg = `Solana anchoring: wallet balance is low (${balance} SOL). Please fund the wallet.`;
+        logger.warn(msg);
+        Sentry.captureMessage(msg, {
+          level: 'warning',
+          tags: { component: 'solana-anchoring' },
+          extra: { balance, threshold: LOW_BALANCE_THRESHOLD },
+        });
+      }
+      if (balance === 0) {
+        const err = new Error('Solana anchoring: wallet is out of funds (0 SOL)');
+        logger.error(err.message);
+        Sentry.captureException(err, {
+          tags: { component: 'solana-anchoring' },
+        });
+      }
+
+      result = { ok: true, balance };
+    } catch (error: any) {
+      logger.error(`Solana anchoring: unexpected error: ${error.message}`);
+      Sentry.captureException(error, {
+        tags: { component: 'solana-anchoring' },
+      });
+      result = { ok: false, error: error.message };
+    }
+  });
+
   if (!locked) {
-    await releaseLock(lockTransaction);
     logger.warn('Solana anchoring: could not acquire lock, skipping cycle');
     return { ok: false, error: 'Could not acquire database lock — another anchoring may be in progress' };
   }
 
-  try {
-    // Retry failed anchors first
-    await retryFailedAnchors(sequelize, submitFn);
-
-    // Anchor new encounters
-    await anchorChain(sequelize, 'encounters', 'encounters', 'date', submitFn);
-
-    // Anchor new access logs
-    await anchorChain(sequelize, 'access_logs', 'access_logs', 'createdAt', submitFn);
-
-    // Check wallet balance
-    const balance = await getWalletBalance();
-    if (balance !== null && balance < LOW_BALANCE_THRESHOLD) {
-      const msg = `Solana anchoring: wallet balance is low (${balance} SOL). Please fund the wallet.`;
-      logger.warn(msg);
-      Sentry.captureMessage(msg, {
-        level: 'warning',
-        tags: { component: 'solana-anchoring' },
-        extra: { balance, threshold: LOW_BALANCE_THRESHOLD },
-      });
-    }
-    if (balance === 0) {
-      const err = new Error('Solana anchoring: wallet is out of funds (0 SOL)');
-      logger.error(err.message);
-      Sentry.captureException(err, {
-        tags: { component: 'solana-anchoring' },
-      });
-    }
-
-    return { ok: true, balance };
-  } catch (error: any) {
-    logger.error(`Solana anchoring: unexpected error: ${error.message}`);
-    Sentry.captureException(error, {
-      tags: { component: 'solana-anchoring' },
-    });
-    return { ok: false, error: error.message };
-  } finally {
-    await releaseLock(lockTransaction);
-  }
+  return result;
 }
 
 export function scheduleSolanaAnchoring(app: Application, options?: SolanaAnchoringOptions): void {

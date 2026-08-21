@@ -55,22 +55,17 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
   const status = url.searchParams.get('status') || 'all';
   const { from, to } = resolvePeriod(period);
 
-  let rows: any[] = [];
-  try {
-    const response = await client.service('appointment-payments' as any).find({
-      query: {
-        medicId,
-        appointmentStartDate: { $gte: from, $lte: to },
-        ...(status !== 'all' && { status }),
-        $sort: { appointmentStartDate: -1 },
-        $limit: 200,
-      },
-      paginate: false,
-    });
-    rows = Array.isArray(response) ? response : (response as any)?.data || [];
-  } catch {
-    // appointment-payments table may not exist yet
-  }
+  const response = await client.service('appointment-payments' as any).find({
+    query: {
+      medicId,
+      appointmentStartDate: { $gte: from, $lte: to },
+      ...(status !== 'all' && { status }),
+      $sort: { appointmentStartDate: -1 },
+      $limit: 200,
+    },
+    paginate: false,
+  });
+  const rows: any[] = Array.isArray(response) ? response : (response as any)?.data || [];
 
   // Resolve patient display names (payments only carry ids).
   const patientNames = new Map<string, string>();
@@ -98,12 +93,10 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
     paidAt: row.paidAt,
   }));
 
-  const approved = payments.filter(payment => payment.status === 'approved' || payment.status === 'refunded');
-  const totalApproved = payments
-    .filter(payment => payment.status === 'approved')
-    .reduce((sum, payment) => sum + payment.amount, 0);
+  const approvedPayments = payments.filter(payment => payment.status === 'approved');
+  const totalApproved = approvedPayments.reduce((sum, payment) => sum + payment.amount, 0);
 
-  return json({ payments, totalApproved, approvedCount: approved.length, period, status });
+  return json({ payments, totalApproved, approvedCount: approvedPayments.length, period, status });
 });
 
 const MobileCard = styled('div', {
@@ -117,7 +110,7 @@ const MobileCard = styled('div', {
 });
 
 export default function AccountingPaymentsRoute() {
-  const { payments, totalApproved, period, status } = useLoaderData<typeof loader>();
+  const { payments, totalApproved, approvedCount, period, status } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const params = useParams();
   const [, setSearchParams] = useSearchParams();
@@ -145,7 +138,7 @@ export default function AccountingPaymentsRoute() {
 
   const approvedTotalLine = t('payments.reconciliation.period_total', {
     total: formatMoneyMinor(totalApproved),
-    count: payments.filter((payment: PaymentRow) => payment.status === 'approved').length,
+    count: approvedCount,
   });
 
   return (

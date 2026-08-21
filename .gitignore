@@ -60,3 +60,4 @@ lib/
 # Certs
 *.pem
 !apps/api/config/certs/sectigo-dv-r36.pem
+apps/api/.mp-test-users.local.txt

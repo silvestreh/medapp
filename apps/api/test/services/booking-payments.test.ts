@@ -73,7 +73,7 @@ describe('\'booking\' service with payments', function () {
     // Provider payload carries no patient PII: generic title, opaque reference.
     const charge = providerState.chargeCalls[0];
     assert.strictEqual(charge.title, 'Consulta médica');
-    assert.strictEqual(charge.idempotencyKey, `mp:${result.appointmentId}`);
+    assert.strictEqual(charge.idempotencyKey, `mercado_pago:${result.appointmentId}`);
     assert.ok(!JSON.stringify(charge).includes(String(patient.id)));
     assert.match(charge.backUrls.success, new RegExp(`/appointment/${result.appointmentId}/payment$`));
   });

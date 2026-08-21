@@ -1,4 +1,5 @@
 import type { Application } from '../../declarations';
+import { pesosToMinorUnits } from './domain';
 import {
   PARTICULAR_INSURER_ID,
   resolveTotalCost,
@@ -33,7 +34,24 @@ export interface AmountResolutionContext {
 
 type AmountResolverFn = (context: AmountResolutionContext) => Promise<ResolvedAmount | null>;
 
-export const pesosToMinorUnits = (pesos: number): number => Math.round(pesos * 100);
+export { pesosToMinorUnits };
+
+// What display surfaces (settings UI, booking landing page) may learn about a
+// resolved amount — the figures, never the resolver internals.
+export interface DisplayFee {
+  amount: number;
+  feeMinor: number;
+  currency: string;
+  chargePortion: number;
+}
+
+export const toDisplayFee = (resolved: ResolvedAmount | null): DisplayFee | null =>
+  resolved && {
+    amount: resolved.amount,
+    feeMinor: resolved.feeMinor,
+    currency: resolved.currency,
+    chargePortion: resolved.chargePortion,
+  };
 
 const privateFeeResolver: AmountResolverFn = async ({ app, medicId, organizationId, chargePortion }) => {
   // accounting_settings.organizationId is nullable and historically unused

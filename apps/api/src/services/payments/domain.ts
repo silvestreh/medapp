@@ -3,8 +3,6 @@
 // (Mercado Pago payloads, statuses, endpoints) stays inside the provider
 // adapters under ./providers/*.
 
-export type PaymentProviderId = 'mercado_pago';
-
 export type PaymentStatus =
   | 'pending'
   | 'in_process'
@@ -21,6 +19,22 @@ export type AppointmentStatus = 'pending_payment' | 'confirmed' | 'cancelled' | 
 export interface Money {
   amount: number;
   currency: string;
+}
+
+// The single rounding rule between decimal pesos (configuration, provider
+// payloads) and integer minor units. Every conversion goes through these two.
+export const pesosToMinorUnits = (pesos: number): number => Math.round(pesos * 100);
+export const minorUnitsToPesos = (minor: number): number => Math.round(minor) / 100;
+
+// Sanitized request context attached by provider HTTP clients to thrown
+// errors (as `error.providerContext`), so logs and Sentry can show what was
+// called without any credential material.
+export interface ProviderErrorContext {
+  provider: string;
+  method: string;
+  url: string;
+  responseStatus?: number;
+  responseBody?: unknown;
 }
 
 export interface ProviderCredentials {

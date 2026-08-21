@@ -1,6 +1,6 @@
 import assert from 'assert';
 import app from '../../src/app';
-import { createTestUser, createTestOrganization } from '../test-helpers';
+import { asProvider, createTestUser, createTestOrganization } from '../test-helpers';
 
 /**
  * Cross-cutting access-control tests: organization scoping, medic ownership
@@ -20,14 +20,6 @@ describe('access scoping across services', () => {
   let scheduleA: any;
   let readingA: any;
   let stamp: number;
-
-  const asProvider = (user: any, organizationId?: string, extra: Record<string, any> = {}) => ({
-    provider: 'rest',
-    authenticated: true,
-    user,
-    ...(organizationId ? { organizationId } : {}),
-    ...extra,
-  } as any);
 
   before(async () => {
     stamp = Date.now();

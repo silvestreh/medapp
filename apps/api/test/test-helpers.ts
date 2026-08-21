@@ -2,6 +2,20 @@ import type { Id } from '@feathersjs/feathers';
 import app from '../src/app';
 import type { Organization } from '../src/declarations';
 
+// Params shaped like an authenticated external (REST) call from `user`.
+export const asProvider = (user: any, organizationId?: unknown, extra: Record<string, any> = {}) => ({
+  provider: 'rest',
+  authenticated: true,
+  user,
+  ...(organizationId ? { organizationId } : {}),
+  ...extra,
+} as any);
+
+// Params shaped like a patient-authenticated booking-app call.
+export const asPatient = (patientId: unknown, organizationId: unknown) => ({
+  patient: { id: patientId, organizationId },
+});
+
 export interface CreateTestUserOptions {
   username: string;
   password: string;

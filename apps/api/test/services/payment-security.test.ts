@@ -113,14 +113,14 @@ describe('payment security', function () {
   it('redacts secrets from Feathers error payloads via the app error hook', async () => {
     const error: any = new Error('MercadoPago call failed with Bearer super.secret.token');
     error.data = { access_token: 'tok-1', detail: 'x' };
-    error.mercadoPagoContext = { responseBody: { refresh_token: 'ref-1' } };
+    error.providerContext = { responseBody: { refresh_token: 'ref-1' } };
 
     const context: any = { error };
     await (redactPaymentSecrets() as any)(context);
 
     assert.ok(!context.error.message.includes('super.secret.token'));
     assert.strictEqual(context.error.data.access_token, '[REDACTED]');
-    assert.strictEqual((context.error.mercadoPagoContext.responseBody as any).refresh_token, '[REDACTED]');
+    assert.strictEqual((context.error.providerContext.responseBody as any).refresh_token, '[REDACTED]');
   });
 
   it('sanitizeForLog covers OAuth/payment key names', () => {

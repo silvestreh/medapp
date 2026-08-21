@@ -1,4 +1,4 @@
-import type { Charge, PaymentStatus } from '../../domain';
+import { minorUnitsToPesos, pesosToMinorUnits, type Charge, type PaymentStatus } from '../../domain';
 
 // Mercado Pago payloads ↔ domain types. This file (plus the client and the
 // provider) is the ONLY place Mercado Pago vocabulary is allowed.
@@ -14,8 +14,8 @@ export interface MpPaymentResponse {
 }
 
 // MP amounts are decimal pesos; the domain speaks integer minor units.
-export const mpAmountToMinorUnits = (pesos: number): number => Math.round(pesos * 100);
-export const minorUnitsToMpAmount = (minor: number): number => Math.round(minor) / 100;
+export const mpAmountToMinorUnits = pesosToMinorUnits;
+export const minorUnitsToMpAmount = minorUnitsToPesos;
 
 const MP_STATUS_MAP: Record<string, PaymentStatus> = {
   approved: 'approved',

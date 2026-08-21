@@ -1,6 +1,6 @@
 import { Hook, HookContext } from '@feathersjs/feathers';
 import type { Application } from '../../../declarations';
-import { resolveAmount } from '../../payments/amount-resolver';
+import { resolveAmount, toDisplayFee } from '../../payments/amount-resolver';
 
 // Attaches the server-resolved consultation fee (from
 // accounting_settings.insurerPrices._particular.encounter) to each returned
@@ -33,12 +33,7 @@ const attachResolvedFee = (): Hook => async (context: HookContext): Promise<Hook
         chargePortion: row.chargePortion ?? 100,
       });
 
-      row.resolvedFee = resolved && {
-        amount: resolved.amount,
-        feeMinor: resolved.feeMinor,
-        currency: resolved.currency,
-        chargePortion: resolved.chargePortion,
-      };
+      row.resolvedFee = toDisplayFee(resolved);
     } catch {
       row.resolvedFee = null;
     }

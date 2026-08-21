@@ -1,18 +1,26 @@
 import crypto from 'crypto';
 import type { Application } from '../declarations';
 import type { RawWebhookRequest } from '../services/payments/domain';
-import { getProvider, hasProvider } from '../services/payments/provider-registry';
+import {
+  getProvider,
+  hasProvider,
+  providerIdFromWebhookSlug,
+} from '../services/payments/provider-registry';
 import { processPaymentEvent } from '../services/payments/process-payment-event';
+import { isUniqueViolation } from '../utils/is-unique-violation';
 import Sentry from '../sentry';
 import logger from '../logger';
 
 // Thin HTTP layer for payment webhooks: verify signature → durable dedupe →
 // respond 200 fast → process asynchronously and defensively. All provider
 // vocabulary lives in the adapter; all business rules live in
-// process-payment-event.ts.
-export default function paymentWebhookHandler(app: Application, providerId: string) {
+// process-payment-event.ts. The provider comes from the route's `:provider`
+// slug (or a fixed id, for tests that call the handler directly).
+export default function paymentWebhookHandler(app: Application, fixedProviderId?: string) {
   return async (req: any, res: any): Promise<void> => {
     try {
+      const providerId = fixedProviderId ?? providerIdFromWebhookSlug(String(req.params?.provider ?? ''));
+
       if (!hasProvider(providerId)) {
         return res.status(503).json({ ok: false, error: 'Provider not configured' });
       }
@@ -44,7 +52,7 @@ export default function paymentWebhookHandler(app: Application, providerId: stri
           topic: event.topic,
         });
       } catch (error: any) {
-        if (error?.name === 'SequelizeUniqueConstraintError') {
+        if (isUniqueViolation(error)) {
           // Redelivery. Successfully handled events stay a no-op — but if the
           // original processing FAILED (e.g. a transient DB/provider error),
           // the provider's retry is our second chance; dropping it would wedge

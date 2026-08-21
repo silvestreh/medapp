@@ -1,9 +1,11 @@
 import dayjs from 'dayjs';
-import { QueryTypes, Sequelize, Transaction } from 'sequelize';
+import type { Sequelize } from 'sequelize';
 import type { Application, AppointmentPayment } from '../../declarations';
-import type { ProviderEvent } from './domain';
+import type { ProviderCredentials, ProviderEvent } from './domain';
 import { getProvider } from './provider-registry';
 import { canTransitionPayment } from './payment-state-machine';
+import { withSlotLock } from './slot-lock';
+import { logPaymentEvent } from './log-payment-event';
 import type { PaymentConnections } from '../payment-connections/payment-connections.class';
 import logger from '../../logger';
 
@@ -23,49 +25,6 @@ export interface ProcessOutcome {
 }
 
 const internal = { provider: undefined } as const;
-
-const bookingLockKey = (medicId: string, startDate: Date | string): string =>
-  `booking:${medicId}:${dayjs(startDate).toISOString()}`;
-
-async function withSlotLock<T>(
-  sequelize: Sequelize,
-  lockKey: string,
-  fn: (transaction: Transaction) => Promise<T>
-): Promise<T> {
-  const transaction = await sequelize.transaction();
-
-  try {
-    await sequelize.query('SELECT pg_advisory_xact_lock(hashtext(:lockKey))', {
-      replacements: { lockKey },
-      type: QueryTypes.SELECT,
-      transaction,
-    });
-
-    const result = await fn(transaction);
-    await transaction.commit();
-    return result;
-  } catch (error) {
-    await transaction.rollback().catch(() => undefined);
-    throw error;
-  }
-}
-
-function logPaymentEvent(
-  app: Application,
-  payment: AppointmentPayment,
-  event: string,
-  action: 'write' | 'grant' | 'deny' = 'write'
-): void {
-  app.service('access-logs').create({
-    userId: payment.medicId,
-    organizationId: payment.organizationId,
-    resource: 'payment',
-    action,
-    purpose: 'billing',
-    patientId: payment.patientId,
-    metadata: { event, appointmentPaymentId: payment.id },
-  }, internal).catch(() => undefined);
-}
 
 async function notifyFlaggedPayment(
   app: Application,
@@ -118,20 +77,13 @@ export async function processPaymentEvent(
   }) as any;
   let payment: AppointmentPayment | undefined = (byProviderId.data || byProviderId)[0];
 
-  let credentials = payment
+  // Credentials come from the known payment's professional, or — on first
+  // contact — from whoever owns the provider account the notification names.
+  const credentials = payment
     ? await connections.getDecryptedCredentials(String(payment.medicId))
-    : null;
-
-  if (!payment && event.providerAccountId) {
-    const [row] = await sequelize.query(
-      'SELECT "userId" FROM "payment_connections" WHERE "providerAccountId" = :accountId LIMIT 1',
-      { replacements: { accountId: event.providerAccountId }, type: QueryTypes.SELECT }
-    ) as Array<{ userId: string }>;
-
-    if (row) {
-      credentials = await connections.getDecryptedCredentials(row.userId);
-    }
-  }
+    : event.providerAccountId
+      ? await connections.getDecryptedCredentialsByAccount(providerId, event.providerAccountId)
+      : null;
 
   if (!credentials) {
     logger.warn('Payment webhook: no credentials to fetch payment %s', event.providerPaymentId);
@@ -183,7 +135,7 @@ export async function processPaymentEvent(
   }
 
   if (nextStatus === 'approved') {
-    const result = await applyApproved(app, sequelize, payment);
+    const result = await applyApproved(app, sequelize, payment, credentials);
     return { ...result, appointmentPaymentId: String(payment.id) };
   }
 
@@ -215,73 +167,73 @@ export async function processPaymentEvent(
 async function applyApproved(
   app: Application,
   sequelize: Sequelize,
-  payment: AppointmentPayment
+  payment: AppointmentPayment,
+  credentials: ProviderCredentials
 ): Promise<ProcessOutcome> {
   const paymentsService = app.service('appointment-payments');
   const appointmentsService = app.service('appointments');
-  const lockKey = bookingLockKey(String(payment.medicId), payment.appointmentStartDate);
 
-  const outcome = await withSlotLock(sequelize, lockKey, async (transaction) => {
-    const txParams = { ...internal, sequelize: { transaction } };
-    const now = new Date();
+  const outcome = await withSlotLock(
+    sequelize,
+    String(payment.medicId),
+    payment.appointmentStartDate,
+    async (transaction) => {
+      const txParams = { ...internal, sequelize: { transaction } };
+      const now = new Date();
 
-    let appointment: any = null;
-    if (payment.appointmentId) {
-      try {
-        appointment = await appointmentsService.get(payment.appointmentId, txParams);
-      } catch {
-        appointment = null;
+      let appointment: any = null;
+      if (payment.appointmentId) {
+        try {
+          appointment = await appointmentsService.get(payment.appointmentId, txParams);
+        } catch {
+          appointment = null;
+        }
       }
-    }
 
-    const confirm = async () => {
-      await appointmentsService.patch(appointment.id, { status: 'confirmed', paidAt: now }, txParams);
-      await paymentsService.patch(payment.id, { status: 'approved', paidAt: now }, txParams);
-      return 'confirmed';
-    };
+      // A late webhook for an expired hold still wins the slot when no OTHER
+      // active row has taken the same time since.
+      const slotStillFree = async (): Promise<boolean> => {
+        const conflicting = await appointmentsService.find({
+          query: {
+            medicId: payment.medicId,
+            startDate: dayjs(appointment.startDate).toISOString(),
+            status: { $in: ['pending_payment', 'confirmed'] },
+            id: { $ne: appointment.id },
+            $limit: 1,
+          },
+          ...txParams,
+        }) as any;
 
-    if (appointment?.status === 'pending_payment') {
-      return confirm();
-    }
+        return ((conflicting.data || conflicting) as any[]).length === 0;
+      };
 
-    if (appointment?.status === 'confirmed') {
-      // Optional mode: the booking was already confirmed; record the payment.
-      await appointmentsService.patch(appointment.id, { paidAt: now }, txParams);
-      await paymentsService.patch(payment.id, { status: 'approved', paidAt: now }, txParams);
-      return 'recorded';
-    }
+      const needsConfirm = appointment?.status === 'pending_payment'
+        || (appointment?.status === 'expired' && await slotStillFree());
+      // Optional mode: the booking was already confirmed; just record the payment.
+      const alreadyConfirmed = appointment?.status === 'confirmed';
 
-    if (appointment?.status === 'expired') {
-      // Late webhook: is the slot still free? (Any OTHER active row at the
-      // same time means it was retaken.)
-      const conflicting = await appointmentsService.find({
-        query: {
-          medicId: payment.medicId,
-          startDate: dayjs(appointment.startDate).toISOString(),
-          status: { $in: ['pending_payment', 'confirmed'] },
-          id: { $ne: appointment.id },
-          $limit: 1,
-        },
-        ...txParams,
-      }) as any;
-
-      if (((conflicting.data || conflicting) as any[]).length === 0) {
-        // Resurrect: the patient paid and the slot is still theirs.
-        return confirm();
+      if (needsConfirm || alreadyConfirmed) {
+        await appointmentsService.patch(
+          appointment.id,
+          { paidAt: now, ...(needsConfirm && { status: 'confirmed' }) },
+          txParams
+        );
+        await paymentsService.patch(payment.id, { status: 'approved', paidAt: now }, txParams);
+        return needsConfirm ? 'confirmed' : 'recorded';
       }
-    }
 
-    // Slot retaken (or appointment row gone): record the approval but do NOT
-    // confirm a double-booking — flag, start the refund path, notify.
-    await paymentsService.patch(payment.id, {
-      status: 'approved',
-      paidAt: now,
-      flagged: true,
-      flagReason: 'late_payment_slot_retaken',
-      refundStatus: 'requested',
-    }, txParams);
-    return 'slot_lost';
-  });
+      // Slot retaken (or appointment row gone): record the approval but do NOT
+      // confirm a double-booking — flag, start the refund path, notify.
+      await paymentsService.patch(payment.id, {
+        status: 'approved',
+        paidAt: now,
+        flagged: true,
+        flagReason: 'late_payment_slot_retaken',
+        refundStatus: 'requested',
+      }, txParams);
+      return 'slot_lost';
+    }
+  );
 
   if (outcome === 'confirmed' || outcome === 'recorded') {
     logPaymentEvent(app, payment, 'approved', 'grant');
@@ -293,10 +245,7 @@ async function applyApproved(
   logPaymentEvent(app, payment, 'late_payment_slot_retaken', 'deny');
 
   try {
-    const connections = app.service('payment-connections') as unknown as PaymentConnections;
-    const credentials = await connections.getDecryptedCredentials(String(payment.medicId));
-
-    if (credentials && payment.providerPaymentId) {
+    if (payment.providerPaymentId) {
       await getProvider(payment.provider).refundCharge({
         credentials,
         providerPaymentId: payment.providerPaymentId,

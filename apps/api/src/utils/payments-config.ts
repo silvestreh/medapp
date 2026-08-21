@@ -24,18 +24,9 @@ export interface PaymentsConfig {
   mercadoPago: MercadoPagoConfig;
 }
 
-const ENV_PLACEHOLDERS = new Set([
-  'PAYMENTS_ENCRYPTION_KEY',
-  'API_PUBLIC_URL',
-  'APP_URL',
-  'BOOKING_PUBLIC_URL',
-  'MP_CLIENT_ID',
-  'MP_CLIENT_SECRET',
-  'MP_WEBHOOK_SECRET',
-]);
-
+// A value still equal to its own env-var name is the unsubstituted placeholder.
 const resolve = (value: unknown, envVar: string): string | undefined => {
-  if (typeof value === 'string' && value && !ENV_PLACEHOLDERS.has(value)) {
+  if (typeof value === 'string' && value && value !== envVar) {
     return value;
   }
 

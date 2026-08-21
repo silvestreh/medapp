@@ -1,20 +1,10 @@
 import app from '../src/app';
-import { createTestUser, createTestOrganization } from './test-helpers';
+import { asPatient, asProvider, createTestUser, createTestOrganization } from './test-helpers';
 import type { PaymentConnections } from '../src/services/payment-connections/payment-connections.class';
 import type { PaymentProvider } from '../src/services/payments/payment-provider';
 import type { Charge, CreateChargeParams } from '../src/services/payments/domain';
 
-export const asPatient = (patientId: unknown, organizationId: unknown) => ({
-  patient: { id: patientId, organizationId },
-});
-
-export const asProvider = (user: any, organizationId?: unknown, extra: Record<string, any> = {}) => ({
-  provider: 'rest',
-  authenticated: true,
-  user,
-  ...(organizationId ? { organizationId } : {}),
-  ...extra,
-} as any);
+export { asPatient, asProvider };
 
 export const createTestPatient = async (tag: string) => {
   const s = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}-${tag}`;

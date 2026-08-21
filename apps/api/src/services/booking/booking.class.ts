@@ -2,12 +2,16 @@ import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { QueryTypes, Sequelize } from 'sequelize';
+import type { Sequelize } from 'sequelize';
 import { BadRequest } from '@feathersjs/errors';
 import type { Application, AppointmentPayment, PaymentSettings } from '../../declarations';
-import { getProvider } from '../payments/provider-registry';
-import { resolveAmount, ResolvedAmount } from '../payments/amount-resolver';
+import { getProvider, webhookUrlFor } from '../payments/provider-registry';
+import { resolveAmount, ResolvedAmount, toDisplayFee } from '../payments/amount-resolver';
+import { withSlotLock } from '../payments/slot-lock';
+import { logPaymentEvent } from '../payments/log-payment-event';
+import { FORBIDDEN_AMOUNT_FIELDS } from './hooks/reject-client-amount';
 import { getPaymentsConfig } from '../../utils/payments-config';
+import { isUniqueViolation } from '../../utils/is-unique-violation';
 import type { DecryptedConnection, PaymentConnections } from '../payment-connections/payment-connections.class';
 import logger from '../../logger';
 
@@ -15,13 +19,6 @@ import logger from '../../logger';
 // don't. Must stay in sync with the partial unique index
 // appointments_medic_slot_active_unique.
 const SLOT_HOLDING_STATUSES = ['pending_payment', 'confirmed'];
-
-const isUniqueViolation = (error: any): boolean =>
-  error?.name === 'SequelizeUniqueConstraintError' ||
-  error?.errors?.some?.((e: any) => e?.type === 'unique violation') ||
-  // feathers-sequelize wraps SequelizeUniqueConstraintError into a BadRequest
-  // before it reaches us
-  (error?.code === 400 && error?.message === 'Validation error');
 
 dayjs.extend(isSameOrBefore);
 dayjs.extend(utc);
@@ -55,8 +52,6 @@ interface PaymentPlan {
   resolved: ResolvedAmount;
   orgSlug: string;
 }
-
-const AMOUNT_FIELDS = ['amount', 'amountMinor', 'fee', 'feeMinor', 'price', 'currency', 'chargePortion', 'payment'];
 
 interface AnonymizedSlot {
   date: string;
@@ -225,7 +220,7 @@ export class Booking {
     }
 
     // The class re-checks what the reject-client-amount hook already blocks.
-    for (const field of AMOUNT_FIELDS) {
+    for (const field of FORBIDDEN_AMOUNT_FIELDS) {
       if (field in data) {
         throw new BadRequest('Payment amounts are computed server-side');
       }
@@ -242,98 +237,94 @@ export class Booking {
       : null;
 
     const sequelize: Sequelize = this.app.get('sequelizeClient');
-    const transaction = await sequelize.transaction();
-    let appointment: any;
-    let paymentRow: AppointmentPayment | null = null;
+    let created: { appointment: any; paymentRow: AppointmentPayment | null };
 
     try {
       // Serialize concurrent bookings of the same slot: the lock, the
-      // free-slot check, and the INSERT share one transaction (same primitives
-      // as studies/hooks/auto-protocol.ts). The partial unique index is the
-      // backstop for writers that don't take this lock.
-      await sequelize.query('SELECT pg_advisory_xact_lock(hashtext(:lockKey))', {
-        replacements: { lockKey: `booking:${medicId}:${targetDate.toISOString()}` },
-        type: QueryTypes.SELECT,
-        transaction,
+      // free-slot check, and the INSERT share one transaction (the webhook
+      // path takes the same key). The partial unique index is the backstop
+      // for writers that don't take this lock. The transaction commits BEFORE
+      // any provider HTTP call — never hold the slot lock across the network.
+      created = await withSlotLock(sequelize, medicId, targetDate.toDate(), async (transaction) => {
+        // A lapsed hold still occupies the unique index until the expiry job
+        // runs; expire it here so the slot is genuinely free at booking time.
+        await (this.app.service('appointments') as any).patch(null, { status: 'expired' }, {
+          query: {
+            medicId,
+            startDate: targetDate.toISOString(),
+            status: 'pending_payment',
+            holdExpiresAt: { $lt: new Date().toISOString() },
+          },
+          provider: undefined,
+          sequelize: { transaction },
+        });
+
+        // No organizationId filter on purpose: a medic can't be in two places at
+        // once, and the unique index is cross-org for the same reason.
+        const existingResult = await this.app.service('appointments').find({
+          query: {
+            medicId,
+            startDate: targetDate.toISOString(),
+            status: { $in: SLOT_HOLDING_STATUSES },
+            $limit: 1,
+          },
+          provider: undefined,
+          sequelize: { transaction },
+        }) as any;
+        const existing = existingResult.data || existingResult;
+
+        if (existing.length > 0) {
+          throw new BadRequest('This slot is already taken');
+        }
+
+        const appointment = await (this.app.service('appointments') as any).create(
+          {
+            patientId,
+            medicId,
+            organizationId,
+            startDate: targetDate.toDate(),
+            extra: false,
+            // Only `required` mode holds the slot behind the payment; optional
+            // mode confirms immediately and the payment rides alongside.
+            status: isRequired ? 'pending_payment' : 'confirmed',
+            holdExpiresAt: isRequired ? paymentExpiresAt : null,
+          },
+          { provider: undefined, sequelize: { transaction } }
+        );
+
+        let paymentRow: AppointmentPayment | null = null;
+
+        if (paymentPlan) {
+          paymentRow = await this.app.service('appointment-payments').create({
+            appointmentId: appointment.id,
+            medicId,
+            patientId,
+            organizationId,
+            appointmentStartDate: targetDate.toDate(),
+            provider: paymentPlan.connection.provider,
+            providerAccountId: paymentPlan.connection.providerAccountId || null,
+            status: 'pending',
+            amountResolver: paymentPlan.resolved.resolverId,
+            feeMinorSnapshot: paymentPlan.resolved.feeMinor,
+            chargePortionSnapshot: paymentPlan.resolved.chargePortion,
+            amount: paymentPlan.resolved.amount,
+            currency: paymentPlan.resolved.currency,
+            idempotencyKey: `${paymentPlan.connection.provider}:${appointment.id}`,
+            expiresAt: paymentExpiresAt,
+          }, { provider: undefined, sequelize: { transaction } }) as AppointmentPayment;
+        }
+
+        return { appointment, paymentRow };
       });
-
-      // A lapsed hold still occupies the unique index until the expiry job
-      // runs; expire it here so the slot is genuinely free at booking time.
-      await (this.app.service('appointments') as any).patch(null, { status: 'expired' }, {
-        query: {
-          medicId,
-          startDate: targetDate.toISOString(),
-          status: 'pending_payment',
-          holdExpiresAt: { $lt: new Date().toISOString() },
-        },
-        provider: undefined,
-        sequelize: { transaction },
-      });
-
-      // No organizationId filter on purpose: a medic can't be in two places at
-      // once, and the unique index is cross-org for the same reason.
-      const existingResult = await this.app.service('appointments').find({
-        query: {
-          medicId,
-          startDate: targetDate.toISOString(),
-          status: { $in: SLOT_HOLDING_STATUSES },
-          $limit: 1,
-        },
-        provider: undefined,
-        sequelize: { transaction },
-      }) as any;
-      const existing = existingResult.data || existingResult;
-
-      if (existing.length > 0) {
-        throw new BadRequest('This slot is already taken');
-      }
-
-      appointment = await (this.app.service('appointments') as any).create(
-        {
-          patientId,
-          medicId,
-          organizationId,
-          startDate: targetDate.toDate(),
-          extra: false,
-          // Only `required` mode holds the slot behind the payment; optional
-          // mode confirms immediately and the payment rides alongside.
-          status: isRequired ? 'pending_payment' : 'confirmed',
-          holdExpiresAt: isRequired ? paymentExpiresAt : null,
-        },
-        { provider: undefined, sequelize: { transaction } }
-      );
-
-      if (paymentPlan) {
-        paymentRow = await this.app.service('appointment-payments').create({
-          appointmentId: appointment.id,
-          medicId,
-          patientId,
-          organizationId,
-          appointmentStartDate: targetDate.toDate(),
-          provider: paymentPlan.connection.provider,
-          providerAccountId: paymentPlan.connection.providerAccountId || null,
-          status: 'pending',
-          amountResolver: paymentPlan.resolved.resolverId,
-          feeMinorSnapshot: paymentPlan.resolved.feeMinor,
-          chargePortionSnapshot: paymentPlan.resolved.chargePortion,
-          amount: paymentPlan.resolved.amount,
-          currency: paymentPlan.resolved.currency,
-          idempotencyKey: `mp:${appointment.id}`,
-          expiresAt: paymentExpiresAt,
-        }, { provider: undefined, sequelize: { transaction } }) as AppointmentPayment;
-      }
-
-      // Commit BEFORE any provider HTTP call — never hold the slot lock (or a
-      // DB transaction) across the network.
-      await transaction.commit();
     } catch (error: any) {
-      await transaction.rollback().catch(() => undefined);
-
       if (isUniqueViolation(error)) {
         throw new BadRequest('This slot is already taken');
       }
       throw error;
     }
+
+    const { appointment } = created;
+    let { paymentRow } = created;
 
     if (!paymentPlan || !paymentRow) {
       return { ok: true, appointmentId: appointment.id };
@@ -342,7 +333,6 @@ export class Booking {
     const internal = { provider: undefined } as const;
 
     try {
-      const config = getPaymentsConfig(this.app);
       const returnUrl = this.buildBookingReturnUrl(paymentPlan.orgSlug, appointment.id);
       const charge = await getProvider(paymentPlan.connection.provider).createCharge({
         credentials: paymentPlan.connection,
@@ -352,7 +342,7 @@ export class Booking {
         // Generic title on purpose: no patient PII ever reaches the provider.
         title: 'Consulta médica',
         backUrls: { success: returnUrl, failure: returnUrl, pending: returnUrl },
-        notificationUrl: `${config.publicUrl}/webhooks/payments/mercado-pago`,
+        notificationUrl: webhookUrlFor(getPaymentsConfig(this.app).publicUrl ?? '', paymentPlan.connection.provider),
         expiresAt: paymentExpiresAt,
       });
 
@@ -361,7 +351,7 @@ export class Booking {
         checkoutUrl: charge.checkoutUrl,
       }, internal) as AppointmentPayment;
 
-      this.logPaymentEvent(paymentRow, 'charge_created');
+      logPaymentEvent(this.app, paymentRow, 'charge_created');
     } catch (error: any) {
       logger.error('Payment charge creation failed: %s', error?.message);
       await this.app.service('appointment-payments').patch(paymentRow.id, { status: 'cancelled' }, internal)
@@ -410,18 +400,6 @@ export class Booking {
     return `${base.replace(/\/$/, '')}/appointment/${appointmentId}/payment`;
   }
 
-  private logPaymentEvent(payment: AppointmentPayment, event: string): void {
-    this.app.service('access-logs').create({
-      userId: payment.medicId,
-      organizationId: payment.organizationId,
-      resource: 'payment',
-      action: 'write',
-      purpose: 'billing',
-      patientId: payment.patientId,
-      metadata: { event, appointmentPaymentId: payment.id },
-    }, { provider: undefined }).catch(() => undefined);
-  }
-
   // Effective "collect payment now" check. Every leg failing (no settings,
   // disabled, no live connection, inactive org, no usable price) returns null
   // and the booking degrades to the classic unpaid path — never breaks.
@@ -437,27 +415,20 @@ export class Booking {
         return null;
       }
 
-      const org = await this.app.service('organizations').get(organizationId, { provider: undefined }) as any;
-
-      if (org?.isActive === false) {
-        return null;
-      }
-
+      // The remaining legs only depend on the settings row — read them together.
       const connections = this.app.service('payment-connections') as unknown as PaymentConnections;
-      const connection = await connections.getDecryptedCredentials(medicId);
+      const [org, connection, resolved] = await Promise.all([
+        this.app.service('organizations').get(organizationId, { provider: undefined }) as Promise<any>,
+        connections.getDecryptedCredentials(medicId),
+        resolveAmount('private_fee', {
+          app: this.app,
+          medicId,
+          organizationId,
+          chargePortion: settings.chargePortion,
+        }),
+      ]);
 
-      if (!connection || connection.status !== 'connected') {
-        return null;
-      }
-
-      const resolved = await resolveAmount('private_fee', {
-        app: this.app,
-        medicId,
-        organizationId,
-        chargePortion: settings.chargePortion,
-      });
-
-      if (!resolved) {
+      if (org?.isActive === false || !connection || connection.status !== 'connected' || !resolved) {
         return null;
       }
 
@@ -515,7 +486,7 @@ export class Booking {
         await this.app.service('appointment-payments')
           .patch(payment.id, { flagged: true, flagReason: 'patient_cancelled' }, { provider: undefined })
           .catch(() => undefined);
-        this.logPaymentEvent(payment, 'patient_cancelled_paid_appointment');
+        logPaymentEvent(this.app, payment, 'patient_cancelled_paid_appointment');
       }
     }
 
@@ -592,38 +563,30 @@ export class Booking {
       const byId = new Map(medics.map((medic) => [medic.id, medic]));
       const connections = this.app.service('payment-connections') as unknown as PaymentConnections;
 
-      for (const settings of settingsRows) {
+      await Promise.all(settingsRows.map(async (settings) => {
         const medic = byId.get(String(settings.userId));
 
         if (!medic) {
-          continue;
+          return;
         }
 
-        const connection = await connections.getDecryptedCredentials(String(settings.userId));
+        const [connection, resolved] = await Promise.all([
+          connections.getDecryptedCredentials(String(settings.userId)),
+          resolveAmount('private_fee', {
+            app: this.app,
+            medicId: String(settings.userId),
+            organizationId,
+            chargePortion: settings.chargePortion,
+          }),
+        ]);
+        const fee = toDisplayFee(resolved);
 
-        if (!connection || connection.status !== 'connected') {
-          continue;
+        if (!connection || connection.status !== 'connected' || !fee) {
+          return;
         }
 
-        const resolved = await resolveAmount('private_fee', {
-          app: this.app,
-          medicId: String(settings.userId),
-          organizationId,
-          chargePortion: settings.chargePortion,
-        });
-
-        if (!resolved) {
-          continue;
-        }
-
-        medic.payment = {
-          amount: resolved.amount,
-          currency: resolved.currency,
-          feeMinor: resolved.feeMinor,
-          chargePortion: settings.chargePortion,
-          requirementMode: settings.requirementMode,
-        };
-      }
+        medic.payment = { ...fee, requirementMode: settings.requirementMode };
+      }));
     } catch (error: any) {
       logger.warn('Payment info enrichment failed: %s', error?.message);
     }

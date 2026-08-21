@@ -1,7 +1,8 @@
 import cron from 'node-cron';
-import { Op, QueryTypes, Sequelize, Transaction } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { Application } from '../declarations';
 import logger from '../logger';
+import { withTryXactLock } from '../utils/advisory-lock';
 
 // Proactive sweep for payment holds. Read-time checks (booking create(), the
 // patient's payment-status poll, and the slot grid) are the authoritative
@@ -54,37 +55,12 @@ export async function runPaymentHoldExpiry(app: Application): Promise<void> {
   });
 }
 
-async function acquireLock(sequelize: Sequelize, transaction: Transaction): Promise<boolean> {
-  try {
-    const [row] = await sequelize.query(
-      'SELECT pg_try_advisory_xact_lock(hashtext(\'payment-hold-expiry\')) AS locked',
-      { type: QueryTypes.SELECT, transaction }
-    ) as Array<{ locked: boolean }>;
-    return row?.locked === true;
-  } catch {
-    return false;
-  }
-}
-
 export function schedulePaymentHoldExpiry(app: Application): void {
   cron.schedule(process.env.PAYMENT_HOLD_EXPIRY_CRON || '* * * * *', async () => {
-    const sequelize: Sequelize = app.get('sequelizeClient');
-    const transaction = await sequelize.transaction();
-
     try {
-      if (!(await acquireLock(sequelize, transaction))) {
-        return;
-      }
-
-      await runPaymentHoldExpiry(app);
+      await withTryXactLock(app.get('sequelizeClient'), 'payment-hold-expiry', () => runPaymentHoldExpiry(app));
     } catch (error: any) {
       logger.error('Payment hold expiry failed: %s', error?.message);
-    } finally {
-      try {
-        await transaction.rollback();
-      } catch {
-        // Lock release failure is not critical
-      }
     }
   });
 }

@@ -80,7 +80,10 @@ out-of-order webhooks are no-ops.
 
 ## Webhooks
 
-`POST /webhooks/payments/mercado-pago` (`middleware/payment-webhook-handler.ts`):
+`POST /webhooks/payments/:provider` (`middleware/payment-webhook-handler.ts`;
+the slug is derived from the provider id by `webhookPathFor()` in
+`services/payments/provider-registry.ts`, so Mercado Pago listens on
+`/webhooks/payments/mercado-pago` and booking never hardcodes the path):
 
 1. HMAC signature verification (`x-signature`, `timingSafeEqual`, 5-min
    freshness) inside the adapter.
@@ -139,7 +142,7 @@ account.
 |---|---|
 | `PAYMENTS_ENCRYPTION_KEY` | pgcrypto key for payment credentials. Generate a strong random value; **must differ from `ENCRYPTION_KEY`**. Never committed. |
 | `MP_CLIENT_ID` / `MP_CLIENT_SECRET` | Mercado Pago application credentials (API only). Setting `MP_CLIENT_ID` is what turns the feature on. |
-| `MP_WEBHOOK_SECRET` | Webhook signing secret from the MP application. |
+| `MP_WEBHOOK_SECRET` | Webhook signing secret from the MP application. The MP panel keeps **separate test-mode and production-mode webhook URLs/secrets** — staging must use the secret shown next to the *modo pruebas* URL, production the one next to the *modo productivo* URL. |
 | `API_PUBLIC_URL` | Public API base URL — builds the OAuth callback and webhook URLs. |
 | `BOOKING_PUBLIC_URL` | Patient booking app base URL for checkout `back_urls`; supports `{slug}` (e.g. `https://{slug}.turnos.athel.as`). |
 | `APP_URL` | Professional UI base URL (post-OAuth redirect). |

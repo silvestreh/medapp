@@ -1,9 +1,10 @@
 import cron from 'node-cron';
-import { Op, QueryTypes, Sequelize, Transaction } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { Application } from '../declarations';
 import logger from '../logger';
 import { getProvider } from '../services/payments/provider-registry';
 import { isPaymentsConfigured } from '../utils/payments-config';
+import { withTryXactLock } from '../utils/advisory-lock';
 import type { PaymentConnections } from '../services/payment-connections/payment-connections.class';
 
 // Refreshes delegated payment-processor tokens well before expiry (Mercado
@@ -23,10 +24,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const isTerminalRefreshError = (error: unknown): boolean =>
   /invalid_grant|invalid grant/i.test(String((error as Error | undefined)?.message ?? ''));
 
-export async function refreshPaymentTokens(
-  app: Application,
-  options: { jitter?: boolean } = {}
-): Promise<void> {
+export async function refreshPaymentTokens(app: Application): Promise<void> {
   const sequelize: Sequelize = app.get('sequelizeClient');
   const connectionsModel = sequelize.models.payment_connections;
   const service = app.service('payment-connections') as unknown as PaymentConnections;
@@ -46,10 +44,6 @@ export async function refreshPaymentTokens(
   }) as unknown as Array<{ userId: string }>;
 
   for (const { userId } of due) {
-    if (options.jitter !== false) {
-      await sleep(Math.floor(Math.random() * JITTER_MAX_MS));
-    }
-
     const connection = await service.getDecryptedCredentials(userId);
 
     if (!connection) {
@@ -96,41 +90,21 @@ export async function refreshPaymentTokens(
   }
 }
 
-async function acquireLock(sequelize: Sequelize, transaction: Transaction): Promise<boolean> {
-  try {
-    const [row] = await sequelize.query(
-      'SELECT pg_try_advisory_xact_lock(hashtext(\'payment-token-refresh\')) AS locked',
-      { type: QueryTypes.SELECT, transaction }
-    ) as Array<{ locked: boolean }>;
-    return row?.locked === true;
-  } catch {
-    return false;
-  }
-}
-
 export function schedulePaymentTokenRefresh(app: Application): void {
   cron.schedule(process.env.PAYMENT_TOKEN_REFRESH_CRON || '0 * * * *', async () => {
     if (!isPaymentsConfigured(app)) {
       return;
     }
 
-    const sequelize: Sequelize = app.get('sequelizeClient');
-    const transaction = await sequelize.transaction();
+    // One jitter per run, BEFORE taking the lock, so instances don't all hit
+    // the provider at the top of the hour and no transaction sits open while
+    // we wait.
+    await sleep(Math.floor(Math.random() * JITTER_MAX_MS));
 
     try {
-      if (!(await acquireLock(sequelize, transaction))) {
-        return;
-      }
-
-      await refreshPaymentTokens(app);
+      await withTryXactLock(app.get('sequelizeClient'), 'payment-token-refresh', () => refreshPaymentTokens(app));
     } catch (error: any) {
       logger.error('Payment token refresh failed: %s', error?.message);
-    } finally {
-      try {
-        await transaction.rollback();
-      } catch {
-        // Lock release failure is not critical
-      }
     }
   });
 }

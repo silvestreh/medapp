@@ -75,6 +75,13 @@ export default function (app: Application): typeof Model {
           status: ['pending_payment', 'confirmed'],
           extra: false
         }
+      },
+      {
+        // cron/payment-hold-expiry.ts sweeps lapsed holds every minute; keep
+        // that off a full-table scan. Mirrored in sequelize.ts / the runbook.
+        name: 'appointments_hold_expiry_idx',
+        fields: ['holdExpiresAt'],
+        where: { status: ['pending_payment', 'expired'] }
       }
     ]
   });

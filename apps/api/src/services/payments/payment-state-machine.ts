@@ -1,8 +1,10 @@
-import type { AppointmentStatus, PaymentStatus } from './domain';
+import type { PaymentStatus } from './domain';
 
 // Payment status is monotonic: webhook processing always applies the status of
 // the authoritative fetched record through this guard, so duplicate and
 // out-of-order deliveries collapse to no-ops instead of regressing state.
+// (Appointment status is driven directly by the booking/webhook code under the
+// per-slot lock; see process-payment-event.ts.)
 const PAYMENT_TRANSITIONS: Record<PaymentStatus, PaymentStatus[]> = {
   pending: ['in_process', 'approved', 'rejected', 'cancelled', 'expired'],
   // Checkout sessions allow retried attempts, so a rejection is not terminal
@@ -18,19 +20,6 @@ const PAYMENT_TRANSITIONS: Record<PaymentStatus, PaymentStatus[]> = {
   charged_back: [],
 };
 
-const APPOINTMENT_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
-  pending_payment: ['confirmed', 'expired', 'cancelled'],
-  confirmed: ['cancelled'],
-  // Late-webhook resurrect: patient paid for an expired hold whose slot is
-  // still free.
-  expired: ['confirmed'],
-  cancelled: [],
-};
-
 export function canTransitionPayment(from: PaymentStatus, to: PaymentStatus): boolean {
-  return (PAYMENT_TRANSITIONS[from] ?? []).includes(to);
-}
-
-export function canTransitionAppointment(from: AppointmentStatus, to: AppointmentStatus): boolean {
-  return (APPOINTMENT_TRANSITIONS[from] ?? []).includes(to);
+  return PAYMENT_TRANSITIONS[from].includes(to);
 }
