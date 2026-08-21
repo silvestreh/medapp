@@ -45,9 +45,23 @@ export default function paymentWebhookHandler(app: Application, providerId: stri
         });
       } catch (error: any) {
         if (error?.name === 'SequelizeUniqueConstraintError') {
-          return res.json({ ok: true, duplicate: true });
+          // Redelivery. Successfully handled events stay a no-op — but if the
+          // original processing FAILED (e.g. a transient DB/provider error),
+          // the provider's retry is our second chance; dropping it would wedge
+          // the payment forever.
+          const existing = await eventsModel.findOne({
+            where: { provider: providerId, providerEventId },
+            raw: true,
+          });
+
+          if (existing?.outcome !== 'error') {
+            return res.json({ ok: true, duplicate: true });
+          }
+
+          eventRow = existing;
+        } else {
+          throw error;
         }
-        throw error;
       }
 
       // Respond before processing so provider retries aren't tied to our work.

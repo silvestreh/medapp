@@ -7,11 +7,22 @@ const MIN_LENGTH = 2;
 const MAX_LENGTH = 63;
 
 // Slugs that would collide with our own subdomains or shadow booking app routes.
+// MUST be a superset of RESERVED_LABELS in
+// apps/booking/app/organizations.server.ts — a label the booking app refuses
+// to resolve but this hook allows produces an organization whose booking link
+// can never work (that drift is how an org got saved as "demo").
 const RESERVED_SLUGS = new Set([
-  'www', 'api', 'app', 'ui', 'booking', 'chat', 'site', 'mail', 'smtp', 'imap',
-  'admin', 'staging', 'dev', 'test', 'status', 'docs', 'help', 'support',
-  'cdn', 'assets', 'static', 'portal', 'dashboard', 'login', 'signup', 'ns1', 'ns2',
-  'auth', 'logout', 'new-appointment',
+  // Mirror of the booking app's RESERVED_LABELS:
+  'admin', 'api', 'app', 'assets', 'autoconfig', 'autodiscover', 'beta', 'cdn',
+  'ci', 'cpanel', 'database', 'db', 'demo', 'dev', 'docs', 'download',
+  'downloads', 'files', 'ftp', 'git', 'grafana', 'imap', 'img', 'images',
+  'jenkins', 'kibana', 'local', 'localhost', 'mail', 'media', 'metrics',
+  'monitor', 'mx', 'ns', 'ns1', 'ns2', 'pop', 'preview', 'proxy', 'redis',
+  'sandbox', 'smtp', 'stage', 'staging', 'static', 'status', 'test', 'vpn',
+  'webdisk', 'webmail', 'whm', 'www',
+  // API-side extras: our own service subdomains and booking-app route segments.
+  'ui', 'booking', 'chat', 'site', 'help', 'support', 'portal', 'dashboard',
+  'login', 'signup', 'auth', 'logout', 'new-appointment', 'appointment',
 ]);
 
 const validateSlug = (): Hook => async (context: HookContext): Promise<HookContext> => {

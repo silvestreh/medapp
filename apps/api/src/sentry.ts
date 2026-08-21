@@ -43,7 +43,13 @@ function stripUrlApiKey(url: string): string {
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV || 'development',
+  // NODE_ENV is 'production' on every deployed environment, staging included —
+  // Railway's environment name tells them apart.
+  environment:
+    process.env.SENTRY_ENVIRONMENT ||
+    process.env.RAILWAY_ENVIRONMENT_NAME ||
+    process.env.NODE_ENV ||
+    'development',
   sendDefaultPii: true,
   beforeBreadcrumb(breadcrumb) {
     if (breadcrumb.category === 'http' && breadcrumb.data) {

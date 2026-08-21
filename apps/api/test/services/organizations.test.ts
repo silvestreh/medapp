@@ -196,7 +196,9 @@ describe('\'organizations\' service', () => {
     it('rejects reserved slugs', async () => {
       const { org, owner } = await createOrgWithOwner('slug-reserved-org', 'reserved');
 
-      for (const slug of ['booking', 'www', 'auth']) {
+      // Includes labels from the booking app's RESERVED_LABELS mirror — 'demo'
+      // was the drift that let an unresolvable org slug get saved.
+      for (const slug of ['booking', 'www', 'auth', 'demo', 'sandbox', 'grafana', 'appointment']) {
         try {
           await app.service('organizations').patch(org.id, { slug }, ownerParams(owner, org.id));
           assert.fail(`Should have rejected reserved slug: ${slug}`);

@@ -215,6 +215,37 @@ describe('payment webhooks', function () {
     assert.strictEqual(providerState.getChargeCalls.length, 1, 'duplicate must not re-fetch or re-process');
   });
 
+  it('reprocesses a redelivery when the original processing errored', async () => {
+    const { booking, payment, providerAccountId } = await bookPaid('wh-retry', 'required');
+
+    // First delivery: processing blows up (e.g. transient decrypt/DB failure).
+    providerState.getChargeImpl = async () => {
+      throw new Error('transient failure');
+    };
+    const notificationId = `evt-retry-${crypto.randomUUID()}`;
+    await handler(makeSignedRequest({ paymentId: 'mp-pay-retry-1', notificationId, sellerId: providerAccountId }), makeRes());
+    let eventRow = await waitForOutcome(notificationId);
+    assert.strictEqual(eventRow.outcome, 'error');
+
+    // Provider retries the SAME notification once the failure is fixed: it
+    // must be reprocessed, not swallowed as a duplicate.
+    providerState.getChargeImpl = async () => approvedCharge(payment);
+    const retryRes = makeRes();
+    await handler(makeSignedRequest({ paymentId: 'mp-pay-retry-1', notificationId, sellerId: providerAccountId }), retryRes);
+    assert.deepStrictEqual(retryRes.body, { ok: true });
+
+    const deadline = Date.now() + 4000;
+    while (Date.now() < deadline) {
+      eventRow = await waitForOutcome(notificationId, 200);
+      if (eventRow.outcome !== 'error') break;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    assert.strictEqual(eventRow.outcome, 'processed');
+
+    const appointment = await app.service('appointments').get(booking.appointmentId, { provider: undefined }) as any;
+    assert.strictEqual(appointment.status, 'confirmed');
+  });
+
   it('collapses out-of-order deliveries into no-ops (status is monotonic)', async () => {
     const { booking, payment, providerAccountId } = await bookPaid('wh-order', 'required');
 

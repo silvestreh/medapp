@@ -18,6 +18,9 @@ const MAX_SLUG_LENGTH = 63;
 // Labels that resolve through the wildcard but can never name an organization.
 // The cached slug list below already rejects them; this is the floor that still
 // holds when the list is unavailable or truncated.
+// KEEP IN SYNC: every label here must also be in RESERVED_SLUGS in
+// apps/api/src/services/organizations/hooks/validate-slug.ts, or an org can be
+// saved with a slug that this app will never resolve.
 const RESERVED_LABELS = new Set([
   'admin', 'api', 'app', 'assets', 'autoconfig', 'autodiscover', 'beta', 'cdn',
   'ci', 'cpanel', 'database', 'db', 'demo', 'dev', 'docs', 'download',
