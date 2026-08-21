@@ -67,7 +67,7 @@ function uploadToDisk(
   return `/api/uploads/${filename}`;
 }
 
-function encryptToDisk(
+export function encryptToDisk(
   buffer: Buffer,
   ext: string,
   uploadsDir: string

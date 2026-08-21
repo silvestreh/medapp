@@ -1,5 +1,8 @@
 {
   "port": 3033,
+  "uploads": {
+    "dir": "./public/uploads/test"
+  },
   "postgres": "postgres://postgres:@localhost:5432/athelas_api_test",
   "recetario": {
     "apiUrl": "https://external-api.recetario.com.ar",

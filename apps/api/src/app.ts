@@ -9,9 +9,6 @@ import Sentry from './sentry';
 import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
-import path from 'path';
-import fs from 'fs';
-import crypto from 'crypto';
 import feathers from '@feathersjs/feathers';
 import configuration from '@feathersjs/configuration';
 import express from '@feathersjs/express';
@@ -28,6 +25,7 @@ import qs from 'qs';
 import { setupIdentityVerificationWebhook } from './webhooks/identity-verification';
 import { clientIpKey } from './utils/rate-limit-key';
 import { validatePaymentsConfig } from './utils/validate-payments-config';
+import encryptedUploadsHandler, { resolveUploadsDir } from './middleware/encrypted-uploads';
 // Don't remove this comment. It's needed to format import lines nicely.
 const app: Application = express(feathers());
 export type HookContext<T = any> = { app: Application } & FeathersHookContext<T>;
@@ -72,55 +70,15 @@ app.use(cors({
 // app.use(compress());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// Encrypted clinical attachments: signed-URL gated, decrypted on the fly.
+// Registered BEFORE the root static mount because the default uploads dir
+// lives under `public/`, which would otherwise serve the raw ciphertext.
+const uploadsDir = resolveUploadsDir(app);
+app.use('/uploads', encryptedUploadsHandler(app), express.static(uploadsDir));
 app.use('/', express.static(app.get('public')));
 
 // Health check endpoint for Railway
 app.use('/healthz', (_req: any, res: any) => res.status(200).json({ ok: true }));
-
-// Serve uploaded files — decrypt .enc files on-the-fly
-const uploadsDir = path.resolve(app.get('uploads')?.dir || './public/uploads');
-const EXT_TO_MIME: Record<string, string> = {
-  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
-  '.webp': 'image/webp', '.gif': 'image/gif',
-  '.pdf': 'application/pdf', '.dcm': 'application/dicom',
-};
-app.use('/uploads', (req: any, res: any, next: any) => {
-  const filename = path.basename(req.path);
-  if (!filename.endsWith('.enc')) return next();
-
-  const filePath = path.join(uploadsDir, filename);
-  if (!fs.existsSync(filePath)) return next();
-
-  const encryptionKey = process.env.ENCRYPTION_KEY;
-  if (!encryptionKey) return res.status(500).send('Encryption key not configured');
-
-  const data = fs.readFileSync(filePath);
-  const iv = data.subarray(0, 16);
-  const authTag = data.subarray(16, 32);
-  const ciphertext = data.subarray(32);
-
-  const key = crypto.createHash('sha256').update(encryptionKey).digest();
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-  decipher.setAuthTag(authTag);
-
-  let decrypted: Buffer;
-  try {
-    decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-  } catch {
-    return res.status(500).send('Decryption failed');
-  }
-
-  // Derive content type from original extension: uuid.pdf.enc → .pdf
-  const withoutEnc = filename.slice(0, -4); // remove .enc
-  const originalExt = path.extname(withoutEnc);
-  const contentType = EXT_TO_MIME[originalExt] || 'application/octet-stream';
-
-  res.set('Content-Type', contentType);
-  res.set('Content-Length', String(decrypted.length));
-  res.set('X-Content-Type-Options', 'nosniff');
-  res.set('Content-Disposition', 'attachment');
-  res.send(decrypted);
-}, express.static(uploadsDir));
 
 // Webhook endpoints (before feathers middleware)
 setupIdentityVerificationWebhook(app);

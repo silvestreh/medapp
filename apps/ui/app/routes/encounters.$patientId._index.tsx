@@ -582,7 +582,9 @@ export default function PatientEncounterDetail() {
             key={`${selectedEncounter?.id ?? selectedStudy?.id ?? selectedPrescription?.id}-${activeFormKey ?? 'none'}-${activeAttachmentIndex ?? 'none'}`}
             pos="relative"
           >
-            {selectedAttachment && <AttachmentViewer attachment={selectedAttachment} />}
+            {selectedAttachment && (
+              <AttachmentViewer attachment={selectedAttachment} encounterId={selectedEncounter?.id} />
+            )}
 
             {selectedEncounter && !selectedAttachment && (
               <EncounterForm

@@ -83,6 +83,7 @@ const ALLOWED_PATHS = new Set([
   'file-uploads',
   'url-fetch',
   'uploads',
+  'attachment-links',
   'shared-encounter-access',
   'access-logs',
   'identity-verifications',

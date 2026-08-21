@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
-import { Stack, Text, Image, ActionIcon, Group, Anchor, Tooltip, Paper } from '@mantine/core';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Stack, Text, Image, ActionIcon, Group, Anchor, Tooltip, Paper, Loader, Alert } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { DownloadSimpleIcon, PaperclipIcon, XIcon } from '@phosphor-icons/react';
@@ -27,13 +27,70 @@ function formatSize(bytes: number) {
 
 interface AttachmentViewerProps {
   attachment: AttachmentData;
+  /** Encounter the attachment belongs to — required to mint a signed link for encrypted files. */
+  encounterId?: string | number;
 }
 
-export function AttachmentViewer({ attachment }: AttachmentViewerProps) {
+const ENCRYPTED_UPLOAD_URL = /^\/api\/uploads\/[^/?#]+\.enc$/;
+
+/**
+ * Encrypted uploads can't be fetched with the bare capability URL any more:
+ * `attachment-links` checks encounter access, logs it, and returns a
+ * short-lived signed URL that `<img>` / `<iframe>` / `<a download>` can load.
+ * Non-encrypted urls (Cloudinary, legacy disk) are used as-is.
+ */
+function useSignedAttachmentUrl(attachment: AttachmentData, encounterId?: string | number) {
+  const client = useFeathers();
+  const needsSigning = ENCRYPTED_UPLOAD_URL.test(attachment.url);
+  const [signedUrl, setSignedUrl] = useState<string | null>(needsSigning ? null : attachment.url);
+  const [error, setError] = useState<string | null>(null);
+
+  const mint = useCallback(async (): Promise<string | null> => {
+    if (!needsSigning) return attachment.url;
+    if (!encounterId) {
+      setError('missing-encounter');
+      return null;
+    }
+    try {
+      const link = await client.service('attachment-links').create({ encounterId, url: attachment.url });
+      setSignedUrl(link.url);
+      setError(null);
+      return link.url as string;
+    } catch (err: any) {
+      setError(err?.message || 'error');
+      return null;
+    }
+  }, [client, attachment.url, encounterId, needsSigning]);
+
+  useEffect(() => {
+    if (!needsSigning) {
+      setSignedUrl(attachment.url);
+      return;
+    }
+    setSignedUrl(null);
+    mint();
+  }, [mint, needsSigning, attachment.url]);
+
+  return { signedUrl, error, mint };
+}
+
+export function AttachmentViewer({ attachment, encounterId }: AttachmentViewerProps) {
   const { t } = useTranslation();
+  const { signedUrl, error, mint } = useSignedAttachmentUrl(attachment, encounterId);
 
   const isImage = attachment.mimeType.startsWith('image/');
   const isPdf = attachment.mimeType === 'application/pdf';
+
+  // Links expire: mint a fresh one on every download click instead of trusting
+  // whatever is currently rendered.
+  const handleDownload = useCallback(
+    async (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      const url = await mint();
+      if (url) window.location.assign(url);
+    },
+    [mint]
+  );
 
   return (
     <Stack gap="md">
@@ -50,29 +107,38 @@ export function AttachmentViewer({ attachment }: AttachmentViewerProps) {
           <ActionIcon
             variant="light"
             component="a"
-            href={attachment.url}
-            target="_blank"
+            href={signedUrl ?? '#'}
             download={attachment.fileName}
+            disabled={!signedUrl}
+            onClick={handleDownload}
           >
             <DownloadSimpleIcon size={16} />
           </ActionIcon>
         </Tooltip>
       </Group>
 
-      {isImage && <Image src={attachment.url} alt={attachment.fileName} fit="contain" mah={600} radius="sm" />}
+      {error && <Alert color="red">{t('common.error_unexpected')}</Alert>}
 
-      {isPdf && (
+      {!error && !signedUrl && (
+        <Group justify="center" py="xl">
+          <Loader size="sm" />
+        </Group>
+      )}
+
+      {signedUrl && isImage && <Image src={signedUrl} alt={attachment.fileName} fit="contain" mah={600} radius="sm" />}
+
+      {signedUrl && isPdf && (
         <iframe
-          src={attachment.url}
+          src={signedUrl}
           title={attachment.fileName}
           style={{ width: '100%', height: '80vh', border: 'none', borderRadius: '4px' }}
         />
       )}
 
-      {!isImage && !isPdf && (
+      {signedUrl && !isImage && !isPdf && (
         <Stack align="center" gap="sm" py="xl">
           <Text c="dimmed">{t('encounters.no_preview')}</Text>
-          <Anchor href={attachment.url} target="_blank" download={attachment.fileName}>
+          <Anchor href={signedUrl} download={attachment.fileName} onClick={handleDownload}>
             {t('common.download')}
           </Anchor>
         </Stack>

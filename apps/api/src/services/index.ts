@@ -52,6 +52,7 @@ import whatsapp from './whatsapp/whatsapp.service';
 import whatsappInstances from './whatsapp-instances/whatsapp-instances.service';
 import fileUploads from './file-uploads/file-uploads.service';
 import urlFetch from './url-fetch/url-fetch.service';
+import attachmentLinks from './attachment-links/attachment-links.service';
 import sharedEncounterAccess from './shared-encounter-access/shared-encounter-access.service';
 import prescriptionDelegations from './prescription-delegations/prescription-delegations.service';
 import accessLogs from './access-logs/access-logs.service';
@@ -130,6 +131,7 @@ export default function (app: Application): void {
   app.configure(whatsappInstances);
   app.configure(fileUploads);
   app.configure(urlFetch);
+  app.configure(attachmentLinks);
   app.configure(sharedEncounterAccess);
   app.configure(prescriptionDelegations);
   app.configure(accessLogs);
