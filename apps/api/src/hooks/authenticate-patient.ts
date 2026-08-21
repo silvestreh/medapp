@@ -2,6 +2,13 @@ import { Hook, HookContext } from '@feathersjs/feathers';
 import { NotAuthenticated } from '@feathersjs/errors';
 
 const authenticatePatient = (audiences: string | string[]): Hook => async (context: HookContext): Promise<HookContext> => {
+  // Internal server-side calls may supply params.patient directly (mirroring
+  // how authenticate('jwt') trusts internal calls); calls that pass a real
+  // token in headers still get it verified below.
+  if (!context.params.provider && context.params.patient) {
+    return context;
+  }
+
   const authHeader = context.params.headers?.authorization;
   const audienceList = Array.isArray(audiences) ? audiences : [audiences];
 

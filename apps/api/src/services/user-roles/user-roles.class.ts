@@ -5,6 +5,7 @@ interface UserRole {
   id: string;
   userId: string;
   roleId: string;
+  organizationId?: string;
 }
 
 export class UserRoles extends Service<UserRole> {

@@ -6,7 +6,7 @@ import { BarChart, PieChart } from '@mantine/charts';
 import { ActionIcon, Button, Drawer, Group, Menu, NativeSelect, Paper, Stack, Text, Title, Table } from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { showNotification } from '@mantine/notifications';
-import { CaretDownIcon, FunnelIcon, GearIcon } from '@phosphor-icons/react';
+import { CaretDownIcon, FunnelIcon, GearIcon, WalletIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
@@ -733,6 +733,9 @@ export default function AccountingDashboardPage() {
                   variant="filled"
                 />
               </div>
+              <Button component={Link} to="payments" variant="default" leftSection={<WalletIcon />}>
+                {t('payments.reconciliation.nav_label')}
+              </Button>
               <Button component={Link} to="settings" variant="filled" leftSection={<GearIcon />}>
                 {t('common.settings')}
               </Button>

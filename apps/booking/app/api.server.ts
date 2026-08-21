@@ -14,11 +14,23 @@ export interface OrganizationInfo {
 export interface PatientBooking {
   id: string;
   startDate: string;
+  status?: 'pending_payment' | 'confirmed';
+  payment?: BookingPayment | null;
   medic: {
     firstName: string;
     lastName: string;
     specialty: string;
   };
+}
+
+// What the API discloses about a professional's payment setup, so the amount
+// is visible BEFORE the patient commits.
+export interface MedicPaymentInfo {
+  amount: number;
+  currency: string;
+  feeMinor: number;
+  chargePortion: number;
+  requirementMode: 'optional' | 'required';
 }
 
 export interface MedicData {
@@ -27,6 +39,36 @@ export interface MedicData {
   lastName: string;
   specialty: string;
   title: string;
+  payment?: MedicPaymentInfo;
+}
+
+export interface BookingPayment {
+  paymentId: string;
+  status: 'pending' | 'in_process' | 'approved' | 'rejected' | 'cancelled' | 'expired' | 'refunded' | 'charged_back';
+  amount: number;
+  currency: string;
+  feeMinor: number;
+  chargePortion: number;
+  isDeposit: boolean;
+  remainderAmount: number;
+  checkoutUrl: string | null;
+  expiresAt: string | null;
+  refundStatus: 'requested' | 'completed' | 'failed' | null;
+  slotLost: boolean;
+  requirementMode: 'optional' | 'required';
+}
+
+export interface BookingResult {
+  ok: boolean;
+  appointmentId?: string;
+  payment?: BookingPayment;
+  paymentUnavailable?: boolean;
+}
+
+export interface AppointmentPaymentStatus {
+  appointmentStatus: 'pending_payment' | 'confirmed' | 'cancelled' | 'expired';
+  appointment: { id: string; startDate: string; paidAt: string | null } | null;
+  payment: BookingPayment | null;
 }
 
 export interface AnonymizedSlot {
@@ -102,12 +144,24 @@ export async function createBooking(
   token: string,
   medicId: string,
   startDate: string
-): Promise<{ ok: boolean; appointmentId?: string }> {
+): Promise<BookingResult> {
   const client = createClient(token);
-  return await client.service('booking').create({ medicId, startDate }) as {
-    ok: boolean;
-    appointmentId?: string;
-  };
+  return await client.service('booking').create({ medicId, startDate }) as BookingResult;
+}
+
+export async function getAppointmentPayment(
+  token: string,
+  appointmentId: string
+): Promise<AppointmentPaymentStatus> {
+  const client = createClient(token);
+  return await client.service('booking').find({
+    query: { intent: 'get-payment-status', appointmentId },
+  }) as AppointmentPaymentStatus;
+}
+
+export async function skipPayment(token: string, appointmentId: string): Promise<{ ok: boolean }> {
+  const client = createClient(token);
+  return await client.service('booking').patch(appointmentId, { action: 'skip-payment' }) as { ok: boolean };
 }
 
 // -- Turnstile verification --

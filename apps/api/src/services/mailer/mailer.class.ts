@@ -10,6 +10,7 @@ import * as prescriptionShareTemplate from './templates/prescription-share';
 import * as identityVerificationPendingTemplate from './templates/identity-verification-pending';
 import * as passwordResetTemplate from './templates/password-reset';
 import * as emailConfirmationTemplate from './templates/email-confirmation';
+import * as paymentFlaggedTemplate from './templates/payment-flagged';
 
 const templates: Record<string, { render: (data: any) => string }> = {
   'org-invite': orgInviteTemplate,
@@ -19,6 +20,7 @@ const templates: Record<string, { render: (data: any) => string }> = {
   'identity-verification-pending': identityVerificationPendingTemplate,
   'password-reset': passwordResetTemplate,
   'email-confirmation': emailConfirmationTemplate,
+  'payment-flagged': paymentFlaggedTemplate,
 };
 
 const isProduction = process.env.NODE_ENV === 'production';

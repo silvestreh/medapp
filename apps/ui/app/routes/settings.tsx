@@ -12,6 +12,7 @@ import {
   CreditCardIcon,
   WhatsappLogoIcon,
   FirstAidKitIcon,
+  WalletIcon,
 } from '@phosphor-icons/react';
 
 import Joyride from 'react-joyride';
@@ -356,6 +357,17 @@ function SettingsTabs({
           variant="light"
           style={navLinkStyle}
           data-tour="settings-practices"
+        />
+      )}
+      {isMedic && (
+        <NavLink
+          component={RemixNavLink}
+          to="/settings/payments"
+          label={t('profile.tab_payments')}
+          leftSection={<WalletIcon size={16} />}
+          variant="light"
+          style={navLinkStyle}
+          data-tour="settings-payments"
         />
       )}
       {isOrgOwner && (

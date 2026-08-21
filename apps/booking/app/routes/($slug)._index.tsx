@@ -12,6 +12,7 @@ import { styled } from '~/styled-system/jsx';
 import { getPatientToken } from '~/session.server';
 import { findBookings, cancelBooking, type PatientBooking } from '~/api.server';
 import { resolveBookingContext } from '~/host.server';
+import PaymentStatusPill from '~/components/payment-status-pill';
 
 dayjs.locale('es');
 
@@ -323,7 +324,21 @@ export default function BookingsIndexPage() {
                       <ClockIcon size={13} />
                       {date.format('HH:mm')} hs
                     </MetaItem>
+                    {booking.payment && <PaymentStatusPill payment={booking.payment} />}
                   </MetaRow>
+                  {booking.payment &&
+                    (booking.payment.status === 'pending' || booking.payment.status === 'in_process') &&
+                    booking.payment.checkoutUrl &&
+                    booking.payment.expiresAt &&
+                    dayjs(booking.payment.expiresAt).isAfter(dayjs()) && (
+                    <Button
+                      size="xs"
+                      mt={8}
+                      onClick={() => window.location.assign(booking.payment!.checkoutUrl!)}
+                    >
+                      {t('booking.payment.complete_payment')}
+                    </Button>
+                  )}
                 </AppointmentInfo>
                 <CancelButton
                   onClick={() => handleCancelClick(booking)}
@@ -355,6 +370,11 @@ export default function BookingsIndexPage() {
                 interpolation: { escapeValue: false },
               })}
             </Text>
+            {cancelTarget.payment?.status === 'approved' && (
+              <Text size="sm" c="dimmed" mb="lg">
+                {t('booking.payment.cancel_refund_note')}
+              </Text>
+            )}
             <Group justify="flex-end">
               <Button variant="default" onClick={closeConfirm}>
                 {t('booking.cancel_confirm_no')}

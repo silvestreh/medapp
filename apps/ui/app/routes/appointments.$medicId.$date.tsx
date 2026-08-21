@@ -55,8 +55,44 @@ export const loader = authenticatedLoader(async ({ request, params }: LoaderFunc
         $gte: date.startOf('month').toISOString(),
         $lte: date.endOf('month').toISOString(),
       },
-    },
+      // Expired payment holds and cancelled bookings must not occupy slots in
+      // the medic's day view.
+      status: { $in: ['pending_payment', 'confirmed'] },
+    } as any,
   });
+
+  // Attach online-payment info so the day list can show a status badge.
+  try {
+    const appointmentList: any[] = Array.isArray(appointments) ? appointments : (appointments as any)?.data || [];
+    const dayAppointments = appointmentList.filter(appointment => dayjs(appointment.startDate).isSame(date, 'day'));
+
+    if (dayAppointments.length > 0) {
+      const paymentsResponse = await client.service('appointment-payments' as any).find({
+        query: { appointmentId: { $in: dayAppointments.map(appointment => appointment.id) }, $limit: 200 },
+        paginate: false,
+      });
+      const payments: any[] = Array.isArray(paymentsResponse)
+        ? paymentsResponse
+        : (paymentsResponse as any)?.data || [];
+      const byAppointment = new Map(payments.map(payment => [payment.appointmentId, payment]));
+
+      for (const appointment of dayAppointments) {
+        const payment = byAppointment.get(appointment.id);
+        if (payment) {
+          appointment.payment = {
+            status: payment.status,
+            amount: payment.amount,
+            currency: payment.currency,
+            chargePortion: payment.chargePortionSnapshot,
+            flagged: Boolean(payment.flagged),
+          };
+        }
+      }
+    }
+  } catch {
+    // Keep appointments usable even if the payments service is not ready.
+  }
+
   const slots = generateSlots(date, appointments, medic);
 
   let hasTimeOff = false;

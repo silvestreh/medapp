@@ -26,7 +26,7 @@ export default function (app: Application): typeof Model {
       }
     },
     resource: {
-      type: DataTypes.ENUM('encounters', 'studies', 'prescriptions', 'shared-access', 'authentication', 'access-control', 'configuration', 'system', 'user-management'),
+      type: DataTypes.ENUM('encounters', 'studies', 'prescriptions', 'shared-access', 'authentication', 'access-control', 'configuration', 'system', 'user-management', 'payment', 'payment-connection'),
       allowNull: false,
     },
     patientId: {

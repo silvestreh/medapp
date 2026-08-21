@@ -34,6 +34,7 @@
     "db:import-time-off": "ts-node scripts/import-time-off-events.ts",
     "db:reset": "ts-node scripts/reset-db.ts",
     "db:seed-test-org": "ts-node scripts/seed-test-organization.ts",
+    "db:seed-test-payment-connection": "ts-node scripts/seed-test-payment-connection.ts",
     "db:seed-staging": "NODE_ENV=staging ts-node scripts/seed-staging.ts",
     "db:import-recetario": "ts-node scripts/import-recetario-prescriptions.ts",
     "fetch:cuadros-tarifarios": "ts-node scripts/fetch-cuadros-tarifarios.ts",

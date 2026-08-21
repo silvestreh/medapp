@@ -15,11 +15,14 @@ import {
   findMedics,
   findAppointments,
   createBooking,
+  skipPayment,
   verifyTurnstile,
   type MedicData,
   type AnonymizedSlot,
+  type BookingPayment,
 } from '~/api.server';
 import { resolveBookingContext } from '~/host.server';
+import { formatMoneyMinor } from '~/utils/money';
 
 dayjs.locale('es');
 
@@ -85,9 +88,26 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     try {
       const result = await createBooking(token, medicId, startDate);
-      return json({ intent, ok: true, appointmentId: result.appointmentId });
+      return json({
+        intent,
+        ok: true,
+        appointmentId: result.appointmentId,
+        payment: result.payment ?? null,
+        paymentUnavailable: result.paymentUnavailable === true,
+      });
     } catch (err: any) {
       return json({ intent, ok: false, error: err?.message || 'booking_failed' });
+    }
+  }
+
+  if (intent === 'skip-payment') {
+    const appointmentId = formData.get('appointmentId') as string;
+
+    try {
+      await skipPayment(token, appointmentId);
+      return json({ intent, ok: true });
+    } catch {
+      return json({ intent, ok: false, error: 'skip_failed' });
     }
   }
 
@@ -344,10 +364,46 @@ const SlotContent = styled('div', {
   },
 });
 
+const AmountPanel = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.35rem',
+    padding: '0.9rem 1rem',
+    borderRadius: '0.75rem',
+    border: '1px solid var(--mantine-color-gray-2)',
+    background: 'var(--mantine-color-gray-0)',
+    marginTop: '1rem',
+  },
+});
+
+const PayButtons = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.75rem',
+    width: '100%',
+    maxWidth: '26rem',
+
+    md: {
+      flexDirection: 'row',
+      '& > *': { flex: 1 },
+    },
+  },
+});
+
 // -- Helpers --
 
 function getInitials(firstName: string, lastName: string) {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+}
+
+// API errors arrive as plain messages or codes; map the known ones onto
+// translation keys and fall back to the generic failure copy.
+function bookingErrorKey(error: string): string {
+  if (error === 'This slot is already taken') return 'booking.slot_taken';
+  if (error === 'payment_provider_unavailable') return 'booking.payment.payment_provider_unavailable';
+  return `booking.${error}`;
 }
 
 function getUniqueSpecialties(medics: MedicData[]): string[] {
@@ -369,7 +425,15 @@ export default function BookingPage() {
   const { t } = useTranslation();
   const { medics, turnstileSiteKey, basePath } = useLoaderData<typeof loader>();
   const slotsFetcher = useFetcher<{ intent: string; slots?: AnonymizedSlot[] }>();
-  const bookingFetcher = useFetcher<{ intent: string; ok?: boolean; error?: string }>();
+  const bookingFetcher = useFetcher<{
+    intent: string;
+    ok?: boolean;
+    error?: string;
+    appointmentId?: string;
+    payment?: BookingPayment | null;
+    paymentUnavailable?: boolean;
+  }>();
+  const skipFetcher = useFetcher<{ intent: string; ok?: boolean; error?: string }>();
 
   const [step, setStep] = useState(1);
   const [selectedMedicId, setSelectedMedicId] = useState<string | null>(null);
@@ -378,6 +442,10 @@ export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
   const [selectedSlotDate, setSelectedSlotDate] = useState<string | null>(null);
   const [captchaOpen, { open: openCaptcha, close: closeCaptcha }] = useDisclosure(false);
+  const [bookingPayment, setBookingPayment] = useState<BookingPayment | null>(null);
+  const [bookedAppointmentId, setBookedAppointmentId] = useState<string | null>(null);
+  const [paymentUnavailable, setPaymentUnavailable] = useState(false);
+  const [holdSecondsLeft, setHoldSecondsLeft] = useState<number | null>(null);
 
   const slots = slotsFetcher.data?.slots ?? [];
   const loadingSlots = slotsFetcher.state !== 'idle';
@@ -406,6 +474,8 @@ export default function BookingPage() {
   }, [medics, search, activeFilter]);
 
   const selectedMedic = useMemo(() => medics.find(m => m.id === selectedMedicId), [medics, selectedMedicId]);
+  const medicPayment = selectedMedic?.payment;
+  const paymentEnabled = Boolean(medicPayment);
 
   const loadSlots = useCallback(
     (medicId: string, date: string) => {
@@ -467,14 +537,67 @@ export default function BookingPage() {
     }
   }, [slotsFetcher.state, slotsFetcher.data]);
 
-  // Handle booking result
+  // Handle booking result: a payment offer opens the interstitial, everything
+  // else goes straight to the confirmation.
   useEffect(() => {
     if (bookingFetcher.state === 'idle' && bookingFetcher.data?.intent === 'create-booking') {
       if (bookingFetcher.data.ok) {
-        setStep(3);
+        setBookedAppointmentId(bookingFetcher.data.appointmentId ?? null);
+        setPaymentUnavailable(bookingFetcher.data.paymentUnavailable === true);
+
+        if (bookingFetcher.data.payment) {
+          setBookingPayment(bookingFetcher.data.payment);
+          setStep(2.5);
+        } else {
+          setStep(3);
+        }
       }
     }
   }, [bookingFetcher.state, bookingFetcher.data]);
+
+  // Skip result: optional-mode booking is already confirmed server-side.
+  useEffect(() => {
+    if (skipFetcher.state === 'idle' && skipFetcher.data?.intent === 'skip-payment' && skipFetcher.data.ok) {
+      setStep(3);
+    }
+  }, [skipFetcher.state, skipFetcher.data]);
+
+  // Hold countdown while the payment interstitial is open (required mode).
+  useEffect(() => {
+    if (step !== 2.5 || !bookingPayment?.expiresAt || bookingPayment.requirementMode !== 'required') {
+      setHoldSecondsLeft(null);
+      return;
+    }
+
+    const update = () => {
+      const secondsLeft = Math.max(0, dayjs(bookingPayment.expiresAt).diff(dayjs(), 'second'));
+      setHoldSecondsLeft(secondsLeft);
+    };
+
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [step, bookingPayment]);
+
+  const handlePayNow = useCallback(() => {
+    if (bookingPayment?.checkoutUrl) {
+      window.location.assign(bookingPayment.checkoutUrl);
+    }
+  }, [bookingPayment]);
+
+  const handlePayInPerson = useCallback(() => {
+    if (!bookedAppointmentId) return;
+    skipFetcher.submit({ intent: 'skip-payment', appointmentId: bookedAppointmentId }, { method: 'post' });
+  }, [bookedAppointmentId, skipFetcher]);
+
+  const handleBackToSlots = useCallback(() => {
+    setBookingPayment(null);
+    setBookedAppointmentId(null);
+    setStep(2);
+    if (selectedMedicId) {
+      loadSlots(selectedMedicId, selectedDate);
+    }
+  }, [selectedMedicId, selectedDate, loadSlots]);
 
   // Turnstile explicit rendering inside modal
   const turnstileRef = useRef<HTMLDivElement>(null);
@@ -545,8 +668,11 @@ export default function BookingPage() {
           <ProgressBar>
             <ProgressSegment active />
             <ProgressSegment active={step >= 2} />
+            {paymentEnabled && <ProgressSegment active={step > 2} />}
           </ProgressBar>
-          <StepLabel>{t('booking.step_of', { step, total: 2 })}</StepLabel>
+          <StepLabel>
+            {t('booking.step_of', { step: step === 2.5 ? 3 : step, total: paymentEnabled ? 3 : 2 })}
+          </StepLabel>
         </>
       )}
 
@@ -682,9 +808,45 @@ export default function BookingPage() {
             </SlotsSide>
           </Step2Layout>
 
+          {medicPayment && (
+            <AmountPanel>
+              <Text size="sm" c="dimmed">
+                {t('booking.payment.amount_label')}
+              </Text>
+              <Text fw={700} size="lg">
+                {formatMoneyMinor(medicPayment.amount, medicPayment.currency)}
+              </Text>
+              {medicPayment.chargePortion < 100 && (
+                <Text size="sm">
+                  {t('booking.payment.deposit_explainer', {
+                    amount: formatMoneyMinor(medicPayment.amount, medicPayment.currency),
+                    remainder: formatMoneyMinor(medicPayment.feeMinor - medicPayment.amount, medicPayment.currency),
+                  })}
+                </Text>
+              )}
+              {medicPayment.chargePortion >= 100 && (
+                <Text size="sm">
+                  {t('booking.payment.full_explainer', {
+                    amount: formatMoneyMinor(medicPayment.amount, medicPayment.currency),
+                  })}
+                </Text>
+              )}
+              {medicPayment.requirementMode === 'optional' && (
+                <Text size="xs" c="dimmed">
+                  {t('booking.payment.optional_note')}
+                </Text>
+              )}
+              {medicPayment.requirementMode === 'required' && (
+                <Text size="xs" c="dimmed">
+                  {t('booking.payment.required_note')}
+                </Text>
+              )}
+            </AmountPanel>
+          )}
+
           {bookingFetcher.data?.error && (
             <Text c="red" size="sm" mt="sm">
-              {bookingFetcher.data.error}
+              {t(bookingErrorKey(bookingFetcher.data.error) as never, t('booking.booking_failed'))}
             </Text>
           )}
 
@@ -712,6 +874,83 @@ export default function BookingPage() {
         </>
       )}
 
+      {step === 2.5 && bookingPayment && selectedMedic && selectedSlotDate && (
+        <Stack align="center" gap="md" py="xl" style={{ flex: 1, justifyContent: 'center' }}>
+          {holdSecondsLeft !== 0 && (
+            <>
+              <Title order={2} ta="center">
+                {formatMoneyMinor(bookingPayment.amount, bookingPayment.currency)}
+              </Title>
+              {bookingPayment.isDeposit && (
+                <Text ta="center" c="dimmed" size="sm" maw={420}>
+                  {t('booking.payment.deposit_explainer', {
+                    amount: formatMoneyMinor(bookingPayment.amount, bookingPayment.currency),
+                    remainder: formatMoneyMinor(bookingPayment.remainderAmount, bookingPayment.currency),
+                  })}
+                </Text>
+              )}
+              {!bookingPayment.isDeposit && (
+                <Text ta="center" c="dimmed" size="sm" maw={420}>
+                  {t('booking.payment.full_explainer', {
+                    amount: formatMoneyMinor(bookingPayment.amount, bookingPayment.currency),
+                  })}
+                </Text>
+              )}
+
+              {bookingPayment.requirementMode === 'required' && holdSecondsLeft !== null && (
+                <Text ta="center" size="sm" fw={500}>
+                  {t('booking.payment.hold_countdown', {
+                    time: `${Math.floor(holdSecondsLeft / 60)}:${String(holdSecondsLeft % 60).padStart(2, '0')}`,
+                  })}
+                </Text>
+              )}
+
+              {bookingPayment.requirementMode === 'optional' && (
+                <PayButtons>
+                  <Button size="md" onClick={handlePayNow}>
+                    {t('booking.payment.pay_now')}
+                  </Button>
+                  <Button
+                    size="md"
+                    variant="default"
+                    onClick={handlePayInPerson}
+                    loading={skipFetcher.state !== 'idle'}
+                  >
+                    {t('booking.payment.pay_in_person')}
+                  </Button>
+                </PayButtons>
+              )}
+
+              {bookingPayment.requirementMode === 'required' && (
+                <>
+                  <Button size="md" onClick={handlePayNow} fullWidth maw={420}>
+                    {t('booking.payment.pay_now')}
+                  </Button>
+                  <Text ta="center" size="xs" c="dimmed">
+                    {t('booking.payment.required_note')}
+                  </Text>
+                </>
+              )}
+
+              {skipFetcher.data?.error && (
+                <Text c="red" size="sm">
+                  {t('booking.payment.skip_failed')}
+                </Text>
+              )}
+            </>
+          )}
+
+          {holdSecondsLeft === 0 && (
+            <>
+              <Title order={3} ta="center">
+                {t('booking.payment.hold_expired_here')}
+              </Title>
+              <Button onClick={handleBackToSlots}>{t('booking.payment.find_another_slot')}</Button>
+            </>
+          )}
+        </Stack>
+      )}
+
       {step === 3 && selectedMedic && selectedSlotDate && (
         <Stack align="center" gap="md" py="xl">
           <Title order={2} ta="center">
@@ -727,6 +966,11 @@ export default function BookingPage() {
               interpolation: { escapeValue: false },
             })}
           </Text>
+          {paymentUnavailable && (
+            <Text ta="center" size="sm" c="orange.8">
+              {t('booking.payment.provider_unavailable_optional')}
+            </Text>
+          )}
           <Button component={Link} to={basePath || '/'} mt="md">
             OK
           </Button>

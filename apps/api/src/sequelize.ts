@@ -102,6 +102,8 @@ export default function (app: Application): void {
             BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'configuration'; EXCEPTION WHEN duplicate_object THEN NULL; END;
             BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'system'; EXCEPTION WHEN duplicate_object THEN NULL; END;
             BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'user-management'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'payment'; EXCEPTION WHEN duplicate_object THEN NULL; END;
+            BEGIN ALTER TYPE "enum_access_logs_resource" ADD VALUE IF NOT EXISTS 'payment-connection'; EXCEPTION WHEN duplicate_object THEN NULL; END;
           END IF;
           IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_access_logs_action') THEN
             BEGIN ALTER TYPE "enum_access_logs_action" ADD VALUE IF NOT EXISTS 'grant'; EXCEPTION WHEN duplicate_object THEN NULL; END;
@@ -116,6 +118,22 @@ export default function (app: Application): void {
         END $$`);
         await sequelize.query('ALTER TABLE "access_logs" ALTER COLUMN "patientId" DROP NOT NULL');
         await sequelize.query('ALTER TABLE "access_logs" ALTER COLUMN "userId" DROP NOT NULL');
+      } catch (e) { // eslint-disable-line @typescript-eslint/no-unused-vars
+        // Table might not exist yet on first run, that's fine
+      }
+
+      // Appointment status machine: production sync won't add columns to an
+      // existing table, so the addition lives here as idempotent SQL (and in
+      // the appointment-payments migration runbook).
+      try {
+        await sequelize.query(`DO $$ BEGIN
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_appointments_status') THEN
+            CREATE TYPE "enum_appointments_status" AS ENUM ('pending_payment', 'confirmed', 'cancelled', 'expired');
+          END IF;
+        END $$`);
+        await sequelize.query('ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "status" "enum_appointments_status" NOT NULL DEFAULT \'confirmed\'');
+        await sequelize.query('ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "holdExpiresAt" timestamptz');
+        await sequelize.query('ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "paidAt" timestamptz');
       } catch (e) { // eslint-disable-line @typescript-eslint/no-unused-vars
         // Table might not exist yet on first run, that's fine
       }
@@ -154,6 +172,17 @@ export default function (app: Application): void {
         `);
       } catch (e: any) {
         console.error('Error creating generated columns or indexes:', e?.message || e);
+      }
+
+      // Slot-uniqueness backstop for booking. Fails (and only logs) if legacy
+      // duplicates exist — the migration runbook's pre-check finds and resolves
+      // those, then this succeeds on the next boot.
+      try {
+        await sequelize.query(`CREATE UNIQUE INDEX IF NOT EXISTS appointments_medic_slot_active_unique
+          ON "appointments" ("medicId", "startDate")
+          WHERE status IN ('pending_payment', 'confirmed') AND extra = false`);
+      } catch (e: any) {
+        console.error('Error creating appointments slot unique index:', e?.message || e);
       }
     };
 

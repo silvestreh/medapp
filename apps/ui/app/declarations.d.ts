@@ -81,6 +81,14 @@ export type Patient = {
   insurer?: Prepaga | null;
 };
 
+export type AppointmentPaymentInfo = {
+  status: 'pending' | 'in_process' | 'approved' | 'rejected' | 'cancelled' | 'expired' | 'refunded' | 'charged_back';
+  amount: number;
+  currency: string;
+  chargePortion: number;
+  flagged: boolean;
+};
+
 export type Appointment = {
   id: string;
   duration?: number;
@@ -89,6 +97,9 @@ export type Appointment = {
   patient: Patient;
   patientId: string;
   startDate: string;
+  status?: 'pending_payment' | 'confirmed' | 'cancelled' | 'expired';
+  paidAt?: string | null;
+  payment?: AppointmentPaymentInfo | null;
 };
 
 export interface Slot {

@@ -3,7 +3,10 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/node';
 const API_URL = () => process.env.API_URL ?? 'http://localhost:3030';
 const PROXY_SECRET = process.env.PROXY_SECRET || '';
 
-const FORWARDED_HEADERS = ['content-type', 'authorization', 'accept', 'organization-id'];
+// x-signature / x-request-id carry the Mercado Pago webhook HMAC — the API is
+// never public, so provider webhooks arrive through this proxy and verification
+// breaks without them.
+const FORWARDED_HEADERS = ['content-type', 'authorization', 'accept', 'organization-id', 'x-signature', 'x-request-id'];
 
 /**
  * The API sees this proxy's private-network address on every relayed request,
@@ -65,6 +68,9 @@ const ALLOWED_PATHS = new Set([
   'llm-models',
   'accounting',
   'accounting-settings',
+  'payment-settings',
+  'payment-connections',
+  'appointment-payments',
   'practice-costs',
   'practices',
   'practice-codes',
@@ -73,6 +79,7 @@ const ALLOWED_PATHS = new Set([
   'whatsapp',
   'whatsapp-instances',
   'webhooks',
+  'payments',
   'file-uploads',
   'url-fetch',
   'uploads',
@@ -134,6 +141,9 @@ async function proxyRequest(request: Request): Promise<Response> {
     headers: forwardHeaders(request),
     body: hasBody ? request.body : undefined,
     duplex: hasBody ? 'half' : undefined,
+    // Pass 3xx through to the browser (the payment OAuth callback answers with
+    // a redirect) instead of following it server-side.
+    redirect: 'manual',
   });
 
   const responseHeaders = new Headers();

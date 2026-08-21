@@ -71,6 +71,8 @@ export async function sendAppointmentReminders(app: Application, options?: Remin
   const appointments = await models.appointments.findAll({
     where: {
       startDate: { [Op.gte]: tomorrowStart, [Op.lte]: tomorrowEnd },
+      // Payment holds and expired/cancelled bookings must not get reminders.
+      status: 'confirmed',
     },
     raw: true,
   }) as any[];

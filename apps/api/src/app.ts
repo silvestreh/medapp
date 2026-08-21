@@ -27,6 +27,7 @@ import sequelize from './sequelize';
 import qs from 'qs';
 import { setupIdentityVerificationWebhook } from './webhooks/identity-verification';
 import { clientIpKey } from './utils/rate-limit-key';
+import { validatePaymentsConfig } from './utils/validate-payments-config';
 // Don't remove this comment. It's needed to format import lines nicely.
 const app: Application = express(feathers());
 export type HookContext<T = any> = { app: Application } & FeathersHookContext<T>;
@@ -35,6 +36,9 @@ export type HookContext<T = any> = { app: Application } & FeathersHookContext<T>
 // converted to objects, breaking Sequelize $in queries.
 app.set('query parser', (str: string) => qs.parse(str, { arrayLimit: 500 }));
 app.configure(configuration());
+// Fail loudly at boot if payments are configured without their own encryption
+// key — never fall back to the clinical-records key.
+validatePaymentsConfig(app);
 // Trust the first proxy (Railway) so req.ip / x-forwarded-for resolve correctly.
 app.set('trust proxy', 1);
 app.use(helmet({

@@ -5,5 +5,16 @@
     "apiUrl": "https://external-api.recetario.com.ar",
     "jwt": "RECETARIO_JWT_TEST",
     "webhookSecret": "RECETARIO_WEBHOOK_SECRET_TEST"
+  },
+  "payments": {
+    "encryptionKey": "test-payments-encryption-key",
+    "publicUrl": "http://localhost:3033",
+    "uiUrl": "http://localhost:3000",
+    "bookingUrl": "http://booking.test/{slug}",
+    "mercadoPago": {
+      "clientId": "test-mp-client-id",
+      "clientSecret": "test-mp-client-secret",
+      "webhookSecret": "test-mp-webhook-secret"
+    }
   }
 }

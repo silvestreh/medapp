@@ -168,8 +168,12 @@ export interface Appointment {
   id: Id;
   patientId: Id;
   medicId: Id;
+  organizationId: Id | null;
   extra: boolean;
   startDate: Date;
+  status: 'pending_payment' | 'confirmed' | 'cancelled' | 'expired';
+  holdExpiresAt: Date | null;
+  paidAt: Date | null;
 }
 
 export interface AppointmentReminder {
@@ -250,6 +254,53 @@ export interface AccountingSettings {
   hiddenInsurers: string[];
 }
 
+export interface PaymentSettings {
+  id: Id;
+  userId: Id;
+  organizationId: Id;
+  enabled: boolean;
+  chargePortion: 25 | 50 | 100;
+  requirementMode: 'optional' | 'required';
+  holdWindowMinutes: number;
+}
+
+export type AppointmentPaymentStatus =
+  | 'pending'
+  | 'in_process'
+  | 'approved'
+  | 'rejected'
+  | 'cancelled'
+  | 'expired'
+  | 'refunded'
+  | 'charged_back';
+
+export interface AppointmentPayment {
+  id: Id;
+  appointmentId: Id | null;
+  medicId: Id;
+  patientId: Id;
+  organizationId: Id;
+  appointmentStartDate: string | Date;
+  provider: string;
+  providerAccountId: string | null;
+  status: AppointmentPaymentStatus;
+  amountResolver: string;
+  feeMinorSnapshot: number;
+  chargePortionSnapshot: number;
+  amount: number;
+  currency: string;
+  idempotencyKey: string;
+  providerPreferenceId: string | null;
+  providerPaymentId: string | null;
+  checkoutUrl: string | null;
+  expiresAt: string | Date | null;
+  paidAt: string | Date | null;
+  refundStatus: 'requested' | 'completed' | 'failed' | null;
+  refundedAmount: number | null;
+  flagged: boolean;
+  flagReason: string | null;
+}
+
 export interface PracticeCost {
   id: Id;
   organizationId: Id | null;
@@ -292,7 +343,7 @@ export interface OrganizationPatient {
   patientId: Id;
 }
 
-export type AccessLogResource = 'encounters' | 'studies' | 'prescriptions' | 'shared-access' | 'authentication' | 'access-control' | 'configuration' | 'system' | 'user-management';
+export type AccessLogResource = 'encounters' | 'studies' | 'prescriptions' | 'shared-access' | 'authentication' | 'access-control' | 'configuration' | 'system' | 'user-management' | 'payment' | 'payment-connection';
 export type AccessAction = 'read' | 'write' | 'export' | 'grant' | 'login' | 'logout' | 'deny' | 'execute';
 export type AccessPurpose = 'treatment' | 'billing' | 'emergency' | 'operations' | 'share' | 'record-management';
 

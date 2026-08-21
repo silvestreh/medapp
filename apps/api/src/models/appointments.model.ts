@@ -42,13 +42,41 @@ export default function (app: Application): typeof Model {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
+    },
+    status: {
+      type: DataTypes.ENUM('pending_payment', 'confirmed', 'cancelled', 'expired'),
+      allowNull: false,
+      defaultValue: 'confirmed'
+    },
+    holdExpiresAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    paidAt: {
+      type: DataTypes.DATE,
+      allowNull: true
     }
   }, {
     hooks: {
       beforeCount(options: any): HookReturn {
         options.raw = true;
       }
-    }
+    },
+    indexes: [
+      {
+        // Only rows that actually occupy a slot participate; cancelled/expired
+        // rows must not block rebooking, and sobreturnos are double-booked on
+        // purpose. Production can't get this via sync — see the mirrored raw
+        // SQL in sequelize.ts and the migration runbook.
+        name: 'appointments_medic_slot_active_unique',
+        unique: true,
+        fields: ['medicId', 'startDate'],
+        where: {
+          status: ['pending_payment', 'confirmed'],
+          extra: false
+        }
+      }
+    ]
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

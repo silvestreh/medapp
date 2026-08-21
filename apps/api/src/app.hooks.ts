@@ -4,6 +4,7 @@ import { setOrganizationContext } from './hooks/set-organization-context';
 import { tagRequestSource } from './hooks/tag-request-source';
 import { logAccessDenial } from './hooks/log-access-denial';
 import { captureSentryError } from './hooks/capture-sentry-error';
+import redactPaymentSecrets from './hooks/redact-payment-secrets';
 import { debug } from './hooks/debug';
 
 export default {
@@ -35,6 +36,7 @@ export default {
 
   error: {
     all: [
+      redactPaymentSecrets(),
       logAccessDenial(),
       captureSentryError(),
     ],

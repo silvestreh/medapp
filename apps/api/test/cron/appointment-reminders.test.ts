@@ -120,6 +120,11 @@ describe('Appointment reminders cron', function () {
   before(async () => {
     sequelize = app.get('sequelizeClient');
 
+    // If an earlier test started the app, the global alter-sync may still be
+    // in flight — syncing concurrently drops/re-adds the same FK constraints
+    // and throws UnknownConstraintError.
+    await app.get('sequelizeSync');
+
     // Register and sync the appointment_reminders model
     createAppointmentRemindersModel(app);
     await sequelize.models.appointment_reminders.sync({ alter: true });

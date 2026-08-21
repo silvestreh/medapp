@@ -85,6 +85,25 @@ openssl rand -base64 32
 
 Keep this key secure -- it is required to decrypt all existing data.
 
+## Appointment payments (Mercado Pago)
+
+Optional per-professional payment collection at booking time. The feature is
+**off** unless `MP_CLIENT_ID` is set; when it is set, the API refuses to boot
+without a valid payments key. Full architecture and constraints:
+[`docs/appointment-payments.md`](../../docs/appointment-payments.md).
+Migration runbook: `scripts/2026-08-appointment-payments.sql`.
+
+| Variable | Description |
+|----------|-------------|
+| `PAYMENTS_ENCRYPTION_KEY` | pgcrypto key for the professionals' OAuth tokens. Generate with `openssl rand -base64 32`. **Must be different from `ENCRYPTION_KEY`** — compromise of one key must not expose the other domain. Never commit it. |
+| `MP_CLIENT_ID` / `MP_CLIENT_SECRET` | Mercado Pago application credentials. The secret never leaves the API. |
+| `MP_WEBHOOK_SECRET` | Webhook signing secret from the Mercado Pago application panel. |
+| `API_PUBLIC_URL` | Public base URL under which the API is reachable. The API itself is never public: this is the UI origin plus `/api` (e.g. `https://app.athel.as/api`), routed through the proxy in `apps/ui/app/routes/api.$.tsx`. Builds the OAuth callback (`/payments/oauth/callback`) and webhook URL (`/webhooks/payments/mercado-pago`) registered in the MP application. |
+| `BOOKING_PUBLIC_URL` | Patient booking app base URL for checkout return links — per organization via the `{slug}` placeholder: `https://{slug}.athelas.cloud`. |
+| `APP_URL` | Professional UI base URL (post-OAuth redirect target). |
+| `PAYMENT_TOKEN_REFRESH_CRON` | Optional cron override for token refresh (default `0 * * * *`). |
+| `PAYMENT_HOLD_EXPIRY_CRON` | Optional cron override for hold expiry (default `* * * * *`). |
+
 ## Database Scripts
 
 | Script                 | Description                                |

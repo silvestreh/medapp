@@ -1,4 +1,32 @@
 import * as Sentry from '@sentry/node';
+import { sanitizeForLog } from './utils/sanitize-for-log';
+
+// Payment/OAuth material must never reach Sentry, even inside error messages.
+export function scrubEventSecrets(event: Sentry.ErrorEvent): Sentry.ErrorEvent {
+  const scrubString = (value: string): string =>
+    value.replace(/Bearer\s+[A-Za-z0-9\-_.~+/=]+/g, 'Bearer [REDACTED]');
+
+  if (event.request) {
+    event.request = sanitizeForLog(event.request) as typeof event.request;
+  }
+  if (event.extra) {
+    event.extra = sanitizeForLog(event.extra) as typeof event.extra;
+  }
+  if (event.contexts) {
+    event.contexts = sanitizeForLog(event.contexts) as typeof event.contexts;
+  }
+
+  for (const exception of event.exception?.values ?? []) {
+    if (typeof exception.value === 'string') {
+      exception.value = scrubString(exception.value);
+    }
+  }
+  if (typeof event.message === 'string') {
+    event.message = scrubString(event.message);
+  }
+
+  return event;
+}
 
 function stripUrlApiKey(url: string): string {
   try {
@@ -48,7 +76,7 @@ Sentry.init({
       return null;
     }
 
-    return event;
+    return scrubEventSecrets(event);
   },
 });
 

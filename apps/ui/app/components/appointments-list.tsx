@@ -10,6 +10,7 @@ import { useMutation } from '~/components/provider';
 import PatientSearch from '~/components/patient-search';
 import type { Appointment, Slot as SlotType } from '~/declarations';
 import { getMedicareLabel } from '~/components/medicare-display';
+import PaymentStatusBadge from '~/components/payments/payment-status-badge';
 
 interface AppointmentsListProps {
   slots: SlotType[];
@@ -263,6 +264,14 @@ const AppointmentsList: FC<AppointmentsListProps> = ({
                     <Text variant="light" small>
                       {getMedicareLabel(slot.appointment.patient) || t('appointments.private')}
                     </Text>
+                    {slot.appointment.payment && (
+                      <PaymentStatusBadge
+                        status={slot.appointment.payment.status}
+                        chargePortion={slot.appointment.payment.chargePortion}
+                        flagged={slot.appointment.payment.flagged}
+                        size="xs"
+                      />
+                    )}
                   </TextContent>
                   {!readonly && (
                     <Popover
