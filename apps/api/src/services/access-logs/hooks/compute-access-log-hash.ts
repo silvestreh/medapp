@@ -39,12 +39,21 @@ export const computeAccessLogHashHook = (): Hook => {
       }
     );
 
-    // Find the most recent access log for this organization using raw query
-    // to avoid triggering the full hook pipeline
+    // Find the tip of the chain: the log no other log links to via
+    // previousLogId. Timestamps can't order the chain — two logs created in
+    // the same millisecond sort by random UUID, which may disagree with the
+    // actual insertion order and would fork the chain. The ORDER BY only
+    // breaks ties among legacy rows that predate the chain (all unreferenced).
+    // Raw query to avoid triggering the full hook pipeline.
     const results = await sequelize.query(
-      `SELECT id, hash FROM access_logs
-       WHERE "organizationId" = :organizationId
-       ORDER BY "createdAt" DESC, id DESC
+      `SELECT l.id, l.hash FROM access_logs l
+       WHERE l."organizationId" = :organizationId
+         AND NOT EXISTS (
+           SELECT 1 FROM access_logs c
+           WHERE c."organizationId" = :organizationId
+             AND c."previousLogId" = l.id
+         )
+       ORDER BY l."createdAt" DESC, l.id DESC
        LIMIT 1`,
       {
         replacements: { organizationId },

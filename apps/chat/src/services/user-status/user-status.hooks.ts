@@ -6,16 +6,19 @@ import { Forbidden } from '@feathersjs/errors';
  * Only allow users to update their own status.
  */
 const restrictToOwnStatus = () => async (context: HookContext) => {
-  // Skip restriction for internal (server-side) calls
-  if (!context.params.provider) return context;
-
   const userId = context.params.user?.id;
+
+  // Trust internal (server-side) calls only when they don't act on behalf of a user
+  if (!context.params.provider && !userId) return context;
 
   if (context.id) {
     const existing = await context.service.get(context.id);
     if (existing.userId !== userId) {
       throw new Forbidden('You can only update your own status');
     }
+  } else {
+    // Bulk patch: scope the query so it can only touch the caller's own status
+    context.params.query = { ...context.params.query, userId };
   }
 
   return context;

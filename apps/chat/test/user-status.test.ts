@@ -86,6 +86,24 @@ describe('User Status Service', () => {
     }
   });
 
+  it('rejects bulk patches', async () => {
+    const app = getApp();
+
+    try {
+      await app.service('user-status').patch(
+        null,
+        { status: 'offline' },
+        internalParams(userAId),
+      );
+      assert.fail('should have thrown');
+    } catch (err: any) {
+      assert.equal(err.code, 405);
+    }
+
+    const statusB = await app.service('user-status').get(statusBId);
+    assert.notEqual(statusB.status, 'offline');
+  });
+
   it('finds user statuses', async () => {
     const app = getApp();
 

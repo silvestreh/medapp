@@ -82,6 +82,8 @@ export default function (app: Application): typeof Model {
       { fields: ['patientId'] },
       { fields: ['createdAt'] },
       { fields: ['organizationId', 'createdAt'] },
+      // Supports the chain-tip lookup in compute-access-log-hash (NOT EXISTS on previousLogId)
+      { fields: ['organizationId', 'previousLogId'] },
       { fields: ['purpose'] },
     ]
   });

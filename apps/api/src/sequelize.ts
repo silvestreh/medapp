@@ -69,6 +69,7 @@ export default function (app: Application): void {
 
   app.set('sequelizeClient', sequelize);
   let associationsInitialized = false;
+  let syncPromise: Promise<void> | null = null;
   (app as any).setup = function (server?: any): Application {
     const result = (oldSetup as any).call(this, server) as Application;
 
@@ -186,7 +187,12 @@ export default function (app: Application): void {
       }
     };
 
-    app.set('sequelizeSync', syncWithSearchColumns());
+    // setup() can run more than once (tests boot the app in a root hook and
+    // app.listen triggers it again) — only sync once per process
+    if (!syncPromise) {
+      syncPromise = syncWithSearchColumns();
+    }
+    app.set('sequelizeSync', syncPromise);
 
     return result;
   };

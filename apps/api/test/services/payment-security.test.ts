@@ -150,10 +150,6 @@ describe('payment security', function () {
       { medicId: medic.id, startDate: new Date('2033-01-07T13:00:00Z').toISOString() },
       asPatient(patient.id, org.id)
     );
-    // The chain verifier orders by (createdAt, id); two logs in the same
-    // millisecond can sort against their insertion order and read as broken.
-    // Space the writes out so the test exercises the chain, not that flaw.
-    await new Promise((resolve) => setTimeout(resolve, 150));
     await app.service('access-logs').create({
       userId: medic.id,
       organizationId: org.id,
