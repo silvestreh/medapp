@@ -11,6 +11,7 @@ export interface PaymentConnection {
   provider: string;
   accountHint: string | null;
   lastRefreshedAt: string | null;
+  credentialsUnreadable?: boolean;
   resolvedFee?: { amount: number; feeMinor: number; currency: string; chargePortion: number } | null;
 }
 
@@ -60,7 +61,8 @@ export default function ConnectionCard({
       {isBroken && (
         <Stack gap="md" p="lg">
           <Alert color="red" icon={<WarningIcon />} title={t('payments.connection.revoked_title')}>
-            {t('payments.connection.revoked_notice')}
+            {connection?.credentialsUnreadable && t('payments.connection.unreadable_notice')}
+            {!connection?.credentialsUnreadable && t('payments.connection.revoked_notice')}
           </Alert>
           <Button onClick={onConnect} loading={connecting} leftSection={<WalletIcon size={16} />}>
             {t('payments.connection.reconnect')}

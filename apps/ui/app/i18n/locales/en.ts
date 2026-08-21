@@ -1179,6 +1179,8 @@ export const en: typeof es = {
       disconnect_confirm_message:
         'The stored credentials will be deleted and online collection will be disabled. You can reconnect at any time.',
       revoked_title: 'Connection lost',
+      unreadable_notice:
+        'The stored credentials cannot be read (the encryption key changed). Online collection is disabled until you reconnect Mercado Pago.',
       revoked_notice:
         'Mercado Pago revoked the access or the connection expired. Online collection was disabled automatically; your bookings keep working without payment.',
       error: 'We could not connect to Mercado Pago. Please try again.',

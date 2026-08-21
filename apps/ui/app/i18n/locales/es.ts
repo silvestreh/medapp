@@ -1183,6 +1183,8 @@ export const es = {
       disconnect_confirm_message:
         'Se eliminarán las credenciales guardadas y se desactivará el cobro online de tus turnos. Podés volver a conectar cuando quieras.',
       revoked_title: 'Conexión perdida',
+      unreadable_notice:
+        'No pudimos leer las credenciales guardadas (la clave de cifrado cambió). El cobro online está desactivado hasta que vuelvas a conectar Mercado Pago.',
       revoked_notice:
         'Mercado Pago revocó el acceso o la conexión venció. El cobro online se desactivó automáticamente; tus turnos siguen funcionando sin pago.',
       error: 'No pudimos conectar con Mercado Pago. Intentá de nuevo.',

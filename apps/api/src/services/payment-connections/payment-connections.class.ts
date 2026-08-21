@@ -33,6 +33,10 @@ export interface PaymentConnectionPublic {
   accountHint: string | null;
   expiresAt: Date | null;
   lastRefreshedAt: Date | null;
+  // True when a row exists but its tokens cannot be decrypted with the current
+  // PAYMENTS_ENCRYPTION_KEY (key rotated, or seeded under another key). The
+  // connection is unusable until re-connected, so the UI must not show green.
+  credentialsUnreadable?: boolean;
   // Display-only: the professional's resolved consultation fee for the
   // requesting organization, so the settings UI can show it before any
   // payment-settings row exists. Booking always re-resolves server-side.
@@ -105,7 +109,28 @@ export class PaymentConnections {
       };
     }
 
-    return { connected: row.status === 'connected', ...row, resolvedFee };
+    // A row that exists but can't be decrypted is not a working connection —
+    // booking would silently degrade to unpaid while the UI showed green.
+    let credentialsUnreadable = false;
+    if (row.status === 'connected') {
+      try {
+        await this.getDecryptedCredentials(String(userId));
+      } catch (error: any) {
+        credentialsUnreadable = true;
+        logger.error(
+          'Payment connection for user %s cannot be decrypted with the current PAYMENTS_ENCRYPTION_KEY: %s',
+          userId,
+          error?.message
+        );
+      }
+    }
+
+    return {
+      connected: row.status === 'connected' && !credentialsUnreadable,
+      ...row,
+      ...(credentialsUnreadable && { status: 'refresh_failed' as const, credentialsUnreadable: true }),
+      resolvedFee,
+    };
   }
 
   private async resolveDisplayFee(
@@ -195,7 +220,14 @@ export class PaymentConnections {
       throw new BadRequest('Authenticated user required');
     }
 
-    const connection = await this.getDecryptedCredentials(String(userId));
+    // Unreadable ciphertext (key rotation) must not block disconnecting — the
+    // whole point of disconnecting is to get out of that state.
+    let connection: DecryptedConnection | null = null;
+    try {
+      connection = await this.getDecryptedCredentials(String(userId));
+    } catch (error: any) {
+      logger.warn('Disconnecting payment connection with unreadable credentials: %s', error?.message);
+    }
 
     if (connection) {
       try {

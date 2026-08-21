@@ -247,6 +247,28 @@ describe('\'payment-connections\' service and OAuth flow', function () {
     assert.ok(!JSON.stringify(current).includes(FAKE_ACCESS_TOKEN));
   });
 
+  it('reports a connection whose tokens cannot be decrypted as NOT connected', async () => {
+    const state = await startOauth();
+    await callbackHandler({ query: { code: 'auth-code-7', state } }, makeRes());
+
+    // Simulate a key rotation / foreign-key seed: ciphertext the current key
+    // cannot open.
+    const sequelize: Sequelize = app.get('sequelizeClient');
+    await sequelize.query(
+      'UPDATE "payment_connections" SET "accessToken" = :garbage WHERE "userId" = :userId',
+      { replacements: { garbage: Buffer.from('not-pgp-data'), userId: medic.id } }
+    );
+
+    const current = await app.service('payment-connections').get('current', asProvider(medic, org.id)) as any;
+
+    assert.strictEqual(current.connected, false);
+    assert.strictEqual(current.status, 'refresh_failed');
+    assert.strictEqual(current.credentialsUnreadable, true);
+
+    // Clean up so later tests start from a disconnected state.
+    await app.service('payment-connections').remove('current', asProvider(medic, org.id));
+  });
+
   it('exposes no bulk read surface at all', () => {
     // The class implements only get/create/remove — there is no find/update/
     // patch method to leak credential rows through.
