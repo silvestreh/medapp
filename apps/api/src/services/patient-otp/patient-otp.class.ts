@@ -26,6 +26,19 @@ function isValidSlug(slug: string): boolean {
   return slug.length >= 2 && slug.length <= 63 && SLUG_RE.test(slug);
 }
 
+// Staging/demo escape hatch: seeded patients have phone numbers no WhatsApp
+// message can reach, so the OTP never arrives. With this flag ANY code is
+// accepted at verification — but the document number must still match a real
+// patient (request-otp runs unchanged), so identity is preserved. The name is
+// deliberately alarming: never set it in production. As a backstop it refuses
+// to activate when the Railway environment is literally named "production".
+export function isOtpBypassEnabled(): boolean {
+  return (
+    process.env.PATIENT_OTP_INSECURE_ACCEPT_ANY === 'true' &&
+    process.env.RAILWAY_ENVIRONMENT_NAME !== 'production'
+  );
+}
+
 export class PatientOtp {
   app: Application;
   pendingOtps: Map<string, PendingOtp> = new Map();
@@ -181,7 +194,7 @@ export class PatientOtp {
       return { action: 'request-otp', status: 'not_found' };
     }
 
-    if (!result.phone) {
+    if (!result.phone && !isOtpBypassEnabled()) {
       return { action: 'request-otp', status: 'no_phone' };
     }
 
@@ -194,15 +207,25 @@ export class PatientOtp {
       attempts: 0,
     });
 
+    if (isOtpBypassEnabled()) {
+      // No real delivery in bypass mode — any code will verify.
+      console.warn(`[Patient OTP] INSECURE bypass active: any code accepted for document ${documentNumber}`);
+      return {
+        action: 'request-otp',
+        status: 'otp_sent',
+        maskedPhone: result.phone ? this.maskPhone(result.phone) : '******0000',
+      };
+    }
+
     // Send OTP via WhatsApp without blocking the response — a slow or waking
     // Evolution API must not delay login past the client's request timeout.
-    void this.sendOtpViaWhatsApp(slug, result.phone, code);
+    void this.sendOtpViaWhatsApp(slug, result.phone as string, code);
 
     if (process.env.NODE_ENV !== 'production') {
       console.log(`[Patient OTP] Code for document ${documentNumber}: ${code}`);
     }
 
-    return { action: 'request-otp', status: 'otp_sent', maskedPhone: this.maskPhone(result.phone) };
+    return { action: 'request-otp', status: 'otp_sent', maskedPhone: this.maskPhone(result.phone as string) };
   }
 
   private async sendOtpViaWhatsApp(slug: string | undefined, phone: string, code: string): Promise<void> {

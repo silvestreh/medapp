@@ -177,6 +177,71 @@ describe('\'patient-otp\' service', () => {
     });
   });
 
+  describe('insecure staging bypass (PATIENT_OTP_INSECURE_ACCEPT_ANY)', () => {
+    before(() => {
+      process.env.PATIENT_OTP_INSECURE_ACCEPT_ANY = 'true';
+    });
+
+    after(() => {
+      delete process.env.PATIENT_OTP_INSECURE_ACCEPT_ANY;
+      delete process.env.RAILWAY_ENVIRONMENT_NAME;
+    });
+
+    it('accepts any code, but only for a document that matched a patient', async () => {
+      await app.service('patient-otp').create({
+        action: 'request-otp',
+        documentNumber: testDocumentValue,
+      });
+
+      const result: any = await app.service('authentication').create({
+        strategy: 'patient-otp',
+        documentNumber: testDocumentValue,
+        slug: testOrgSlugAuth,
+        code: '999999',
+      }, {});
+
+      assert.ok(result.accessToken, 'any code should authenticate under bypass');
+      assert.equal(result.patient.id, patientId, 'identity still comes from the DNI');
+
+      // A document with no matching patient never gets a pending entry, so it
+      // still cannot authenticate — the bypass waives the code, not identity.
+      try {
+        await app.service('authentication').create({
+          strategy: 'patient-otp',
+          documentNumber: 'unknowndoc12345',
+          slug: testOrgSlugAuth,
+          code: '999999',
+        }, {});
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 401);
+      }
+    });
+
+    it('refuses to activate in the production Railway environment', async () => {
+      process.env.RAILWAY_ENVIRONMENT_NAME = 'production';
+
+      await app.service('patient-otp').create({
+        action: 'request-otp',
+        documentNumber: testDocumentValue,
+      });
+
+      try {
+        await app.service('authentication').create({
+          strategy: 'patient-otp',
+          documentNumber: testDocumentValue,
+          slug: testOrgSlugAuth,
+          code: '000001',
+        }, {});
+        assert.fail('Should have thrown');
+      } catch (error: any) {
+        assert.equal(error.code, 401);
+      } finally {
+        delete process.env.RAILWAY_ENVIRONMENT_NAME;
+      }
+    });
+  });
+
   describe('get-organization', () => {
     let testOrgSlug: string;
 
