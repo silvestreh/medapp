@@ -26,6 +26,7 @@ const makeFakeProvider = (calls: FakeCalls): PaymentProvider => ({
       refreshToken: FAKE_REFRESH_TOKEN,
       providerAccountId: '123456789',
       expiresAt: new Date(Date.now() + 180 * 24 * 3600 * 1000),
+      accountLabel: 'seller@testuser.com',
     };
     return credentials;
   },
@@ -158,7 +159,8 @@ describe('\'payment-connections\' service and OAuth flow', function () {
     const current = await app.service('payment-connections').get('current', asProvider(medic, org.id)) as any;
     assert.strictEqual(current.connected, true);
     assert.strictEqual(current.status, 'connected');
-    assert.strictEqual(current.accountHint, 'MP ****6789');
+    // Recognizable label from the connect-time account fetch, not the bare id.
+    assert.strictEqual(current.accountHint, 'seller@testuser.com');
     assert.strictEqual(current.accessToken, undefined);
     assert.strictEqual(current.refreshToken, undefined);
     assert.ok(!JSON.stringify(current).includes(FAKE_ACCESS_TOKEN));

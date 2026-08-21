@@ -28,6 +28,11 @@ export interface ProviderCredentials {
   refreshToken: string;
   providerAccountId: string;
   expiresAt: Date | null;
+  // Human-recognizable label for the connected account (e.g. email or
+  // nickname), fetched at connect time so the UI shows something meaningful
+  // instead of a bare account id. Non-sensitive: it is the professional's own
+  // account, shown only to them. Optional — refresh does not re-fetch it.
+  accountLabel?: string;
 }
 
 export interface AuthorizationParams {

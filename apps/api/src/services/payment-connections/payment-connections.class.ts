@@ -276,11 +276,7 @@ export class PaymentConnections {
     credentials: ProviderCredentials,
     options: { logEvent?: boolean } = {}
   ): Promise<void> {
-    const accountHint = credentials.providerAccountId
-      ? `MP ****${credentials.providerAccountId.slice(-4)}`
-      : null;
-
-    const payload = {
+    const payload: Record<string, unknown> = {
       status: 'connected',
       accessToken: credentials.accessToken,
       // An empty encrypted field is stored UNENCRYPTED by makeDefine (it skips
@@ -289,7 +285,6 @@ export class PaymentConnections {
       // must not poison the row.
       refreshToken: credentials.refreshToken || null,
       providerAccountId: credentials.providerAccountId || null,
-      accountHint,
       expiresAt: credentials.expiresAt,
       lastRefreshedAt: new Date(),
       refreshFailCount: 0,
@@ -301,6 +296,17 @@ export class PaymentConnections {
       attributes: ['id'],
       raw: true,
     });
+
+    // Prefer the recognizable label (email/nickname) fetched at connect time.
+    // On refresh (no label) leave an existing hint untouched rather than
+    // clobbering it with the bare account fragment.
+    if (credentials.accountLabel) {
+      payload.accountHint = credentials.accountLabel;
+    } else if (!existing) {
+      payload.accountHint = credentials.providerAccountId
+        ? `MP ****${credentials.providerAccountId.slice(-4)}`
+        : null;
+    }
 
     if (existing) {
       await this.model.update(payload, { where: { id: existing.id } });

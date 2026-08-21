@@ -185,6 +185,22 @@ export function getPayment(accessToken: string, paymentId: string): Promise<MpPa
   });
 }
 
+export interface MpUser {
+  id: number | string;
+  nickname?: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+}
+
+export function getUser(accessToken: string): Promise<MpUser> {
+  return handleRequest<MpUser>({
+    method: 'get',
+    url: '/users/me',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
 export function createRefund(
   accessToken: string,
   paymentId: string,

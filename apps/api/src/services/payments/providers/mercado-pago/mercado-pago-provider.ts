@@ -18,6 +18,7 @@ import {
   createRefund,
   exchangeOAuthCode,
   getPayment,
+  getUser,
   refreshOAuthToken,
   MpTokenResponse,
 } from './mercado-pago-client';
@@ -94,7 +95,18 @@ export class MercadoPagoProvider implements PaymentProvider {
     });
 
     warnIfNoOfflineAccess(token, 'code exchange');
-    return toCredentials(token);
+    const credentials = toCredentials(token);
+
+    // Fetch a recognizable label for the connected account (best-effort — a
+    // failure here must not break the connection).
+    try {
+      const user = await getUser(credentials.accessToken);
+      credentials.accountLabel = user.email || user.nickname || undefined;
+    } catch (error: any) {
+      logger.warn('MercadoPago: could not fetch account label at connect: %s', error?.message);
+    }
+
+    return credentials;
   }
 
   async refreshCredentials(credentials: ProviderCredentials): Promise<ProviderCredentials> {
