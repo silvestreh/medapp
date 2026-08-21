@@ -177,13 +177,13 @@ describe('\'patient-otp\' service', () => {
     });
   });
 
-  describe('insecure staging bypass (PATIENT_OTP_INSECURE_ACCEPT_ANY)', () => {
+  describe('insecure staging bypass (patientOtp.insecureAcceptAny)', () => {
     before(() => {
-      process.env.PATIENT_OTP_INSECURE_ACCEPT_ANY = 'true';
+      app.set('patientOtp', { insecureAcceptAny: true });
     });
 
     after(() => {
-      delete process.env.PATIENT_OTP_INSECURE_ACCEPT_ANY;
+      app.set('patientOtp', undefined);
       delete process.env.RAILWAY_ENVIRONMENT_NAME;
     });
 

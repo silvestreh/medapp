@@ -27,14 +27,17 @@ function isValidSlug(slug: string): boolean {
 }
 
 // Staging/demo escape hatch: seeded patients have phone numbers no WhatsApp
-// message can reach, so the OTP never arrives. With this flag ANY code is
-// accepted at verification — but the document number must still match a real
-// patient (request-otp runs unchanged), so identity is preserved. The name is
-// deliberately alarming: never set it in production. As a backstop it refuses
-// to activate when the Railway environment is literally named "production".
-export function isOtpBypassEnabled(): boolean {
+// message can reach, so the OTP never arrives. When config/{NODE_ENV}.json
+// sets patientOtp.insecureAcceptAny (staging.json does), ANY code is accepted
+// at verification — but the document number must still match a real patient
+// (request-otp runs unchanged), so identity is preserved. Never set it in
+// production config; as a backstop it refuses to activate when the Railway
+// environment is literally named "production".
+export function isOtpBypassEnabled(app: Application): boolean {
+  const config = app.get('patientOtp') as { insecureAcceptAny?: boolean } | undefined;
+
   return (
-    process.env.PATIENT_OTP_INSECURE_ACCEPT_ANY === 'true' &&
+    config?.insecureAcceptAny === true &&
     process.env.RAILWAY_ENVIRONMENT_NAME !== 'production'
   );
 }
@@ -194,7 +197,7 @@ export class PatientOtp {
       return { action: 'request-otp', status: 'not_found' };
     }
 
-    if (!result.phone && !isOtpBypassEnabled()) {
+    if (!result.phone && !isOtpBypassEnabled(this.app)) {
       return { action: 'request-otp', status: 'no_phone' };
     }
 
@@ -207,7 +210,7 @@ export class PatientOtp {
       attempts: 0,
     });
 
-    if (isOtpBypassEnabled()) {
+    if (isOtpBypassEnabled(this.app)) {
       // No real delivery in bypass mode — any code will verify.
       console.warn(`[Patient OTP] INSECURE bypass active: any code accepted for document ${documentNumber}`);
       return {

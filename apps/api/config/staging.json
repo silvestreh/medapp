@@ -1,13 +1,11 @@
 {
-  "payments": {
-    "encryptionKey": "PAYMENTS_ENCRYPTION_KEY",
-    "publicUrl": "API_PUBLIC_URL",
-    "uiUrl": "APP_URL",
-    "bookingUrl": "BOOKING_PUBLIC_URL",
-    "mercadoPago": {
-      "clientId": "MP_CLIENT_ID",
-      "clientSecret": "MP_CLIENT_SECRET",
-      "webhookSecret": "MP_WEBHOOK_SECRET"
-    }
+  "host": "HOST",
+  "port": "PORT",
+  "postgres": "DB_URL",
+  "uploads": {
+    "dir": "/data/uploads"
+  },
+  "patientOtp": {
+    "insecureAcceptAny": true
   }
 }

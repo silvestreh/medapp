@@ -2,6 +2,7 @@ import { AuthenticationBaseStrategy, AuthenticationResult } from '@feathersjs/au
 import { NotAuthenticated, BadRequest } from '@feathersjs/errors';
 import { isTestDocument, TEST_PATIENT_ID, TEST_ORGANIZATION_ID } from './test-user';
 import { isOtpBypassEnabled } from './services/patient-otp/patient-otp.class';
+import type { Application } from './declarations';
 
 const MAX_VERIFY_ATTEMPTS = 5;
 
@@ -46,7 +47,7 @@ export class PatientOtpStrategy extends AuthenticationBaseStrategy {
     // Staging bypass: identity was already established by the document-number
     // lookup in request-otp (there IS a pending entry for this document);
     // only the code equality is waived.
-    if (pending.code !== code.trim() && !isOtpBypassEnabled()) {
+    if (pending.code !== code.trim() && !isOtpBypassEnabled(this.app as unknown as Application)) {
       throw new NotAuthenticated('Invalid or expired code');
     }
 
