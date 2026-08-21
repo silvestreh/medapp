@@ -60,7 +60,7 @@ async function seedTestPaymentConnection() {
       accessToken,
       // The TEST token has no refresh token; the refresh cron skips rows whose
       // expiry is far out, and refresh failures only degrade to unpaid booking.
-      refreshToken: '',
+      refreshToken: '', // coerced to null by storeCredentials (TEST token has no refresh token)
       providerAccountId: MP_APP_OWNER_ID,
       expiresAt: new Date(Date.now() + 180 * 24 * 3600 * 1000),
     }, { logEvent: false });

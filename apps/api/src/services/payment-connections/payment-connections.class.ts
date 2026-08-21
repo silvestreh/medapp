@@ -283,7 +283,11 @@ export class PaymentConnections {
     const payload = {
       status: 'connected',
       accessToken: credentials.accessToken,
-      refreshToken: credentials.refreshToken,
+      // An empty encrypted field is stored UNENCRYPTED by makeDefine (it skips
+      // falsy values), which then makes PGP_SYM_DECRYPT throw on read. Coerce
+      // to null — providers without a refresh token (e.g. TEST credentials)
+      // must not poison the row.
+      refreshToken: credentials.refreshToken || null,
       providerAccountId: credentials.providerAccountId || null,
       accountHint,
       expiresAt: credentials.expiresAt,

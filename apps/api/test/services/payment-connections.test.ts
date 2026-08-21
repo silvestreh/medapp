@@ -247,6 +247,29 @@ describe('\'payment-connections\' service and OAuth flow', function () {
     assert.ok(!JSON.stringify(current).includes(FAKE_ACCESS_TOKEN));
   });
 
+  it('stores an empty refresh token as null so decryption still works', async () => {
+    const svc: any = app.service('payment-connections');
+    // A provider (or TEST credential) with no refresh token must not poison
+    // the row — makeDefine leaves empty encrypted fields UNencrypted, which
+    // then breaks PGP_SYM_DECRYPT for the whole read.
+    await svc.storeCredentials(String(medic.id), 'mercado_pago', {
+      accessToken: 'access-only-token',
+      refreshToken: '',
+      providerAccountId: '999',
+      expiresAt: new Date(Date.now() + 180 * 24 * 3600 * 1000),
+    }, { logEvent: false });
+
+    const decrypted = await svc.getDecryptedCredentials(medic.id);
+    assert.strictEqual(decrypted.accessToken, 'access-only-token');
+    assert.strictEqual(decrypted.refreshToken, '');
+
+    const current = await app.service('payment-connections').get('current', asProvider(medic, org.id)) as any;
+    assert.strictEqual(current.connected, true);
+    assert.strictEqual(current.credentialsUnreadable, undefined);
+
+    await app.service('payment-connections').remove('current', asProvider(medic, org.id));
+  });
+
   it('reports a connection whose tokens cannot be decrypted as NOT connected', async () => {
     const state = await startOauth();
     await callbackHandler({ query: { code: 'auth-code-7', state } }, makeRes());
