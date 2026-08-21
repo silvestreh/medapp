@@ -228,6 +228,25 @@ describe('\'payment-connections\' service and OAuth flow', function () {
     assert.strictEqual(rows.length, 0, 'credentials must be deleted');
   });
 
+  it('attaches the display fee to get(current) once a price is configured', async () => {
+    await app.service('accounting-settings').create({
+      userId: medic.id,
+      organizationId: org.id,
+      insurerPrices: { _particular: { encounter: 5000 } },
+    }, { provider: undefined });
+
+    const current = await app.service('payment-connections').get('current', asProvider(medic, org.id)) as any;
+
+    assert.deepStrictEqual(current.resolvedFee, {
+      amount: 500000,
+      feeMinor: 500000,
+      currency: 'ARS',
+      chargePortion: 100,
+    });
+    // Still no secrets anywhere near the response.
+    assert.ok(!JSON.stringify(current).includes(FAKE_ACCESS_TOKEN));
+  });
+
   it('exposes no bulk read surface at all', () => {
     // The class implements only get/create/remove — there is no find/update/
     // patch method to leak credential rows through.

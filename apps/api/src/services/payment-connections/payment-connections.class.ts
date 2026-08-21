@@ -4,6 +4,7 @@ import type { Id, Params } from '@feathersjs/feathers';
 import type { Application } from '../../declarations';
 import type { ProviderCredentials } from '../payments/domain';
 import { getProvider } from '../payments/provider-registry';
+import { resolveAmount } from '../payments/amount-resolver';
 import { getPaymentsConfig, isPaymentsConfigured } from '../../utils/payments-config';
 import logger from '../../logger';
 
@@ -32,6 +33,10 @@ export interface PaymentConnectionPublic {
   accountHint: string | null;
   expiresAt: Date | null;
   lastRefreshedAt: Date | null;
+  // Display-only: the professional's resolved consultation fee for the
+  // requesting organization, so the settings UI can show it before any
+  // payment-settings row exists. Booking always re-resolves server-side.
+  resolvedFee?: { amount: number; feeMinor: number; currency: string; chargePortion: number } | null;
 }
 
 export interface DecryptedConnection extends ProviderCredentials {
@@ -85,6 +90,8 @@ export class PaymentConnections {
       raw: true,
     });
 
+    const resolvedFee = await this.resolveDisplayFee(String(userId), params);
+
     if (!row) {
       return {
         connected: false,
@@ -94,10 +101,46 @@ export class PaymentConnections {
         accountHint: null,
         expiresAt: null,
         lastRefreshedAt: null,
+        resolvedFee,
       };
     }
 
-    return { connected: row.status === 'connected', ...row };
+    return { connected: row.status === 'connected', ...row, resolvedFee };
+  }
+
+  private async resolveDisplayFee(
+    userId: string,
+    params: Params
+  ): Promise<PaymentConnectionPublic['resolvedFee']> {
+    const organizationId = params.organizationId;
+
+    if (!organizationId) {
+      return null;
+    }
+
+    try {
+      const settingsResult = await this.app.service('payment-settings').find({
+        query: { userId, organizationId, $limit: 1 },
+        provider: undefined,
+      }) as any;
+      const settings = ((settingsResult.data || settingsResult) as any[])[0];
+
+      const resolved = await resolveAmount('private_fee', {
+        app: this.app,
+        medicId: userId,
+        organizationId: String(organizationId),
+        chargePortion: settings?.chargePortion ?? 100,
+      });
+
+      return resolved && {
+        amount: resolved.amount,
+        feeMinor: resolved.feeMinor,
+        currency: resolved.currency,
+        chargePortion: resolved.chargePortion,
+      };
+    } catch {
+      return null;
+    }
   }
 
   async create(data: { action?: string; provider?: string }, params: Params): Promise<{ authorizationUrl: string }> {

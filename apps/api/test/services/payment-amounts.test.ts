@@ -115,6 +115,62 @@ describe('payments amount resolver', function () {
     assert.ok(Number.isInteger(resolved?.amount));
   });
 
+  it('falls back to an org-less accounting row (legacy userId-only scoping)', async () => {
+    const stamp = Date.now().toString(36);
+    const orgB = await createTestOrganization({ slug: `amounts-null-org-${stamp}` });
+    const medicB = await createTestUser({
+      username: `test.medic.nullorg.${stamp}@test.com`,
+      password: 'SuperSecret1!',
+      roleIds: ['medic'],
+      organizationId: orgB.id,
+    });
+
+    // Row saved without organizationId — the historical shape of
+    // accounting_settings rows created through the accounting UI.
+    await app.service('accounting-settings').create({
+      userId: medicB.id,
+      insurerPrices: { _particular: { encounter: 22500 } },
+    }, { provider: undefined });
+
+    const resolved = await resolveAmount('private_fee', {
+      app,
+      medicId: String(medicB.id),
+      organizationId: String(orgB.id),
+      chargePortion: 100,
+    });
+
+    assert.strictEqual(resolved?.feeMinor, 2250000);
+    assert.strictEqual(resolved?.amount, 2250000);
+  });
+
+  it('never uses another organization\'s accounting row', async () => {
+    const stamp = Date.now().toString(36);
+    const orgC = await createTestOrganization({ slug: `amounts-org-c-${stamp}` });
+    const orgD = await createTestOrganization({ slug: `amounts-org-d-${stamp}` });
+    const medicC = await createTestUser({
+      username: `test.medic.crossorg.${stamp}@test.com`,
+      password: 'SuperSecret1!',
+      roleIds: ['medic'],
+      organizationId: orgC.id,
+    });
+
+    // Only a row scoped to org C exists; resolving for org D must find nothing.
+    await app.service('accounting-settings').create({
+      userId: medicC.id,
+      organizationId: orgC.id,
+      insurerPrices: { _particular: { encounter: 9999 } },
+    }, { provider: undefined });
+
+    const resolved = await resolveAmount('private_fee', {
+      app,
+      medicId: String(medicC.id),
+      organizationId: String(orgD.id),
+      chargePortion: 100,
+    });
+
+    assert.strictEqual(resolved, null);
+  });
+
   it('throws on an unknown resolver id', async () => {
     await assert.rejects(
       resolveAmount('coseguro', { app, medicId: medic.id, organizationId: org.id, chargePortion: 100 }),

@@ -201,9 +201,11 @@ export default function PaymentsSettingsRoute() {
   }, []);
 
   const isConnected = Boolean(connection?.connected);
-  const resolvedFee = settings?.resolvedFee ?? null;
+  // Before the first save there is no settings row to carry the fee — the
+  // connection response provides it so the gate reflects reality.
+  const resolvedFee = settings?.resolvedFee ?? connection?.resolvedFee ?? null;
   const hasFee = Boolean(resolvedFee && resolvedFee.feeMinor > 0);
-  const canEnable = isConnected && (hasFee || !settings);
+  const canEnable = isConnected && hasFee;
   const portionNumber = Number(chargePortion);
   const previewCharge = resolvedFee ? Math.round((resolvedFee.feeMinor * portionNumber) / 100) : 0;
   const previewRemainder = resolvedFee ? resolvedFee.feeMinor - previewCharge : 0;

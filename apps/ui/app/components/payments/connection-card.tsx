@@ -11,6 +11,7 @@ export interface PaymentConnection {
   provider: string;
   accountHint: string | null;
   lastRefreshedAt: string | null;
+  resolvedFee?: { amount: number; feeMinor: number; currency: string; chargePortion: number } | null;
 }
 
 interface ConnectionCardProps {

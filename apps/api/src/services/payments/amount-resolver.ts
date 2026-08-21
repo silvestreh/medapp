@@ -36,11 +36,19 @@ type AmountResolverFn = (context: AmountResolutionContext) => Promise<ResolvedAm
 export const pesosToMinorUnits = (pesos: number): number => Math.round(pesos * 100);
 
 const privateFeeResolver: AmountResolverFn = async ({ app, medicId, organizationId, chargePortion }) => {
+  // accounting_settings.organizationId is nullable and historically unused
+  // (rows are de-facto userId-scoped), so prefer an exact org match but fall
+  // back to the medic's org-less row. NEVER fall back to a row belonging to a
+  // DIFFERENT organization — that would charge another practice's price.
   const result = await app.service('accounting-settings').find({
-    query: { userId: medicId, organizationId, $limit: 1 },
+    query: { userId: medicId, $limit: 25 },
     provider: undefined,
+    paginate: false,
   }) as any;
-  const settings = (result.data || result)[0];
+  const rows: any[] = Array.isArray(result) ? result : result.data || [];
+  const settings =
+    rows.find((row) => String(row.organizationId) === String(organizationId)) ??
+    rows.find((row) => row.organizationId == null);
 
   if (!settings) {
     return null;
